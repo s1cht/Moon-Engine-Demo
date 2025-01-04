@@ -1,7 +1,7 @@
 # Directories
 .vs
 bin
-bit-int
+bin-int
 
 # Files
 **.vcxproj.user
