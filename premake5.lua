@@ -2,7 +2,13 @@ workspace "Pawn Engine"
 	architecture "x64"
 	configurations {"Debug", "Release", "Distribute"}
 
-local outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+local includeDirs = {}
+includeDirs["vendor"] = "Engine/vendor/"
+includeDirs["engine"] = "Engine"
+
+require "GLFW/premake5" -- GLFW
 
 project "Engine"
 	location "Engine"
@@ -12,16 +18,23 @@ project "Engine"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "pch.h"
+	pchsource "pch.cpp"
+
 	files 
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/PawnEngine.h",
+		"%{prj.name}/pch.h",
+		"%{prj.name}/pch.cpp",
 	}
 
 	includedirs 
 	{
-		"%{prj.name}/vendor/include",
+		includeDirs.vendor .. "/include",
+		includeDirs.engine,
+		includeDirs.engine .. "/src",
 	}
 
 	buildoptions
@@ -48,14 +61,20 @@ project "Engine"
 	filter "configurations:Debug"
 		defines "PE_DEBUG"
 		symbols "On"
+		staticruntime "off"
+		runtime "Debug"
 
 	filter "configurations:Release"
 		defines "PE_RELEASE"
 		optimize "On"
+		staticruntime "off"
+		runtime "Release"
 
 	filter "configurations:Distribute"
 		defines "PE_DIST"
 		optimize "On"
+		staticruntime "off"
+		runtime "Release"
 
 
 
@@ -75,8 +94,8 @@ project "Sandbox"
 
 	includedirs 
 	{
-		"Engine/vendor/include",
-		"Engine",
+		includeDirs.vendor .. "/include",
+		includeDirs.engine,
 	}
 
 	links 

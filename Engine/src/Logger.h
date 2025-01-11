@@ -27,12 +27,11 @@ namespace Pawn {
 #define PE_CORE_INFO(...)		::Pawn::Logger::GetCoreLogger()->info(__VA_ARGS__)
 #define PE_CORE_WARN(...)		::Pawn::Logger::GetCoreLogger()->warn(__VA_ARGS__)
 #define PE_CORE_ERROR(...)		::Pawn::Logger::GetCoreLogger()->error(__VA_ARGS__)
-#define PE_CORE_FATAL(...)		::Pawn::Logger::GetCoreLogger()->fatal(__VA_ARGS__)
+#define PE_CORE_CRITICAL(...)	::Pawn::Logger::GetCoreLogger()->critical(__VA_ARGS__)
 
 //Client logging macros
-
-#define PE_CLIENT_TRACE(...)	::Pawn::Logger::GetClientLogger()->trace(__VA_ARGS__)
-#define PE_CLIENT_INFO(...)		::Pawn::Logger::GetClientLogger()->info(__VA_ARGS__)
-#define PE_CLIENT_WARN(...)		::Pawn::Logger::GetClientLogger()->warn(__VA_ARGS__)
-#define PE_CLIENT_ERROR(...)	::Pawn::Logger::GetClientLogger()->error(__VA_ARGS__)
-#define PE_CLIENT_FATAL(...)	::Pawn::Logger::GetClientLogger()->fatal(__VA_ARGS__)
+#define PE_TRACE(...)			::Pawn::Logger::GetClientLogger()->trace(__VA_ARGS__)
+#define PE_INFO(...)			::Pawn::Logger::GetClientLogger()->info(__VA_ARGS__)
+#define PE_WARN(...)			::Pawn::Logger::GetClientLogger()->warn(__VA_ARGS__)
+#define PE_ERROR(...)			::Pawn::Logger::GetClientLogger()->error(__VA_ARGS__)
+#define PE_CRITICAL(...)		::Pawn::Logger::GetClientLogger()->critical(__VA_ARGS__)

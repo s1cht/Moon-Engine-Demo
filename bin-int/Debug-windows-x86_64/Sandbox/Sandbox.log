@@ -1,4 +1,1 @@
-﻿  App.cpp
-C:\develop\Pawn Engine\Engine\src\Logger.h(18,42): warning C4251: "Pawn::Logger::m_coreLogger": "std::shared_ptr<spdlog::logger>" должен иметь dll-интерфейс для использования клиентами "Pawn::Logger"
-C:\develop\Pawn Engine\Engine\src\Logger.h(19,42): warning C4251: "Pawn::Logger::m_clientLogger": "std::shared_ptr<spdlog::logger>" должен иметь dll-интерфейс для использования клиентами "Pawn::Logger"
-  Sandbox.vcxproj -> C:\develop\Pawn Engine\bin\Debug-windows-x86_64\Sandbox\Sandbox.exe
+﻿  Sandbox.vcxproj -> C:\develop\Pawn Engine\bin\Debug-windows-x86_64\Sandbox\Sandbox.exe
