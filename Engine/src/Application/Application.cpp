@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Application.h"
-#include "Events\MouseEvents.h"
-#include "Events\KeyEvents.h"
+#include "Core\Events\MouseEvents.h"
+#include "Core\Events\KeyEvents.h"
 
 namespace Pawn {
 

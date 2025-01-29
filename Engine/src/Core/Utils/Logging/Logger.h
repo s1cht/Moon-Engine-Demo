@@ -1,12 +1,12 @@
 #pragma once
 
 #include <memory>
-#include "Core.h"
+#include "Core\Core.h"
 #include "spdlog\spdlog.h"
 
 namespace Pawn {
 
-	class PAWN_API Logger
+	class ENGINE_API Logger
 	{
 	public:
 		static void Init();

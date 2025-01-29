@@ -1,15 +1,15 @@
 #pragma once
 
-#include <sstream>
-#include "Events/Event.h"
+#include "pch.h"
+#include "Core/Events/Event.h"
 
-class PAWN_API MouseEvent : public IEvent
+class ENGINE_API MouseEvent : public IEvent
 {
 public:
     EVENT_CLASS_CATEGORY(EventCategory_Input | EventCategory_Mouse);
 };
 
-class PAWN_API MouseButtonEvent : public MouseEvent
+class ENGINE_API MouseButtonEvent : public MouseEvent
 {
 public:
     EVENT_CLASS_GETSTRING(var_to_string_n(int, m_Button, "button"));
@@ -19,7 +19,7 @@ protected:
     int m_Button;
 };
 
-class PAWN_API MouseMovedEvent : public MouseEvent
+class ENGINE_API MouseMovedEvent : public MouseEvent
 {
 public:
     constexpr MouseMovedEvent() : m_x(0.f), m_y(0.f) {};
@@ -39,7 +39,7 @@ private:
 };
 
 // Mouse scrolled event
-class PAWN_API MouseScrolledEvent : public MouseEvent
+class ENGINE_API MouseScrolledEvent : public MouseEvent
 {
 public:
     constexpr MouseScrolledEvent() : m_x(0.f), m_y(0.f) {};
@@ -57,7 +57,7 @@ private:
     float m_x, m_y;
 };
 
-class PAWN_API MouseButtonPressedEvent : public MouseButtonEvent
+class ENGINE_API MouseButtonPressedEvent : public MouseButtonEvent
 {
 public:
     constexpr MouseButtonPressedEvent(int btn) : MouseButtonEvent(btn) {}
@@ -67,7 +67,7 @@ public:
 
 };
 
-class PAWN_API MouseButtonReleasedEvent : public MouseButtonEvent
+class ENGINE_API MouseButtonReleasedEvent : public MouseButtonEvent
 {
 public:
     constexpr MouseButtonReleasedEvent(int btn) : MouseButtonEvent(btn) {}

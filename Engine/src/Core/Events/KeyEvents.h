@@ -1,10 +1,10 @@
 #pragma once
 
-#include <sstream>
-#include "Core.h"
-#include "Events/Event.h"
+#include "pch.h"
+#include "Core/Core.h"
+#include "Core/Events/Event.h"
 
-class PAWN_API KeyEvent : public IEvent
+class ENGINE_API KeyEvent : public IEvent
 {
 public:
     EVENT_CLASS_CATEGORY(EventCategory_Keyboard | EventCategory_Input)
@@ -18,7 +18,7 @@ protected:
 
 };
 
-class PAWN_API KeyInputStartedEvent : public KeyEvent
+class ENGINE_API KeyInputStartedEvent : public KeyEvent
 {
 public:
     KeyInputStartedEvent(int keycode, int repeatCount)
@@ -36,7 +36,7 @@ private:
     int m_repeatCount;
 };
 
-class PAWN_API KeyInputEndedEvent : public KeyEvent
+class ENGINE_API KeyInputEndedEvent : public KeyEvent
 {
 public:
     KeyInputEndedEvent(int keycode, int repeatCount)

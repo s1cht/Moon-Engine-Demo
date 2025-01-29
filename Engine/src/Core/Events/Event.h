@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core.h"
-#include "Bitwise.h"
-#include "PEString.h"
-#include <string>
+#include "pch.h"
+#include "Core/Core.h"
+#include "Core/Bitwise.h"
+#include "Core/String/PEString.h"
 
 enum class EventType
 {
@@ -43,7 +43,7 @@ enum EventCategory
     virtual EVENT_CATEGORY GetEventCategory() const override { return category; }
 
 
-class PAWN_API IEvent
+class ENGINE_API IEvent
 {
 public:
     virtual EventType GetEventType() const = 0;
@@ -64,7 +64,7 @@ private:
 
 };
 
-class PAWN_API EventDispatcher
+class ENGINE_API EventDispatcher
 {
     template<typename T>
     using EventFunc = std::function<bool(T&)>;

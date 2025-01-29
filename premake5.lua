@@ -19,7 +19,7 @@ project "Engine"
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 	pchheader "pch.h"
-	pchsource "pch.cpp"
+	pchsource (includeDirs.engine .. "/pch.cpp")
 
 	files 
 	{
@@ -96,6 +96,7 @@ project "Sandbox"
 	{
 		includeDirs.vendor .. "/include",
 		includeDirs.engine,
+		includeDirs.engine .. "/src",
 	}
 
 	links 
