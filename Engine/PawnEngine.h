@@ -4,9 +4,9 @@
 // --------------For applications!!!--------------
 // --------------===================--------------
 
-#include "src/Application/Application.h"
-#include "src/Core/Utils/Logging/Logger.h"
+#include "Source/Application/Application.h"
+#include "Source/Core/Utils/Logging/Logger.h"
 
 // --------------Entry point----------------------
-#include "src/Application/EntryPoint.h"
+#include "Source/Application/EntryPoint.h"
 // -----------------------------------------------

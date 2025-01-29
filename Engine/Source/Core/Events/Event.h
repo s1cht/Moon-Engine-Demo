@@ -42,48 +42,50 @@ enum EventCategory
 #define EVENT_CLASS_CATEGORY(category)\
     virtual EVENT_CATEGORY GetEventCategory() const override { return category; }
 
+namespace Pawn {
 
-class ENGINE_API IEvent
-{
-public:
-    virtual EventType GetEventType() const = 0;
-    virtual EVENT_CATEGORY GetEventCategory() const = 0;
-    virtual const char* GetName() const  = 0;
-    virtual std::string GetString() { return GetName(); }
-
-    inline bool IsInCategory(EventCategory category)
+    class PAWN_API IEvent
     {
-        return  GetEventCategory() & category;
-    }
-
-protected:
-    bool m_isHandled = false;
-
-private:
-    friend class EventDispatcher;
-
-};
-
-class ENGINE_API EventDispatcher
-{
-    template<typename T>
-    using EventFunc = std::function<bool(T&)>;
-public:
-    EventDispatcher(IEvent* event) : m_Event(event) {}
-
-    template<typename T>
-    bool Dispatch(EventFunc<T> func)
-    {
-        if (m_Event->GetEventType() == T::GetStaticType())
+    public:
+        virtual EventType GetEventType() const = 0;
+        virtual EVENT_CATEGORY GetEventCategory() const = 0;
+        virtual const char* GetName() const  = 0;
+        virtual std::string GetString() { return GetName(); }
+    
+        inline bool IsInCategory(EventCategory category)
         {
-            m_Event->m_isHandled = func(*(T)(*m_Event));
-            return true;
+            return  GetEventCategory() & category;
         }
-        return false;
-    }
+    
+    protected:
+        bool m_isHandled = false;
+    
+    private:
+        friend class EventDispatcher;
+    
+    };
+    
+    class PAWN_API EventDispatcher
+    {
+        template<typename T>
+        using EventFunc = std::function<bool(T&)>;
+    public:
+        EventDispatcher(IEvent* event) : m_Event(event) {}
+    
+        template<typename T>
+        bool Dispatch(EventFunc<T> func)
+        {
+            if (m_Event->GetEventType() == T::GetStaticType())
+            {
+                m_Event->m_isHandled = func(*(T)(*m_Event));
+                return true;
+            }
+            return false;
+        }
+    
+    private:
+        IEvent* m_Event;
+    
+    };
 
-private:
-    IEvent* m_Event;
-
-};
-
+}

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Application.h"
+#include "Core/Utils/Logging/Logger.h"
 #include "Core\Events\MouseEvents.h"
 #include "Core\Events\KeyEvents.h"
 

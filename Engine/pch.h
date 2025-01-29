@@ -15,8 +15,6 @@
 #include <unordered_map>
 #include <sstream>
 
-#include "src/Core/Utils/Logging/Logger.h"
-
 #ifdef _WIN32
     #include <Windows.h>
 #endif

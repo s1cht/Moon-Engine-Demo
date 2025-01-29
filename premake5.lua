@@ -23,8 +23,8 @@ project "Engine"
 
 	files 
 	{
-		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/Source/**.h",
+		"%{prj.name}/Source/**.cpp",
 		"%{prj.name}/PawnEngine.h",
 		"%{prj.name}/pch.h",
 		"%{prj.name}/pch.cpp",
@@ -34,7 +34,7 @@ project "Engine"
 	{
 		includeDirs.vendor .. "/include",
 		includeDirs.engine,
-		includeDirs.engine .. "/src",
+		includeDirs.engine .. "/Source",
 	}
 
 	buildoptions
@@ -88,15 +88,15 @@ project "Sandbox"
 
 	files 
 	{
-		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/Source/**.h",
+		"%{prj.name}/Source/**.cpp",
 	}
 
 	includedirs 
 	{
 		includeDirs.vendor .. "/include",
 		includeDirs.engine,
-		includeDirs.engine .. "/src",
+		includeDirs.engine .. "/Source",
 	}
 
 	links 

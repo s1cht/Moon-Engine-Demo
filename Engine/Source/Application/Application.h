@@ -1,9 +1,9 @@
 #pragma once
-#include "src/Core/Core.h"
+#include "Core/Core.h"
 
 namespace Pawn {
 
-	class ENGINE_API Application
+	class PAWN_API Application
 	{
 	public:
 		Application();

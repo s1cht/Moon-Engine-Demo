@@ -76,11 +76,11 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PAWN_LIBRARY_BUILD;_WINDLL;PE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\include;.;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\include;.;Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -103,7 +103,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PAWN_LIBRARY_BUILD;_WINDLL;PE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\include;.;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\include;.;Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -130,7 +130,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>PAWN_LIBRARY_BUILD;_WINDLL;PE_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\include;.;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\include;.;Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -153,35 +153,35 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="PawnEngine.h" />
+    <ClInclude Include="Source\Application\Application.h" />
+    <ClInclude Include="Source\Application\EntryPoint.h" />
+    <ClInclude Include="Source\Core\Bitwise.h" />
+    <ClInclude Include="Source\Core\Core.h" />
+    <ClInclude Include="Source\Core\Events\ApplicationEvents.h" />
+    <ClInclude Include="Source\Core\Events\Event.h" />
+    <ClInclude Include="Source\Core\Events\KeyEvents.h" />
+    <ClInclude Include="Source\Core\Events\MouseEvents.h" />
+    <ClInclude Include="Source\Core\Events\WindowEvents.h" />
+    <ClInclude Include="Source\Core\Math\Matrix3x3.h" />
+    <ClInclude Include="Source\Core\Math\Matrix4x4.h" />
+    <ClInclude Include="Source\Core\Math\Vector2D.h" />
+    <ClInclude Include="Source\Core\Math\Vector3D.h" />
+    <ClInclude Include="Source\Core\Math\Vector4D.h" />
+    <ClInclude Include="Source\Core\Misc\CoreAssertion.h" />
+    <ClInclude Include="Source\Core\Platform\Base\IntTypes.h" />
+    <ClInclude Include="Source\Core\Platform\Windows\WindowsIntTypes.h" />
+    <ClInclude Include="Source\Core\String\PEString.h" />
+    <ClInclude Include="Source\Core\Types.h" />
+    <ClInclude Include="Source\Core\Utils\Logging\Logger.h" />
+    <ClInclude Include="Source\Platform\Base\Window.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="src\Application\Application.h" />
-    <ClInclude Include="src\Application\EntryPoint.h" />
-    <ClInclude Include="src\Core\Bitwise.h" />
-    <ClInclude Include="src\Core\Core.h" />
-    <ClInclude Include="src\Core\Events\ApplicationEvents.h" />
-    <ClInclude Include="src\Core\Events\Event.h" />
-    <ClInclude Include="src\Core\Events\KeyEvents.h" />
-    <ClInclude Include="src\Core\Events\MouseEvents.h" />
-    <ClInclude Include="src\Core\Events\WindowEvents.h" />
-    <ClInclude Include="src\Core\Math\Matrix3x3.h" />
-    <ClInclude Include="src\Core\Math\Matrix4x4.h" />
-    <ClInclude Include="src\Core\Math\Vector2D.h" />
-    <ClInclude Include="src\Core\Math\Vector3D.h" />
-    <ClInclude Include="src\Core\Math\Vector4D.h" />
-    <ClInclude Include="src\Core\Misc\CoreAssertion.h" />
-    <ClInclude Include="src\Core\Platform\Base\IntTypes.h" />
-    <ClInclude Include="src\Core\Platform\Windows\WindowsIntTypes.h" />
-    <ClInclude Include="src\Core\String\PEString.h" />
-    <ClInclude Include="src\Core\Types.h" />
-    <ClInclude Include="src\Core\Utils\Logging\Logger.h" />
-    <ClInclude Include="src\Platform\Base\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Application\Application.cpp" />
+    <ClCompile Include="Source\Core\Utils\Logging\Logger.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\Application\Application.cpp" />
-    <ClCompile Include="src\Core\Utils\Logging\Logger.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
