@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Application/Application.h"
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
 extern Pawn::Application* Pawn::CreateApplication();
 
 int main()

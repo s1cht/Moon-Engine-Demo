@@ -69,8 +69,8 @@ struct BaseTypes
 	typedef std::conditional_t < sizeof(void*) == 4, uint32, uint64>			uintptr;	// 2. (Check "INT POINTER" reference)
 
 	// Unsigned size_t
-	typedef uintptr usize;
+	typedef uintptr size;
 	// Signed size_t
-	typedef intptr size;
+	typedef intptr ssize;
 
 };

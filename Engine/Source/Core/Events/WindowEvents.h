@@ -15,7 +15,7 @@ namespace Pawn {
     class WindowMovedEvent : public IEvent
     {
     public:
-        WindowMovedEvent(int x, int y) : m_x((float)x), m_y((float)y) {}
+        WindowMovedEvent(int32 x, int32 y) : m_x((float)x), m_y((float)y) {}
         WindowMovedEvent(float x, float y) : m_x(x), m_y(y) {}
 
     public:
@@ -35,7 +35,7 @@ namespace Pawn {
     class WindowResizedEvent : public IEvent
     {
     public:
-        WindowResizedEvent(int x, int y) : m_x((float)x), m_y((float)y) {}
+        WindowResizedEvent(int32 x, int32 y) : m_x((float)x), m_y((float)y) {}
         WindowResizedEvent(float x, float y) : m_x(x), m_y(y) {}
 
     public:

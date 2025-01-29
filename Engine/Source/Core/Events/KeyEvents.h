@@ -12,43 +12,43 @@ namespace Pawn {
         EVENT_CLASS_CATEGORY(EventCategory_Keyboard | EventCategory_Input)
 
     public:
-        inline int GetKeyCode() const { return m_KeyCode; }
+        inline int32 GetKeyCode() const { return m_KeyCode; }
 
     protected:
-        KeyEvent(int keycode) : m_KeyCode(keycode) {}
-        int m_KeyCode;
+        KeyEvent(int32 keycode) : m_KeyCode(keycode) {}
+        int32 m_KeyCode;
 
     };
 
     class PAWN_API KeyInputStartedEvent : public KeyEvent
     {
     public:
-        KeyInputStartedEvent(int keycode, int repeatCount)
+        KeyInputStartedEvent(int32 keycode, int32 repeatCount)
             : KeyEvent(keycode), m_repeatCount(repeatCount) {
         }
 
     public:
         EVENT_CLASS_TYPE(KeyInputStarted)
-            EVENT_CLASS_GETSTRING(var_to_string_n(int, m_KeyCode, "keycode") + var_to_string_n(int, m_repeatCount, "repeatCount"));
+            EVENT_CLASS_GETSTRING(var_to_string_n(int32, m_KeyCode, "keycode") + var_to_string_n(int32, m_repeatCount, "repeatCount"));
 
     public:
-        inline int GetRepeatCount() const { return m_repeatCount; }
+        inline int32 GetRepeatCount() const { return m_repeatCount; }
 
     private:
 
-        int m_repeatCount;
+        int32 m_repeatCount;
     };
 
     class PAWN_API KeyInputEndedEvent : public KeyEvent
     {
     public:
-        KeyInputEndedEvent(int keycode, int repeatCount)
+        KeyInputEndedEvent(int32 keycode, int32 repeatCount)
             : KeyEvent(keycode) {
         }
 
     public:
         EVENT_CLASS_TYPE(KeyInputEnded)
-            EVENT_CLASS_GETSTRING(var_to_string_n(int, m_KeyCode, "keycode"));
+            EVENT_CLASS_GETSTRING(var_to_string_n(int32, m_KeyCode, "keycode"));
 
     };
 

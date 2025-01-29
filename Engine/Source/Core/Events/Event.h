@@ -37,7 +37,7 @@ enum EventCategory
 #define EVENT_CLASS_TYPE(type)\
     static EventType GetStaticType() { return EventType::##type; }\
     virtual EventType GetEventType() const override { return GetStaticType(); }\
-    virtual const TCHAR* GetName() const override { return #type; }
+    virtual const ansichar* GetName() const override { return #type; }
 
 #define EVENT_CLASS_CATEGORY(category)\
     virtual EVENT_CATEGORY GetEventCategory() const override { return category; }
@@ -49,7 +49,7 @@ namespace Pawn {
     public:
         virtual EventType GetEventType() const = 0;
         virtual EVENT_CATEGORY GetEventCategory() const = 0;
-        virtual const char* GetName() const  = 0;
+        virtual const ansichar* GetName() const  = 0;
         virtual std::string GetString() { return GetName(); }
     
         inline bool IsInCategory(EventCategory category)

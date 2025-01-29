@@ -9,7 +9,6 @@ public:
 	virtual ~Window() {};
 
 public:
-	virtual uint32_t cr();
 	
 public:
 	virtual void OnUpdate() = 0;

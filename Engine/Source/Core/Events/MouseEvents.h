@@ -14,11 +14,11 @@ namespace Pawn {
     class PAWN_API MouseButtonEvent : public MouseEvent
     {
     public:
-        EVENT_CLASS_GETSTRING(var_to_string_n(int, m_Button, "button"));
+        EVENT_CLASS_GETSTRING(var_to_string_n(int32, m_Button, "button"));
 
     protected:
-        constexpr MouseButtonEvent(int btn) : m_Button(btn) {};
-        int m_Button;
+        constexpr MouseButtonEvent(int32 btn) : m_Button(btn) {};
+        int32 m_Button;
     };
 
     class PAWN_API MouseMovedEvent : public MouseEvent
@@ -62,7 +62,7 @@ namespace Pawn {
     class PAWN_API MouseButtonPressedEvent : public MouseButtonEvent
     {
     public:
-        constexpr MouseButtonPressedEvent(int btn) : MouseButtonEvent(btn) {}
+        constexpr MouseButtonPressedEvent(int32 btn) : MouseButtonEvent(btn) {}
 
     public:
         EVENT_CLASS_TYPE(MouseButtonPressed);
@@ -72,7 +72,7 @@ namespace Pawn {
     class PAWN_API MouseButtonReleasedEvent : public MouseButtonEvent
     {
     public:
-        constexpr MouseButtonReleasedEvent(int btn) : MouseButtonEvent(btn) {}
+        constexpr MouseButtonReleasedEvent(int32 btn) : MouseButtonEvent(btn) {}
 
     public:
         EVENT_CLASS_TYPE(MouseButtonReleased);

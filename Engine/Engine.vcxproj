@@ -168,8 +168,10 @@
     <ClInclude Include="Source\Core\Math\Vector3D.h" />
     <ClInclude Include="Source\Core\Math\Vector4D.h" />
     <ClInclude Include="Source\Core\Misc\CoreAssertion.h" />
-    <ClInclude Include="Source\Core\Platform\Base\IntTypes.h" />
-    <ClInclude Include="Source\Core\Platform\Windows\WindowsIntTypes.h" />
+    <ClInclude Include="Source\Core\Platform\Base\BaseTypes.h" />
+    <ClInclude Include="Source\Core\Platform\MacOS\MacIntTypes.h" />
+    <ClInclude Include="Source\Core\Platform\Platform.h" />
+    <ClInclude Include="Source\Core\Platform\Windows\WindowsPlatform.h" />
     <ClInclude Include="Source\Core\String\PEString.h" />
     <ClInclude Include="Source\Core\Types.h" />
     <ClInclude Include="Source\Core\Utils\Logging\Logger.h" />
