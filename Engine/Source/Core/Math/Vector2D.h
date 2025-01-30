@@ -10,13 +10,15 @@ namespace Pawn
 	{
 		PE_CORE_ASSERT(std::is_floating_point<T>, "")
 
-		struct
+		union
 		{
+			struct
+			{
 
+			};
+		
 		};
 
-
-		
 	};
 
 };

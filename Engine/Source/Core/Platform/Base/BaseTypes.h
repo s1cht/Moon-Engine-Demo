@@ -30,6 +30,21 @@ struct BaseTypes
 	typedef unsigned long long			uint64;			// Unsigned 4.	(Check "INTEGERS" reference)
 
 	/*
+									-NUMBER WITH FLOATING POINT-
+
+				The structure of defining number with floating point types is as follows:
+
+								1. 32-bit float
+								2. 64-bit float
+
+							u/s - unsigned / signed
+	*/
+
+	typedef float						float32;		// 1.
+	typedef double						float64;		// 2.
+
+
+	/*
 										-CHARACTERS-
 
 					The structure of defining character types is as follows:

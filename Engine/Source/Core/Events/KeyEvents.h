@@ -20,6 +20,7 @@ namespace Pawn {
 
     };
 
+    // Input started event. Args: keycode(int32), repeatCount(int32)
     class PAWN_API KeyInputStartedEvent : public KeyEvent
     {
     public:

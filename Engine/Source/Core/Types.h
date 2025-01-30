@@ -61,3 +61,11 @@ typedef PlatformTypes::ssize					ssize;
 
 // Unsigned size_t
 typedef PlatformTypes::size						size;
+
+/*					Numbers with floating point						*/
+
+// 32-bit float
+typedef PlatformTypes::float32					float32;
+
+// 64-bit float
+typedef PlatformTypes::float64					float64;
