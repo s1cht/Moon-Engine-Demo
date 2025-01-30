@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Core.h"
+#include "Core/Math/Vector2D.h"
 
 namespace Pawn {
 
@@ -16,5 +17,5 @@ namespace Pawn {
 
 	// Must be defined in client
 	Application* CreateApplication();
-
+	
 }

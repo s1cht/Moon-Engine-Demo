@@ -34,3 +34,5 @@ namespace Pawn {
 #define PE_WARN(...)			::Pawn::Logger::GetClientLogger()->warn(__VA_ARGS__)
 #define PE_ERROR(...)			::Pawn::Logger::GetClientLogger()->error(__VA_ARGS__)
 #define PE_CRITICAL(...)		::Pawn::Logger::GetClientLogger()->critical(__VA_ARGS__)
+
+#define PE_LOG_STR(str)			reinterpret_cast<const ansichar*>(str)

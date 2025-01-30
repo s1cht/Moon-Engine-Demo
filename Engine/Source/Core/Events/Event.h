@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Core/Core.h"
 #include "Core/Bitwise.h"
-#include "Core/String/PEString.h"
+#include "Core/String/String.h"
 
 enum class EventType
 {

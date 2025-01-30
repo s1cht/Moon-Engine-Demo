@@ -57,10 +57,10 @@ typedef PlatformTypes::intptr					intptr;
 typedef PlatformTypes::uintptr					uintptr;
 
 // Signed size_t
-typedef PlatformTypes::ssize					ssize;
+typedef PlatformTypes::SSIZE_T					SSIZE_T;
 
 // Unsigned size_t
-typedef PlatformTypes::size						size;
+typedef PlatformTypes::SIZE_T					SIZE_T;
 
 /*					Numbers with floating point						*/
 

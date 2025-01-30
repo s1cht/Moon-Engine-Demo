@@ -25,19 +25,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -171,9 +171,12 @@
     <ClInclude Include="Source\Core\Platform\Base\BaseTypes.h" />
     <ClInclude Include="Source\Core\Platform\MacOS\MacIntTypes.h" />
     <ClInclude Include="Source\Core\Platform\Platform.h" />
+    <ClInclude Include="Source\Core\String\String.cpp" />
+    <ClInclude Include="Source\Core\Platform\Windows\WindowsDisableErrors.h" />
     <ClInclude Include="Source\Core\Platform\Windows\WindowsPlatform.h" />
-    <ClInclude Include="Source\Core\String\PEString.h" />
+    <ClInclude Include="Source\Core\String\String.h" />
     <ClInclude Include="Source\Core\Types.h" />
+    <ClInclude Include="Source\Core\Utils\Benchmark\Benchmark.h" />
     <ClInclude Include="Source\Core\Utils\Logging\Logger.h" />
     <ClInclude Include="Source\Platform\Base\Window.h" />
     <ClInclude Include="pch.h" />
