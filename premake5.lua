@@ -21,6 +21,8 @@ project "Engine"
 	pchheader "pch.h"
 	pchsource (includeDirs.engine .. "/pch.cpp")
 
+	characterset "MBCS"
+
 	files 
 	{
 		"%{prj.name}/Source/**.h",
@@ -85,6 +87,8 @@ project "Sandbox"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	characterset "MBCS"
 
 	files 
 	{
