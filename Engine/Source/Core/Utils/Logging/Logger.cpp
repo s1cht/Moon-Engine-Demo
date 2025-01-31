@@ -8,6 +8,8 @@ namespace Pawn {
 
 	std::shared_ptr<spdlog::logger> Logger::m_coreLogger;
 	std::shared_ptr<spdlog::logger> Logger::m_clientLogger;
+	std::shared_ptr<spdlog::logger> Logger::m_memoryLogger;
+	std::shared_ptr<spdlog::logger> Logger::m_benchmarkLogger;
 
 	void Logger::Init()
 	{
@@ -18,5 +20,11 @@ namespace Pawn {
 
 		m_clientLogger = spdlog::stdout_color_mt("Client");
 		m_clientLogger->set_level(spdlog::level::trace);
+
+		m_memoryLogger = spdlog::stdout_color_mt("Memory");
+		m_memoryLogger->set_level(spdlog::level::trace);
+
+		m_benchmarkLogger = spdlog::stdout_color_mt("Benchmark");
+		m_benchmarkLogger->set_level(spdlog::level::trace);
 	}
 }

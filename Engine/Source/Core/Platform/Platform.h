@@ -9,6 +9,7 @@
 	#endif
 
 	#include "Windows/WindowsPlatform.h"
+	#include <Windows.h>
 #else
 
 #endif

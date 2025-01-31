@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include <atomic>
 #include <thread>
 #include <mutex>

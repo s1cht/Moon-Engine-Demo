@@ -16,7 +16,10 @@ namespace Pawn
 
 		return newStr;
 	}
+
 }
+
+const char* str = "fasfasf";
 
 #define STRING(text) text##_uchar
 #define type_to_string(type) std::string(#type)
