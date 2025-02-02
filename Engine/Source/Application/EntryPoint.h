@@ -9,13 +9,15 @@ extern Pawn::Application* Pawn::CreateApplication();
 
 int main()
 {
-	//Pawn::MemWatch::Get();
+	Pawn::MemWatch::Get();
 	Pawn::Logger::Init();
-	//Pawn::MemWatch::EnableMemWatch();
+	Pawn::MemWatch::EnableMemWatch();
 
 	auto app = Pawn::CreateApplication();
 	app->Run();
 	delete app;
+
+	Pawn::MemWatch::OnExit();
 }
 
 #endif

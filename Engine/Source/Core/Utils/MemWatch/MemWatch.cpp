@@ -12,37 +12,38 @@ namespace Pawn {
 
 	void MemWatch::POnAllocated(SIZE_T size)
 	{
-		if (!allocBuf) return;
-		totalAllocations++;
-		if (m_MemWatchEnabled) PE_MEM_TRACE("MemWatch: New allocation! Size: {} bytes; Total allocations: {}", size, totalAllocations);
-		else
-		{
-			if (allocBufElements == 250)
-			{
-				m_allocBufferOverloaded = true;
-				return;
-			}
-
-			allocBuf[allocBufElements] = size;
-			allocBufElements++;
-		}
+		m_MemoryUsing += size;
+		m_MemoryUsed += size;
+		m_TotalAllocations++;
+		if (m_MemWatchEnabled) PE_MEM_TRACE("--------------------------------------------------------------");
+		if (m_MemWatchEnabled) PE_MEM_TRACE("New allocation! Size: {} bytes; Total allocations: {}", size, m_TotalAllocations);
+		if (m_MemWatchEnabled) PE_MEM_TRACE("Memory usage: {} bytes; {} kilobytes; {} megabytes", m_MemoryUsing, m_MemoryUsing / 1024, m_MemoryUsing / 1024 / 1024);
+		if (m_MemWatchEnabled) PE_MEM_TRACE("--------------------------------------------------------------");
 	}
 
 	void MemWatch::POnFreed(SIZE_T size)
 	{
-		if (!deallocBuf) return;
-		totalDeletions++;
-		if (m_MemWatchEnabled) PE_MEM_TRACE("MemWatch: Freeing memory! Size: {} bytes; Total deletions: {}", size, totalDeletions);
-		else
-		{
-			if (deallocBufElements == 250)
-			{
-				m_deallocBufferOverloaded = true;
-				return;
-			}
-			deallocBuf[deallocBufElements] = size;
-			deallocBufElements++;
-		}
+		m_MemoryUsing -= size;
+		m_MemoryFreed += size;
+		m_TotalDeletions++;
+
+		if (m_MemWatchEnabled) PE_MEM_TRACE("--------------------------------------------------------------");
+		if (m_MemWatchEnabled) PE_MEM_TRACE("Freeing memory! Size: {} bytes; Total deletions: {}", size, m_TotalDeletions);
+		if (m_MemWatchEnabled) PE_MEM_TRACE("Memory usage: {} bytes; {} kilobytes; {} megabytes", m_MemoryUsing, m_MemoryUsing / 1024, m_MemoryUsing / 1024 / 1024);
+		if (m_MemWatchEnabled) PE_MEM_TRACE("--------------------------------------------------------------");
+	}
+
+	void MemWatch::POnEnabled()
+	{
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("----------------------Output enabled!-------------------------");
+		PE_MEM_TRACE("----------------------/-------------\\-------------------------");
+		PE_MEM_TRACE("Allocation count before enabling: {}; Memory used: {} bytes", m_TotalAllocations, m_MemoryUsed);
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("Deallocation count before enabling: {}; Memory freed: {} bytes", m_TotalDeletions, m_MemoryFreed);
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("Memory usage: {} bytes; {} kilobytes; {} megabytes", m_MemoryUsing, m_MemoryUsing / 1024, m_MemoryUsing / 1024 / 1024);
+		PE_MEM_TRACE("--------------------------------------------------------------");
 	}
 
 	bool MemWatch::IsMemWatchEnabled()
@@ -69,41 +70,39 @@ namespace Pawn {
 		Get().POnFreed(size); 
 	}
 
-	void MemWatch::CleanBuffer()
+	inline void MemWatch::OnUpdate()
 	{
-		delete[] allocBuf;
-		delete[] deallocBuf;
+		if (!MemWatchInitialized) return;
+		Get().POnUpdate();
 	}
 
-	void MemWatch::OutputBuffer()
+	void MemWatch::OnExit()
 	{
-		std::string allocStr = "";
-		for (SIZE_T i = 0; i < allocBufElements; i++)
-		{
-			allocStr += std::to_string(allocBuf[i]);
-		}
+		if (!MemWatchInitialized) return;
+		Get().POnExit();
+	}
 
-		std::string deallocStr = "";
-		for (SIZE_T i = 0; i < deallocBufElements; i++)
-		{
-			deallocStr += std::to_string(deallocBuf[i]);
-		}
+	void MemWatch::POnUpdate()
+	{
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("Allocation count: {}; Memory used: {} bytes", m_TotalAllocations, m_MemoryUsed);
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("Deallocation count: {}; Memory freed: {} bytes", m_TotalDeletions, m_MemoryFreed);
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("Memory usage: {} bytes; {} kilobytes; {} megabytes", m_MemoryUsing, m_MemoryUsing / 1024, m_MemoryUsing / 1024 / 1024);
+		PE_MEM_TRACE("--------------------------------------------------------------");
+	}
 
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: Output enabled!");
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: Output enabled! MemWatch allocBuffer: {}", allocStr.c_str());
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: allocBuffer element count: {}; was overloaded: {}", allocBufElements, m_allocBufferOverloaded);
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: MemWatch deallocBuffer: {}", deallocStr.c_str());
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
-		PE_MEM_TRACE("MemWatch: deallocBuffer element count: {}; was overloaded: {}", deallocBufElements, m_deallocBufferOverloaded);
-		PE_MEM_TRACE("MemWatch: --------------------------------------------------------------");
+	void MemWatch::POnExit()
+	{
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("Allocation count: {}; Memory used: {} bytes", m_TotalAllocations, m_MemoryUsed);
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("Deallocation count: {}; Memory freed: {} bytes", m_TotalDeletions, m_MemoryFreed);
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		PE_MEM_TRACE("Memory usage: {} bytes; {} kilobytes; {} megabytes", m_MemoryUsing, m_MemoryUsing / 1024, m_MemoryUsing / 1024 / 1024);
+		PE_MEM_TRACE("--------------------------------------------------------------");
+		MemWatchInitialized = false;
 	}
 
 }

@@ -21,7 +21,7 @@ namespace Pawn {
 		m_clientLogger = spdlog::stdout_color_mt("Client");
 		m_clientLogger->set_level(spdlog::level::trace);
 
-		m_memoryLogger = spdlog::stdout_color_mt("Memory");
+		m_memoryLogger = spdlog::stdout_color_mt("HeapMemory");
 		m_memoryLogger->set_level(spdlog::level::trace);
 
 		m_benchmarkLogger = spdlog::stdout_color_mt("Benchmark");

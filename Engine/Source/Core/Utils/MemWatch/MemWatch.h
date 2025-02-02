@@ -26,33 +26,33 @@ namespace Pawn {
 
 		static void OnAllocated(SIZE_T size);
 		static void OnFreed(SIZE_T size);
+		static void OnUpdate();
+		static void OnExit();
+
+		inline static SIZE_T GetCurrentMemoryUsage() { return Get().PGetCurrentMemoryUsage(); }
 
 	private:
 		inline bool PIsMemWatchEnabled() { return m_MemWatchEnabled; };
-		void PEnableMemWatch() { m_MemWatchEnabled = true; OutputBuffer(); CleanBuffer(); };
-
-	private:
-		void CleanBuffer();
-
-		void OutputBuffer();
+		void PEnableMemWatch() { m_MemWatchEnabled = true; POnEnabled(); };
+		inline SIZE_T PGetCurrentMemoryUsage() { return m_MemoryUsing; }
 
 	private:
 		void POnAllocated(SIZE_T size);
 		void POnFreed(SIZE_T size);
+		void POnEnabled();
+		void POnUpdate();
+		void POnExit();
 
 	private:
 		bool m_MemWatchEnabled = false;
-		bool m_deallocBufferOverloaded = false;
-		bool m_allocBufferOverloaded = false;
 
-		SIZE_T* allocBuf = new SIZE_T[250];
-		uint8 allocBufElements = 0;
+		SIZE_T m_MemoryUsed = 0;
+		SIZE_T m_MemoryFreed = 0;
 
-		SIZE_T* deallocBuf = new SIZE_T[250];
-		uint8 deallocBufElements = 0;
+		SIZE_T m_MemoryUsing = 0;
 
-		uint64 totalAllocations = 0;
-		uint64 totalDeletions = 0;
+		uint64 m_TotalAllocations = 0;
+		uint64 m_TotalDeletions = 0;
 
 	private:
 		MemWatch();

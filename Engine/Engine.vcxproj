@@ -156,6 +156,7 @@
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
     <ClInclude Include="Source\Core\Bitwise.h" />
+    <ClInclude Include="Source\Core\Containers\Array.h" />
     <ClInclude Include="Source\Core\Core.h" />
     <ClInclude Include="Source\Core\Events\ApplicationEvents.h" />
     <ClInclude Include="Source\Core\Events\Event.h" />
