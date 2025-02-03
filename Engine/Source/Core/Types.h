@@ -49,7 +49,6 @@ typedef PlatformTypes::uint32					uint32;
 // 64-bit unsigned integer
 typedef PlatformTypes::uint64					uint64;
 
-
 // Signed IntPtr
 typedef PlatformTypes::intptr					intptr;
 

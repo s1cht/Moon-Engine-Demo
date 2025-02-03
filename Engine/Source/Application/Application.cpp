@@ -20,17 +20,18 @@ namespace Pawn {
 	void Application::Run()
 	{
 		int b = 124;
-		Array<int, 4> array = {123412, 1293819, 1263891, 1351, 121926319};
+		Array<int32, 4> array = {123412, 1293819, 1263891, 1351, 121926319};
 
+		array.PushBack(154);
+		array.EmplaceBack(1123);
+		
 		Math::Vector3D a = {0.15125, 12516, 125125.2437};
 
 		bool works = true;
 
 		while (works)
 		{
-			std::this_thread::sleep_for(1s);
-			Pawn::MemWatch::OnUpdate();
-			works = false;
+			//Pawn::MemWatch::OnUpdate();
 		};
 	}
 

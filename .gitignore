@@ -6,3 +6,4 @@ bin-int
 # Files
 **.vcxproj.user
 **.vcxproj.filters
+**.sln
