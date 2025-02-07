@@ -106,6 +106,9 @@
 		_VECTOR3_OPERATOR_DEF_EQUAL				(_operator, float32);						\
 		_VECTOR3_OPERATOR_DEF_EQUAL				(_operator, float64);						
 
+template<typename T>
+struct Vector2;
+
 namespace Pawn::Math
 {
 
@@ -126,6 +129,7 @@ namespace Pawn::Math
 			T XYZ[3];
 		};
 
+	public:
 		// (0, 0, 0)
 		static const Vector3<T> ZeroVector;
 		// (0, 1, 0)
@@ -136,6 +140,25 @@ namespace Pawn::Math
 		static const Vector3<T> ForwardVector;
 		// (-1, 0, 0)
 		static const Vector3<T> BackwardVector;
+
+	public:
+		
+		Vector3() = default;
+
+		explicit Vector3(T scalar);
+
+		Vector3(T _x, T _y, T _z);
+
+		explicit Vector3(const Vector2<T> vec, T _z);
+
+		Vector3(const Vector3& otherVec);
+
+		Vector3(Vector3&& otherVec) noexcept;
+
+		~Vector3();
+
+		// ...
+	public:
 
 		// Operators
 
@@ -180,17 +203,51 @@ namespace Pawn::Math
 	};
 
 	template<typename T>
+	inline Vector3<T>::Vector3(T scalar) 
+		: x(scalar), y(scalar), z(scalar) {}
+
+	template<typename T>
+	inline Vector3<T>::Vector3(T _x, T _y, T _z)
+		: x(_x), y(_y), z(_z) {}
+
+	template<typename T>
+	inline Vector3<T>::Vector3(Vector2<T> vec, T _z)
+		: x(vec.x), y(vec.y), z(_z) {}
+
+	template<typename T>
+	inline Vector3<T>::Vector3(const Vector3& otherVec)
+	{
+		x = otherVec.x;
+		y = otherVec.y;
+		z = otherVec.z;
+	}
+
+	template<typename T>
+	inline Vector3<T>::Vector3(Vector3&& otherVec) noexcept
+	{
+		x = otherVec.x;
+		y = otherVec.y;
+		z = otherVec.z;
+	}
+
+	template<typename T>
+	inline Vector3<T>::~Vector3()
+	{
+	}
+
+	template<typename T>
 	Vector3<T>& Pawn::Math::Vector3<T>::operator= (const Vector3& b)
 	{
 		this->x = (T)b.x;
 		this->y = (T)b.y;
+		this->z = (T)b.z;
 		return *this;
 	}
 
 	template<typename T> 
 	inline bool Pawn::Math::Vector3<T>::operator== (const Vector3& b) const
 	{
-		return (this->x == (T)b.x && this->y == (T)b.y);
+		return (this->x == (T)b.x && this->y == (T)b.y && this->z == (T)b.z);
 	}
 
 	_VECTOR3_VEC_OPERATOR_IMPL(+);

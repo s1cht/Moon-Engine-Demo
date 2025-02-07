@@ -2,8 +2,9 @@
 #include "Core/Core.h"
 #include "Core/Utils/Logging/Logger.h"
 #include "Core/Memory/PawnMemory.h"
+#include "Core/Misc/CoreAssertion.h"
 
-#include <vector>
+#define RESIZE_MULTIPLYER 2
 
 template<typename Array>
 class PAWN_API Array_Iterator
@@ -16,142 +17,131 @@ private:
 
 };
 
-template<typename T, SIZE_T stackSize = 20, class allocator = Allocator<T>>
+template<typename T, SIZE_T initSize = 20, class allocator = Allocator<T>>
 class PAWN_API Array
 {
 public:
 	using DataType = T;
+	using ReturnType = DataType;
 	using Ptr = T*;
 	using Iterator = Array_Iterator<Array>;
 	using AllocatorType = allocator;
 
 public:
 	Array()
-		: m_HeapData(nullptr), m_Size(0), m_Capacity(stackSize), m_UsesStackMemory(true), m_Allocator(AllocatorType()) {}
+		: m_Data(nullptr), m_Size(0), m_Capacity(initSize), m_Allocator(AllocatorType())
+	{
+		Allocate(m_Capacity);
+	}
 
 	Array(const Array& other)
 	{
 		m_Allocator = other.m_Allocator;
-		m_HeapData = nullptr;
 		m_Size = other.m_Size;
 		m_Capacity = other.m_Capacity;
-		m_UsesStackMemory = other.m_UsesStackMemory;
 
-		if (m_UsesStackMemory)
-		{
-			for (SIZE_T i = 0; i < m_Size; i++)
-				m_StackData[i] = other.m_StackData[i];
-			return;
-		}
+		Allocate(m_Capacity);
 
-		ChangeMemoryType(m_Capacity);
-
-		for (SIZE_T i = 0; i < other.size(); i++)
-		{
-			m_HeapData[i] = other.m_HeapData()[i];
-		}
+		for (SIZE_T i = 0; i < m_Size; i++)
+			m_Data[i] = other.m_Data[i];
 	}
-	
+
 	Array(const std::initializer_list<DataType>& other)
-		: m_HeapData(nullptr), m_Allocator(AllocatorType())
+		: m_Data(nullptr), m_Allocator(AllocatorType())
 	{
 		m_Size = other.size();
-		m_Capacity = stackSize;
-		m_UsesStackMemory = true;
 
-		if (m_Size <= m_Capacity)
-		{
-			for (SIZE_T i = 0; i < other.size(); i++)
-			{
-				m_StackData[i] = other.begin()[i];
-			}
-			return;
-		}
-
-		while (m_Size > m_Capacity)
-			m_Capacity *= 1.5;
-
-		ChangeMemoryType(m_Capacity, false);
+		Allocate(other.size() > initSize ? other.size() * RESIZE_MULTIPLYER : initSize);
 
 		for (SIZE_T i = 0; i < other.size(); i++)
-			new(&m_HeapData[i]) DataType(std::move(other.begin()[i]));
+			new(&m_Data[i]) DataType(std::move(other.begin()[i]));
 	}
-	
+
 	Array(Array&& other) noexcept
 	{
 		m_Allocator = other.m_Allocator;
 		m_Size = other.m_Size;
 		m_Capacity = other.m_Capacity;
-		m_UsesStackMemory = other.m_UsesStackMemory;
 
 		other.m_Size = 0;
 		other.m_Capacity = 0;
-		other.m_UsesStackMemory = false;
 
-		if (m_UsesStackMemory)
-		{
-			for (SIZE_T i = 0; i < m_Size; i++)
-				m_StackData[i] = std::move(other.m_StackData[i]);
-		}
-		else
-		{
-			m_HeapData = other.m_HeapData;
-			other.m_HeapData = nullptr;
-		}
+		m_Data = other.m_Data;
+		other.m_Data = nullptr;
 	}
 
 	~Array()
 	{
 		Clear();
 
-		if (!m_UsesStackMemory)
-			::operator delete(m_HeapData, m_Capacity * sizeof(DataType));
+		if (m_Data)
+		{
+			::operator delete(m_Data, m_Capacity * sizeof(DataType));
+			m_Data = nullptr;
+		}
+	}
+
+public:
+
+	inline SIZE_T GetSize() const
+	{
+		return m_Size;
+	}
+
+	inline SIZE_T GetCapacity() const
+	{
+		return m_Capacity;
+	}
+
+public:
+
+	ReturnType& operator[](const SIZE_T index) noexcept
+	{
+		PE_CORE_ASSERT(index >= m_Size, "Index in array is out of range!");
+		auto& returnVal = m_Data[index];
+		return returnVal;
+	}
+
+	const ReturnType& operator[](const SIZE_T index) const noexcept
+	{
+		PE_CORE_ASSERT(index >= m_Size, "Index in array is out of range!");
+		auto& returnVal = m_Data[index];
+		return returnVal;
 	}
 
 public:
 	void Clear()
 	{
-		if (m_UsesStackMemory)
-		{
-			for (SIZE_T i = 0; i < m_Size; i++)
-				m_StackData[i].~DataType();
-		}
-		else
-		{
-			for (SIZE_T i = 0; i < m_Size; i++)
-				m_HeapData[i].~DataType();
-		}
+		for (SIZE_T i = 0; i < m_Size; i++)
+			m_Data[i].~DataType();
 		m_Size = 0;
+	}
+
+	bool Reserve(SIZE_T size)
+	{
+		return PReserve(size);
 	}
 
 public:
 	void PushBack(const DataType& value)
 	{
-		if (!m_UsesStackMemory)
-		{
-			PPushBackHeap();
-			return;
-		}
-		PPushBackStack(value);
+		PPushBack(value);
 	}
 
 	void PushBack(DataType&& value) noexcept
 	{
-		if (!m_UsesStackMemory)
-		{
-			PPushBackHeap(value);
-			return;
-		}
-		PPushBackStack(value);
+		PPushBackRVal(std::move(value));
 	}
 
 	template <class... val>
-	DataType& EmplaceBack(val&&... args)
+	ReturnType& EmplaceBack(val&&... args)
 	{
-		if (!m_UsesStackMemory)
-			return PEmplaceBackHeap(std::forward<DataType>(args)...);
-		else
-			return PEmplaceBackStack(std::forward<DataType>(args)...);
+		return PEmplaceBack(std::forward<val>(args)...);
+	}
+
+	void PopBack()
+	{
+		PPopBack();
 	}
 
 private:
@@ -162,94 +152,59 @@ private:
 		if (newCapacity < m_Size)
 			m_Size = newCapacity;
 
-		for (SIZE_T i = 0; i < m_Size; i++)
-			new(&newBlock[i]) DataType(std::move(m_HeapData[i]));
+		if (m_Data && m_Capacity > 0)
+		{
+			for (SIZE_T i = 0; i < m_Size; i++)
+				new(&newBlock[i]) DataType(std::move(m_Data[i]));
 
-		for (SIZE_T i = 0; i < m_Size; i++)
-			m_HeapData[i].~DataType();
+			for (SIZE_T i = 0; i < m_Size; i++)
+				m_Data[i].~DataType();
 
-		m_Allocator.Deallocate(m_HeapData, m_Capacity * sizeof(DataType));
+			m_Allocator.Deallocate(m_Data, m_Capacity * sizeof(DataType));
+		}
+		
+		if (m_Capacity <= 0)
+			m_Data = nullptr;
 
-		m_HeapData = newBlock;
+		m_Data = newBlock;
 		m_Capacity = newCapacity;
-	}
-
-	void ChangeMemoryType(SIZE_T newCapacity, bool copyValues = true)
-	{
-		m_HeapData = m_Allocator.Allocate(newCapacity * sizeof(DataType));
-	
-		if (copyValues)
-			CopyValuesFromStack();
-
-		m_UsesStackMemory = false;
-	}
-
-	void CopyValuesFromStack()
-	{
-		for (SIZE_T i = 0; i < stackSize; i++)
-			new(&m_HeapData[i]) DataType(std::move(m_StackData[i]));
 	}
 
 	inline void CheckAndAllocate()
 	{
 		if (m_Size >= m_Capacity)
-			Allocate(m_Capacity * 1.5);
+			Allocate(m_Capacity * RESIZE_MULTIPLYER);
+	}
+
+	constexpr void CheckAndDeallocate()
+	{
+		SIZE_T newSize = m_Capacity * (1.f / (float32)RESIZE_MULTIPLYER);
+		if (m_Size <= newSize)
+			Allocate(newSize);
 	}
 
 private:
-	void PPushBackHeap(const DataType& value)
+	void PPushBack(const DataType& value)
+	{
+		CheckAndAllocate();
+		m_Data[m_Size] = value;
+		m_Size++;
+	}
+
+	void PPushBackRVal(DataType&& value)
 	{
 		CheckAndAllocate();
 
-		m_HeapData[m_Size] = value;
+		m_Data[m_Size] = std::move(value);
 		m_Size++;
 	}
 
-	void PPushBackHeap(DataType&& value)
-	{
-		CheckAndAllocate();
-
-		m_HeapData[m_Size] = std::move(value);
-		value.~DataType();
-		m_Size++;
-	}
-
-	void PPushBackStack(const DataType& value)
-	{
-		if (m_Size >= stackSize)
-		{
-			ChangeMemoryType(m_Capacity * 1.5);
-			PPushBackHeap(value);
-		}
-
-		m_StackData[m_Size] = value;
-		m_Size++;
-	}
-
-	void PPushBackStack(DataType&& value)
-	{
-		if (m_Size >= stackSize)
-		{
-			ChangeMemoryType(m_Capacity * 1.5);
-			PPushBackHeap(value);
-		}
-
-		m_StackData[m_Size] = std::move(value);
-		value.~DataType();
-		m_Size++;
-	}
-
-private:
 	template <class... val>
-	DataType& PEmplaceBackStack(val&&... args)
+	ReturnType& PEmplaceBack(val&&... args)
 	{
-		if (m_Size >= stackSize)
-		{
-			ChangeMemoryType(m_Capacity * 1.5);
-			return PEmplaceBackHeap(std::forward<val>(args)...);
-		}
+		CheckAndAllocate();
 
-		Ptr lastLoc = &m_StackData[m_Size];
+		Ptr lastLoc = &m_Data[m_Size];
 
 		m_Allocator.Construct(lastLoc, std::forward<val>(args)...);
 		m_Size++;
@@ -259,32 +214,32 @@ private:
 		return result;
 	}
 
-	template <class... val>
-	DataType& PEmplaceBackHeap(val&&... args)
+	void PPopBack()
 	{
-		CheckAndAllocate();
+		if (m_Size <= 0)
+			return;
+		m_Data[m_Size].~DataType();
+		m_Size--;
 
-		Ptr lastLoc = &m_HeapData[m_Size];
+		CheckAndDeallocate();
+	}
 
-		m_Allocator.Construct(lastLoc, std::forward<val>(args)...);
-		m_Size++;
+	bool PReserve(SIZE_T size)
+	{
+		if (size <= m_Capacity)
+			return false;
 		
-		DataType& result = *lastLoc;
+		Allocate(size);
 
-		return result;
+		return true;
 	}
 
 private:
 	AllocatorType m_Allocator;
 
 private:
-	// Stack data buffer
-	DataType m_StackData[stackSize];
-	// If stack buffer exceeds stack size, stack freed, and array becomes "vector"
-	DataType* m_HeapData;
+	DataType* m_Data;
 
 	SIZE_T m_Size;
-	SIZE_T m_Capacity;
-
-	bool m_UsesStackMemory;
+	SIZE_T m_Capacity ;
 };

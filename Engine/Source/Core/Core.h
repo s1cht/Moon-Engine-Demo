@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Types.h"
-#include "Misc/CoreAssertion.h"
 
 #ifdef _WIN32
 	#ifdef PAWN_LIBRARY_BUILD

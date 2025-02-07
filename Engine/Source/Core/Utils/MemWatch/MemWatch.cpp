@@ -111,18 +111,18 @@ namespace Pawn {
 
 void* operator new (SIZE_T size)
 {
-	Pawn::MemWatch::OnAllocated(size);
+	//Pawn::MemWatch::OnAllocated(size);
 	return malloc(size);
 }
 
 void operator delete(void* ptr)
 {
-	Pawn::MemWatch::OnFreed(sizeof(ptr));
+	//Pawn::MemWatch::OnFreed(sizeof(ptr));
 	free(ptr);
 }
 
 void operator delete[](void* ptr)
 {
-	Pawn::MemWatch::OnFreed(sizeof(ptr));
+	//Pawn::MemWatch::OnFreed(sizeof(ptr));
 	free(ptr);
 }

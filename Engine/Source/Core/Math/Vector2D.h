@@ -132,6 +132,20 @@ namespace Pawn::Math
 		// (-1, 0, 0)
 		static const Vector2<T> BackwardVector;
 
+		Vector2(T scalar)
+			: x(scalar), y(scalar) {
+		}
+
+		Vector2(T _x, T _y)
+			: x(_x), y(_y) {
+		}
+
+		Vector2(Vector2&& otherVec)
+		{
+			x = otherVec.x;
+			y = otherVec.y;
+		}
+
 		// Operators
 
 		Vector2<T>& operator= (const Vector2& b);
@@ -246,9 +260,6 @@ namespace Pawn::Math
 	{
 		return SQUARE_SUM_2((float64)this->x, (float64)this->y);
 	}
-
-	// Default Vector2D. If you want use another type, then use Vector2<type>
-	typedef Vector2<float64> Vector2D;
 
 	// Default Vector2D. If you want use another type, then use Vector2<type>
 	typedef Vector2<float64> Vector2D;

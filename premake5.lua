@@ -1,6 +1,7 @@
 workspace "Pawn Engine"
 	architecture "x64"
 	configurations {"Debug", "Release", "Distribute"}
+	startproject "Sandbox"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 

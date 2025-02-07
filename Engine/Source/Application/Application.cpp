@@ -6,12 +6,18 @@
 #include "Core\Events\KeyEvents.h"
 #include "Core/Utils/Benchmark/Benchmark.h"
 #include "Core/Utils/MemWatch/MemWatch.h"
+#include "Core/Math/Vector2D.h"
 #include "Core/Math/Vector3D.h"
+#include "Core/String/String.h"
 #include "Core/Containers/Array.h"
+
+#include <vector>
 
 namespace Pawn {
 
 	using namespace std::chrono_literals;
+	using namespace Math;
+
 
 	Application::Application()
 	{
@@ -19,14 +25,16 @@ namespace Pawn {
 
 	void Application::Run()
 	{
-		int b = 124;
-		Array<int32, 4> array = {123412, 1293819, 1263891, 1351, 121926319};
+	#define ITER_COUNT1 10000000
+	#define ITER_COUNT2 500000
+	#define ITER_COUNT3 2500000
 
-		array.PushBack(154);
-		array.EmplaceBack(1123);
-		
-		Math::Vector3D a = {0.15125, 12516, 125125.2437};
+		{
+			Array<Vector3<char8>, 10> array;
 
+			Array<Vector3<char8>>::ReturnType element = array[5];
+
+		}
 		bool works = true;
 
 		while (works)
