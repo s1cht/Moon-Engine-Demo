@@ -4,8 +4,6 @@
 
 // Windows platform types redefinition
 
-#define UTF8_ENCODING
-
 struct WindowsPlatformTypes : BaseTypes
 {
 #ifdef _WIN64
@@ -14,10 +12,6 @@ struct WindowsPlatformTypes : BaseTypes
 #else
 	typedef unsigned long SIZE_T;
 	typedef long SSIZE_T;
-#endif
-
-#ifdef UTF8_ENCODING
-	typedef char8 uchar;
 #endif
 
 };

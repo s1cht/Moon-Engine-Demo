@@ -25,19 +25,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -79,7 +79,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>PAWN_LIBRARY_BUILD;_WINDLL;PE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_BUILD_SHARED;PAWN_LIBRARY_BUILD;_WINDLL;PE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>vendor\include;.;Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -102,7 +102,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>PAWN_LIBRARY_BUILD;_WINDLL;PE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_BUILD_SHARED;PAWN_LIBRARY_BUILD;_WINDLL;PE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>vendor\include;.;Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -129,7 +129,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>PAWN_LIBRARY_BUILD;_WINDLL;PE_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_BUILD_SHARED;PAWN_LIBRARY_BUILD;_WINDLL;PE_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>vendor\include;.;Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -152,12 +152,16 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Input\Keyboard\Keyboard.h" />
+    <ClInclude Include="Source\Input\Keycodes.h" />
+    <ClInclude Include="Source\Input\Mouse\Mouse.h" />
     <ClInclude Include="PawnEngine.h" />
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
     <ClInclude Include="Source\Core\Bitwise.h" />
     <ClInclude Include="Source\Core\Containers\Array.h" />
     <ClInclude Include="Source\Core\Core.h" />
+    <ClInclude Include="Source\Core\CoreTypes.h" />
     <ClInclude Include="Source\Core\Events\ApplicationEvents.h" />
     <ClInclude Include="Source\Core\Events\Event.h" />
     <ClInclude Include="Source\Core\Events\KeyEvents.h" />
@@ -177,21 +181,31 @@
     <ClInclude Include="Source\Core\Platform\Base\BaseTypes.h" />
     <ClInclude Include="Source\Core\Platform\MacOS\MacIntTypes.h" />
     <ClInclude Include="Source\Core\Platform\Platform.h" />
+    <ClInclude Include="Source\Core\Platform\Unix\UnixPlatform.h" />
     <ClInclude Include="Source\Core\Platform\Windows\WindowsDisableErrors.h" />
     <ClInclude Include="Source\Core\Platform\Windows\WindowsPlatform.h" />
+    <ClInclude Include="Source\Core\String\Macros.h" />
     <ClInclude Include="Source\Core\String\String.h" />
-    <ClInclude Include="Source\Core\Types.h" />
     <ClInclude Include="Source\Core\Utils\Benchmark\Benchmark.h" />
     <ClInclude Include="Source\Core\Utils\Logging\Logger.h" />
     <ClInclude Include="Source\Core\Utils\MemWatch\MemWatch.h" />
+    <ClInclude Include="Source\Input\Input.h" />
     <ClInclude Include="Source\Platform\Base\Window.h" />
+    <ClInclude Include="Source\Platform\Platform.h" />
+    <ClInclude Include="Source\Platform\Windows\Win32Platform.h" />
+    <ClInclude Include="Source\Platform\Windows\Win32Window.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp" />
+    <ClCompile Include="Source\Input\Keycodes.cpp" />
+    <ClCompile Include="Source\Input\Mouse\Mouse.cpp" />
     <ClCompile Include="Source\Application\Application.cpp" />
     <ClCompile Include="Source\Core\String\String.cpp" />
     <ClCompile Include="Source\Core\Utils\Logging\Logger.cpp" />
     <ClCompile Include="Source\Core\Utils\MemWatch\MemWatch.cpp" />
+    <ClCompile Include="Source\Input\Windows\WinInput.cpp" />
+    <ClCompile Include="Source\Platform\Windows\Win32Window.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

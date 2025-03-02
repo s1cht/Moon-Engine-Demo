@@ -7,13 +7,78 @@
 #define RESIZE_MULTIPLYER 2
 
 template<typename Array>
-class PAWN_API Array_Iterator
+class PAWN_API ArrayIterator
 {
 public:
-	using DataType = Array::DataType;
+	using DataType = typename Array::DataType;
+	using PtrType = DataType*;
+	using RefType = DataType&;
+
+public:
+	ArrayIterator(PtrType ptr) : m_Ptr(ptr) {};
+	//Array_Iterator(const DataType*& ptr) = delete;
+	//Array_Iterator(DataType*&& ptr) = delete;
+
+	~ArrayIterator()
+	{
+		m_Ptr = nullptr;
+	}
+
+public:
+
+	ArrayIterator& operator++()
+	{
+		m_Ptr++;
+		return (*this);
+	}
+
+	ArrayIterator operator++(int)
+	{
+		ArrayIterator temp = (*this);
+		m_Ptr++;
+		return temp;
+	}
+
+	ArrayIterator& operator--()
+	{
+		m_Ptr--;
+		return (*this);
+	}
+
+	ArrayIterator operator--(int)
+	{
+		ArrayIterator temp = (*this);
+		m_Ptr--;
+		return temp;
+	}
+
+	RefType operator[] (SIZE_T index)
+	{
+		return *(m_Ptr + index);
+	}
+
+	PtrType operator->()
+	{
+		return m_Ptr;
+	}
+
+	bool operator!=(const ArrayIterator& it)
+	{
+		return (m_Ptr != it.m_Ptr);
+	}
+
+	bool operator==(const ArrayIterator& it)
+	{
+		return (m_Ptr == it.m_Ptr);
+	}
+
+	RefType operator*()
+	{
+		return *m_Ptr;
+	}
 
 private:
-	DataType* m_Ptr;
+	PtrType m_Ptr;
 
 };
 
@@ -24,7 +89,7 @@ public:
 	using DataType = T;
 	using ReturnType = DataType;
 	using Ptr = T*;
-	using Iterator = Array_Iterator<Array>;
+	using Iterator = ArrayIterator<Array>;
 	using AllocatorType = allocator;
 
 public:
@@ -39,6 +104,7 @@ public:
 		m_Allocator = other.m_Allocator;
 		m_Size = other.m_Size;
 		m_Capacity = other.m_Capacity;
+		m_Data = nullptr;
 
 		Allocate(m_Capacity);
 
@@ -93,6 +159,26 @@ public:
 		return m_Capacity;
 	}
 
+	inline Iterator begin() const
+	{
+		return Begin();
+	}
+
+	inline Iterator end() const
+	{
+		return End();
+	}
+
+	inline Iterator Begin() const
+	{
+		return Iterator(m_Data);
+	}
+
+	inline Iterator End() const
+	{
+		return Iterator(m_Data + m_Size);
+	}
+
 public:
 
 	ReturnType& operator[](const SIZE_T index) noexcept
@@ -117,9 +203,9 @@ public:
 		m_Size = 0;
 	}
 
-	bool Reserve(SIZE_T size)
+	bool Resize(SIZE_T size)
 	{
-		return PReserve(size);
+		return PResize(size);
 	}
 
 public:
@@ -162,9 +248,6 @@ private:
 
 			m_Allocator.Deallocate(m_Data, m_Capacity * sizeof(DataType));
 		}
-		
-		if (m_Capacity <= 0)
-			m_Data = nullptr;
 
 		m_Data = newBlock;
 		m_Capacity = newCapacity;
@@ -216,15 +299,14 @@ private:
 
 	void PPopBack()
 	{
-		if (m_Size <= 0)
-			return;
-		m_Data[m_Size].~DataType();
-		m_Size--;
-
-		CheckAndDeallocate();
+		if (m_Size > 0)
+		{
+			m_Size--;
+			m_Data[m_Size].~DataType();
+		}
 	}
 
-	bool PReserve(SIZE_T size)
+	bool PResize(SIZE_T size)
 	{
 		if (size <= m_Capacity)
 			return false;

@@ -132,15 +132,21 @@ namespace Pawn::Math
 		// (-1, 0, 0)
 		static const Vector2<T> BackwardVector;
 
-		Vector2(T scalar)
+		constexpr explicit Vector2(T scalar)
 			: x(scalar), y(scalar) {
 		}
 
-		Vector2(T _x, T _y)
+		constexpr Vector2(T _x, T _y)
 			: x(_x), y(_y) {
 		}
 
-		Vector2(Vector2&& otherVec)
+		constexpr explicit Vector2(const Vector2& otherVec)
+		{
+			x = otherVec.x;
+			y = otherVec.y;
+		}
+
+		constexpr Vector2(Vector2&& otherVec) noexcept
 		{
 			x = otherVec.x;
 			y = otherVec.y;

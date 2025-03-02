@@ -68,7 +68,7 @@ struct BaseTypes
 	typedef char						ansichar;		// 4. (Check "CHARACTERS" reference)
 	typedef wchar_t						wchar;			// 5. (Check "CHARACTERS" reference)
 
-	typedef char8						uchar;			// 6. (Check "CHARACTERS" reference)
+	typedef wchar						uchar;			// 6. (Check "CHARACTERS" reference)
 
 	/* 
 										-INT POINTER-

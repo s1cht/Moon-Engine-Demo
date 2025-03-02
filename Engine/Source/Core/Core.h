@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "CoreTypes.h"
 
 #ifdef _WIN32
 	#ifdef PAWN_LIBRARY_BUILD

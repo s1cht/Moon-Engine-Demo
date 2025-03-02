@@ -15,6 +15,8 @@ project "Engine"
 	location "Engine"
 	kind "SharedLib"
 	language "C++"
+	cppdialect "C++20"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -22,7 +24,7 @@ project "Engine"
 	pchheader "pch.h"
 	pchsource (includeDirs.engine .. "/pch.cpp")
 
-	characterset "MBCS"
+	characterset "Unicode"
 
 	files 
 	{
@@ -40,21 +42,20 @@ project "Engine"
 		includeDirs.engine .. "/Source",
 	}
 
+	defines 
+	{
+		"SPDLOG_BUILD_SHARED",
+		"PAWN_LIBRARY_BUILD", 
+		"_WINDLL",
+	}
+
 	buildoptions
 	{
 		"/utf-8",
 	}
 
 	filter "system:windows"
-		cppdialect "C++20"
-		staticruntime "On"
 		systemversion "latest"
-
-		defines 
-		{
-			"PAWN_LIBRARY_BUILD", 
-			"_WINDLL",
-		}
 
 		postbuildcommands
 		{
@@ -63,20 +64,17 @@ project "Engine"
 
 	filter "configurations:Debug"
 		defines "PE_DEBUG"
-		symbols "On"
-		staticruntime "off"
+		symbols "on"
 		runtime "Debug"
 
 	filter "configurations:Release"
 		defines "PE_RELEASE"
-		optimize "On"
-		staticruntime "off"
+		optimize "on"
 		runtime "Release"
 
 	filter "configurations:Distribute"
 		defines "PE_DIST"
-		optimize "On"
-		staticruntime "off"
+		optimize "on"
 		runtime "Release"
 
 
@@ -85,11 +83,13 @@ project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
+	cppdialect "C++20"
+	staticruntime "On"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-	characterset "MBCS"
+	characterset "Unicode"
 
 	files 
 	{
@@ -115,8 +115,6 @@ project "Sandbox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++20"
-		staticruntime "On"
 		systemversion "latest"
 
 

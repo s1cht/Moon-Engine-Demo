@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Core/Types.h"
+#include "Core/CoreTypes.h"
 #include "Core/Utils/Logging/Logger.h"
 #include "Core/String/String.h"
 
 #ifndef PLATFORM_WINDOWS
 
-#include <chrono>
+#include <chrono>CoreTypes
 #define BNCHM_SEC(x) std::chrono::x
 
 template<typename T>
