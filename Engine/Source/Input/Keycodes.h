@@ -5,6 +5,8 @@
 
 #define KEYCODE_TO_STR(keycode) TEXT(#keycode)
 
+#define PE_MAX_KEYCODE_COUNT 256
+
 enum Keycode
 {
     PE_UNKNOWN = 0,

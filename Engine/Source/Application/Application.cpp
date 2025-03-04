@@ -18,9 +18,12 @@ namespace Pawn {
 
 
 	Application::Application()
-	{
+	{	
+		m_Input = std::make_unique<Input>();
+		m_Input->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		m_Window->SetInputHandler(m_Input.get());
 		m_Runs = true;
 	}
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "Core/Core.h"
-#include "Core/Math/Vector2D.h"
 #include "Platform/Platform.h"
+#include "Input/Input.h"
 
 namespace Pawn {
 
@@ -19,6 +19,7 @@ namespace Pawn {
 
 	private:
 		std::unique_ptr<Window> m_Window;
+		std::unique_ptr<Input> m_Input;
 
 		bool m_Runs;
 	};

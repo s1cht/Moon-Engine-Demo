@@ -14,6 +14,7 @@ namespace Pawn {
 
 	public:
 		virtual void SetEventCallback(const EventCallbackFunc& callback) override;
+		virtual void SetInputHandler(Input* inputHandler) override;
 
 	public:
 		virtual uint16 GetWidth() override;

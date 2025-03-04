@@ -4,7 +4,7 @@
 
 namespace Pawn {
 #ifdef PLATFORM_WINDOWS
-	Keycode Input::ConvertPlatformKeycode(uint16 keycode)
+	Keycode Input::ConvertPlatformKeycode(WORD keycode)
 	{
 		BEGIN_KEYCODE_CONVERTATION;
 

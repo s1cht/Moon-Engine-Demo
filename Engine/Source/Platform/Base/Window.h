@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Core.h"
+#include "Input/Input.h"
 #include "Core/Events/Event.h"
 #include "Core/Containers/Array.h"
 #include "Core/Math/Vector2D.h"
@@ -35,12 +36,13 @@ namespace Pawn {
 			bool EventCallbackIsSetUp;
 
 			EventCallbackFunc EventCallback;
+			Input* InputHandler;
 
-			WindowData(const EventCallbackFunc& callback, const WindowProperties& props)
-				: EventCallback(callback), WindowProperties(props), Focused(false), EventCallbackIsSetUp(true) {
+			WindowData(const EventCallbackFunc& callback, Input* inputHandler, const WindowProperties& props)
+				: EventCallback(callback), InputHandler(inputHandler), WindowProperties(props), Focused(false), EventCallbackIsSetUp(true) {
 			}
 			WindowData(const WindowProperties& props)
-				: WindowProperties(props), Focused(false), EventCallbackIsSetUp(false) {
+				: WindowProperties(props), InputHandler(nullptr), Focused(false), EventCallbackIsSetUp(false) {
 			}
 		};
 
@@ -50,6 +52,7 @@ namespace Pawn {
 
 	public:
 		virtual void SetEventCallback(const EventCallbackFunc& callback) = 0;
+		virtual void SetInputHandler(Input* inputHandler) = 0;
 
 	public:
 		virtual uint16 GetWidth() = 0;

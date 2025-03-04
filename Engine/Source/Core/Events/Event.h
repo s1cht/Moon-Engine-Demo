@@ -42,6 +42,8 @@ enum EventCategory
 #define EVENT_CLASS_CATEGORY(category)\
     virtual EVENT_CATEGORY GetEventCategory() const override { return category; }
 
+#define EVENT_CALLBACK_FUNCTION using EventCallbackFunc = std::function<void(Event&)>
+
 namespace Pawn {
 
     class PAWN_API IEvent

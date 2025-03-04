@@ -152,9 +152,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Input\Keyboard\Keyboard.h" />
-    <ClInclude Include="Source\Input\Keycodes.h" />
-    <ClInclude Include="Source\Input\Mouse\Mouse.h" />
     <ClInclude Include="PawnEngine.h" />
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
@@ -190,6 +187,9 @@
     <ClInclude Include="Source\Core\Utils\Logging\Logger.h" />
     <ClInclude Include="Source\Core\Utils\MemWatch\MemWatch.h" />
     <ClInclude Include="Source\Input\Input.h" />
+    <ClInclude Include="Source\Input\Keyboard\Keyboard.h" />
+    <ClInclude Include="Source\Input\Keycodes.h" />
+    <ClInclude Include="Source\Input\Mouse\Mouse.h" />
     <ClInclude Include="Source\Platform\Base\Window.h" />
     <ClInclude Include="Source\Platform\Platform.h" />
     <ClInclude Include="Source\Platform\Windows\Win32Platform.h" />
@@ -197,13 +197,14 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp" />
-    <ClCompile Include="Source\Input\Keycodes.cpp" />
-    <ClCompile Include="Source\Input\Mouse\Mouse.cpp" />
     <ClCompile Include="Source\Application\Application.cpp" />
     <ClCompile Include="Source\Core\String\String.cpp" />
     <ClCompile Include="Source\Core\Utils\Logging\Logger.cpp" />
     <ClCompile Include="Source\Core\Utils\MemWatch\MemWatch.cpp" />
+    <ClCompile Include="Source\Input\Input.cpp" />
+    <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp" />
+    <ClCompile Include="Source\Input\Keycodes.cpp" />
+    <ClCompile Include="Source\Input\Mouse\Mouse.cpp" />
     <ClCompile Include="Source\Input\Windows\WinInput.cpp" />
     <ClCompile Include="Source\Platform\Windows\Win32Window.cpp" />
     <ClCompile Include="pch.cpp">

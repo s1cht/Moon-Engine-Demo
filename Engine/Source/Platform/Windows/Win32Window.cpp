@@ -7,6 +7,7 @@
 #include "Core/Events/WindowEvents.h"
 #include "Core/Events/KeyEvents.h"
 #include "Core/Events/MouseEvents.h"
+#include "Core/Utils/Benchmark/Benchmark.h"
 
 
 namespace Pawn
@@ -27,6 +28,11 @@ namespace Pawn
 	{
 		m_Data.EventCallback = callback;
 		m_Data.EventCallbackIsSetUp = true;
+	}
+
+	void Win32Window::SetInputHandler(Input* inputHandler)
+	{
+		m_Data.InputHandler = inputHandler;
 	}
 
 	uint16 Win32Window::GetWidth()
@@ -124,62 +130,108 @@ namespace Pawn
 
 		if (!wndData) return DefWindowProc(hwnd, uMsg, wParam, lParam);
 
-		if (wndData->EventCallbackIsSetUp)
+		if (wndData->EventCallbackIsSetUp) 
 		{
 			switch (uMsg)
 			{
-			case WM_SETFOCUS:
-			{
-				WindowFocusedEvent event;
-
-				wndData->Focused = true;
-				wndData->EventCallback(event);
-
-				break;
-			}
-			case WM_KILLFOCUS:
-			{
-				WindowLostFocusEvent event;
-
-				wndData->Focused = false;
-				wndData->EventCallback(event);
-
-				break;
-			}
-			case WM_SYSKEYDOWN:
-			case WM_KEYDOWN:
-			{
-				int16 key = (int16)LOWORD(wParam);
-
-				uint8 keyFlags = HIWORD(lParam);
-
-				uint8 scanCode = LOBYTE(keyFlags);
-				bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
-
-				if (isExtendedKey)
-					scanCode = MAKEWORD(scanCode, 0xE0);
-
-				bool wasKeyDown = (keyFlags & KF_REPEAT) == KF_REPEAT;
-				uint8 repeatCount = LOWORD(lParam);
-
-				BOOL isKeyReleased = (keyFlags & KF_UP) == KF_UP;
-
-				switch (key)
+				case WM_SETFOCUS:
 				{
-				case VK_SHIFT:
-				case VK_CONTROL:
-				case VK_MENU:
-					key = LOWORD(MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX));
+					WindowFocusedEvent event;
+
+					wndData->Focused = true;
+					wndData->EventCallback(event);
+
 					break;
 				}
+				case WM_KILLFOCUS:
+				{
+					WindowLostFocusEvent event;
 
-				PE_INFO("Windows virtual key: {0}; Pawn virtual key {1}, Repeat count: {2}", key, (int16)Input::ConvertPlatformKeycode(key), repeatCount);
+					wndData->Focused = false;
+					wndData->EventCallback(event);
 
-				break;
-			}
-			default:
-				return DefWindowProc(hwnd, uMsg, wParam, lParam);
+					break;
+				}
 			}
 		}
+	
+		if (wndData->InputHandler)
+		{
+			switch (uMsg)
+			{
+				case WM_SYSKEYDOWN:
+				case WM_KEYDOWN:
+				{
+					static int8 repeatCount = 0;
+					WORD key = (int16)LOWORD(wParam);
+					WORD keyFlags = HIWORD(lParam);
+					WORD scanCode = LOBYTE(keyFlags);
+					bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
+					bool wasKeyDown = (keyFlags & KF_REPEAT) == KF_REPEAT;
+
+					if (isExtendedKey)
+						scanCode = MAKEWORD(scanCode, 0xE0);
+
+					switch (key)
+					{
+					case VK_SHIFT:
+					case VK_CONTROL:
+					case VK_MENU:
+						key = LOWORD(MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX));
+						break;
+					}
+
+					wndData->InputHandler->GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), true);
+
+					//PE_INFO("Windows virtual key: {0}; Pawn virtual key {1}; Repeat count: {2}", (int32)key, (int16)Input::ConvertPlatformKeycode(key), repeatCount);
+
+					break;
+				}
+				case WM_SYSKEYUP:
+				case WM_KEYUP:
+				{
+					WORD key = (int16)LOWORD(wParam);
+					WORD keyFlags = HIWORD(lParam);
+					WORD scanCode = LOBYTE(keyFlags);
+					bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
+
+					if (isExtendedKey)
+						scanCode = MAKEWORD(scanCode, 0xE0);
+
+					switch (key)
+					{
+					case VK_SHIFT:
+					case VK_CONTROL:
+					case VK_MENU:
+						key = LOWORD(MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX));
+						break;
+					}
+
+					wndData->InputHandler->GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), false);
+
+					//PE_INFO("Windows virtual key: {0}; Pawn virtual key {1}; Repeat count: {2}", (int32)key, (int16)Input::ConvertPlatformKeycode(key), repeatCount);
+
+					break;
+				}
+				//case WM_INPUT:
+				//{
+				//	static RAWINPUT* raw;
+				//	static uint32 rawInputSize = 0;
+				//
+				//	uint32 size = 0;
+				//	HRAWINPUT rawInputHeader = (HRAWINPUT)lParam;
+				//
+				//	GetRawInputData(rawInputHeader, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
+				//
+				//	if (size > rawInputSize)
+				//	{
+				//		::operator delete[](raw);
+				//		//raw = memset();
+				//	}
+				//
+				//}
+			}
+		}
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 }
