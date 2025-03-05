@@ -31,7 +31,7 @@ namespace Pawn {
 
     public:
         EVENT_CLASS_TYPE(KeyInputStarted)
-            EVENT_CLASS_GETSTRING(var_to_string_n(int16, m_KeyCode, "keycode") + var_to_string_n(int8, m_repeatCount, "repeatCount"));
+            EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, "keycode") + PE_NAMED_VARIABLE_TOSTRING(int8, m_repeatCount, "repeatCount"));
 
     public:
         inline int8 GetRepeatCount() const { return m_repeatCount; }
@@ -50,7 +50,7 @@ namespace Pawn {
 
     public:
         EVENT_CLASS_TYPE(KeyInputEnded)
-            EVENT_CLASS_GETSTRING(var_to_string_n(int16, m_KeyCode, "keycode"));
+            EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, TEXT("keycode")));
 
     };
 

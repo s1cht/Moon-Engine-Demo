@@ -2,7 +2,7 @@
 
 #include "Core/CoreTypes.h"
 #include "Core/Utils/Logging/Logger.h"
-#include "Core/String/String.h"
+#include "Core/Containers/String.h"
 
 #ifndef PLATFORM_WINDOWS
 

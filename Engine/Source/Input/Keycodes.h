@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/CoreTypes.h"
-#include "Core/String/String.h"
+#include "Core/Containers/String.h"
 
 #define KEYCODE_TO_STR(keycode) TEXT(#keycode)
 

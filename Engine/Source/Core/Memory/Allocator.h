@@ -29,4 +29,9 @@ public:
 	{
 		new(static_cast<void*>(ptr)) Val(std::forward<varg>(args)...);
 	}
+
+	void Destroy(DataType* ptr)
+	{
+		ptr->~DataType();
+	}
 };	

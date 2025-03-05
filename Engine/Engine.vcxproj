@@ -156,7 +156,11 @@
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
     <ClInclude Include="Source\Core\Bitwise.h" />
+    <ClInclude Include="Source\Core\Containers\Algorithm.h" />
     <ClInclude Include="Source\Core\Containers\Array.h" />
+    <ClInclude Include="Source\Core\Containers\String\SharedString.h" />
+    <ClInclude Include="Source\Core\Containers\String\StringShared.h" />
+    <ClInclude Include="Source\Core\Containers\String\StringView.h" />
     <ClInclude Include="Source\Core\Core.h" />
     <ClInclude Include="Source\Core\CoreTypes.h" />
     <ClInclude Include="Source\Core\Events\ApplicationEvents.h" />
@@ -164,6 +168,8 @@
     <ClInclude Include="Source\Core\Events\KeyEvents.h" />
     <ClInclude Include="Source\Core\Events\MouseEvents.h" />
     <ClInclude Include="Source\Core\Events\WindowEvents.h" />
+    <ClInclude Include="Source\Core\Layer\Layer.h" />
+    <ClInclude Include="Source\Core\Layer\LayerStack.h" />
     <ClInclude Include="Source\Core\Math\Constants.h" />
     <ClInclude Include="Source\Core\Math\Formulas.h" />
     <ClInclude Include="Source\Core\Math\Matrix3x3.h" />
@@ -181,8 +187,8 @@
     <ClInclude Include="Source\Core\Platform\Unix\UnixPlatform.h" />
     <ClInclude Include="Source\Core\Platform\Windows\WindowsDisableErrors.h" />
     <ClInclude Include="Source\Core\Platform\Windows\WindowsPlatform.h" />
-    <ClInclude Include="Source\Core\String\Macros.h" />
-    <ClInclude Include="Source\Core\String\String.h" />
+    <ClInclude Include="Source\Core\Containers\String\StringMacros.h" />
+    <ClInclude Include="Source\Core\Containers\String\BasicString.h" />
     <ClInclude Include="Source\Core\Utils\Benchmark\Benchmark.h" />
     <ClInclude Include="Source\Core\Utils\Logging\Logger.h" />
     <ClInclude Include="Source\Core\Utils\MemWatch\MemWatch.h" />
@@ -198,7 +204,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application\Application.cpp" />
-    <ClCompile Include="Source\Core\String\String.cpp" />
+    <ClInclude Include="Source\Core\Containers\String.h" />
+    <ClCompile Include="Source\Core\Containers\Algorithm.cpp" />
+    <ClCompile Include="Source\Core\Containers\String\BasicString.cpp" />
+    <ClCompile Include="Source\Core\Containers\String\StringShared.cpp" />
+    <ClCompile Include="Source\Core\Containers\String\StringView.cpp" />
+    <ClCompile Include="Source\Core\Layer\Layer.cpp" />
+    <ClInclude Include="Source\Core\Memory\Iterator.h">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClInclude>
+    <ClCompile Include="Source\Core\Layer\LayerStack.cpp" />
     <ClCompile Include="Source\Core\Utils\Logging\Logger.cpp" />
     <ClCompile Include="Source\Core\Utils\MemWatch\MemWatch.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />

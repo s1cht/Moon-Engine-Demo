@@ -7,7 +7,7 @@
 
 #include "pch.h"
 #include "Core/Core.h"
-#include "Core/String/String.h"
+#include "Core/Containers/String.h"
 #include "Core/Math/Constants.h"
 #include "Core/Math/Formulas.h"
 

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Win32Window.h"
 #include "Win32Platform.h"
-#include "Core/String/String.h"
+#include "Core/Containers/String.h"
 #include "Core/Utils/Logging/Logger.h"
 #include "Input/Input.h"
 #include "Core/Events/WindowEvents.h"
@@ -77,19 +77,19 @@ namespace Pawn
 
 		PE_INFO("Creating window");
 		m_Window = CreateWindowExW(
-			0,                              // Optional window styles.
-			PE_WND_CLASSNAME,                // Window class
+			0,									// Optional window styles.
+			PE_WND_CLASSNAME,					// Window class
 			m_Data.WindowTitle,					// Window text
-			WS_OVERLAPPEDWINDOW,            // Window style
-
-			// Size and position
-			CW_USEDEFAULT, CW_USEDEFAULT, 
-			m_Data.WindowSize.X,
-			m_Data.WindowSize.Y,
-			NULL,       // Parent window    
-			NULL,       // Menu
-			NULL,
-			NULL        // Additional application data
+			WS_OVERLAPPEDWINDOW,				// Window style
+												//
+			// Size and position				//
+			CW_USEDEFAULT, CW_USEDEFAULT,		//
+			m_Data.WindowSize.X,				//
+			m_Data.WindowSize.Y,				//
+			NULL,								// Parent window    
+			NULL,								// Menu
+			NULL,								//
+			NULL								// Additional application data
 		);
 
 		PE_CORE_ASSERT(m_Window, "Window creation failed! Error: {}", GetLastError());
@@ -183,8 +183,6 @@ namespace Pawn
 
 					wndData->InputHandler->GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), true);
 
-					//PE_INFO("Windows virtual key: {0}; Pawn virtual key {1}; Repeat count: {2}", (int32)key, (int16)Input::ConvertPlatformKeycode(key), repeatCount);
-
 					break;
 				}
 				case WM_SYSKEYUP:
@@ -208,8 +206,6 @@ namespace Pawn
 					}
 
 					wndData->InputHandler->GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), false);
-
-					//PE_INFO("Windows virtual key: {0}; Pawn virtual key {1}; Repeat count: {2}", (int32)key, (int16)Input::ConvertPlatformKeycode(key), repeatCount);
 
 					break;
 				}

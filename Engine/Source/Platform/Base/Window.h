@@ -4,7 +4,7 @@
 #include "Core/Events/Event.h"
 #include "Core/Containers/Array.h"
 #include "Core/Math/Vector2D.h"
-#include "Core/String/String.h"
+#include "Core/Containers/String.h"
 
 // Base class for Window
 

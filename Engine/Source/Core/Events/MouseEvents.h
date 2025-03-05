@@ -14,7 +14,7 @@ namespace Pawn {
     class PAWN_API MouseButtonEvent : public MouseEvent
     {
     public:
-        EVENT_CLASS_GETSTRING(var_to_string_n(int32, m_Button, "button"));
+        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(int32, m_Button, "button"));
 
     protected:
         constexpr MouseButtonEvent(int32 btn) : m_Button(btn) {};
@@ -34,7 +34,7 @@ namespace Pawn {
         float GetPositionX() const { return m_x; }
         float GetPositionY() const { return m_y; }
 
-        EVENT_CLASS_GETSTRING(var_to_string_n(float, m_x, "offset_x") + var_to_string_n(float, m_y, "offset_y"))
+        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(float, m_x, "offset_x") + PE_NAMED_VARIABLE_TOSTRING(float, m_y, "offset_y"))
 
     private:
         float m_x, m_y;
@@ -49,7 +49,7 @@ namespace Pawn {
 
     public:
         EVENT_CLASS_TYPE(MouseMoved);
-        EVENT_CLASS_GETSTRING(var_to_string_n(float, m_x, "pos_x") + var_to_string_n(float, m_y, "pos_y"));
+        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(float, m_x, "pos_x") + PE_NAMED_VARIABLE_TOSTRING(float, m_y, "pos_y"));
 
     public:
         float GetOffsetX() const { return m_x; }

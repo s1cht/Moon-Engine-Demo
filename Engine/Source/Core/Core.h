@@ -2,7 +2,9 @@
 
 #include "CoreTypes.h"
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
+	#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+
 	#ifdef PAWN_LIBRARY_BUILD
 		#define PAWN_API DLLEXPORT
 	#else	

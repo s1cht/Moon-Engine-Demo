@@ -8,7 +8,7 @@
 #include "Core/Utils/MemWatch/MemWatch.h"
 #include "Core/Math/Vector2D.h"
 #include "Core/Math/Vector3D.h"
-#include "Core/String/String.h"
+#include "Core/Containers/String.h"
 #include "Core/Containers/Array.h"
 
 namespace Pawn {
@@ -31,13 +31,33 @@ namespace Pawn {
 	{
 		while (m_Runs)
 		{
+			for (Layer* layer : m_LayerStack)
+			{
+				layer->OnUpdate();
+			}
+
 			m_Window->OnUpdate();
 		};
 	}
 
+	void Application::PushLayer(Layer* layer)
+	{
+		m_LayerStack.PushLayer(layer);
+	}
+
+	void Application::PushOverlay(Layer* overlay)
+	{
+		m_LayerStack.PushOverlay(overlay);
+	}
+
 	void Application::OnEvent(Event& event)
 	{
-		PE_INFO("{0}", event.GetString());
+		for (auto it = m_LayerStack.End(); it != m_LayerStack.Begin();)
+		{
+			(*--it)->OnEvent(event);
+			if (event.IsHandled)
+				break;
+		}
 	}
 
 }

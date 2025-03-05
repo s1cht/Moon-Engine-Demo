@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Core/Core.h"
 #include "Core/Bitwise.h"
-#include "Core/String/String.h"
+#include "Core/Containers/String.h"
 
 enum class EventType
 {
@@ -30,14 +30,14 @@ enum EventCategory
     EventCategory_Mouse             = BIT(4),
 };
 
-#define FORMAT_EVENT_STRING(eventName, args) std::string("Event ") + std::string(eventName) + " fired with data: " + args
+#define FORMAT_EVENT_STRING(eventName, args) String(TEXT("Event ")) + String(eventName) + TEXT(" fired with data: ") + args
 #define EVENT_CLASS_GETSTRING(args)\
-    virtual std::string GetString() override { return FORMAT_EVENT_STRING(GetName(), args); }
+    virtual String GetString() override { return FORMAT_EVENT_STRING(GetName(), args); }
 
 #define EVENT_CLASS_TYPE(type)\
     static EventType GetStaticType() { return EventType::##type; }\
     virtual EventType GetEventType() const override { return GetStaticType(); }\
-    virtual const ansichar* GetName() const override { return #type; }
+    virtual const uchar* GetName() const override { return TEXT(#type); }
 
 #define EVENT_CLASS_CATEGORY(category)\
     virtual EVENT_CATEGORY GetEventCategory() const override { return category; }
@@ -51,16 +51,15 @@ namespace Pawn {
     public:
         virtual EventType GetEventType() const = 0;
         virtual EVENT_CATEGORY GetEventCategory() const = 0;
-        virtual const ansichar* GetName() const  = 0;
-        virtual std::string GetString() { return GetName(); }
+        virtual const uchar* GetName() const  = 0;
+        virtual String GetString() { return GetName(); }
     
         inline bool IsInCategory(EventCategory category)
         {
             return  GetEventCategory() & category;
         }
     
-    protected:
-        bool m_isHandled = false;
+        bool IsHandled = false;
     
     private:
         friend class EventDispatcher;
@@ -79,7 +78,7 @@ namespace Pawn {
         {
             if (m_Event->GetEventType() == T::GetStaticType())
             {
-                m_Event->m_isHandled = func(*(T)(*m_Event));
+                m_Event->IsHandled = func(*(T)(*m_Event));
                 return true;
             }
             return false;
@@ -91,7 +90,6 @@ namespace Pawn {
     };
 
     typedef IEvent Event;
-
 }
 
 

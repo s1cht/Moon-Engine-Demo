@@ -21,7 +21,7 @@ namespace Pawn {
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Window | EventCategory_Application);
         EVENT_CLASS_TYPE(WindowMoved);
-        EVENT_CLASS_GETSTRING(var_to_string_n(float, m_x, "X") + var_to_string_n(float, m_y, "Y"));
+        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(float, m_x, "X") + PE_NAMED_VARIABLE_TOSTRING(float, m_y, "Y"));
 
     public:
         float GetPositionX() { return m_x; };
@@ -41,7 +41,7 @@ namespace Pawn {
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Window | EventCategory_Application);
         EVENT_CLASS_TYPE(WindowResized);
-        EVENT_CLASS_GETSTRING(var_to_string_n(float, m_x, "X") + var_to_string_n(float, m_y, "Y"));
+        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(float, m_x, "X") + PE_NAMED_VARIABLE_TOSTRING(float, m_y, "Y"));
 
     public:
         float GetSizeX() { return m_x; };
