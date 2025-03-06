@@ -14,34 +14,43 @@ namespace Pawn {
 	{
 	public:
 		using EventCallbackFunc = std::function<void(Event&)>;
+	public:
+		Input(const Input&) = delete;
+
+		inline static Input& Get() {
+			static Input instance;
+			return instance;
+		};
 
 	public:
-		Input();
 		~Input();
 
 	public:
 		void SetEventCallback(const EventCallbackFunc& callback);
 
 	public:
-		bool IsMouseLeftButtonUp();
-		bool IsMouseLeftButtonDown();
+		inline static bool IsMouseLeftButtonUp();
+		inline static bool IsMouseLeftButtonDown();
 
-		bool IsMouseMiddleButtonUp();
-		bool IsMouseMiddleButtonDown();
+		inline static bool IsMouseMiddleButtonUp();
+		inline static bool IsMouseMiddleButtonDown();
 
-		bool IsMouseRightButtonUp();
-		bool IsMouseRightButtonDown();
+		inline static bool IsMouseRightButtonUp();
+		inline static bool IsMouseRightButtonDown();
 
 	public:
-		bool IsKeyUp(uint8 keycode);
-		bool IsKeyDown(uint8 keycode);
+		inline static bool IsKeyUp(uint8 keycode);
+		inline static bool IsKeyDown(uint8 keycode);
 
 	public:
 		static Keycode ConvertPlatformKeycode(uint16 keycode);
 		const uchar* ConvertKeycodeToString(uint8 keycode);
 
 	public:
-		Keyboard& GetKeyboard() { return m_Keyboard; };
+		inline static Keyboard& GetKeyboard() { return Get().m_Keyboard; };
+
+	private:
+		Input();
 
 	private:
 		void Init();

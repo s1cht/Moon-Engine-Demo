@@ -71,12 +71,12 @@ namespace Pawn {
 
 	bool Input::IsKeyUp(uint8 keycode)
 	{
-		return !m_Keyboard.IsKeyHolded(keycode);
+		return !Get().m_Keyboard.IsKeyHolded(keycode);
 	}
 
 	bool Input::IsKeyDown(uint8 keycode)
 	{
-		return m_Keyboard.IsKeyHolded(keycode);
+		return Get().m_Keyboard.IsKeyHolded(keycode);
 	}
 
 }
