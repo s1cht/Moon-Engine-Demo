@@ -5,5 +5,5 @@
 	path = GLFW
 	url = https://github.com/TheCherno/GLFW
 [submodule "Engine/vendor/ImGui"]
-	path = ImGui
+	path = Engine/vendor/ImGui
 	url = https://github.com/s1cht/ImGui
