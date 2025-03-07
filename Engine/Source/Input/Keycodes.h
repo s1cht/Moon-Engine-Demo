@@ -1,11 +1,21 @@
 #pragma once
 
-#include "Core/CoreTypes.h"
+#include "Core.h"
 #include "Core/Containers/String.h"
 
-#define KEYCODE_TO_STR(keycode) TEXT(#keycode)
-
+#define PE_MAX_MOUSE_SIDEBTN_COUNT 6
 #define PE_MAX_KEYCODE_COUNT 256
+
+enum MouseCodes
+{
+    PE_MOUSE_UNKNOWN = 0,
+    
+    PE_MOUSE_LEFTBUTTON = 1,            PE_MOUSE_RIGHTBUTTON = 2,       PE_MOUSE_MIDDLEBUTTON = 3,
+
+    PE_MOUSE_SIDEBUTTON1 = 4,           PE_MOUSE_SIDEBUTTON2 = 5,       PE_MOUSE_SIDEBUTTON3 = 6,
+    PE_MOUSE_SIDEBUTTON4 = 7,           PE_MOUSE_SIDEBUTTON5 = 8,        PE_MOUSE_SIDEBUTTON6 = 9,
+
+};
 
 enum Keycode
 {
@@ -83,9 +93,3 @@ enum Keycode
     PE_KEY_KP_ENTER                             = 120,
 
 };
-
-
-#define ADD_KEYCODE_TOARR(keycode) KeycodeStrings[(SIZE_T)keycode] = KEYCODE_TO_STR(keycode)
-#define INIT_TO_UNUSED(size) for (SIZE_T i = 0; i < size; i++) KeycodeStrings[i] = TEXT("Unused");
-
-// const uchar* KeycodeStrings[256];

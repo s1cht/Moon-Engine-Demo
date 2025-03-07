@@ -1,12 +1,13 @@
 #pragma once
 #include "pch.h"
-#include "Core/Core.h"
 #include "Keycodes.h"
-#include "Core/Events/KeyEvents.h"
-#include "Core/Events/MouseEvents.h"
 #include "Mouse/Mouse.h"
 #include "Keyboard/Keyboard.h"
+#include "Core.h"
+#include "Core/Math/Vector2D.h"
 #include "Core/Events/Event.h"
+#include "Events/KeyEvents.h"
+#include "Events/MouseEvents.h"
 
 namespace Pawn {
 
@@ -29,14 +30,12 @@ namespace Pawn {
 		void SetEventCallback(const EventCallbackFunc& callback);
 
 	public:
-		inline static bool IsMouseLeftButtonUp();
-		inline static bool IsMouseLeftButtonDown();
+		inline static bool IsMouseLeftButtonPressed();
+		inline static bool IsMouseMiddleButtonPressed();
+		inline static bool IsMouseRightButtonPressed();
 
-		inline static bool IsMouseMiddleButtonUp();
-		inline static bool IsMouseMiddleButtonDown();
-
-		inline static bool IsMouseRightButtonUp();
-		inline static bool IsMouseRightButtonDown();
+		inline static Math::Vector2D32 GetMousePosition();
+		inline static Math::Vector2D32 GetMouseDelta();
 
 	public:
 		inline static bool IsKeyUp(uint8 keycode);
@@ -44,27 +43,27 @@ namespace Pawn {
 
 	public:
 		static Keycode ConvertPlatformKeycode(uint16 keycode);
-		const uchar* ConvertKeycodeToString(uint8 keycode);
+		String ConvertKeycodeToString(uint8 keycode);
 
 	public:
 		inline static Keyboard& GetKeyboard() { return Get().m_Keyboard; };
+		inline static Mouse& GetMouse() { return Get().m_Mouse; };
 
 	private:
 		Input();
 
 	private:
 		void Init();
-		void Shutdown();
 
 	private:
-		//Mouse m_Mouse;
+		Mouse m_Mouse;
 		Keyboard m_Keyboard;
 
 		bool m_CallbackExists = false;
 		EventCallbackFunc m_Callback;
 
 	private:
-		const uchar* m_Chars[PE_MAX_KEYCODE_COUNT];
+		String m_Chars[PE_MAX_KEYCODE_COUNT];
 
 	};
 

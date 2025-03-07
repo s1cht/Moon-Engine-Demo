@@ -15,7 +15,8 @@ public:
 
 	void OnEvent(Pawn::Event& event)
 	{
-		PE_TRACE(TEXT("{0}"), event.GetString().GetString());
+		Pawn::String str = event.GetString();
+		::Pawn::Logger::GetClientLogger()->trace(L"{0}", str.GetString());
 	}
 };
 

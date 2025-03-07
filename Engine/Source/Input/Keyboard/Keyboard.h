@@ -1,7 +1,7 @@
 #pragma once
 #include "Core/CoreTypes.h"
 #include "Core/Events/Event.h"
-#include "Core/Events/KeyEvents.h"
+#include "Events/KeyEvents.h"
 #include "Input/Keycodes.h"
 
 #define PE_MAX_REPEAT_COUNT 50

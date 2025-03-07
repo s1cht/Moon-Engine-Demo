@@ -1,56 +1,99 @@
 #pragma once
 
-#include "Core/CoreTypes.h"
+#include "Input/Keycodes.h"
+#include "Core.h"
+#include "Core/Math/Vector2D.h"
+#include "Core/Events/Event.h"
+#include "Events/MouseEvents.h"
 
-class Mouse
+namespace Pawn
 {
-public:
-	virtual ~Mouse() = 0;
-
-public:
-	bool IsLeftButtonUp()
+	class PAWN_API Mouse
 	{
-		return !m_LeftButtonDown;
-	}
+	public:
+		EVENT_CALLBACK_FUNCTION;
 
-	bool IsLeftButtonDown()
-	{
-		return m_LeftButtonDown;
-	}
+	public:
+		Mouse();
+		~Mouse();
 
-	bool IsMiddleButtonUp()
-	{
-		return !m_MiddleButtonDown;
-	}
+	public:
+		void SetEventCallback(const EventCallbackFunc& callback) { m_Callback = callback; m_CallbackExists = true; }
 
-	bool IsMiddleButtonDown()
-	{
-		return m_MiddleButtonDown;
-	}
+	public:
+		inline bool IsLeftButtonPressed()
+		{
+			return m_LeftButtonDown;
+		}
 
-	bool IsRightButtonUp()
-	{
-		return !m_RightButtonDown;
-	}
+		inline bool IsMiddleButtonPressed()
+		{
+			return m_MiddleButtonDown;
+		}
 
-	bool IsRightButtonDown()
-	{
-		return m_RightButtonDown;
-	}
+		inline bool IsRightButtonPressed()
+		{
+			return m_RightButtonDown;
+		}
 
-	virtual bool IsSideButtonDown(uint8 sideButton)
-	{
-		return m_SideButtonDown[sideButton];
+		bool IsSideButtonDown(uint8 sideButton)
+		{
+			if (sideButton >= PE_MAX_MOUSE_SIDEBTN_COUNT)
+			{
+				PE_ERROR(TEXT("Unknown side button caught!"));
+				return false;
+			}
+			return m_SideButtonDown[sideButton];
+		};
+
+		inline Math::Vector2D32 GetPosition()
+		{
+			return m_MousePosition;
+		}
+
+		inline Math::Vector2D32 GetMouseDelta()
+		{
+			return m_MouseDelta;
+		}
+
+		void GetPositionXY(float32& x, float32& y)
+		{
+			x = m_MousePosition.x;
+			y = m_MousePosition.y;
+		}
+
+		void GetDeltaXY(float32& x, float32& y)
+		{
+			x = m_MouseDelta.x;
+			y = m_MouseDelta.y;
+		}
+
+	public:
+		void SetLeftButtonPressed(bool pressed);
+		void SetRightButtonPressed(bool pressed);
+		void SetMiddleButtonPressed(bool pressed);
+		void SetMousePosition(float32 x, float32 y);
+		void SetSideButtonPressed(uint8 sideButton, bool pressed);
+
+	private:
+		void Init();
+
+		void SetMouseDelta(float32 x, float32 y);
+
+	private:
+		bool m_LeftButtonDown;
+		bool m_MiddleButtonDown;
+		bool m_RightButtonDown;
+
+		bool m_SideButtonDown[PE_MAX_MOUSE_SIDEBTN_COUNT];
+
+		Math::Vector2D32 m_MousePosition;
+		Math::Vector2D32 m_MouseDelta;
+
+	private:
+		bool m_CallbackExists = false;
+		EventCallbackFunc m_Callback;
+
 	};
 
-protected:
-	bool m_LeftButtonDown;
-	bool m_MiddleButtonDown;
-	bool m_RightButtonDown;
-
-	bool m_SideButtonDown[16];
-
-protected:
-	friend class Input;
-};
-
+}

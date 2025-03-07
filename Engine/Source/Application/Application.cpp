@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "Application.h"
-#include "Core/Core.h"
+#include "Core.h"
 #include "Core/Utils/Logging/Logger.h"
-#include "Core/Events/MouseEvents.h"
-#include "Core/Events/KeyEvents.h"
+#include "Events/MouseEvents.h"
+#include "Events/KeyEvents.h"
 #include "Core/Utils/Benchmark/Benchmark.h"
 #include "Core/Utils/MemWatch/MemWatch.h"
 #include "Core/Math/Vector2D.h"
@@ -19,11 +19,9 @@ namespace Pawn {
 
 	Application::Application()
 	{	
-		m_Input = std::make_unique<Input>();
-		m_Input->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		Input::Get().SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
-		m_Window->SetInputHandler(m_Input.get());
 		m_Runs = true;
 	}
 

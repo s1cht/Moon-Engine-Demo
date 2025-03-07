@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Core/Core.h"
+#include "Core.h"
 #include "Input/Input.h"
 
 namespace Pawn {

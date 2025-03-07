@@ -3,7 +3,7 @@
 
 namespace Pawn {
 
-	const uchar* Input::ConvertKeycodeToString(uint8 keycode)
+	String Input::ConvertKeycodeToString(uint8 keycode)
 	{
 		return m_Chars[keycode];
 	}
@@ -23,7 +23,22 @@ namespace Pawn {
 		m_CallbackExists = true;
 	
 		m_Keyboard.SetEventCallback(callback);
-		//m_Mouse.SetEventCallback(callback);
+		m_Mouse.SetEventCallback(callback);
+	}
+
+	inline bool Input::IsMouseLeftButtonPressed()
+	{
+		return Get().GetMouse().IsLeftButtonPressed();
+	}
+
+	inline bool Input::IsMouseMiddleButtonPressed()
+	{
+		return Get().GetMouse().IsMiddleButtonPressed();
+	}
+
+	inline bool Input::IsMouseRightButtonPressed()
+	{
+		return Get().GetMouse().IsRightButtonPressed();
 	}
 
 	void Input::Init()
@@ -34,39 +49,14 @@ namespace Pawn {
 		}
 	}
 
-	void Input::Shutdown()
+	inline Math::Vector2D32 Input::GetMousePosition()
 	{
-		
+		return Get().GetMouse().GetPosition();
 	}
 
-	bool Input::IsMouseLeftButtonUp()
+	inline Math::Vector2D32 Input::GetMouseDelta()
 	{
-		return false;
-	}
-
-	bool Input::IsMouseLeftButtonDown()
-	{
-		return false;
-	}
-
-	bool Input::IsMouseMiddleButtonUp()
-	{
-		return false;
-	}
-
-	bool Input::IsMouseMiddleButtonDown()
-	{
-		return false;
-	}
-
-	bool Input::IsMouseRightButtonUp()
-	{
-		return false;
-	}
-
-	bool Input::IsMouseRightButtonDown()
-	{
-		return false;
+		return Get().GetMouse().GetMouseDelta();
 	}
 
 	bool Input::IsKeyUp(uint8 keycode)

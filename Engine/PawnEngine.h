@@ -5,7 +5,7 @@
 // --------------===================--------------
 
 #include "Source/Application/Application.h"
-#include "Source/Core/Utils/Logging/Logger.h"
+#include "Core/Utils/Logging/Logger.h"
 
 // --------------Entry point----------------------
 #include "Source/Application/EntryPoint.h"

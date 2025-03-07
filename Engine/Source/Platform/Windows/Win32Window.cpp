@@ -4,9 +4,9 @@
 #include "Core/Containers/String.h"
 #include "Core/Utils/Logging/Logger.h"
 #include "Input/Input.h"
-#include "Core/Events/WindowEvents.h"
-#include "Core/Events/KeyEvents.h"
-#include "Core/Events/MouseEvents.h"
+#include "Events/WindowEvents.h"
+#include "Events/KeyEvents.h"
+#include "Events/MouseEvents.h"
 #include "Core/Utils/Benchmark/Benchmark.h"
 
 
@@ -28,11 +28,6 @@ namespace Pawn
 	{
 		m_Data.EventCallback = callback;
 		m_Data.EventCallbackIsSetUp = true;
-	}
-
-	void Win32Window::SetInputHandler(Input* inputHandler)
-	{
-		m_Data.InputHandler = inputHandler;
 	}
 
 	uint16 Win32Window::GetWidth()
@@ -155,79 +150,82 @@ namespace Pawn
 			}
 		}
 	
-		if (wndData->InputHandler)
+		switch (uMsg)
 		{
-			switch (uMsg)
+			case WM_SYSKEYDOWN:
+			case WM_KEYDOWN:
 			{
-				case WM_SYSKEYDOWN:
-				case WM_KEYDOWN:
+				static int8 repeatCount = 0;
+				WORD key = (int16)LOWORD(wParam);
+				WORD keyFlags = HIWORD(lParam);
+				WORD scanCode = LOBYTE(keyFlags);
+				bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
+				bool wasKeyDown = (keyFlags & KF_REPEAT) == KF_REPEAT;
+
+				if (isExtendedKey)
+					scanCode = MAKEWORD(scanCode, 0xE0);
+
+				switch (key)
 				{
-					static int8 repeatCount = 0;
-					WORD key = (int16)LOWORD(wParam);
-					WORD keyFlags = HIWORD(lParam);
-					WORD scanCode = LOBYTE(keyFlags);
-					bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
-					bool wasKeyDown = (keyFlags & KF_REPEAT) == KF_REPEAT;
-
-					if (isExtendedKey)
-						scanCode = MAKEWORD(scanCode, 0xE0);
-
-					switch (key)
-					{
-					case VK_SHIFT:
-					case VK_CONTROL:
-					case VK_MENU:
-						key = LOWORD(MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX));
-						break;
-					}
-
-					wndData->InputHandler->GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), true);
-
+				case VK_SHIFT:
+				case VK_CONTROL:
+				case VK_MENU:
+					key = LOWORD(MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX));
 					break;
 				}
-				case WM_SYSKEYUP:
-				case WM_KEYUP:
-				{
-					WORD key = (int16)LOWORD(wParam);
-					WORD keyFlags = HIWORD(lParam);
-					WORD scanCode = LOBYTE(keyFlags);
-					bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
 
-					if (isExtendedKey)
-						scanCode = MAKEWORD(scanCode, 0xE0);
+				Input::Get().GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), true);
 
-					switch (key)
-					{
-					case VK_SHIFT:
-					case VK_CONTROL:
-					case VK_MENU:
-						key = LOWORD(MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX));
-						break;
-					}
-
-					wndData->InputHandler->GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), false);
-
-					break;
-				}
-				//case WM_INPUT:
-				//{
-				//	static RAWINPUT* raw;
-				//	static uint32 rawInputSize = 0;
-				//
-				//	uint32 size = 0;
-				//	HRAWINPUT rawInputHeader = (HRAWINPUT)lParam;
-				//
-				//	GetRawInputData(rawInputHeader, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
-				//
-				//	if (size > rawInputSize)
-				//	{
-				//		::operator delete[](raw);
-				//		//raw = memset();
-				//	}
-				//
-				//}
+				break;
 			}
+			case WM_SYSKEYUP:
+			case WM_KEYUP:
+			{
+				WORD key = (int16)LOWORD(wParam);
+				WORD keyFlags = HIWORD(lParam);
+				WORD scanCode = LOBYTE(keyFlags);
+				bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
+
+				if (isExtendedKey)
+					scanCode = MAKEWORD(scanCode, 0xE0);
+
+				switch (key)
+				{
+				case VK_SHIFT:
+				case VK_CONTROL:
+				case VK_MENU:
+					key = LOWORD(MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX));
+					break;
+				}
+
+				Input::Get().GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), false);
+
+				break;
+			}
+			case WM_MOUSEMOVE:
+			{
+				Input::Get().GetMouse().SetMousePosition((float32)GET_X_LPARAM(lParam), (float32)GET_Y_LPARAM(lParam));
+			}
+
+			//case WM_INPUT:
+			//{
+			//	static RAWINPUT* raw;
+			//	static uint32 rawInputSize = 0;
+			//
+			//	uint32 size = 0;
+			//	HRAWINPUT rawInputHeader = (HRAWINPUT)lParam;
+			//
+			//	GetRawInputData(rawInputHeader, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
+			//
+			//	if (size > rawInputSize)
+			//	{
+			//		::operator delete[](raw);
+			//		//raw = memset();
+			//	}
+			//
+			//}
 		}
+
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 }
