@@ -11,14 +11,14 @@
 namespace Pawn
 {
     template<typename _String>
-    class StringIterator : public BaseIterator<_String>
+    class StringIterator : public Pawn::Memory::BaseIterator<_String>
     {
     public:
-        StringIterator() : BaseIterator<_String>() {}
-        StringIterator(BaseIterator<_String>::PtrType ptr) : BaseIterator<_String>(ptr) {}
+        StringIterator() : Pawn::Memory::BaseIterator<_String>() {}
+        StringIterator(Pawn::Memory::BaseIterator<_String>::PtrType ptr) : Pawn::Memory::BaseIterator<_String>(ptr) {}
     };
 
-    template<SIZE_T initSize = 10, class allocator = Allocator<uchar>>
+    template<SIZE_T initSize = 10, class allocator = Pawn::Memory::Allocator<uchar>>
     class PString
     {
     public:
@@ -87,8 +87,6 @@ namespace Pawn
                 m_Data = nullptr;
             }
         }
-         
-#include <string>
 
     public:
         inline SIZE_T GetSize() const noexcept { return m_Size; }
@@ -278,7 +276,7 @@ namespace Pawn
 
     };
 
-    typedef PString<10, Allocator<uchar>> String;
+    typedef PString<10, Pawn::Memory::Allocator<uchar>> String;
 
     //template<typename convertTo, SIZE_T strSize = 10, typename allocator = Allocator<uchar>>
     //CORE_API PString<strSize, allocator> TToString(convertTo value);

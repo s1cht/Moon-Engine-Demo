@@ -104,7 +104,6 @@
 
 namespace Pawn::Math
 {
-
 	template<typename T>
 	struct Vector2
 	{
@@ -121,40 +120,26 @@ namespace Pawn::Math
 			T XY[2];
 		};
 
-		// (0, 0, 0)
-		static const Vector2<T> ZeroVector;
-		// (0, 1, 0)
-		static const Vector2<T> UpVector;
-		// (0, -1, 0)
-		static const Vector2<T> DownVector;
-		// (1, 0, 0)
-		static const Vector2<T> ForwardVector;
-		// (-1, 0, 0)
-		static const Vector2<T> BackwardVector;
+		// (0, 0)
+		static const Vector2 ZeroVector;
+		// (0, 1)
+		static const Vector2 UpVector;
+		// (0, -1)
+		static const Vector2 DownVector;
+		// (-1, 0)
+		static const Vector2 LeftVector;
+		// (1, 0)
+		static const Vector2 RightVector;
 
-		 Vector2()
-			: x(0.f), y(0.f) {
-		}
+		Vector2();
 
-		 Vector2(T scalar)
-			: x(scalar), y(scalar) {
-		}
+		Vector2(T scalar);
 
-		 Vector2(T _x, T _y)
-			: x(_x), y(_y) {
-		}
+		Vector2(T _x, T _y);
 
-		 Vector2(const Vector2& otherVec)
-		{
-			x = otherVec.x;
-			y = otherVec.y;
-		}
+		Vector2(const Vector2& otherVec);
 
-		 Vector2(Vector2&& otherVec) noexcept
-		{
-			x = otherVec.x;
-			y = otherVec.y;
-		}
+		Vector2(Vector2&& otherVec) noexcept;
 
 		// Operators
 
@@ -197,6 +182,35 @@ namespace Pawn::Math
 		inline float64 LengthSquared() const;
 
 	};
+
+	template<typename T>
+	inline Vector2<T>::Vector2()
+		: x(0.f), y(0.f) {
+	}
+
+	template<typename T>
+	inline Vector2<T>::Vector2(T scalar)
+		: x(scalar), y(scalar) {
+	}
+
+	template<typename T>
+	inline Vector2<T>::Vector2(T _x, T _y)
+		: x(_x), y(_y) {
+	}
+
+	template<typename T>
+	inline Vector2<T>::Vector2(const Vector2& otherVec)
+	{
+		x = otherVec.x;
+		y = otherVec.y;
+	}
+
+	template<typename T>
+	inline Vector2<T>::Vector2(Vector2&& otherVec) noexcept
+	{
+		x = otherVec.x;
+		y = otherVec.y;
+	}
 
 	template<typename T>
 	Vector2<T>& Pawn::Math::Vector2<T>::operator= (const Vector2& b)

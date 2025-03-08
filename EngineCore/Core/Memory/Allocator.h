@@ -2,41 +2,44 @@
 
 #include "Core/CoreTypes.h"
 
-template <typename T>
-class Allocator
+namespace Pawn::Memory
 {
-public:
-	using DataType = T;
-
-public:
-	Allocator() {};
-	~Allocator() {};
-
-public:
-	
-	DataType* Allocate(SIZE_T size)
+	template <typename T>
+	class Allocator
 	{
-		return static_cast<DataType*>(::operator new(size));
-	}
+	public:
+		using DataType = T;
 
-	void Deallocate(DataType* ptr)
-	{
-		::operator delete(ptr);
-	}
+	public:
+		Allocator() {};
+		~Allocator() {};
 
-	void Deallocate(DataType* ptr, SIZE_T size)
-	{
-		::operator delete(ptr, size);
-	}
+	public:
 
-	template <class Val, class... varg>
-	void Construct(Val* ptr, varg&&... args)
-	{
-		new(static_cast<void*>(ptr)) Val(std::forward<varg>(args)...);
-	}
+		DataType* Allocate(SIZE_T size)
+		{
+			return static_cast<DataType*>(::operator new(size));
+		}
 
-	void Destroy(DataType* ptr)
-	{
-		ptr->~DataType();
-	}
-};	
+		void Deallocate(DataType* ptr)
+		{
+			::operator delete(ptr);
+		}
+
+		void Deallocate(DataType* ptr, SIZE_T size)
+		{
+			::operator delete(ptr, size);
+		}
+
+		template <class Val, class... varg>
+		void Construct(Val* ptr, varg&&... args)
+		{
+			new(static_cast<void*>(ptr)) Val(std::forward<varg>(args)...);
+		}
+
+		void Destroy(DataType* ptr)
+		{
+			ptr->~DataType();
+		}
+	};
+}

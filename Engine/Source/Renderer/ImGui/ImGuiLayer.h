@@ -2,7 +2,7 @@
 
 #include "Core/Layer/Layer.h"
 
-namespace Pawn
+namespace Pawn::Render::Imgui
 {
 	class ImGuiLayer : public Layer
 	{
@@ -13,9 +13,15 @@ namespace Pawn
 	public:
 		void OnAttach() override;
 		void OnDetach() override;
-		void OnUpdate() override;
 
-		void OnEvent(Event& event) override;
+		void OnImGuiRender() override;
+
+	public:
+		void BeginRender();
+		void EndRender();
+
+	private:
+		bool m_Disabled = false;
 
 	};
 

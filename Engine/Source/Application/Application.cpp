@@ -1,15 +1,14 @@
 #include "pch.h"
 #include "Application.h"
-#include "Core.h"
-#include "Core/Utils/Logging/Logger.h"
 #include "Events/MouseEvents.h"
 #include "Events/KeyEvents.h"
-#include "Core/Utils/Benchmark/Benchmark.h"
-#include "Core/Utils/MemWatch/MemWatch.h"
-#include "Core/Math/Vector2D.h"
-#include "Core/Math/Vector3D.h"
-#include "Core/Containers/String.h"
-#include "Core/Containers/Array.h"
+
+#include <Core.h>
+#include <Core/Utils/Logging/Logger.h>
+#include <Core/Utils/Benchmark/Benchmark.h>
+#include <Core/Utils/MemWatch/MemWatch.h>
+#include <Core/Containers/String.h>
+#include <Core/Containers/Array.h>
 
 namespace Pawn {
 

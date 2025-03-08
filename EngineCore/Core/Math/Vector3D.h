@@ -7,9 +7,6 @@
 
 #include "pch.h"
 #include "Core.h"
-#include "Core/Containers/String.h"
-#include "Core/Math/Constants.h"
-#include "Core/Math/Formulas.h"
 
 /*													*/
 /*		Vector3 operator implementation macros		*/
@@ -106,12 +103,12 @@
 		_VECTOR3_OPERATOR_DEF_EQUAL				(_operator, float32);						\
 		_VECTOR3_OPERATOR_DEF_EQUAL				(_operator, float64);						
 
+
 template<typename T>
 struct Vector2;
 
 namespace Pawn::Math
 {
-
 	template<typename T>
 	struct Vector3
 	{
@@ -136,10 +133,14 @@ namespace Pawn::Math
 		static const Vector3<T> UpVector;
 		// (0, -1, 0)
 		static const Vector3<T> DownVector;
-		// (1, 0, 0)
+		// (0, 0, 1)
 		static const Vector3<T> ForwardVector;
-		// (-1, 0, 0)
+		// (0, 0, -1)
 		static const Vector3<T> BackwardVector;
+		// (1, 0, 0)
+		static const Vector3<T> RightVector;
+		// (-1, 0, 0)
+		static const Vector3<T> LeftVector;
 
 	public:
 		
@@ -309,8 +310,11 @@ namespace Pawn::Math
 		return SQUARE_SUM_2((float64)this->x, (float64)this->y);
 	}
 
-	// Default Vector3D. If you want use another type, then use Vector3<type>
-	typedef Vector3<float64> Vector3D;
+	// Default Vector3D. If you want use another type, then use Vector2<type>
+	typedef Vector3<float32> Vector3D32;
+	typedef Vector3<float64> Vector3D64;
+
+	typedef Vector3D64 Vector3D;
 
 };
 

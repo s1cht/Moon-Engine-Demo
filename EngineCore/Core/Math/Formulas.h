@@ -6,11 +6,11 @@
 
 // Sum of 2 squares
 #define SQUARE_SUM_2(a, b)\
-					(a *a + b*b)
+					(a*a + b*b)
 
 // Sum of 3 squares
 #define SQUARE_SUM_3(a, b, c)\
-					(a *a + b*b + c*c)
+					(a*a + b*b + c*c)
 
 // Sum of 4 squares
 #define SQUARE_SUM_4(a, b, c, d)\

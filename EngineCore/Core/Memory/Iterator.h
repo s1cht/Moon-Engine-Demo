@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Core.h"
 
-namespace Pawn
+namespace Pawn::Memory
 {
 	template<typename Container>
 	class CORE_API BaseIterator

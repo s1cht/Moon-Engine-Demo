@@ -1,6 +1,10 @@
 #pragma once
 
-struct Malloc
+namespace Pawn::Memory
 {
+	struct Malloc
+	{
 
-};
+	};
+}
+

@@ -19,6 +19,8 @@ namespace Pawn {
 		virtual uint16 GetWidth() override;
 		virtual uint16 GetHeigth() override;
 
+		inline HWND GetWindowHandle() { return m_Window; };
+
 	public:
 		virtual void OnUpdate() override;
 

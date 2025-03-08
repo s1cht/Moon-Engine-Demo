@@ -27,6 +27,8 @@ project "Engine"
 		"vendor/spdlog/include/",
 		"vendor/ImGui",
 		includeDirs.EngineCore,
+		"C:/Windows/System32",
+		"C:/VulkanSDK/1.4.304.1/Include",
 	}
 
 	defines 
@@ -58,6 +60,15 @@ project "Engine"
 		postbuildcommands
 		{
 			("{COPYDIR} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox/")
+		}
+
+		links
+		{
+			"vulkan-1.dll",
+			"d3d11",
+			"d3d12",
+			"dxgi",
+			"d3dcompiler",
 		}
 
 	filter "configurations:Debug"
