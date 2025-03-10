@@ -9,15 +9,15 @@
 namespace Pawn
 {
 	template<typename _Array>
-	class CORE_API ArrayIterator : public Pawn::Memory::BaseIterator<_Array>
+	class CORE_API ArrayIterator : public Memory::BaseIterator<_Array>
 	{
 	public:
-		ArrayIterator() : Pawn::Memory::BaseIterator<_Array>() {}
-		ArrayIterator(Pawn::Memory::BaseIterator<_Array>::PtrType ptr) : Pawn::Memory::BaseIterator<_Array>(ptr) {}
+		ArrayIterator() : Memory::BaseIterator<_Array>() {}
+		ArrayIterator(Memory::BaseIterator<_Array>::PtrType ptr) : Memory::BaseIterator<_Array>(ptr) {}
 
 	};
 
-	template<typename T, SIZE_T initSize = 20, class allocator = Pawn::Memory::Allocator<T>>
+	template<typename T, SIZE_T initSize = 20, class allocator = Memory::Allocator<T>>
 	class CORE_API Array
 	{
 	public:

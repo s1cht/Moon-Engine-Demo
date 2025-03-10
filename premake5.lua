@@ -24,7 +24,6 @@ engineVendor				= "%{wks.location}/Engine/vendor/"
 
 group "Dependencies"
 	include "vendor/Premake"
-	require "GLFW" -- GLFW
 	require "Engine/vendor/ImGui" -- ImGui
 
 group "Core"
