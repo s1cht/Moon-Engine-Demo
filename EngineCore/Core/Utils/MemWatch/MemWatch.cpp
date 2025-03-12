@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "MemWatch.h"
 
 static bool MemWatchInitialized = false;

@@ -9,11 +9,104 @@
 namespace Pawn
 {
 	template<typename _Array>
-	class CORE_API ArrayIterator : public Memory::BaseIterator<_Array>
+	class ArrayIterator
 	{
 	public:
-		ArrayIterator() : Memory::BaseIterator<_Array>() {}
-		ArrayIterator(Memory::BaseIterator<_Array>::PtrType ptr) : Memory::BaseIterator<_Array>(ptr) {}
+		//using IteratorB = Memory::BaseIterator<_Array>;
+		using DataType = typename _Array::DataType;
+		using PtrType = DataType*;
+		using RefType = DataType&;
+
+
+	public:
+		ArrayIterator() : m_Ptr(nullptr) {}
+		ArrayIterator(PtrType ptr) : m_Ptr(ptr) {}
+
+	public:
+
+		ArrayIterator operator-(const SIZE_T& index)
+		{
+			ArrayIterator it = *this;
+			it -= index;
+			return (*this);
+		}
+
+		ArrayIterator operator+(const SIZE_T& index)
+		{
+			ArrayIterator it = *this;
+			it += index;
+			return it;
+		}
+
+		void operator-=(const SIZE_T& index)
+		{
+			this->m_Ptr -= index;
+		}
+
+		void operator+=(const SIZE_T& index)
+		{
+			this->m_Ptr += index;
+		}
+
+		ArrayIterator& operator++()
+		{
+			m_Ptr++;
+			return (*this);
+		}
+
+		ArrayIterator operator++(int)
+		{
+			ArrayIterator temp = (*this);
+			m_Ptr++;
+			return temp;
+		}
+
+		ArrayIterator& operator--()
+		{
+			m_Ptr--;
+			return (*this);
+		}
+
+		ArrayIterator operator--(int)
+		{
+			ArrayIterator temp = (*this);
+			m_Ptr--;
+			return temp;
+		}
+
+		bool operator!=(const ArrayIterator& it)
+		{
+			return (m_Ptr != it.m_Ptr);
+		}
+
+		bool operator==(const ArrayIterator& it)
+		{
+			return (m_Ptr == it.m_Ptr);
+		}
+
+		ArrayIterator& operator= (const ArrayIterator& it)
+		{
+			this->m_Ptr = it.m_Ptr;
+			return *this;
+		}
+
+		RefType operator[] (SIZE_T index)
+		{
+			return *(m_Ptr + index);
+		}
+
+		PtrType operator->()
+		{
+			return m_Ptr;
+		}
+
+		RefType operator*()
+		{
+			return *m_Ptr;
+		}
+
+	public:
+		PtrType m_Ptr;
 
 	};
 
@@ -146,7 +239,7 @@ namespace Pawn
 	public:
 
 		template <class... val>
-		Iterator Emplace(Iterator it, val&&... args)
+		Iterator Emplace(ArrayIterator<Array> it, val&&... args)
 		{
 			return PEmplace(it, std::forward<val>(args)...);
 		}
@@ -238,7 +331,7 @@ namespace Pawn
 		}
 
 		template <class... val>
-		Iterator PEmplace(Iterator it, val&&... args)
+		Iterator PEmplace(ArrayIterator<Array> it, val&&... args)
 		{
 			Ptr itPtr = it.m_Ptr;
 			Ptr lastLoc = &m_Data[m_Size];

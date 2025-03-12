@@ -1,6 +1,7 @@
 #pragma once
 
 #include "StringShared.h"
+
 #include "Core.h"
 #include "Core/Misc/CoreAssertion.h"
 #include "Core/Memory/PawnMemory.h"

@@ -15,8 +15,8 @@ public:
 
 	void OnEvent(Pawn::Event& event)
 	{
-		Pawn::String str = event.GetString();
-		::Pawn::Logger::GetClientLogger()->trace(L"{0}", str.GetString());
+		//Pawn::String str = event.GetString();
+		//::Pawn::Logger::GetClientLogger()->trace(L"{0}", str.GetString());
 	}
 };
 
@@ -25,7 +25,7 @@ class App : public Pawn::Application
 public:
 	App() 
 	{
-		PushLayer(new ExLayer());
+		//PushLayer(new ExLayer());
 	};
 	~App() {};
 

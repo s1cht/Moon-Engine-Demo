@@ -1,5 +1,5 @@
 #pragma once
-#include "pch.h"
+
 #include "Keycodes.h"
 #include "Mouse/Mouse.h"
 #include "Keyboard/Keyboard.h"

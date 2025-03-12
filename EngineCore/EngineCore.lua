@@ -7,9 +7,6 @@ project "EngineCore"
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "pch.h"
-	pchsource ("pch.cpp")
-
 	characterset "Unicode"
 
 	files
@@ -17,8 +14,6 @@ project "EngineCore"
 		"Core/**.h",
 		"Core/**.cpp",
 		"Core.h",
-		"pch.h",
-		"pch.cpp",
 	}
 
 	includedirs 

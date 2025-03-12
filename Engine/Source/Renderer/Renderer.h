@@ -11,6 +11,9 @@ namespace Pawn::Render
 	public:
 		//static void 
 
+		static bool Init();
+		static void Shutdown();
+
 	public:
 		static void BeginScene();
 		static void EndScene();

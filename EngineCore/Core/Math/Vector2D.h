@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "pch.h"
 #include "Core.h"
 #include "Core/Containers/String.h"
 #include "Core/Math/Constants.h"

@@ -1,5 +1,29 @@
 #pragma once
-class SwapChain
+#include <Core/Math/Vector2D.h>
+
+namespace Pawn
 {
+	class Window;
+	
+	namespace Render
+	{
+		class PAWN_API SwapChain
+		{
+		public:
+			virtual void Shutdown() = 0;
+
+			virtual void Present() = 0;
+			virtual void Resize(uint32 x, uint32 y) = 0;
+			virtual void SetFullscreen(bool fullscreen) = 0;
+			virtual void SetVSync(bool enabled) = 0;
+
+		public:
+			static SwapChain* Create(Window* window);
+
+		private:
+			static SwapChain* CreateDirectX11SwapChain(Window* window);
+
+		};
+	};
 };
 

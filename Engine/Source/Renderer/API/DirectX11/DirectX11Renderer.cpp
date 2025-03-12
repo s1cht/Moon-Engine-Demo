@@ -1,13 +1,17 @@
-#include "pch.h"
 #include "DirectX11Renderer.h"
-
-#define PE_D3D11_CHECK(x) if (FAILED(x)) return x;
+#include "Application/Application.h"
 
 namespace Pawn::Render
 {
+	inline RendererAPI* RendererAPI::CreateDirectX11()
+	{
+		return new DirectX11Renderer();
+	}
+
 	DirectX11Renderer::DirectX11Renderer()
 	{
-		PE_ASSERT(Init(), TEXT("DirectX 11: Initialization failed!"));
+		int32 result = Init();
+		PE_ASSERT(!result, TEXT("DirectX 11: Initialization failed! Error: {0}"), result);
 	}
 	DirectX11Renderer::~DirectX11Renderer()
 	{
@@ -16,43 +20,92 @@ namespace Pawn::Render
 	int32 Pawn::Render::DirectX11Renderer::Init()
 	{
 		HRESULT result;
-		IDXGIFactory* factory;
-		IDXGIAdapter* adapter;
-		IDXGIOutput* output;
 
-		result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&factory);
+		uint32 deviceFlags;
+		const D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_1 };
+		D3D_FEATURE_LEVEL featureLevel;
+		IDXGIDevice2* dxgiDevice;
+
+		deviceFlags = D3D12_DEVICE_FLAG_DEBUG_LAYER_ENABLED;
+
+		result = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, featureLevels, 1, D3D11_SDK_VERSION, &m_Device, &featureLevel, &m_DeviceContext);
+		if (result == DXGI_ERROR_UNSUPPORTED)
+		{
+			result = D3D11CreateDevice(m_Adapter, D3D_DRIVER_TYPE_WARP, nullptr, deviceFlags, featureLevels, 1, D3D11_SDK_VERSION, &m_Device, &featureLevel, &m_DeviceContext);
+			PE_D3D11_CHECK(result);
+		}
+
+		result = m_Device->QueryInterface(__uuidof(IDXGIDevice2), (void**)&dxgiDevice);
 		PE_D3D11_CHECK(result);
 
-		result = factory->EnumAdapters(0, &adapter);
+		result = dxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&m_Adapter);
 		PE_D3D11_CHECK(result);
 
-		result = adapter->EnumOutputs(0, &output);
+		result = m_Adapter->GetParent(__uuidof(IDXGIFactory2), (void**)&m_Factory);
 		PE_D3D11_CHECK(result);
 
-		//result = output->GetDisplayModeList();
+		m_Viewport.TopLeftX = 0.0f;
+		m_Viewport.TopLeftY = 0.0f;
+		m_Viewport.MinDepth = 0.0f;
+		m_Viewport.MaxDepth = 1.0f;
 
 		return result;
 	}
+
 	void DirectX11Renderer::Shutdown()
 	{
-		if (m_device)
-		{
-			m_device->Release();
-			m_device = nullptr;
-		}
-		if (m_deviceContext)
-		{
-			m_deviceContext->Release();
-			m_deviceContext = nullptr;
-		}
+		PE_D3D11_SHUTDOWN(m_Framebuffer);
+		PE_D3D11_SHUTDOWN(m_SwapChain);
+
+		PE_D3D11_RELEASE(m_Output);
+		PE_D3D11_RELEASE(m_Adapter);
+		PE_D3D11_RELEASE(m_Factory);
+		PE_D3D11_RELEASE(m_DeviceContext);
+		PE_D3D11_RELEASE(m_Device);
 	}
-	void DirectX11Renderer::SetClearColor(Pawn::Math::Vector4D color)
+
+	void DirectX11Renderer::OnWindowEvent(int32 x, int32 y)
 	{
+		m_DeviceContext->Flush();
+		m_Framebuffer->Unbind();
+		PE_D3D11_SHUTDOWN(m_Framebuffer);
+		m_SwapChain->Resize((uint32)x, (uint32)y);
+		m_Viewport.Width = static_cast<float32>(x);
+		m_Viewport.Height = static_cast<float32>(y);
+		m_DeviceContext->RSSetViewports(1, &m_Viewport);
+
+		m_Framebuffer = new DirectX11Framebuffer((uint32)x, (uint32)y, true);
+		m_Framebuffer->Bind();
 	}
-	void DirectX11Renderer::Clear()
+
+	void DirectX11Renderer::PostInit()
 	{
+		Window* window;
+		window = Application::Get().GetWindow();
+
+ 		m_SwapChain = new DirectX11SwapChain(window);
+		m_Framebuffer = new DirectX11Framebuffer(window->GetWidth(), window->GetHeight(), true);
+		m_Viewport.Width = static_cast<float32>(window->GetWidth());
+		m_Viewport.Height = static_cast<float32>(window->GetHeight());
+
+		m_DeviceContext->RSSetViewports(1, &m_Viewport);
+		m_Framebuffer->Bind();
 	}
+
+	void DirectX11Renderer::Present()
+	{
+		m_SwapChain->Present();
+	}
+
+	void DirectX11Renderer::Clear(Pawn::Math::Vector4D32 color)
+	{
+		m_DeviceContext->ClearRenderTargetView(m_Framebuffer->GetRenderTargetView(), color.XYZ);
+		m_DeviceContext->ClearDepthStencilView(m_Framebuffer->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	}
+
 	void DirectX11Renderer::DrawIndexed()
 	{
+
 	}
+
 }

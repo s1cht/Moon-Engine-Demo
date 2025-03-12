@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "StringShared.h"
 
 namespace Pawn

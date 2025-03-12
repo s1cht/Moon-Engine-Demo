@@ -77,7 +77,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\..\GLFW\premake5.lua" />
     <None Include="..\..\premake5.lua" />
     <None Include="premake5.lua" />
   </ItemGroup>

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pch.h"
 #include "Core.h"
 #include "Core/Bitwise.h"
 #include "Core/Containers/String.h"
@@ -68,24 +67,22 @@ namespace Pawn {
     
     class CORE_API EventDispatcher
     {
-        template<typename T>
-        using EventFunc = std::function<bool(T&)>;
     public:
-        EventDispatcher(IEvent* event) : m_Event(event) {}
+        EventDispatcher(IEvent& event) : m_Event(event) {}
     
-        template<typename T>
-        bool Dispatch(EventFunc<T> func)
+        template<typename T, typename F>
+        bool Dispatch(const F& func)
         {
-            if (m_Event->GetEventType() == T::GetStaticType())
+            if (m_Event.GetEventType() == T::GetStaticType())
             {
-                m_Event->IsHandled = func(*(T)(*m_Event));
+                m_Event.IsHandled = func(static_cast<T&>(m_Event));
                 return true;
             }
             return false;
         }
     
     private:
-        IEvent* m_Event;
+        IEvent& m_Event;
     
     };
 

@@ -54,7 +54,7 @@ namespace Pawn {
 
 	public:
 		virtual uint16 GetWidth() = 0;
-		virtual uint16 GetHeigth() = 0;
+		virtual uint16 GetHeight() = 0;
 		virtual bool GetFocused() { return m_Data.Focused; }
 
 	public:

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pch.h"
+
 #include "Application/Application.h"
 #include "Core/Utils/MemWatch/MemWatch.h"
 

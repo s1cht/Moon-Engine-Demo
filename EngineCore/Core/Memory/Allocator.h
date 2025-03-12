@@ -5,7 +5,7 @@
 namespace Pawn::Memory
 {
 	template <typename T>
-	class Allocator
+	class CORE_API Allocator
 	{
 	public:
 		using DataType = T;

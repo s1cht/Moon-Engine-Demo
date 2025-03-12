@@ -3,6 +3,8 @@
 #include "Core/Layer/LayerStack.h"
 #include "Platform/Platform.h"
 #include "Input/Input.h"
+#include "Renderer/ImGui/ImGuiLayer.h"
+#include "Events/WindowEvents.h"
 
 namespace Pawn {
 
@@ -10,7 +12,10 @@ namespace Pawn {
 	{
 	public:
 		Application();
-		virtual ~Application() = default;
+		virtual ~Application();
+
+	public:
+		Window* GetWindow() { return m_Window.get(); }
 
 	public:
 		void Run();
@@ -21,15 +26,26 @@ namespace Pawn {
 	public:
 		void OnEvent(Event& event);
 
+	public:
+		static Application& Get() { return *s_Instance; }
 
 	private:
 		bool m_Runs;
 
+		LayerStack m_LayerStack;
 	private:
-		std::unique_ptr<Window> m_Window;
+		bool OnWindowSizeEvent(WindowResizedEvent& event);
 
 	private:
-		LayerStack m_LayerStack;
+		Pawn::Memory::Scope<Window> m_Window;
+		Render::Imgui::ImGuiLayer* m_ImGuiLayer;
+
+	private:
+		int32 m_WindowUpdateX;
+		int32 m_WindowUpdateY;
+
+	private:
+		static Application* s_Instance;
 
 	};
 	// Must be defined in client

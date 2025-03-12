@@ -1,17 +1,23 @@
-#include "pch.h"
+
 #include "Win32Window.h"
 #include "Win32Platform.h"
-#include "Core/Containers/String.h"
-#include "Core/Utils/Logging/Logger.h"
 #include "Input/Input.h"
 #include "Events/WindowEvents.h"
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
-#include "Core/Utils/Benchmark/Benchmark.h"
+#include <Core/Containers/String.h>
+#include <Core/Utils/Logging/Logger.h>
+#include <Core/Utils/Benchmark/Benchmark.h>
+#include <imgui.h>
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace Pawn
 {
+	Window* Window::Create(WindowProperties properties)
+	{
+		return new Win32Window(properties);
+	}
 
 	Win32Window::Win32Window(const WindowProperties& properties)
 		: Window(properties)
@@ -35,7 +41,7 @@ namespace Pawn
 		return m_Data.WindowSize.X;
 	}
 
-	uint16 Win32Window::GetHeigth()
+	uint16 Win32Window::GetHeight()
 	{
 		return m_Data.WindowSize.Y;
 	}
@@ -60,7 +66,7 @@ namespace Pawn
 		ZeroMemory(&wc, sizeof(wc));
 
 		wc.cbSize = sizeof(wc);
-		wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+		wc.style = CS_CLASSDC | CS_OWNDC | CS_DBLCLKS;
 		wc.lpfnWndProc = WindowProc;
 		wc.hInstance = GetModuleHandleW(NULL);
 
@@ -83,7 +89,7 @@ namespace Pawn
 			m_Data.WindowSize.Y,				//
 			NULL,								// Parent window    
 			NULL,								// Menu
-			NULL,								//
+			wc.hInstance,								//
 			NULL								// Additional application data
 		);
 
@@ -102,13 +108,37 @@ namespace Pawn
 		CloseWindow(m_Window);
 	}
 
-	Window* Window::Create(WindowProperties properties)
-	{
-		return new Win32Window(properties);
-	}
-
 	LRESULT Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
+		ImGuiContext* imguiContext = ImGui::GetCurrentContext();
+		if (!imguiContext)
+		{
+			return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		}
+
+		ImGuiIO& io = ImGui::GetIO();
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+			for (int i = 0; i < platform_io.Viewports.Size; i++)
+			{
+				ImGuiViewport* viewport = platform_io.Viewports[i];
+				if (viewport && viewport->PlatformHandle && (HWND)viewport->PlatformHandle == hwnd)
+				{
+					if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		else
+		{
+			if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
+				return true;
+		}
+
 		WindowData* wndData = static_cast<WindowData*>(GetPropW(hwnd, L"WndData"));
 
 		switch (uMsg)
@@ -143,6 +173,16 @@ namespace Pawn
 					WindowLostFocusEvent event;
 
 					wndData->Focused = false;
+					wndData->EventCallback(event);
+
+					break;
+				}
+				case WM_SIZE:
+				{
+					wndData->WindowSize.X = LOWORD(lParam);
+					wndData->WindowSize.Y = HIWORD(lParam);
+
+					WindowResizedEvent event((float32)wndData->WindowSize.X, (float32)wndData->WindowSize.Y);
 					wndData->EventCallback(event);
 
 					break;
@@ -205,6 +245,7 @@ namespace Pawn
 			case WM_MOUSEMOVE:
 			{
 				Input::Get().GetMouse().SetMousePosition((float32)GET_X_LPARAM(lParam), (float32)GET_Y_LPARAM(lParam));
+				break;
 			}
 
 			//case WM_INPUT:

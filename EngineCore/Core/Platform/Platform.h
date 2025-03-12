@@ -1,5 +1,8 @@
 #pragma once
 
+// STD includes
+#include <atomic>
+
 #ifdef _WIN32
 	#define PLATFORM_WINDOWS
 	#ifdef _WIN64
@@ -9,8 +12,6 @@
 	#endif
 
 	#include "Windows/WindowsPlatform.h"
-	#include <Windows.h>
-	#include <windowsx.h>
 #else
 
 #endif

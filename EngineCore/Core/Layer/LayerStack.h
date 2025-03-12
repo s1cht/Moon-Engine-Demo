@@ -29,7 +29,7 @@ namespace Pawn
 
 	private:
 		Array<Layer*> m_Layers;
-		Iterator m_LayerInsert;
+		SIZE_T m_LayerInsertIndex;
 
 	};
 }
