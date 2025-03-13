@@ -66,7 +66,7 @@ namespace Pawn
 		ZeroMemory(&wc, sizeof(wc));
 
 		wc.cbSize = sizeof(wc);
-		wc.style = CS_CLASSDC | CS_OWNDC | CS_DBLCLKS;
+		wc.style = CS_CLASSDC | CS_HREDRAW | CS_VREDRAW;
 		wc.lpfnWndProc = WindowProc;
 		wc.hInstance = GetModuleHandleW(NULL);
 
@@ -76,28 +76,31 @@ namespace Pawn
 
 		RegisterClassExW(&wc);
 
+		RECT windowViewport = { 0, 0, m_Data.WindowSize.X, m_Data.WindowSize.Y };
+		AdjustWindowRect(&windowViewport, WS_OVERLAPPEDWINDOW, FALSE);
+
 		PE_INFO("Creating window");
 		m_Window = CreateWindowExW(
-			0,									// Optional window styles.
-			PE_WND_CLASSNAME,					// Window class
-			m_Data.WindowTitle,					// Window text
-			WS_OVERLAPPEDWINDOW,				// Window style
-												//
-			// Size and position				//
-			CW_USEDEFAULT, CW_USEDEFAULT,		//
-			m_Data.WindowSize.X,				//
-			m_Data.WindowSize.Y,				//
-			NULL,								// Parent window    
-			NULL,								// Menu
-			wc.hInstance,								//
-			NULL								// Additional application data
+			0,													// Optional window styles.
+			PE_WND_CLASSNAME,									// Window class
+			m_Data.WindowTitle,									// Window text
+			WS_OVERLAPPEDWINDOW,								// Window style
+																//
+			// Size and position								//
+			CW_USEDEFAULT, CW_USEDEFAULT,						//
+			windowViewport.right - windowViewport.left,			//
+			windowViewport.bottom - windowViewport.top,			//
+			NULL,												// Parent window    
+			NULL,												// Menu
+			wc.hInstance,										// 
+			NULL												// Additional application data
 		);
 
 		PE_CORE_ASSERT(m_Window, "Window creation failed! Error: {}", GetLastError());
 
 		PE_INFO("Setting up window data");
 		bool result = SetPropW(m_Window, L"WndData", &m_Data);
-		PE_CORE_ASSERT(result && GetLastError(), "Window user pointer assign failed! Error: {}", GetLastError());
+		PE_CORE_ASSERT(!(result && GetLastError()), "Window user pointer assign failed! Error: {}", GetLastError());
 		
 		ShowWindow(m_Window, 1);
 		PE_INFO("Window creation end");

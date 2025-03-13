@@ -60,19 +60,19 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PostBuildEvent>
-      <Command>"$(ProjectDir)bin/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
+      <Command>"$(ProjectDir)/Binaries/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
       <Message>Regenerating project files with Premake5!</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PostBuildEvent>
-      <Command>"$(ProjectDir)bin/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
+      <Command>"$(ProjectDir)/Binaries/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
       <Message>Regenerating project files with Premake5!</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'">
     <PostBuildEvent>
-      <Command>"$(ProjectDir)bin/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
+      <Command>"$(ProjectDir)/Binaries/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
       <Message>Regenerating project files with Premake5!</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

@@ -104,8 +104,10 @@ namespace Pawn::Render
 			PE_D3D11_CHECK(result);
 		}
 
-		depthBufferDesc.Width = x;
-		depthBufferDesc.Height = y;
+		swapChain->GetBackBuffer()->GetDesc(&bufferDesc);
+
+		depthBufferDesc.Width = bufferDesc.Width;
+		depthBufferDesc.Height = bufferDesc.Height;
 		depthBufferDesc.MipLevels = 1;
 		depthBufferDesc.ArraySize = 1;
 		depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
