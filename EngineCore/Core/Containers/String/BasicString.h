@@ -19,11 +19,11 @@ namespace Pawn
         StringIterator(Pawn::Memory::BaseIterator<_String>::PtrType ptr) : Pawn::Memory::BaseIterator<_String>(ptr) {}
     };
 
-    template<SIZE_T initSize = 10, class allocator = Pawn::Memory::Allocator<uchar>>
+    template<typename type, SIZE_T initSize = 10, class allocator = Pawn::Memory::Allocator<type>>
     class PString
     {
     public:
-        using DataType = uchar;
+        using DataType = type;
         using ReturnType = DataType;
         using Ptr = DataType*;
         using Iterator = StringIterator<PString>;
@@ -277,7 +277,8 @@ namespace Pawn
 
     };
 
-    typedef PString<10, Pawn::Memory::Allocator<uchar>> String;
+    typedef PString<uchar, 10> String;
+    typedef PString<ansichar, 10> AnsiString;
 
     //template<typename convertTo, SIZE_T strSize = 10, typename allocator = Allocator<uchar>>
     //CORE_API PString<strSize, allocator> TToString(convertTo value);

@@ -7,7 +7,7 @@
 namespace Pawn::Render
 {
 	class Shader;
-	class VertexBufferArray;
+	class VertexBuffer;
 
 	enum class RasterizerFill
 	{
@@ -40,11 +40,11 @@ namespace Pawn::Render
 	class PipelineState
 	{
 	public:
+		virtual void SetInputLayout(Shader* vertexShader, VertexBuffer& bufferArray) = 0;
 		virtual void SetDepthStencilState(bool depthEnabled, bool stencilEnable, DepthComparison depthFunc) = 0;
 		virtual void SetBlendState(bool enableBlend, BlendMask mask) = 0;
 		virtual void SetRasterizerState(RasterizerCull cull, RasterizerFill fill, bool frontCounterClockwide, int32 depthBias, float32 depthBiasClamp) = 0;
 		
-		virtual void SetInputLayout(Shader* vertexShader, VertexBufferArray& bufferArray) = 0;
 
 		virtual void Bind() = 0;
 

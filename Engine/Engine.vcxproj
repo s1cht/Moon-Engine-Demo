@@ -155,7 +155,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.h" />
     <ClInclude Include="PawnEngine.h" />
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
@@ -172,6 +171,7 @@
     <ClInclude Include="Source\Platform\Windows\Win32Platform.h" />
     <ClInclude Include="Source\Platform\Windows\Win32Window.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.h" />
+    <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Renderer.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.h" />
     <ClInclude Include="Source\Renderer\Base\Buffer.h" />
@@ -185,7 +185,6 @@
     <ClInclude Include="Source\Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.cpp" />
     <ClCompile Include="Source\Application\Application.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
     <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp" />
@@ -194,6 +193,7 @@
     <ClCompile Include="Source\Input\Windows\WinInput.cpp" />
     <ClCompile Include="Source\Platform\Windows\Win32Window.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.cpp" />
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Renderer.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.cpp" />
     <ClCompile Include="Source\Renderer\Base\Buffer.cpp" />
