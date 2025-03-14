@@ -3,7 +3,7 @@
 #include "StringShared.h"
 
 #include "Core.h"
-#include "Core/Misc/CoreAssertion.h"
+#include "Core/Misc/Assertion.h"
 #include "Core/Memory/PawnMemory.h"
 #include "Core/Utils/Logging/Logger.h"
 

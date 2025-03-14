@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core.h"
-#include "Core/Misc/CoreAssertion.h"
+#include "Core/Misc/Assertion.h"
 
 namespace Pawn
 {

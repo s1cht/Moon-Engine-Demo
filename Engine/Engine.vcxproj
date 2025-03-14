@@ -170,6 +170,7 @@
     <ClInclude Include="Source\Platform\Platform.h" />
     <ClInclude Include="Source\Platform\Windows\Win32Platform.h" />
     <ClInclude Include="Source\Platform\Windows\Win32Window.h" />
+    <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Buffer.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Renderer.h" />
@@ -192,6 +193,7 @@
     <ClCompile Include="Source\Input\Mouse\Mouse.cpp" />
     <ClCompile Include="Source\Input\Windows\WinInput.cpp" />
     <ClCompile Include="Source\Platform\Windows\Win32Window.cpp" />
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Buffer.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Renderer.cpp" />

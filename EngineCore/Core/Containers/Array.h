@@ -2,7 +2,7 @@
 #include "Core.h"
 #include "Core/Utils/Logging/Logger.h"
 #include "Core/Memory/PawnMemory.h"
-#include "Core/Misc/CoreAssertion.h"
+#include "Core/Misc/Assertion.h"
 
 #define ARR_RESIZE_MULTIPLYER 2
 

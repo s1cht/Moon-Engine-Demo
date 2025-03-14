@@ -18,6 +18,8 @@ namespace Pawn::Render
         ~DirectX11PipilineState();
 
     public:
+		virtual void SetInputLayout(Shader* vertexShader, BufferLayout& layout) override;
+		virtual void SetPrimitiveTopology(PrimitiveTopology topology, uint8 patchListPointCount) override;
         virtual void SetDepthStencilState(bool depthEnabled, bool stencilEnable, DepthComparison depthFunc) override;
         virtual void SetBlendState(bool enableBlend, BlendMask mask) override;
         virtual void SetRasterizerState(RasterizerCull cull, RasterizerFill fill, bool frontCounterClockwide, int32 depthBias, float32 depthBiasClamp) override;

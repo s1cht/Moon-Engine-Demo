@@ -23,7 +23,8 @@ namespace Pawn::Render
 {
 	PipelineState* PipelineState::CreateDirectX11PipelineState()
 	{
-		return new DirectX11PipilineState();
+		//return new DirectX11PipilineState();
+		return nullptr;
 	}
 
 	DirectX11PipilineState::DirectX11PipilineState()
@@ -47,7 +48,7 @@ namespace Pawn::Render
 	{
 	}
 
-	void DirectX11PipilineState::SetInputLayout(Shader* vertexShader, VertexBufferArray& bufferArray)
+	void DirectX11PipilineState::SetInputLayout(Shader* vertexShader, BufferLayout& layout)
 	{
 	}
 
@@ -64,4 +65,10 @@ namespace Pawn::Render
 	{
 		
 	}
+
+	void DirectX11PipilineState::SetPrimitiveTopology(PrimitiveTopology topology, uint8 patchListPointCount)
+	{
+
+	}
+
 }
