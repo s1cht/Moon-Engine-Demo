@@ -20,24 +20,28 @@ namespace Pawn::Render
             }
             case Pawn::Render::ShaderType::Float:
             case Pawn::Render::ShaderType::Int:
+            case Pawn::Render::ShaderType::Uint:
             {
                 return 4;
                 break;
             }
             case Pawn::Render::ShaderType::Float2:
-            case Pawn::Render::ShaderType::Int2:
+			case Pawn::Render::ShaderType::Int2:
+			case Pawn::Render::ShaderType::Uint2:
             {
                 return 4 * 2;
                 break;
             }
             case Pawn::Render::ShaderType::Float3:
-            case Pawn::Render::ShaderType::Int3:
+			case Pawn::Render::ShaderType::Int3:
+			case Pawn::Render::ShaderType::Uint3:
             {
                 return 4 * 3;
                 break;
             }
             case Pawn::Render::ShaderType::Float4:
-            case Pawn::Render::ShaderType::Int4:
+			case Pawn::Render::ShaderType::Int4:
+			case Pawn::Render::ShaderType::Uint4:
             {
                 return 4 * 4;
                 break;
@@ -92,7 +96,7 @@ namespace Pawn::Render
             case Pawn::Render::RendererAPI::API::DirectX12:
             case Pawn::Render::RendererAPI::API::Metal:
             {
-                PE_ASSERT(false, TEXT("GetTypeAPISpecificShaderType: Unsupported renderer!"));
+                PE_ASSERT(false, TEXT("Create VertexBuffer: Unsupported renderer!"));
                 break;
             }
             case Pawn::Render::RendererAPI::API::DirectX11:
@@ -116,8 +120,7 @@ namespace Pawn::Render
 		case Pawn::Render::RendererAPI::API::DirectX12:
 		case Pawn::Render::RendererAPI::API::Metal:
 		{
-			PE_ASSERT(false, TEXT("GetTypeAPISpecificShaderType: Unsupported renderer!"));
-			PE_ASSERT(false, TEXT("GetTypeAPISpecificShaderType: Unsupported renderer!"));
+			PE_ASSERT(false, TEXT("Create IndexBuffer: Unsupported renderer!"));
 			break;
 		}
 		case Pawn::Render::RendererAPI::API::DirectX11:

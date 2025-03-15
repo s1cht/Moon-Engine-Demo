@@ -5,6 +5,16 @@
 
 namespace Pawn
 {
-    CORE_API SIZE_T GetStringSize(const uchar* str);
+	template<typename T>
+	CORE_API SIZE_T GetStringSize(const T* str)
+	{
+		SIZE_T size = 0;
+		while (*str != '\0')
+		{
+			++size;
+			++str;
+		}
+		return size;
+	}
 
 }

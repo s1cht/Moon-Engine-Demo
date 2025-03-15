@@ -138,11 +138,11 @@ namespace Pawn::Render
 		bufferDesc.ByteWidth = count * sizeof(uint32);
 		switch (usage)
 		{
-		case Pawn::Render::Usage::Default:          bufferDesc.Usage = D3D11_USAGE_DEFAULT; break;
-		case Pawn::Render::Usage::Immutable:        bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; break;
-		case Pawn::Render::Usage::Dynamic:          bufferDesc.Usage = D3D11_USAGE_DYNAMIC; break;
-		case Pawn::Render::Usage::Staging:          bufferDesc.Usage = D3D11_USAGE_STAGING; break;
-		default: PE_ASSERT(false, TEXT("Wtf is a kilometer!!!"));
+		    case Pawn::Render::Usage::Default:          bufferDesc.Usage = D3D11_USAGE_DEFAULT; break;
+		    case Pawn::Render::Usage::Immutable:        bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; break;
+		    case Pawn::Render::Usage::Dynamic:          bufferDesc.Usage = D3D11_USAGE_DYNAMIC; break;
+		    case Pawn::Render::Usage::Staging:          bufferDesc.Usage = D3D11_USAGE_STAGING; break;
+		    default: PE_ASSERT(false, TEXT("Wtf is a kilometer!!!"));
 		}
 		bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bufferDesc.CPUAccessFlags = 0;
@@ -166,32 +166,92 @@ namespace Pawn::Render
     {
         switch (type)
 		{
-        case Pawn::Render::ShaderType::None:
-            break;
-        case Pawn::Render::ShaderType::Float:
-            break;
-        case Pawn::Render::ShaderType::Float2:
-            break;
-        case Pawn::Render::ShaderType::Float3:
-            break;
-        case Pawn::Render::ShaderType::Float4:
-            break;
-        case Pawn::Render::ShaderType::Int:
-            break;
-        case Pawn::Render::ShaderType::Int2:
-            break;
-        case Pawn::Render::ShaderType::Int3:
-            break;
-        case Pawn::Render::ShaderType::Int4:
-            break;
-        case Pawn::Render::ShaderType::Mat3x3:
-            break;
-        case Pawn::Render::ShaderType::Mat4x4:
-            break;
-        case Pawn::Render::ShaderType::Bool:
-            break;
-        default:
-            break;
+            case Pawn::Render::ShaderType::Float:
+            {
+                return DXGI_FORMAT_R32_FLOAT;
+                break;
+            }
+            case Pawn::Render::ShaderType::Float2:
+    		{
+    			return DXGI_FORMAT_R32G32_FLOAT;
+    			break;
+    		}
+            case Pawn::Render::ShaderType::Float3:
+    		{
+    			return DXGI_FORMAT_R32G32B32_FLOAT;
+    			break;
+    		}
+            case Pawn::Render::ShaderType::Float4:
+    		{
+    			return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    			break;
+    		}
+            case Pawn::Render::ShaderType::Int:
+    		{
+    			return DXGI_FORMAT_R32_SINT;
+    			break;
+    		}
+            case Pawn::Render::ShaderType::Int2:
+    		{
+    			return DXGI_FORMAT_R32G32_SINT;
+    			break;
+    		}
+            case Pawn::Render::ShaderType::Int3:
+    		{
+    			return DXGI_FORMAT_R32G32B32_SINT;
+    			break;
+    		}
+            case Pawn::Render::ShaderType::Int4:
+    		{
+    			return DXGI_FORMAT_R32G32B32A32_SINT;
+    			break;
+    		}
+            case Pawn::Render::ShaderType::Bool:
+            {
+                return DXGI_FORMAT_R32_SINT;
+                break;
+            }
+            case Pawn::Render::ShaderType::Uint:
+            {
+                return DXGI_FORMAT_R32_UINT;
+                break;
+            }
+			case Pawn::Render::ShaderType::Uint2:
+			{
+				return DXGI_FORMAT_R32G32_UINT;
+				break;
+			}
+			case Pawn::Render::ShaderType::Uint3:
+			{
+				return DXGI_FORMAT_R32G32B32_UINT;
+				break;
+			}
+			case Pawn::Render::ShaderType::Uint4:
+			{
+				return DXGI_FORMAT_R32G32B32A32_UINT;
+				break;
+			}
+			case Pawn::Render::ShaderType::None:
+			{
+				PE_ASSERT(false, TEXT("DirectX11: ShaderTypeConversion: Shader type ::None can't be converted!"));
+				return 0;
+				break;
+			}
+			case Pawn::Render::ShaderType::Mat3x3:
+			{
+				PE_ASSERT(false, TEXT("DirectX11: ShaderType conversion failed! Mat3x3 unsupported in DirectX11!"));
+				return 0;
+				break;
+			}
+			case Pawn::Render::ShaderType::Mat4x4:
+			{
+				PE_ASSERT(false, TEXT("DirectX11: ShaderType conversion failed! Mat4x4 unsupported in DirectX11!"));
+				return 0;
+				break;
+			}
         }
+
+        PE_ASSERT(false, TEXT("DirectX11: ShaderType conversion failed! Unknown type!"));
+        return 0;
     }
 }

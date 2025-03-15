@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="PawnEngine.h" />
+    <ClInclude Include="Source\Renderer\Base\Shader.h" />
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
     <ClInclude Include="Source\Events\ApplicationEvents.h" />
@@ -186,6 +187,7 @@
     <ClInclude Include="Source\Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Renderer\Base\Shader.cpp" />
     <ClCompile Include="Source\Application\Application.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
     <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp" />

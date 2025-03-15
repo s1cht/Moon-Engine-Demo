@@ -187,6 +187,11 @@ namespace Pawn
 			return m_Capacity;
 		}
 
+		inline const DataType* Data() const
+		{
+			return m_Data;
+		}
+
 		inline Iterator begin() const
 		{
 			return Begin();

@@ -3,7 +3,7 @@
 #include <Core/CoreTypes.h>
 
 #include "Renderer/Base/Buffer.h"
-//#include "Renderer/Base/Shader.h"
+#include "Renderer/Base/Shader.h"
 
 namespace Pawn::Render
 {
@@ -49,15 +49,34 @@ namespace Pawn::Render
 		Always = 7
 	};
 
+	enum class InputClassification
+	{
+		None = 0,
+		PerVertex, PerInstance
+	};
+
 	class PipelineState
 	{
 	public:
-		virtual void SetInputLayout(Shader* vertexShader, BufferLayout& layout) = 0;
+		virtual ~PipelineState() {};
+
+		virtual void SetInputLayout(BufferLayout& layout, InputClassification inputSlotClass, uint32 instanceDataStepRate) = 0;
+
 		virtual void SetPrimitiveTopology(PrimitiveTopology topology, uint8 patchListPointCount) = 0;
+
 		virtual void SetDepthStencilState(bool depthEnabled, bool stencilEnable, DepthComparison depthFunc) = 0;
+
 		virtual void SetBlendState(bool enableBlend, BlendMask mask) = 0;
-		virtual void SetRasterizerState(RasterizerCull cull, RasterizerFill fill, bool frontCounterClockwide, int32 depthBias, float32 depthBiasClamp) = 0;
+
+		virtual void SetRasterizerState(RasterizerCull cull, RasterizerFill fill, 
+			bool frontCounterClockwise, bool scissorEnabled, 
+			bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,
+			bool multisampleEnabled, int32 sampleCount ) = 0;
 		
+		virtual void SetVertexShader(Memory::Reference<Shader> vertexShader) = 0;
+		virtual void SetPixelShader(Memory::Reference<Shader> pixelShader) = 0;
+		//virtual void SetGeometryShader(Shader* geometryShader) = 0;
+
 		virtual void Bind() = 0;
 
 	public:

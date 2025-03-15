@@ -36,7 +36,7 @@ namespace Pawn
             Allocate(m_Capacity);
         }
 
-        PString(const uchar* str)
+        PString(const DataType* str)
             : m_Allocator(AllocatorType())
         {
             m_Size = GetStringSize(str);
@@ -45,10 +45,10 @@ namespace Pawn
 
             Allocate(m_Capacity);
             CopyString(str, m_Size);
-            m_Data[m_Size] = TEXT('\0');
+            m_Data[m_Size] = '\0';
         }
 
-        PString(const uchar* str, SIZE_T size)
+        PString(const DataType* str, SIZE_T size)
             : m_Allocator(AllocatorType())
         {
             m_Size = size;
@@ -57,7 +57,7 @@ namespace Pawn
 
             Allocate(m_Capacity);
             CopyString(str, size);
-            m_Data[m_Size] = TEXT('\0');
+            m_Data[m_Size] = '\0';
         }
 
         PString(const PString& other)
@@ -69,7 +69,7 @@ namespace Pawn
 
             Allocate(m_Capacity);
             CopyString(other.m_Data, m_Size);
-            m_Data[m_Size] = TEXT('\0');
+            m_Data[m_Size] = '\0';
         }
 
         PString(PString&& other) noexcept
@@ -92,12 +92,12 @@ namespace Pawn
     public:
         inline SIZE_T GetSize() const noexcept { return m_Size; }
         inline SIZE_T GetCapacity() const noexcept { return m_Capacity; }
-        inline const uchar* GetString() const noexcept { return m_Data; }
+        inline const DataType* GetString() const noexcept { return m_Data; }
 
         inline Iterator begin() const { return Iterator(m_Data); }
         inline Iterator end() const { return Iterator(m_Data + m_Size); }
 
-        PString& operator=(const uchar* str)
+        PString& operator=(const DataType* str)
         {
             Clear();
             Assign(str);
@@ -123,7 +123,7 @@ namespace Pawn
             return *this;
         }
 
-        PString operator+(const uchar* str) const
+        PString operator+(const DataType* str) const
         {
             PString result = *this;
             result.AddToString(str, GetStringSize(str));
@@ -137,7 +137,7 @@ namespace Pawn
             return result;
         }
 
-        PString operator+(const uchar& character) const
+        PString operator+(const DataType& character) const
         {
             PString result = *this;
             result.AddChar(character);
@@ -149,12 +149,12 @@ namespace Pawn
             return AddToString(str.GetString(), str.GetSize());
         }
 
-        PString& operator+=(const uchar* str)
+        PString& operator+=(const DataType* str)
         {
             return AddToString(str, GetStringSize(str));
         }
 
-        PString& operator+=(const uchar& character)
+        PString& operator+=(const DataType& character)
         {
             return AddChar(character);
         }
@@ -176,7 +176,7 @@ namespace Pawn
         {
             m_Size = 0;
             if (m_Data)
-                m_Data[0] = TEXT('\0');
+                m_Data[0] = '\0';
         }
 
         bool Resize(SIZE_T size)
@@ -184,13 +184,13 @@ namespace Pawn
             if (size + 1 <= m_Capacity)
             {
                 m_Size = size;
-                m_Data[m_Size] = TEXT('\0');
+                m_Data[m_Size] = '\0';
                 return false;
             }
 
             Allocate(size + 1);
             m_Size = size;
-            m_Data[m_Size] = TEXT('\0');
+            m_Data[m_Size] = '\0';
             return true;
         }
 
@@ -199,24 +199,24 @@ namespace Pawn
             if (m_Size > 0)
             {
                 m_Size--;
-                m_Data[m_Size] = TEXT('\0');
+                m_Data[m_Size] = '\0';
             }
         }
 
     public:
-        void Assign(const uchar*& ptr)
+        void Assign(const DataType*& ptr)
         {
             Assign(ptr, GetStringSize(ptr));
         }
 
-        void Assign(const uchar*& ptr, SIZE_T size)
+        void Assign(const DataType*& ptr, SIZE_T size)
         {
             if (size + 1 > m_Capacity)
                 Allocate(size + 1);
 
             CopyString(ptr, size);
             m_Size = size;
-            m_Data[m_Size] = TEXT('\0');
+            m_Data[m_Size] = '\0';
         }
 
     private:
@@ -236,16 +236,16 @@ namespace Pawn
             m_Capacity = newCapacity;
             if (copySize < m_Size)
                 m_Size = copySize;
-            m_Data[m_Size] = TEXT('\0');
+            m_Data[m_Size] = '\0';
         }
 
-        void CopyString(const uchar* str, SIZE_T size)
+        void CopyString(const DataType* str, SIZE_T size)
         {
             for (SIZE_T i = 0; i < size; i++)
                 m_Data[i] = str[i];
         }
 
-        PString& AddToString(const uchar* str, SIZE_T size)
+        PString& AddToString(const DataType* str, SIZE_T size)
         {
             if (m_Size + size + 1 > m_Capacity)
                 Allocate((SIZE_T)((m_Size + size + 1) * STR_RESIZE_MULTIPLYER));
@@ -254,18 +254,18 @@ namespace Pawn
                 m_Data[m_Size + i] = str[i];
 
             m_Size += size;
-            m_Data[m_Size] = TEXT('\0');
+            m_Data[m_Size] = '\0';
             return *this;
         }
 
-        PString& AddChar(const uchar& character)
+        PString& AddChar(const DataType& character)
         {
             if (m_Size + 1 >= m_Capacity)
                 Allocate((SIZE_T)(m_Capacity * STR_RESIZE_MULTIPLYER));
 
             m_Data[m_Size] = character;
             m_Size++;
-            m_Data[m_Size] = TEXT('\0');
+            m_Data[m_Size] = '\0';
             return *this;
         }
 
@@ -303,6 +303,26 @@ namespace Pawn
 
     CORE_API String operator+(const uchar* str1, const String& str2);
     CORE_API String operator+(const uchar& str1, const String& str2);
+
+	CORE_API AnsiString ToAnsiString(int8 value);
+	CORE_API AnsiString ToAnsiString(int16 value);
+	CORE_API AnsiString ToAnsiString(int32 value);
+	CORE_API AnsiString ToAnsiString(int64 value);
+
+	CORE_API AnsiString ToAnsiString(uint8 value);
+	CORE_API AnsiString ToAnsiString(uint16 value);
+	CORE_API AnsiString ToAnsiString(uint32 value);
+	CORE_API AnsiString ToAnsiString(uint64 value);
+
+	CORE_API AnsiString ToAnsiString(float32 value);
+	CORE_API AnsiString ToAnsiString(float64 value);
+
+	CORE_API AnsiString ToAnsiString(bool value);
+	CORE_API AnsiString ToAnsiString(const AnsiString& value);
+	CORE_API AnsiString ToAnsiString(const ansichar& value);
+
+	CORE_API AnsiString operator+(const ansichar* str1, const AnsiString& str2);
+	CORE_API AnsiString operator+(const ansichar& str1, const AnsiString& str2);
 }
 
 #define var_to_string(type, value) TEXT(" [") TEXT(#type) TEXT("] ") TEXT(#value) TEXT(" = ") + Pawn::ToString(value) + TEXT(";")
