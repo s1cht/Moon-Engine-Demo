@@ -26,7 +26,8 @@ namespace Pawn::Render
 		D3D_FEATURE_LEVEL featureLevel;
 		IDXGIDevice2* dxgiDevice;
 
-		deviceFlags = D3D12_DEVICE_FLAG_DEBUG_LAYER_ENABLED;
+		deviceFlags = 0;
+		//deviceFlags |= D3D12_DEVICE_FLAG_DEBUG_LAYER_ENABLED;
 
 		result = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, featureLevels, 1, D3D11_SDK_VERSION, &m_Device, &featureLevel, &m_DeviceContext);
 		if (result == DXGI_ERROR_UNSUPPORTED)
@@ -43,11 +44,6 @@ namespace Pawn::Render
 
 		result = m_Adapter->GetParent(__uuidof(IDXGIFactory2), (void**)&m_Factory);
 		PE_D3D11_CHECK(result);
-
-		m_Viewport.TopLeftX = 0.0f;
-		m_Viewport.TopLeftY = 0.0f;
-		m_Viewport.MinDepth = 0.0f;
-		m_Viewport.MaxDepth = 1.0f;
 
 		return result;
 	}
@@ -70,9 +66,6 @@ namespace Pawn::Render
 		m_Framebuffer->Unbind();
 		PE_D3D11_SHUTDOWN(m_Framebuffer);
 		m_SwapChain->Resize((uint32)x, (uint32)y);
-		m_Viewport.Width = static_cast<float32>(x);
-		m_Viewport.Height = static_cast<float32>(y);
-		m_DeviceContext->RSSetViewports(1, &m_Viewport);
 
 		m_Framebuffer = new DirectX11Framebuffer((uint32)x, (uint32)y, true);
 		m_Framebuffer->Bind();
@@ -85,10 +78,7 @@ namespace Pawn::Render
 
  		m_SwapChain = new DirectX11SwapChain(window);
 		m_Framebuffer = new DirectX11Framebuffer(window->GetWidth(), window->GetHeight(), true);
-		m_Viewport.Width = static_cast<float32>(window->GetWidth());
-		m_Viewport.Height = static_cast<float32>(window->GetHeight());
 
-		m_DeviceContext->RSSetViewports(1, &m_Viewport);
 		m_Framebuffer->Bind();
 	}
 
@@ -106,6 +96,16 @@ namespace Pawn::Render
 	void DirectX11Renderer::DrawIndexed(uint32 indexCount, uint32 index)
 	{
 		m_DeviceContext->DrawIndexed(indexCount, index, 0);
+	}
+
+	void DirectX11Renderer::BindBackBuffer()
+	{
+		m_Framebuffer->Bind();
+	}
+
+	void DirectX11Renderer::UnbindBackBuffer()
+	{
+		m_Framebuffer->Unbind();
 	}
 
 }

@@ -33,6 +33,15 @@ namespace Pawn::Render
 			s_Renderer->OnWindowEvent(x, y);
 		}
 
+		inline static void BindBackBuffer()
+		{
+			s_Renderer->BindBackBuffer();
+		}
+		inline static void UnbindBackBuffer()
+		{
+			s_Renderer->UnbindBackBuffer();
+		}
+
 		static RendererAPI* Get() { return s_Renderer; }
 
 	private:

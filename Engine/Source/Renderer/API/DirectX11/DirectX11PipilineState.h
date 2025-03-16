@@ -25,6 +25,8 @@ namespace Pawn::Render
 			bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,
 			bool multisampleEnabled, int32 sampleCount) override;
 
+		void SetViewport(uint32 x, uint32 y) override;
+
 		void SetVertexShader(Memory::Reference<Shader> vertexShader) override;
 		void SetPixelShader(Memory::Reference<Shader> pixelShader) override;
 		void SetComputeShader(Memory::Reference<Shader> computeShader) override;
@@ -36,6 +38,7 @@ namespace Pawn::Render
 		void BindUniforms(Array<Uniform*>& uniforms, Shader::Type stage) override;
 
 	private:
+		D3D11_VIEWPORT m_Viewport;
 		Memory::Scope<ID3D11InputLayout> m_InputLayout;
 		Memory::Scope<ID3D11DepthStencilState> m_DepthStencilState;
 		Memory::Scope<ID3D11RasterizerState> m_RasterizerState;

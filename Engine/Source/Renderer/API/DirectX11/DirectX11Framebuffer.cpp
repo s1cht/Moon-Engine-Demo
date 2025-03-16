@@ -19,6 +19,7 @@ namespace Pawn::Render
 		m_UsingBackBuffer = usingBackBuffer;
 		Init(x, y);
 	}
+
 	DirectX11Framebuffer::~DirectX11Framebuffer()
 	{
 		Shutdown();
@@ -131,22 +132,3 @@ namespace Pawn::Render
 		return result;
 	}
 }
-
-//depthStencilDesc.DepthEnable = true;
-		//depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		//depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-		//depthStencilDesc.StencilEnable = true;
-		//depthStencilDesc.StencilReadMask = 0xFF;
-		//depthStencilDesc.StencilWriteMask = 0xFF;
-
-		//depthStencilDesc.FrontFace.StencilFailOp =			D3D11_STENCIL_OP_KEEP;
-		//depthStencilDesc.FrontFace.StencilDepthFailOp =		D3D11_STENCIL_OP_INCR;
-		//depthStencilDesc.FrontFace.StencilPassOp =			D3D11_STENCIL_OP_KEEP;
-		//depthStencilDesc.FrontFace.StencilFunc =			D3D11_COMPARISON_ALWAYS;
-		//depthStencilDesc.BackFace.StencilFailOp =			D3D11_STENCIL_OP_KEEP;
-		//depthStencilDesc.BackFace.StencilDepthFailOp =		D3D11_STENCIL_OP_DECR;
-		//depthStencilDesc.BackFace.StencilPassOp =			D3D11_STENCIL_OP_KEEP;
-		//depthStencilDesc.BackFace.StencilFunc =				D3D11_COMPARISON_ALWAYS;
-
-		//result = render->GetDevice()->CreateDepthStencilState(&depthStencilDesc, &m_DepthStencilState);
-		//PE_D3D11_CHECK(result);

@@ -1,4 +1,5 @@
 #include "SandboxLayer.h"
+#include <Application/Application.h>
 #include <Renderer/Renderer.h>
 #include <Renderer/RenderCommand.h>
 
@@ -6,18 +7,24 @@ using namespace Pawn;
 
 void SandboxLayer::OnAttach()
 {
+
 	Render::BufferLayout layout = { 
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
 		{ Render::ShaderType::Float4, "COLOR", 0, 0 } 
 	};
 
+	m_WindowWidth = (uint32)Application::Get().GetWindow()->GetWidth();
+	m_WindowHeight = (uint32)Application::Get().GetWindow()->GetHeight();
+
 	m_Primary = Memory::Reference<Render::PipelineState>(Render::PipelineState::Create());
 	m_VertexShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("assets/Shaders/vs_primary.hlsl"), Render::Shader::Type::Vertex, true));
 	m_PixelShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("assets/Shaders/ps_primary.hlsl"), Render::Shader::Type::Pixel, true));
 
+	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
 	m_Primary->SetVertexShader(m_VertexShader);
 	m_Primary->SetPixelShader(m_PixelShader);
 
+	m_Primary->SetBlendState(false, Render::BlendMask::All);
 	m_Primary->SetInputLayout(layout, Pawn::Render::InputClassification::PerVertex, 0);
 
 	const float32 points[4][7] =
@@ -45,7 +52,25 @@ void SandboxLayer::OnUpdate()
 	m_VertexBuffer->Bind(layout);
 	m_IndexBuffer->Bind();
 	m_Primary->Bind();
+	Render::RenderCommand::BindBackBuffer();
 
 	Render::Renderer::Submit(m_IndexBuffer->GetCount(), 0);
+}
 
+void SandboxLayer::OnEvent(Event& event)
+{
+	Pawn::EventDispatcher dispathcher(event);
+	dispathcher.Dispatch<WindowResizedEvent>(BIND_EVENT_FN(SandboxLayer::SetViewportSize));
+
+	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
+}
+
+bool SandboxLayer::SetViewportSize(Pawn::WindowResizedEvent& event)
+{
+	m_WindowWidth = (uint32)event.GetSizeX();
+	m_WindowHeight = (uint32)event.GetSizeY();
+
+	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
+
+	return false;
 }

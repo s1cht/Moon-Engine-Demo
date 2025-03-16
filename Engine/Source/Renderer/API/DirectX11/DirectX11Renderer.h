@@ -16,14 +16,18 @@ namespace Pawn::Render
 		~DirectX11Renderer();
 
 	public:
-		virtual void PostInit() override;
+		void PostInit() override;
 		
-		virtual void Present() override;
-		virtual void Clear(Pawn::Math::Vector4D32 color) override;
-		virtual void DrawIndexed(uint32 indexCount, uint32 index) override;
-		virtual void Shutdown() override;
+		void Present() override;
+		void Clear(Pawn::Math::Vector4D32 color) override;
+		void DrawIndexed(uint32 indexCount, uint32 index) override;
+		void Shutdown() override;
 
-		virtual void OnWindowEvent(int32 x, int32 y) override;
+		void OnWindowEvent(int32 x, int32 y) override;
+
+		void BindBackBuffer() override;
+		void UnbindBackBuffer() override;
+
 
 	public:
 		ID3D11Device* GetDevice() { return m_Device; }
@@ -41,8 +45,6 @@ namespace Pawn::Render
 		IDXGIFactory2* m_Factory;
 		IDXGIOutput* m_Output;
 		IDXGIAdapter* m_Adapter;
-
-		D3D11_VIEWPORT m_Viewport;
 
 	private:
 		DirectX11SwapChain* m_SwapChain;

@@ -23,6 +23,12 @@ namespace Pawn::Render
 		m_GeometryShader		= nullptr;
 		m_HullShader			= nullptr;
 		m_DomainShader			= nullptr;
+		m_Viewport.TopLeftX = 0.0f;
+		m_Viewport.TopLeftY = 0.0f;
+		m_Viewport.MinDepth = 0.0f;
+		m_Viewport.MaxDepth = 1.0f;
+		m_Viewport.Width = 0.f;
+		m_Viewport.Height = 0.f;
 	}
 
 	DirectX11PipelineState::~DirectX11PipelineState()
@@ -275,6 +281,7 @@ namespace Pawn::Render
 		if (m_GeometryShader)
 			m_GeometryShader->Bind();
 
+		render->GetDeviceContext()->RSSetViewports(1, &m_Viewport);
 		render->GetDeviceContext()->RSSetState(m_RasterizerState.get());
 		render->GetDeviceContext()->OMSetDepthStencilState(m_DepthStencilState.get(), 1);
 		render->GetDeviceContext()->OMSetBlendState(m_BlendState.get(), nullptr, 0xFFFFFFFF);
@@ -446,6 +453,14 @@ namespace Pawn::Render
 			uniform->Bind(index, stage);
 			index++;
 		}
+	}
+
+	void DirectX11PipelineState::SetViewport(uint32 x, uint32 y)
+	{
+		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
+
+		m_Viewport.Width = static_cast<float32>(x);
+		m_Viewport.Height = static_cast<float32>(y);
 	}
 
 }

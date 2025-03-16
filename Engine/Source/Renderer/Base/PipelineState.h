@@ -68,6 +68,8 @@ namespace Pawn::Render
 
 		virtual void SetBlendState(bool enableBlend, BlendMask mask) = 0;
 
+		virtual void SetViewport(uint32 x, uint32 y) = 0;
+
 		virtual void SetRasterizerState(RasterizerCull cull, RasterizerFill fill, 
 			bool frontCounterClockwise, bool scissorEnabled, 
 			bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,

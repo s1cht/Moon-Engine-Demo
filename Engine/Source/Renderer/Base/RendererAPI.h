@@ -5,6 +5,7 @@
 
 #include "Platform/Base/Window.h"
 #include "Events/WindowEvents.h"
+#include "Renderer/Base/Framebuffer.h"
 
 namespace Pawn::Render
 {
@@ -28,6 +29,9 @@ namespace Pawn::Render
 		virtual void PostInit() = 0;
 
 		virtual void OnWindowEvent(int32 x, int32 y) = 0;
+
+		virtual void BindBackBuffer() = 0;
+		virtual void UnbindBackBuffer() = 0;
 
 	public:
 		inline static void SetRendererAPI(API api) {};
