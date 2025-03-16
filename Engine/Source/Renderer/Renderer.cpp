@@ -18,12 +18,11 @@ namespace Pawn::Render
 	
 	void Renderer::EndScene()
 	{
-		RenderCommand::Present();
 	}
 	
-	void Renderer::Submit()
+	void Renderer::Submit(uint32 indexCount, uint32 index)
 	{
-		RenderCommand::DrawIndexed();
+		RenderCommand::DrawIndexed(indexCount, index);
 	}
 
 	void Renderer::SetRenderAPI(RendererAPI::API api)

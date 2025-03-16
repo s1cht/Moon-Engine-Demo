@@ -5,7 +5,7 @@
 namespace Pawn::Render
 {
 
-    static VertexBuffer* CreateDirectX11VertexBuffer(void* data, SIZE_T size, Usage usage)
+    VertexBuffer* VertexBuffer::CreateDirectX11VertexBuffer(void* data, SIZE_T size, Usage usage)
     {
         return new DirectX11VertexBuffer(data, size, usage);
     }
@@ -24,10 +24,13 @@ namespace Pawn::Render
         PE_D3D11_RELEASE(m_Buffer);
     }
 
-    void DirectX11VertexBuffer::Bind()
+    void DirectX11VertexBuffer::Bind(BufferLayout& layout)
     {
         DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
-        render->GetDeviceContext()->IASetVertexBuffers(0, 1, &m_Buffer, nullptr, nullptr);
+        ID3D11Buffer* temp = m_Buffer.get();
+        uint32 stride = layout.GetStride();
+        uint32 offset = 0;
+        render->GetDeviceContext()->IASetVertexBuffers(0, 1, &temp, &stride, &offset);
     }
 
     void DirectX11VertexBuffer::Unbind()
@@ -36,7 +39,7 @@ namespace Pawn::Render
         render->GetDeviceContext()->IASetVertexBuffers(0, 1, nullptr, nullptr, nullptr);
     }
 
-    void DirectX11VertexBuffer::SetData(void* data)
+    void DirectX11VertexBuffer::SetData(void* data, SIZE_T size)
     {
         PE_INFO(TEXT("DirectX11 VertexBuffer: SetData unsupported!"));
     }
@@ -52,6 +55,7 @@ namespace Pawn::Render
         HRESULT result;
         D3D11_BUFFER_DESC bufferDesc = {};
         D3D11_SUBRESOURCE_DATA subresData = {};
+        ID3D11Buffer* temp;
 
         DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
 
@@ -73,19 +77,21 @@ namespace Pawn::Render
         subresData.SysMemPitch = 0;
         subresData.SysMemSlicePitch = 0;
 
-        result = render->GetDevice()->CreateBuffer(&bufferDesc, &subresData, &m_Buffer);
+        result = render->GetDevice()->CreateBuffer(&bufferDesc, &subresData, &temp);
         if (FAILED(result)) 
         {
             PE_ASSERT(false, TEXT("DirectX11: VertexBuffer: Creation failed!"));
             return;
         };
+
+        m_Buffer = Memory::Reference<ID3D11Buffer>(temp);
     }
     
     /////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////-  IndexBuffer  -////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////
 
-    static IndexBuffer* CreateDirectX11IndexBuffer(void* data, uint32 count, Usage usage)
+    IndexBuffer* IndexBuffer::CreateDirectX11IndexBuffer(void* data, uint32 count, Usage usage)
     {
         return new DirectX11IndexBuffer(data, count, usage);
     }
@@ -103,7 +109,7 @@ namespace Pawn::Render
     void DirectX11IndexBuffer::Bind()
     {
         DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
-        render->GetDeviceContext()->IASetIndexBuffer(m_Buffer, DXGI_FORMAT_R32_UINT, 0);
+        render->GetDeviceContext()->IASetIndexBuffer(m_Buffer.get(), DXGI_FORMAT_R32_UINT, 0);
     }
     
     void DirectX11IndexBuffer::Unbind()
@@ -112,7 +118,7 @@ namespace Pawn::Render
         render->GetDeviceContext()->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
     }
     
-    void DirectX11IndexBuffer::SetData(void* data)
+    void DirectX11IndexBuffer::SetData(void* data, uint32 count)
     {
         PE_INFO(TEXT("DirectX11 IndexBuffer: SetData unsupported!"));
     }
@@ -127,11 +133,13 @@ namespace Pawn::Render
     {
         return m_Count;
     }
+
     void DirectX11IndexBuffer::Init(void* data, uint32 count, Usage usage)
     {
 		HRESULT result;
 		D3D11_BUFFER_DESC bufferDesc = {};
 		D3D11_SUBRESOURCE_DATA subresData = {};
+        ID3D11Buffer* temp;
 
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
 
@@ -153,16 +161,19 @@ namespace Pawn::Render
 		subresData.SysMemPitch = 0;
 		subresData.SysMemSlicePitch = 0;
 
-		result = render->GetDevice()->CreateBuffer(&bufferDesc, &subresData, &m_Buffer);
+		result = render->GetDevice()->CreateBuffer(&bufferDesc, &subresData, &temp);
 		if (FAILED(result))
 		{
 			PE_ASSERT(false, TEXT("DirectX11: IndexBuffer: Creation failed!"));
 			return;
 		};
+
+        m_Buffer = Memory::Reference<ID3D11Buffer>(temp);
+        m_Count = count;
     }
 
 
-    static uint32 ConvertShaderTypeDirectX11(ShaderType type)
+    uint32 ConvertShaderTypeDirectX11(ShaderType type)
     {
         switch (type)
 		{
@@ -254,4 +265,135 @@ namespace Pawn::Render
         PE_ASSERT(false, TEXT("DirectX11: ShaderType conversion failed! Unknown type!"));
         return 0;
     }
+
+	/////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////-  Uniform  -//////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    Uniform* Uniform::CreateDirectX11Uniform(SIZE_T size, Usage usage)
+    {
+        return new DirectX11Uniform(size, usage);
+    }
+
+	DirectX11Uniform::DirectX11Uniform(SIZE_T size, Usage usage)
+{
+        Init(size, usage);
+	}
+
+	DirectX11Uniform::~DirectX11Uniform()
+	{
+        PE_D3D11_RELEASE(m_Buffer);
+	}
+
+	void DirectX11Uniform::Bind(uint32 index, Shader::Type stage)
+    {
+        DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
+        ID3D11Buffer* temp = m_Buffer.get();
+        switch (stage)
+        {
+            case Pawn::Render::Shader::Type::Vertex:        render->GetDeviceContext()->VSSetConstantBuffers(index, 1, &temp); return; break;
+            case Pawn::Render::Shader::Type::Pixel:         render->GetDeviceContext()->PSSetConstantBuffers(index, 1, &temp); return; break;
+            case Pawn::Render::Shader::Type::Compute:       render->GetDeviceContext()->CSSetConstantBuffers(index, 1, &temp); return; break;
+            case Pawn::Render::Shader::Type::Geometry:      render->GetDeviceContext()->GSSetConstantBuffers(index, 1, &temp); return; break;
+            case Pawn::Render::Shader::Type::Hull:          render->GetDeviceContext()->HSSetConstantBuffers(index, 1, &temp); return; break;
+            case Pawn::Render::Shader::Type::Domain:        render->GetDeviceContext()->DSSetConstantBuffers(index, 1, &temp); return; break;
+            case Pawn::Render::Shader::Type::None:
+            {
+                PE_ASSERT(false, TEXT("Stage None is unsupported!"));
+                return;
+                break;
+            }
+        }
+        PE_ASSERT(false, TEXT("Stage None is unsupported!"));
+	}
+
+	void DirectX11Uniform::Unbind(uint32 index, Shader::Type stage)
+    {
+		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());  
+		switch (stage)
+		{
+		case Pawn::Render::Shader::Type::Vertex:        render->GetDeviceContext()->VSSetConstantBuffers(index, 1, nullptr); return; break;
+		case Pawn::Render::Shader::Type::Pixel:         render->GetDeviceContext()->PSSetConstantBuffers(index, 1, nullptr); return; break;
+		case Pawn::Render::Shader::Type::Compute:       render->GetDeviceContext()->CSSetConstantBuffers(index, 1, nullptr); return; break;
+		case Pawn::Render::Shader::Type::Geometry:      render->GetDeviceContext()->GSSetConstantBuffers(index, 1, nullptr); return; break;
+		case Pawn::Render::Shader::Type::Hull:          render->GetDeviceContext()->HSSetConstantBuffers(index, 1, nullptr); return; break;
+		case Pawn::Render::Shader::Type::Domain:        render->GetDeviceContext()->DSSetConstantBuffers(index, 1, nullptr); return; break;
+		case Pawn::Render::Shader::Type::None:
+		{
+			PE_ASSERT(false, TEXT("Stage None is unsupported!"));
+			return;
+			break;
+		}
+		}
+		PE_ASSERT(false, TEXT("Stage None is unsupported!"));
+	}
+
+    void DirectX11Uniform::SetData(void* data, SIZE_T size)
+    {
+		if (size > m_Size)
+		{
+			PE_ERROR(TEXT("Data size ({0}) exceeds uniform buffer size ({1})!"), size, m_Size);
+			return;
+		}
+
+        DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
+
+        HRESULT result;
+        D3D11_MAPPED_SUBRESOURCE resource;
+
+        result = render->GetDeviceContext()->Map(m_Buffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+        if (FAILED(result))
+        {
+            PE_ERROR(TEXT("Failed to map buffer! Error: {0}"), result);
+            return;
+        }
+        
+        memcpy(resource.pData, data, size);
+
+        render->GetDeviceContext()->Unmap(m_Buffer.get(), 0);
+	}
+
+	void* DirectX11Uniform::GetData()
+	{
+        PE_ERROR(TEXT("GetData is unsupoorted"));
+        return nullptr;
+	}
+
+	void DirectX11Uniform::Init(SIZE_T size, Usage usage)
+    {
+		HRESULT result;
+		D3D11_BUFFER_DESC bufferDesc = {};
+		D3D11_SUBRESOURCE_DATA subresData = {};
+		ID3D11Buffer* temp;
+
+		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
+
+        m_Size = (uint32)size;
+
+		bufferDesc.ByteWidth = (uint32)size;
+
+		switch (usage)
+		{
+		    case Pawn::Render::Usage::Default:          bufferDesc.Usage = D3D11_USAGE_DEFAULT; break;
+		    case Pawn::Render::Usage::Immutable:        bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; break;
+		    case Pawn::Render::Usage::Dynamic:          bufferDesc.Usage = D3D11_USAGE_DYNAMIC; break;
+		    case Pawn::Render::Usage::Staging:          bufferDesc.Usage = D3D11_USAGE_STAGING; break;
+		    default: PE_ASSERT(false, TEXT("Wtf is a kilometer!!!"));
+		}
+
+		bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = 0;
+
+		result = render->GetDevice()->CreateBuffer(&bufferDesc, nullptr, &temp);
+		if (FAILED(result))
+		{
+			PE_ASSERT(false, TEXT("DirectX11: IndexBuffer: Creation failed!"));
+			return;
+		};
+
+		m_Buffer = Memory::Reference<ID3D11Buffer>(temp);
+	}
+
 }

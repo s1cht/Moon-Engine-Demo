@@ -5,6 +5,16 @@
 namespace Pawn::Render
 {
 
+	Shader* Shader::CreateCompiledDirectX11Shader(const String& path, Shader::Type type)
+	{
+		return new DirectX11Shader(path, type, true);
+	}
+
+	Shader* Shader::CreateAndCompileDirectX11Shader(const String& path, Shader::Type type)
+	{
+		return new DirectX11Shader(path, type, false);
+	}
+
 	DirectX11Shader::DirectX11Shader(String path, Type type, bool compiled)
 		: m_Type(type)
 	{
@@ -118,53 +128,60 @@ namespace Pawn::Render
 		uint32 flags;
 		ID3D10Blob* temp;
 		ID3D10Blob* errorBlob;
-		const ansichar* entryPoint = "main";
-		const ansichar* shaderFeatureLevel;
+		const ansichar* entryPoint = nullptr;
+		const ansichar* shaderFeatureLevel = nullptr;
 
 		switch (m_Type)
 		{
-		case Pawn::Render::Shader::Type::None:
-		{
-			PE_ASSERT(false, TEXT("DirectX11: ShaderType was None!"));
-			break;
+			case Pawn::Render::Shader::Type::None:
+			{
+				PE_ASSERT(false, TEXT("DirectX11: ShaderType was None!"));
+				return;
+			}
+			case Pawn::Render::Shader::Type::Vertex:
+			{
+				entryPoint = "VSMain";
+				shaderFeatureLevel = "vs_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Pixel:
+			{
+				entryPoint = "PSMain";
+				shaderFeatureLevel = "ps_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Compute:
+			{
+				entryPoint = "CSMain";
+				shaderFeatureLevel = "cs_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Geometry:
+			{
+				entryPoint = "GSMain";
+				shaderFeatureLevel = "gs_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Hull:
+			{
+				entryPoint = "HSMain";
+				shaderFeatureLevel = "hs_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Domain:
+			{
+				entryPoint = "DSMain";
+				shaderFeatureLevel = "ds_5_0";
+				break;
+			}
+			default:
+			{
+				PE_ASSERT(false, TEXT("Unknown shader type!"));
+				return;
+			}
 		}
-		case Pawn::Render::Shader::Type::Vertex:
-		{
-			entryPoint = "VSMain";
-			shaderFeatureLevel = "vs_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Pixel:
-		{
-			entryPoint = "PSMain";
-			shaderFeatureLevel = "ps_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Compute:
-		{
-			entryPoint = "CSMain";
-			shaderFeatureLevel = "cs_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Geometry:
-		{
-			entryPoint = "GSMain";
-			shaderFeatureLevel = "gs_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Hull:
-		{
-			entryPoint = "HSMain";
-			shaderFeatureLevel = "hs_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Domain:
-		{
-			entryPoint = "DSMain";
-			shaderFeatureLevel = "ds_5_0";
-			break;
-		}
-		}
+
+		flags = 0;
 
 		result = D3DCompileFromFile(path.GetString(), nullptr,
 			D3D_COMPILE_STANDARD_FILE_INCLUDE,
@@ -272,7 +289,7 @@ namespace Pawn::Render
 		}
 		case Pawn::Render::Shader::Type::Domain:
 		{
-			ID3D11PixelShader* shader;
+			ID3D11DomainShader* shader;
 			result = render->GetDevice()->CreateDomainShader(m_Buffer->GetBufferPointer(), m_BufferSize, nullptr, &shader);
 			if (FAILED(result))
 			{
@@ -288,4 +305,5 @@ namespace Pawn::Render
 		}
 		}
 	}
+
 }

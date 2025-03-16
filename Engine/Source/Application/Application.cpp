@@ -47,22 +47,23 @@ namespace Pawn {
 	{
 		while (m_Runs)
 		{
-			static Math::Vector3D32 clr3;
+			m_Window->OnUpdate();
 
-			static float32 x = 0.f;
-			static float32 val = 0.001f;
-			clr3.x = cos(x);
-			clr3.y = sin(x);
-			clr3.z = sin(cos(x) * cos(x));
-			if (x >= 1)
-				val = -val;
-			else if (x <= -1)
-				val = -val;
+			Render::RenderCommand::Clear(Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
 
-			x += val;
+			//m_ImGuiLayer->BeginRender();
+			//for (auto layer : m_LayerStack)
+			//	layer->OnImGuiRender();
+			//m_ImGuiLayer->EndRender();
 
-			for (auto layer : m_LayerStack)
-				layer->OnUpdate();
+			Render::Renderer::BeginScene();
+
+			//m_ImGuiLayer->PostRender();
+
+			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
+				(*layer)->OnUpdate();
+
+			Render::Renderer::EndScene();
 
 			if (m_WindowUpdateX != 0 && m_WindowUpdateY != 0)
 			{
@@ -70,21 +71,8 @@ namespace Pawn {
 				m_WindowUpdateX = m_WindowUpdateY = 0;
 			}
 
-			// Rendering
-			Render::RenderCommand::Clear(Math::Vector4D32(clr3, 1.f));
-			Render::Renderer::BeginScene();
-
-			m_ImGuiLayer->BeginRender();
-
-			for (auto layer : m_LayerStack)
-				layer->OnImGuiRender();	
-
-			m_ImGuiLayer->EndRender();
-			Render::Renderer::EndScene();
-			m_Window->OnUpdate();
-
-			m_ImGuiLayer->PostRender();
-		};
+			Render::RenderCommand::Present();
+		}
 	}
 
 	void Application::PushLayer(Layer* layer)

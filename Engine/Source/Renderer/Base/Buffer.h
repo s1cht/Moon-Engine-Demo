@@ -1,7 +1,9 @@
 #pragma once
 #include <Core.h>
+#include <Core/Containers/Array.h>
 #include <Core/Containers/String.h>
 #include <Core/Misc/Assertion.h>
+#include "Renderer/Base/Shader.h"
 
 namespace Pawn::Render
 {
@@ -14,6 +16,17 @@ namespace Pawn::Render
 		Mat3x3, Mat4x4,
 		Bool
 	};
+
+	enum class Usage
+	{
+		Default = 0,
+		Immutable,
+		Dynamic,
+		Staging
+	};
+
+	extern PAWN_API SIZE_T SizeOfShaderType(Pawn::Render::ShaderType type);
+	extern PAWN_API uint32 GetTypeAPISpecificShaderType(Pawn::Render::ShaderType type);
 
 	struct BufferElement
 	{
@@ -30,25 +43,27 @@ namespace Pawn::Render
 		}
 	};
 
-	enum class Usage
-	{
-		Default = 0,
-		Immutable,
-		Dynamic,
-		Staging
-	};
-
-	class PAWN_API BufferLayout
+	class BufferLayout
 	{
 	public:
-		BufferLayout(std::initializer_list<BufferElement>& elements)
+		BufferLayout()
+			: m_Elements({}), m_Stride(0)
+		{
+		}
+
+		BufferLayout(std::initializer_list<BufferElement> elements)
 			: m_Elements(elements), m_Stride(0)
 		{
 			CalculateOffsetAndStride();
 		}
 
+		BufferLayout(const BufferLayout& other)
+			: m_Elements(other.m_Elements), m_Stride(other.m_Stride)
+		{
+		}
+
 	public:
-		inline const Array<BufferElement, 10>& GetElements() const { return m_Elements; }
+		inline const Pawn::Array<BufferElement>& GetElements() const { return m_Elements; }
 		inline const uint32 GetStride() const { return m_Stride; }
 
 	private:
@@ -59,13 +74,13 @@ namespace Pawn::Render
 			for (auto& element : m_Elements)
 			{
 				element.Offset = offset;
-				offset += element.Size;
-				m_Stride += element.Size;
+				offset += (uint32)element.Size;
+				m_Stride += (uint32)element.Size;
 			}
 		}
 
 	private:
-		Array<BufferElement, 10> m_Elements;
+		Array<BufferElement> m_Elements;
 		uint32 m_Stride;
 
 	};
@@ -75,10 +90,10 @@ namespace Pawn::Render
 	public:
 		virtual ~VertexBuffer() {};
 
-		virtual void Bind() = 0;
+		virtual void Bind(BufferLayout& layout) = 0;
 		virtual void Unbind() = 0;
 
-		virtual void SetData(void* data) = 0;
+		virtual void SetData(void* data, SIZE_T size) = 0;
 		virtual void* GetData() = 0;
 
 	public:
@@ -96,7 +111,7 @@ namespace Pawn::Render
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
 
-		virtual void SetData(void* data) = 0;
+		virtual void SetData(void* data, uint32 count) = 0;
 		virtual void* GetData() = 0;
 
 		virtual uint32 GetCount() = 0;
@@ -107,37 +122,34 @@ namespace Pawn::Render
 
 	};
 
-	class UniformBuffer
+	class PAWN_API Uniform
 	{
 	public:
-		virtual ~UniformBuffer() {};
+		virtual ~Uniform() {};
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
+		virtual void Bind(uint32 index, Shader::Type stage) = 0;
+		virtual void Unbind(uint32 index, Shader::Type stage) = 0;
 
-		virtual void SetData(void* data) = 0;
+		virtual void SetData(void* data, SIZE_T size) = 0;
 		virtual void* GetData() = 0;
 
 	public:
-		static UniformBuffer* Create(void* data, SIZE_T size, Usage usage);
-		static UniformBuffer* CreateDirectX11UniformBuffer(void* data, SIZE_T size, Usage usage);
+		static Uniform* Create(SIZE_T size, Usage usage);
+		static Uniform* CreateDirectX11Uniform(SIZE_T size, Usage usage);
 
 	};
-
-	SIZE_T SizeOfShaderType(ShaderType type);
-	uint32 GetTypeAPISpecificShaderType(ShaderType type);
 
 	/*
 	API-specific conversion function
 	*/
-	static uint32 ConvertShaderTypeVulkan(ShaderType type) { PE_ASSERT(false, TEXT("Vulkan is unsupported!")); return 0; }
+	//PAWN_API uint32 ConvertShaderTypeVulkan(ShaderType type);
 
 #ifdef PLATFORM_WINDOWS
-	static uint32 ConvertShaderTypeDirectX11(ShaderType type);
-	//static uint32 ConvertShaderTypeDirectX12(ShaderType type);
+	extern PAWN_API uint32 ConvertShaderTypeDirectX11(ShaderType type);
+	//extern PAWN_API uint32 ConvertShaderTypeDirectX12(ShaderType type);
 #else
-	static uint32 ConvertShaderTypeDirectX11(ShaderType type) { PE_ASSERT(false, TEXT("DirectX11 conversion available only on Windows!")); return 0; }
-	static uint32 ConvertShaderTypeDirectX12(ShaderType type) { PE_ASSERT(false, TEXT("DirectX12 conversion available only on Windows!")); return 0; }
+	extern PAWN_API uint32 ConvertShaderTypeDirectX11(ShaderType type) { PE_ASSERT(false, TEXT("DirectX11 conversion available only on Windows!")); return 0; }
+	//extern PAWN_API uint32 ConvertShaderTypeDirectX12(ShaderType type) { PE_ASSERT(false, TEXT("DirectX12 conversion available only on Windows!")); return 0; }
 #endif
 
 }

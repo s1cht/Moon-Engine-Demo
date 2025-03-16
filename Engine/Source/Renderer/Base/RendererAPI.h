@@ -22,7 +22,7 @@ namespace Pawn::Render
 	public:
 		virtual void Present() = 0;
 		virtual void Clear(Pawn::Math::Vector4D32 color) = 0;
-		virtual void DrawIndexed(/* const VertexArray& array */) = 0;
+		virtual void DrawIndexed(uint32 indexCount, uint32 index) = 0;
 		virtual void Shutdown() = 0;
 
 		virtual void PostInit() = 0;

@@ -140,7 +140,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\SandboxLayer.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="Source\App.cpp" />
+    <ClCompile Include="Source\SandboxLayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">

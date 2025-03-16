@@ -11,7 +11,7 @@ namespace Pawn::Render
 			return CreateAndCompileShader(path, type);
 	}
 
-	Shader* CreateCompiledShader(const String& path, Shader::Type type)
+	Shader* Shader::CreateCompiledShader(const String& path, Shader::Type type)
 	{
 		RendererAPI::API render = Renderer::GetRenderAPI();
 
@@ -35,7 +35,7 @@ namespace Pawn::Render
 		return nullptr;
 	}
 
-	Shader* CreateAndCompileShader(const String& path, Shader::Type type)
+	Shader* Shader::CreateAndCompileShader(const String& path, Shader::Type type)
 	{
 		RendererAPI::API render = Renderer::GetRenderAPI();
 

@@ -4,7 +4,7 @@
 
 namespace Pawn::Render
 {
-	class Shader
+	class PAWN_API Shader
 	{
 	public:
 		enum class Type

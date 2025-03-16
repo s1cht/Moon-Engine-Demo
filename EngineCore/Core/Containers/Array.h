@@ -110,8 +110,8 @@ namespace Pawn
 
 	};
 
-	template<typename T, SIZE_T initSize = 20, class allocator = Memory::Allocator<T>>
-	class CORE_API Array
+	template<class T, SIZE_T initSize = 20, class allocator = Memory::Allocator<T>>
+	class Array
 	{
 	public:
 		using DataType = T;
@@ -213,6 +213,21 @@ namespace Pawn
 		}
 
 	public:
+
+		Array& operator=(const Array& other)
+		{
+			m_Allocator = other.m_Allocator;
+			m_Size = other.m_Size;
+			m_Capacity = other.m_Capacity;
+			m_Data = nullptr;
+
+			Allocate(m_Capacity);
+
+			for (SIZE_T i = 0; i < m_Size; i++)
+				m_Data[i] = other.m_Data[i];
+
+			return *this;
+		}
 
 		ReturnType& operator[](const SIZE_T index) noexcept
 		{

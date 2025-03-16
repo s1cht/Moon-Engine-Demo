@@ -8,18 +8,24 @@ namespace Pawn::Render
 {
 	PipelineState* PipelineState::CreateDirectX11PipelineState()
 	{
-		return new DirectX11PipilineState();
+		return new DirectX11PipelineState();
 	}
 
-	DirectX11PipilineState::DirectX11PipilineState()
+	DirectX11PipelineState::DirectX11PipelineState()
 	{
-		m_DepthStencilState = nullptr;
-		m_InputLayout = nullptr;
-		m_RasterizerState = nullptr;
-		m_BlendState = nullptr;
+		m_DepthStencilState		= nullptr;
+		m_InputLayout			= nullptr;
+		m_RasterizerState		= nullptr;
+		m_BlendState			= nullptr;
+		m_VertexShader			= nullptr;
+		m_PixelShader			= nullptr;
+		m_ComputeShader			= nullptr;
+		m_GeometryShader		= nullptr;
+		m_HullShader			= nullptr;
+		m_DomainShader			= nullptr;
 	}
 
-	DirectX11PipilineState::~DirectX11PipilineState()
+	DirectX11PipelineState::~DirectX11PipelineState()
 	{
 		PE_D3D11_RELEASE(m_BlendState);
 		PE_D3D11_RELEASE(m_DepthStencilState);
@@ -27,7 +33,7 @@ namespace Pawn::Render
 		PE_D3D11_RELEASE(m_InputLayout);
 	}
 
-	void DirectX11PipilineState::SetDepthStencilState(bool depthEnabled, bool stencilEnable, DepthComparison depthFunc)
+	void DirectX11PipelineState::SetDepthStencilState(bool depthEnabled, bool stencilEnable, DepthComparison depthFunc)
 	{
 		PE_ASSERT(m_DepthStencilState.get() == nullptr, TEXT("DirectX11: DepthStencilState exists! Create new PipelineState and setup it!"));
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
@@ -74,7 +80,7 @@ namespace Pawn::Render
 		m_DepthStencilState = Memory::Scope<ID3D11DepthStencilState>(temp);
 	}
 
-	void DirectX11PipilineState::SetBlendState(bool enableBlend, BlendMask mask)
+	void DirectX11PipelineState::SetBlendState(bool enableBlend, BlendMask mask)
 	{
 		PE_ASSERT(m_BlendState.get() == nullptr, TEXT("DirectX11: BlendState exists! Create new PipelineState and setup it!"));
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
@@ -114,7 +120,10 @@ namespace Pawn::Render
 		m_BlendState = Memory::Scope<ID3D11BlendState>(temp);
 	}
 
-	void DirectX11PipilineState::SetRasterizerState(RasterizerCull cull, RasterizerFill fill, bool frontCounterClockwise, int32 depthBias, float32 depthBiasClamp)
+	void DirectX11PipelineState::SetRasterizerState(RasterizerCull cull, RasterizerFill fill,
+		bool frontCounterClockwise, bool scissorEnabled,
+		bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,
+		bool multisampleEnabled, int32 sampleCount)
 	{
 		PE_ASSERT(m_RasterizerState.get() == nullptr, TEXT("DirectX11: RasterizerState exists! Create new PipelineState and setup it!"));
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
@@ -150,9 +159,9 @@ namespace Pawn::Render
 		rasterizerDesc.DepthBiasClamp = depthBiasClamp;
 		rasterizerDesc.DepthClipEnable = true;
 		rasterizerDesc.FrontCounterClockwise = frontCounterClockwise;
-		rasterizerDesc.MultisampleEnable = false;
-		rasterizerDesc.ScissorEnable = false;
-		rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+		rasterizerDesc.MultisampleEnable = multisampleEnabled;
+		rasterizerDesc.ScissorEnable = scissorEnabled;
+		rasterizerDesc.SlopeScaledDepthBias = slopeScaledDepthBias;
 
 		result = render->GetDevice()->CreateRasterizerState(&rasterizerDesc, &temp);
 		if (FAILED(result))
@@ -164,7 +173,7 @@ namespace Pawn::Render
 		m_RasterizerState = Memory::Scope<ID3D11RasterizerState>(temp);
 	}
 
-	void DirectX11PipilineState::SetInputLayout(BufferLayout& layout, InputClassification inputSlotClass, uint32 instanceDataStepRate)
+	void DirectX11PipelineState::SetInputLayout(BufferLayout& layout, InputClassification inputSlotClass, uint32 instanceDataStepRate)
 	{
 		PE_ASSERT(m_InputLayout.get() == nullptr, TEXT("DirectX11: InputLayout exists! Create new PipelineState and setup it!"));
 		PE_ASSERT(m_VertexShader.get() != nullptr, TEXT("DirectX11: VertexShader doesn't exist! Setup shaders before creating InputLayout!"));
@@ -185,12 +194,17 @@ namespace Pawn::Render
 			{
 				for (uint8 row = 0; row < 4; ++row)
 				{
+					AnsiString str = (element.Name + ToAnsiString(row));
+					ansichar* buf = new ansichar[str.GetSize()];
+
 					D3D11_INPUT_ELEMENT_DESC desc = {};
-					desc.SemanticName = (element.Name + ToAnsiString(row)).GetString();
+					strcpy(buf, str.GetString());
+
+					desc.SemanticName = buf;
 					desc.SemanticIndex = element.SemanticIndex;
 					desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 					desc.InputSlot = element.InputSlot;
-					desc.AlignedByteOffset = element.Offset + (row * 16); 
+					desc.AlignedByteOffset = (uint32)element.Offset + ((uint32)row * 16);
 					desc.InputSlotClass = (inputSlotClass == InputClassification::PerInstance) ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
 					desc.InstanceDataStepRate = (inputSlotClass == InputClassification::PerInstance) ? instanceDataStepRate : 0;
 					polygonLayout.PushBack(desc);
@@ -198,24 +212,44 @@ namespace Pawn::Render
 			}
 			else if (element.Type == ShaderType::Mat3x3)
 			{
+				for (uint8 row = 0; row < 3; ++row)
+				{
+					AnsiString str = (element.Name + ToAnsiString(row));
+					ansichar* buf = new ansichar[str.GetSize()];
 
+					D3D11_INPUT_ELEMENT_DESC desc = {};
+					strcpy(buf, str.GetString());
+
+					desc.SemanticName = buf;
+					desc.SemanticIndex = element.SemanticIndex;
+					desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+					desc.InputSlot = element.InputSlot;
+					desc.AlignedByteOffset = (uint32)element.Offset + ((uint32)row * 12);
+					desc.InputSlotClass = (inputSlotClass == InputClassification::PerInstance) ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
+					desc.InstanceDataStepRate = (inputSlotClass == InputClassification::PerInstance) ? instanceDataStepRate : 0;
+					polygonLayout.PushBack(desc);
+				}
 			}
 			else
 			{
+				ansichar* buf = new ansichar[element.Name.GetSize()];
+
 				D3D11_INPUT_ELEMENT_DESC desc = {};
-				desc.SemanticName = element.Name.GetString();
+				strcpy(buf, element.Name.GetString());
+
+				desc.SemanticName = buf;
 				desc.SemanticIndex = element.SemanticIndex;
 				desc.Format = DXGI_FORMAT(ConvertShaderTypeDirectX11(element.Type));
 				desc.InputSlot = element.InputSlot;
-				desc.AlignedByteOffset = element.Offset;
+				desc.AlignedByteOffset = (uint32)element.Offset;
 				desc.InputSlotClass = (inputSlotClass == InputClassification::PerInstance) ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
 				desc.InstanceDataStepRate = (inputSlotClass == InputClassification::PerInstance) ? instanceDataStepRate : 0;
 				polygonLayout.PushBack(desc);
 			}
 		}
 
-		result = render->GetDevice()->CreateInputLayout(polygonLayout.Data(), layout.GetElements().GetSize(),
-			m_VertexShader->GetBufferPointer(), m_VertexShader->GetBufferSize(), &temp);
+		result = render->GetDevice()->CreateInputLayout(polygonLayout.Data(), (uint32)polygonLayout.GetSize(),
+			m_VertexShader->GetBuffer()->GetBufferPointer(), m_VertexShader->GetBufferSize(), &temp);
 
 		if (FAILED(result))
 		{
@@ -226,19 +260,27 @@ namespace Pawn::Render
 		m_InputLayout = Memory::Scope<ID3D11InputLayout>(temp);
 	}
 
-	void DirectX11PipilineState::Bind()
+	void DirectX11PipelineState::Bind()
 	{
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
 
-		//m_VertexShader->Bind();
-		//m_PixelShader->Bind();
+		if (m_VertexShader)
+			m_VertexShader->Bind();
+		if (m_PixelShader)
+			m_PixelShader->Bind();
+		if (m_DomainShader)
+			m_DomainShader->Bind();
+		if (m_HullShader)
+			m_HullShader->Bind();
+		if (m_GeometryShader)
+			m_GeometryShader->Bind();
 
 		render->GetDeviceContext()->RSSetState(m_RasterizerState.get());
 		render->GetDeviceContext()->OMSetDepthStencilState(m_DepthStencilState.get(), 1);
 		render->GetDeviceContext()->OMSetBlendState(m_BlendState.get(), nullptr, 0xFFFFFFFF);
 	}
 
-	void DirectX11PipilineState::SetPrimitiveTopology(PrimitiveTopology topology, uint8 patchListPointCount)
+	void DirectX11PipelineState::SetPrimitiveTopology(PrimitiveTopology topology, uint8 patchListPointCount)
 	{
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
 
@@ -289,14 +331,165 @@ namespace Pawn::Render
 		}
 	}
 
-	void DirectX11PipilineState::SetVertexShader(Memory::Reference<Shader> vertexShader)
+	void DirectX11PipelineState::SetVertexShader(Memory::Reference<Shader> vertexShader)
 	{
-		m_VertexShader = vertexShader;
+		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(vertexShader.get());
+		if (!raw)
+		{
+			PE_ASSERT(false, TEXT("Shader ptr is invalid!"));
+			return;
+		}
+		if (raw->GetShaderType() != Shader::Type::Vertex)
+		{
+			PE_ASSERT(false, TEXT("Assigning {0} shader to vertex!"), (uint32)raw->GetShaderType());
+			return;
+		}
+		m_VertexShader.reset(raw);
 	}
 
-	void DirectX11PipilineState::SetPixelShader(Memory::Reference<Shader> pixelShader)
+	void DirectX11PipelineState::SetPixelShader(Memory::Reference<Shader> pixelShader)
 	{
-		m_PixelShader = pixelShader;
+		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(pixelShader.get());
+		if (!raw)
+		{
+			PE_ASSERT(false, TEXT("Shader ptr is invalid!"));
+			return;
+		}
+		if (raw->GetShaderType() != Shader::Type::Pixel)
+		{
+			PE_ASSERT(false, TEXT("Assigning {0} shader to pixel!"), (uint32)raw->GetShaderType());
+			return;
+		}
+		m_PixelShader.reset(raw);
+	}
+
+	void DirectX11PipelineState::SetComputeShader(Memory::Reference<Shader> computeShader)
+	{
+		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(computeShader.get());
+		if (!raw)
+		{
+			PE_ASSERT(false, TEXT("Shader ptr is invalid!"));
+			return;
+		}
+		if (raw->GetShaderType() != Shader::Type::Compute)
+		{
+			PE_ASSERT(false, TEXT("Assigning {0} shader to compute!"), (uint32)raw->GetShaderType());
+			return;
+		}
+		m_PixelShader.reset(raw);
+	}
+
+	void DirectX11PipelineState::SetGeometryShader(Memory::Reference<Shader> geometryShader)
+	{
+		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(geometryShader.get());
+		if (!raw)
+		{
+			PE_ASSERT(false, TEXT("Shader ptr is invalid!"));
+			return;
+		}
+		if (raw->GetShaderType() != Shader::Type::Geometry)
+		{
+			PE_ASSERT(false, TEXT("Assigning {0} shader to geometry!"), (uint32)raw->GetShaderType());
+			return;
+		}
+		m_PixelShader.reset(raw);
+	}
+
+	void DirectX11PipelineState::SetHullShader(Memory::Reference<Shader> hullShader)
+	{
+		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(hullShader.get());
+		if (!raw)
+		{
+			PE_ASSERT(false, TEXT("Shader ptr is invalid!"));
+			return;
+		}
+		if (raw->GetShaderType() != Shader::Type::Hull)
+		{
+			PE_ASSERT(false, TEXT("Assigning {0} shader to hull!"), (uint32)raw->GetShaderType());
+			return;
+		}
+		m_PixelShader.reset(raw);
+	}
+
+	void DirectX11PipelineState::SetDomainShader(Memory::Reference<Shader> domainShader)
+	{
+		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(domainShader.get());
+		if (!raw)
+		{
+			PE_ASSERT(false, TEXT("Shader ptr is invalid!"));
+			return;
+		}
+		if (raw->GetShaderType() != Shader::Type::Domain)
+		{
+			PE_ASSERT(false, TEXT("Assigning {0} shader to domain!"), (uint32)raw->GetShaderType());
+			return;
+		}
+		m_PixelShader.reset(raw);
+	}
+
+	void DirectX11PipelineState::BindUniforms(Array<Uniform*>& uniforms, Shader::Type stage)
+	{
+		if (stage == Shader::Type::None)
+		{
+			PE_ASSERT(false, TEXT("None is unsupported!"));
+			return;
+		}
+
+		uint32 index = 0;
+		for (Uniform* uniform : uniforms)
+		{
+			if (!uniform)
+			{
+				PE_ERROR(TEXT("Uniform at index {0} is nullptr!"), index);
+				continue;
+			}
+			uniform->Bind(index, stage);
+			index++;
+		}
 	}
 
 }
+
+
+//void DirectX11Uniform::Bind(Shader::Type stage)
+//{
+//	DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
+//	ID3D11Buffer* temp = m_Buffer.get();
+//	switch (stage)
+//	{
+//	case Pawn::Render::Shader::Type::Vertex:        render->GetDeviceContext()->VSGetConstantBuffers(0, 1, &temp); return; break;
+//	case Pawn::Render::Shader::Type::Pixel:         render->GetDeviceContext()->PSGetConstantBuffers(0, 1, &temp); return; break;
+//	case Pawn::Render::Shader::Type::Compute:       render->GetDeviceContext()->CSGetConstantBuffers(0, 1, &temp); return; break;
+//	case Pawn::Render::Shader::Type::Geometry:      render->GetDeviceContext()->GSGetConstantBuffers(0, 1, &temp); return; break;
+//	case Pawn::Render::Shader::Type::Hull:          render->GetDeviceContext()->HSGetConstantBuffers(0, 1, &temp); return; break;
+//	case Pawn::Render::Shader::Type::Domain:        render->GetDeviceContext()->DSGetConstantBuffers(0, 1, &temp); return; break;
+//	case Pawn::Render::Shader::Type::None:
+//	{
+//		PE_ASSERT(false, TEXT("Stage None is unsupported!"));
+//		return;
+//		break;
+//	}
+//	}
+//	PE_ASSERT(false, TEXT("Stage None is unsupported!"));
+//}
+//
+//void DirectX11Uniform::Unbind(Shader::Type stage)
+//{
+//	DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
+//	switch (stage)
+//	{
+//	case Pawn::Render::Shader::Type::Vertex:        render->GetDeviceContext()->VSGetConstantBuffers(0, 1, nullptr); return; break;
+//	case Pawn::Render::Shader::Type::Pixel:         render->GetDeviceContext()->PSGetConstantBuffers(0, 1, nullptr); return; break;
+//	case Pawn::Render::Shader::Type::Compute:       render->GetDeviceContext()->CSGetConstantBuffers(0, 1, nullptr); return; break;
+//	case Pawn::Render::Shader::Type::Geometry:      render->GetDeviceContext()->GSGetConstantBuffers(0, 1, nullptr); return; break;
+//	case Pawn::Render::Shader::Type::Hull:          render->GetDeviceContext()->HSGetConstantBuffers(0, 1, nullptr); return; break;
+//	case Pawn::Render::Shader::Type::Domain:        render->GetDeviceContext()->DSGetConstantBuffers(0, 1, nullptr); return; break;
+//	case Pawn::Render::Shader::Type::None:
+//	{
+//		PE_ASSERT(false, TEXT("Stage None is unsupported!"));
+//		return;
+//		break;
+//	}
+//	}
+//	PE_ASSERT(false, TEXT("Stage None is unsupported!"));
+//}

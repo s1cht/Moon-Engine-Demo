@@ -4,7 +4,7 @@
 
 namespace Pawn::Render
 {
-    SIZE_T SizeOfShaderType(ShaderType type)
+    SIZE_T SizeOfShaderType(Pawn::Render::ShaderType type)
     {
         switch (type)
         {
@@ -62,7 +62,7 @@ namespace Pawn::Render
         return 0;
     }
 
-    uint32 Pawn::Render::GetTypeAPISpecificShaderType(ShaderType type)
+    uint32 Pawn::Render::GetTypeAPISpecificShaderType(Pawn::Render::ShaderType type)
     {
         RendererAPI::API render = Renderer::GetRenderAPI();
 
@@ -85,6 +85,7 @@ namespace Pawn::Render
 
         return 0;
     }
+
     VertexBuffer* VertexBuffer::Create(void* data, SIZE_T size, Usage usage)
     {
         RendererAPI::API render = Renderer::GetRenderAPI();
@@ -126,6 +127,30 @@ namespace Pawn::Render
 		case Pawn::Render::RendererAPI::API::DirectX11:
 		{
 			return CreateDirectX11IndexBuffer(data, count, usage);
+			break;
+		}
+		}
+
+		return nullptr;
+	}
+
+	Pawn::Render::Uniform* Uniform::Create(SIZE_T size, Usage usage)
+	{
+		RendererAPI::API render = Renderer::GetRenderAPI();
+
+		switch (render)
+		{
+		case Pawn::Render::RendererAPI::API::None:
+		case Pawn::Render::RendererAPI::API::Vulkan:
+		case Pawn::Render::RendererAPI::API::DirectX12:
+		case Pawn::Render::RendererAPI::API::Metal:
+		{
+			PE_ASSERT(false, TEXT("Create IndexBuffer: Unsupported renderer!"));
+			break;
+		}
+		case Pawn::Render::RendererAPI::API::DirectX11:
+		{
+			return CreateDirectX11Uniform(size, usage);
 			break;
 		}
 		}

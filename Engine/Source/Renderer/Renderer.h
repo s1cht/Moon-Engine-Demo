@@ -18,7 +18,7 @@ namespace Pawn::Render
 		static void BeginScene();
 		static void EndScene();
 
-		static void Submit(/* const VertexArray& array */);
+		static void Submit(uint32 indexCount, uint32 index);
 
 	public:
 		inline static void SetRenderAPI(RendererAPI::API api);

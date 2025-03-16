@@ -103,9 +103,9 @@ namespace Pawn::Render
 		m_DeviceContext->ClearDepthStencilView(m_Framebuffer->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
-	void DirectX11Renderer::DrawIndexed()
+	void DirectX11Renderer::DrawIndexed(uint32 indexCount, uint32 index)
 	{
-
+		m_DeviceContext->DrawIndexed(indexCount, index, 0);
 	}
 
 }

@@ -20,7 +20,7 @@ namespace Pawn::Render
 		
 		virtual void Present() override;
 		virtual void Clear(Pawn::Math::Vector4D32 color) override;
-		virtual void DrawIndexed(/* const VertexArray& array */) override;
+		virtual void DrawIndexed(uint32 indexCount, uint32 index) override;
 		virtual void Shutdown() override;
 
 		virtual void OnWindowEvent(int32 x, int32 y) override;

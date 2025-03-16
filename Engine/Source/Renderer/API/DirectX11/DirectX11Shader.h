@@ -11,13 +11,15 @@ namespace Pawn::Render
 		DirectX11Shader(String path, Type type, bool compiled);
 		~DirectX11Shader();
 
+
 	public:
 		void Bind() override;
 		void Unbind() override;
 
 	public:
-		inline Memory::Reference<ID3D10Blob> GetBuffer() { return m_Buffer; };
+		inline Memory::Reference<ID3D10Blob> GetBuffer() { return m_Buffer; }
 		inline SIZE_T GetBufferSize() const { return m_BufferSize; }
+		inline Shader::Type GetShaderType() const override { return m_Type; }
 
 	private:
 		void Init(String path);

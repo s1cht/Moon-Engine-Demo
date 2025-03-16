@@ -24,9 +24,9 @@ namespace Pawn::Render
 			s_Renderer->Clear(color);
 		}
 
-		inline static void DrawIndexed(/* const VertexArray& array */)
+		inline static void DrawIndexed(uint32 indexCount, uint32 index)
 		{
-			s_Renderer->DrawIndexed();
+			s_Renderer->DrawIndexed(indexCount, index);
 		}
 		inline static void OnWindowUpdate(int32 x, int32 y)
 		{

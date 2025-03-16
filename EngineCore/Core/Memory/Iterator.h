@@ -5,7 +5,7 @@
 namespace Pawn::Memory
 {
 	template<typename Container>
-	class CORE_API BaseIterator
+	class BaseIterator
 	{
 	public:
 		using DataType = typename Container::DataType;

@@ -55,7 +55,7 @@ namespace Pawn::Render
 		PerVertex, PerInstance
 	};
 
-	class PipelineState
+	class PAWN_API PipelineState
 	{
 	public:
 		virtual ~PipelineState() {};
@@ -73,11 +73,16 @@ namespace Pawn::Render
 			bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,
 			bool multisampleEnabled, int32 sampleCount ) = 0;
 		
+
 		virtual void SetVertexShader(Memory::Reference<Shader> vertexShader) = 0;
 		virtual void SetPixelShader(Memory::Reference<Shader> pixelShader) = 0;
-		//virtual void SetGeometryShader(Shader* geometryShader) = 0;
+		virtual void SetComputeShader(Memory::Reference<Shader> computeShader) = 0;
+		virtual void SetGeometryShader(Memory::Reference<Shader> geometryShader) = 0;
+		virtual void SetHullShader(Memory::Reference<Shader> hullShader) = 0;
+		virtual void SetDomainShader(Memory::Reference<Shader> domainShader) = 0;
 
 		virtual void Bind() = 0;
+		virtual void BindUniforms(Array<Uniform*>& uniforms, Shader::Type stage) = 0;
 
 	public:
 		static PipelineState* Create();

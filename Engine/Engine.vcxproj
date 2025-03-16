@@ -156,7 +156,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="PawnEngine.h" />
-    <ClInclude Include="Source\Renderer\Base\Shader.h" />
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
     <ClInclude Include="Source\Events\ApplicationEvents.h" />
@@ -175,11 +174,13 @@
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Renderer.h" />
+    <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Shader.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.h" />
     <ClInclude Include="Source\Renderer\Base\Buffer.h" />
     <ClInclude Include="Source\Renderer\Base\Framebuffer.h" />
     <ClInclude Include="Source\Renderer\Base\PipelineState.h" />
     <ClInclude Include="Source\Renderer\Base\RendererAPI.h" />
+    <ClInclude Include="Source\Renderer\Base\Shader.h" />
     <ClInclude Include="Source\Renderer\Base\SwapChain.h" />
     <ClInclude Include="Source\Renderer\ImGui\ImGuiLayer.h" />
     <ClInclude Include="Source\Renderer\ImGui\ImGuiReferences.h" />
@@ -187,7 +188,6 @@
     <ClInclude Include="Source\Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Renderer\Base\Shader.cpp" />
     <ClCompile Include="Source\Application\Application.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
     <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp" />
@@ -199,11 +199,13 @@
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Renderer.cpp" />
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Shader.cpp" />
     <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.cpp" />
     <ClCompile Include="Source\Renderer\Base\Buffer.cpp" />
     <ClCompile Include="Source\Renderer\Base\Framebuffer.cpp" />
     <ClCompile Include="Source\Renderer\Base\PipelineState.cpp" />
     <ClCompile Include="Source\Renderer\Base\RendererAPI.cpp" />
+    <ClCompile Include="Source\Renderer\Base\Shader.cpp" />
     <ClCompile Include="Source\Renderer\Base\SwapChain.cpp" />
     <ClCompile Include="Source\Renderer\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="Source\Renderer\RenderCommand.cpp" />
