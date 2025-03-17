@@ -100,7 +100,7 @@ namespace Pawn::Render
 		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 		blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
 		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
 		blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
 		switch (mask)
@@ -111,7 +111,7 @@ namespace Pawn::Render
 		case Pawn::Render::BlendMask::Blue:		blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_BLUE;	break;
 		case Pawn::Render::BlendMask::Alpha:	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALPHA;	break;
 		default: 
-			PE_ASSERT(false, TEXT("DirectX11: Unknown DepthComparison value"));
+			PE_ERROR(TEXT("DirectX11: Unknown DepthComparison value"));
 			blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 			break;
 		}
@@ -127,7 +127,7 @@ namespace Pawn::Render
 	}
 
 	void DirectX11PipelineState::SetRasterizerState(RasterizerCull cull, RasterizerFill fill,
-		bool frontCounterClockwise, bool scissorEnabled,
+		bool frontCounterClockwise, bool scissorEnabled, bool depthClipEnabled,
 		bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,
 		bool multisampleEnabled, int32 sampleCount)
 	{
@@ -163,7 +163,7 @@ namespace Pawn::Render
 		rasterizerDesc.AntialiasedLineEnable = false;
 		rasterizerDesc.DepthBias = depthBias;
 		rasterizerDesc.DepthBiasClamp = depthBiasClamp;
-		rasterizerDesc.DepthClipEnable = true;
+		rasterizerDesc.DepthClipEnable = depthClipEnabled;
 		rasterizerDesc.FrontCounterClockwise = frontCounterClockwise;
 		rasterizerDesc.MultisampleEnable = multisampleEnabled;
 		rasterizerDesc.ScissorEnable = scissorEnabled;
@@ -266,6 +266,12 @@ namespace Pawn::Render
 		m_InputLayout = Memory::Scope<ID3D11InputLayout>(temp);
 	}
 
+	void DirectX11PipelineState::BindInput()
+	{
+		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
+		render->GetDeviceContext()->IASetInputLayout(m_InputLayout.get());
+	}
+
 	void DirectX11PipelineState::Bind()
 	{
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
@@ -281,10 +287,12 @@ namespace Pawn::Render
 		if (m_GeometryShader)
 			m_GeometryShader->Bind();
 
+		float32 blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+
 		render->GetDeviceContext()->RSSetViewports(1, &m_Viewport);
 		render->GetDeviceContext()->RSSetState(m_RasterizerState.get());
-		render->GetDeviceContext()->OMSetDepthStencilState(m_DepthStencilState.get(), 1);
-		render->GetDeviceContext()->OMSetBlendState(m_BlendState.get(), nullptr, 0xFFFFFFFF);
+		render->GetDeviceContext()->OMSetDepthStencilState(m_DepthStencilState.get(), 0);
+		render->GetDeviceContext()->OMSetBlendState(m_BlendState.get(), blendFactor, 0xFFFFFFFF);
 	}
 
 	void DirectX11PipelineState::SetPrimitiveTopology(PrimitiveTopology topology, uint8 patchListPointCount)

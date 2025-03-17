@@ -101,7 +101,13 @@ namespace Pawn::Render
 		}
 		else
 		{
-			result = render->GetDevice()->CreateRenderTargetView(swapChain->GetBackBuffer(), nullptr, &m_RTV);
+			swapChain->GetBackBuffer()->GetDesc(&bufferDesc);
+
+			renderTargetViewDesc.Format = bufferDesc.Format;
+			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+			renderTargetViewDesc.Texture2D.MipSlice = 0;
+
+			result = render->GetDevice()->CreateRenderTargetView(swapChain->GetBackBuffer(), &renderTargetViewDesc, &m_RTV);
 			PE_D3D11_CHECK(result);
 		}
 

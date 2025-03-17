@@ -22,7 +22,6 @@ namespace Pawn::Render
 	public:
 		ID3D11RenderTargetView* GetRenderTargetView() { return m_RTV; }
 		ID3D11DepthStencilView* GetDepthStencilView() { return m_DepthStencilView; }
-		ID3D11DepthStencilState* GetDepthStencilState() { return m_DepthStencilState; }
 
 	private:
 		int32 Init(uint32 x, uint32 y);
@@ -36,7 +35,6 @@ namespace Pawn::Render
 
 		ID3D11Texture2D* m_DepthBuffer;
 		ID3D11DepthStencilView* m_DepthStencilView;
-		ID3D11DepthStencilState* m_DepthStencilState;
 
 	};
 

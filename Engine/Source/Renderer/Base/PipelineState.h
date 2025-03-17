@@ -71,7 +71,7 @@ namespace Pawn::Render
 		virtual void SetViewport(uint32 x, uint32 y) = 0;
 
 		virtual void SetRasterizerState(RasterizerCull cull, RasterizerFill fill, 
-			bool frontCounterClockwise, bool scissorEnabled, 
+			bool frontCounterClockwise, bool scissorEnabled, bool depthClipEnabled,
 			bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,
 			bool multisampleEnabled, int32 sampleCount ) = 0;
 		
@@ -83,6 +83,7 @@ namespace Pawn::Render
 		virtual void SetHullShader(Memory::Reference<Shader> hullShader) = 0;
 		virtual void SetDomainShader(Memory::Reference<Shader> domainShader) = 0;
 
+		virtual void BindInput() = 0;
 		virtual void Bind() = 0;
 		virtual void BindUniforms(Array<Uniform*>& uniforms, Shader::Type stage) = 0;
 

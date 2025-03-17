@@ -21,7 +21,7 @@ namespace Pawn::Render
 		void SetDepthStencilState(bool depthEnabled, bool stencilEnable, DepthComparison depthFunc) override;
 		void SetBlendState(bool enableBlend, BlendMask mask) override;
 		void SetRasterizerState(RasterizerCull cull, RasterizerFill fill,
-			bool frontCounterClockwise, bool scissorEnabled,
+			bool frontCounterClockwise, bool scissorEnabled, bool depthClipEnabled,
 			bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,
 			bool multisampleEnabled, int32 sampleCount) override;
 
@@ -34,6 +34,7 @@ namespace Pawn::Render
 		void SetHullShader(Memory::Reference<Shader> hullShader) override;
 		void SetDomainShader(Memory::Reference<Shader> domainShader) override;
 
+		void BindInput() override;
 		void Bind() override;
 		void BindUniforms(Array<Uniform*>& uniforms, Shader::Type stage) override;
 

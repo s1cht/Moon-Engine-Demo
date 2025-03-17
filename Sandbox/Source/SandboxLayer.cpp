@@ -17,14 +17,17 @@ void SandboxLayer::OnAttach()
 	m_WindowHeight = (uint32)Application::Get().GetWindow()->GetHeight();
 
 	m_Primary = Memory::Reference<Render::PipelineState>(Render::PipelineState::Create());
-	m_VertexShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("assets/Shaders/vs_primary.hlsl"), Render::Shader::Type::Vertex, true));
-	m_PixelShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("assets/Shaders/ps_primary.hlsl"), Render::Shader::Type::Pixel, true));
+	m_VertexShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("assets/Shaders/vs_primary.hlsl"), Render::Shader::Type::Vertex, false));
+	m_PixelShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("assets/Shaders/ps_primary.hlsl"), Render::Shader::Type::Pixel, false));
 
 	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
 	m_Primary->SetVertexShader(m_VertexShader);
 	m_Primary->SetPixelShader(m_PixelShader);
+	m_Primary->SetDepthStencilState(true, true, Render::DepthComparison::Less);
+	m_Primary->SetRasterizerState(Render::RasterizerCull::Back, Render::RasterizerFill::Fill, false, false, true, false, 0, 0.f, false, 0);
 
-	m_Primary->SetBlendState(false, Render::BlendMask::All);
+
+	//m_Primary->SetBlendState(true, Render::BlendMask::All);
 	m_Primary->SetInputLayout(layout, Pawn::Render::InputClassification::PerVertex, 0);
 
 	const float32 points[4][7] =
@@ -35,7 +38,7 @@ void SandboxLayer::OnAttach()
 		{ -0.5f,  0.5f, 0.f,    0.f, 1.f, 1.f, 1.f }, 
 	};
 
-	const uint32 indeces[6] = {0, 1, 2, 1, 2, 3};
+	const uint32 indeces[6] = {0, 1, 2, 0, 2, 3};
 
 	m_VertexBuffer = Memory::Reference<Render::VertexBuffer>(Render::VertexBuffer::Create((void*)points, sizeof(float32) * 4 * 7, Render::Usage::Default));
 	m_IndexBuffer = Memory::Reference<Render::IndexBuffer>(Render::IndexBuffer::Create((void*)indeces, 6, Render::Usage::Default));
@@ -50,6 +53,7 @@ void SandboxLayer::OnUpdate()
 
 	D3DPERF_BeginEvent(0xffffffff, TEXT("Start"));
 	m_Primary->SetPrimitiveTopology(Pawn::Render::PrimitiveTopology::TriangleList, 0);
+	m_Primary->BindInput();
 	m_VertexBuffer->Bind(layout);
 	m_IndexBuffer->Bind();
 	m_Primary->Bind();

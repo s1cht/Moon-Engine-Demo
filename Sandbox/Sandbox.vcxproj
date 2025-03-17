@@ -93,6 +93,10 @@
       <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\bin\Debug-windows-x86_64\Engine;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir ../bin/Debug-windows-x86_64/Sandbox/assets
+xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Debug-windows-x86_64\Sandbox\assets</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -117,6 +121,10 @@
       <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\bin\Release-windows-x86_64\Engine;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir ../bin/Release-windows-x86_64/Sandbox/assets
+xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Release-windows-x86_64\Sandbox\assets</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'">
     <ClCompile>
@@ -141,6 +149,10 @@
       <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\bin\Distribute-windows-x86_64\Engine;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir ../bin/Distribute-windows-x86_64/Sandbox/assets
+xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Distribute-windows-x86_64\Sandbox\assets</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Source\SandboxLayer.h" />

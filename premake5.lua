@@ -77,7 +77,12 @@ group "Misc"
 
 		filter "system:windows"
 			systemversion "latest"
-
+			
+			postbuildcommands
+			{
+				("mkdir ../bin/" .. outputdir .. "/Sandbox/assets"),
+				("{COPYDIR} %{wks.location}/%{prj.name}/assets ../bin/" .. outputdir .. "/Sandbox/assets"),
+			}
 
 		filter "configurations:Debug"
 			defines "PE_DEBUG"
