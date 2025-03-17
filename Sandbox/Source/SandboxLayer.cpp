@@ -8,9 +8,9 @@ using namespace Pawn;
 void SandboxLayer::OnAttach()
 {
 
-	Render::BufferLayout layout = { 
+	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
-		{ Render::ShaderType::Float4, "COLOR", 0, 0 } 
+		{ Render::ShaderType::Float4, "COLOR", 0, 0 }
 	};
 
 	m_WindowWidth = (uint32)Application::Get().GetWindow()->GetWidth();
@@ -23,22 +23,22 @@ void SandboxLayer::OnAttach()
 	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
 	m_Primary->SetVertexShader(m_VertexShader);
 	m_Primary->SetPixelShader(m_PixelShader);
-	m_Primary->SetDepthStencilState(true, true, Render::DepthComparison::Less);
-	m_Primary->SetRasterizerState(Render::RasterizerCull::Back, Render::RasterizerFill::Fill, false, false, true, false, 0, 0.f, false, 0);
+	m_Primary->SetDepthStencilState(false, true, Render::DepthComparison::Greater);
+	m_Primary->SetRasterizerState(Render::RasterizerCull::Back, Render::RasterizerFill::Fill, true, false, true, false, 0, 0.f, false, 0);
 
 
-	//m_Primary->SetBlendState(true, Render::BlendMask::All);
+	m_Primary->SetBlendState(true, Render::BlendMask::All);
 	m_Primary->SetInputLayout(layout, Pawn::Render::InputClassification::PerVertex, 0);
 
 	const float32 points[4][7] =
 	{
-		{ -0.5f, -0.5f, 0.f,    1.f, 1.f, 1.f, 1.f }, 
-		{  0.5f, -0.5f, 0.f,    0.5f, 0.5f, 0.5f, 1.f }, 
-		{  0.5f,  0.5f, 0.f,    1.f, 1.f, 0.f, 1.f }, 
-		{ -0.5f,  0.5f, 0.f,    0.f, 1.f, 1.f, 1.f }, 
+		{ -0.5f, -0.5f, 0.f,    1.f, 1.f, 1.f, 1.f },
+		{  0.5f, -0.5f, 0.f,    0.5f, 0.5f, 0.5f, 1.f },
+		{  0.5f,  0.5f, 0.f,    1.f, 1.f, 0.f, 1.f },
+		{ -0.5f,  0.5f, 0.f,    0.f, 1.f, 1.f, 1.f },
 	};
 
-	const uint32 indeces[6] = {0, 1, 2, 0, 2, 3};
+	const uint32 indeces[6] = { 0, 1, 2, 0, 2, 3 };
 
 	m_VertexBuffer = Memory::Reference<Render::VertexBuffer>(Render::VertexBuffer::Create((void*)points, sizeof(float32) * 4 * 7, Render::Usage::Default));
 	m_IndexBuffer = Memory::Reference<Render::IndexBuffer>(Render::IndexBuffer::Create((void*)indeces, 6, Render::Usage::Default));
