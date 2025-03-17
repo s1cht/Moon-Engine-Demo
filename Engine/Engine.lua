@@ -60,6 +60,7 @@ project "Engine"
 		links
 		{
 			"vulkan-1.dll",
+			"d3d9",
 			"d3d11",
 			"d3d12",
 			"dxgi",

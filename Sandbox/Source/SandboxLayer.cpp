@@ -48,6 +48,7 @@ void SandboxLayer::OnUpdate()
 		{ Render::ShaderType::Float4, "COLOR", 0, 0 }
 	};
 
+	D3DPERF_BeginEvent(0xffffffff, TEXT("Start"));
 	m_Primary->SetPrimitiveTopology(Pawn::Render::PrimitiveTopology::TriangleList, 0);
 	m_VertexBuffer->Bind(layout);
 	m_IndexBuffer->Bind();
@@ -55,6 +56,7 @@ void SandboxLayer::OnUpdate()
 	Render::RenderCommand::BindBackBuffer();
 
 	Render::Renderer::Submit(m_IndexBuffer->GetCount(), 0);
+	D3DPERF_EndEvent();
 }
 
 void SandboxLayer::OnEvent(Event& event)

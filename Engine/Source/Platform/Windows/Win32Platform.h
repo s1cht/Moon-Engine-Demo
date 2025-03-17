@@ -7,6 +7,7 @@
 #endif
 
 #ifdef PLATFORM_WINDOWS
+	#include <d3d9.h>
 	#include <d3d11.h>
 	#include <d3d12.h>
 	#include <dxgi1_2.h>

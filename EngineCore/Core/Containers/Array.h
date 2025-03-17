@@ -353,7 +353,9 @@ namespace Pawn
 		template <class... val>
 		Iterator PEmplace(ArrayIterator<Array> it, val&&... args)
 		{
-			Ptr itPtr = it.m_Ptr;
+			SIZE_T offset = it.m_Ptr - m_Data;
+
+			Ptr itPtr = m_Data + offset;
 			Ptr lastLoc = &m_Data[m_Size];
 		
 			CheckAndAllocate();
@@ -365,9 +367,10 @@ namespace Pawn
 			}
 			else
 			{
-				m_Allocator.Construct(lastLoc, std::forward<val>(args)...);
-				for (Ptr pos = lastLoc - 1; pos > itPtr; --pos)
+				for (Ptr pos = lastLoc; pos > itPtr; --pos)
+				{
 					*pos = std::move(*(pos - 1));
+				}
 
 				itPtr->~DataType();
 				m_Allocator.Construct(itPtr, std::forward<val>(args)...);

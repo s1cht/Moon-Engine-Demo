@@ -62,6 +62,7 @@ group "Misc"
 		{
 			"Engine",
 			"EngineCore",
+			"d3d9",
 		}
 
 		libdirs
