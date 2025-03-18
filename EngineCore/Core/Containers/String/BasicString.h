@@ -11,13 +11,106 @@
 
 namespace Pawn
 {
-    template<typename _String>
-    class StringIterator : public Pawn::Memory::BaseIterator<_String>
-    {
-    public:
-        StringIterator() : Pawn::Memory::BaseIterator<_String>() {}
-        StringIterator(Pawn::Memory::BaseIterator<_String>::PtrType ptr) : Pawn::Memory::BaseIterator<_String>(ptr) {}
-    };
+	template<typename _String>
+	class StringIterator
+	{
+	public:
+		using DataType = typename _String::DataType;
+		using PtrType = DataType*;
+		using RefType = DataType&;
+
+
+	public:
+        StringIterator() : m_Ptr(nullptr) {}
+        StringIterator(PtrType ptr) : m_Ptr(ptr) {}
+
+	public:
+
+        StringIterator operator-(const SIZE_T& index)
+		{
+            StringIterator it = *this;
+			it -= index;
+			return (*this);
+		}
+
+        StringIterator operator+(const SIZE_T& index)
+        {
+            StringIterator it = *this;
+            it += index;
+            return it;
+        }
+
+        void operator-=(const SIZE_T& index)
+        {
+            this->m_Ptr -= index;
+        }
+
+        void operator+=(const SIZE_T& index)
+        {
+            this->m_Ptr += index;
+        }
+
+        StringIterator& operator++()
+        {
+            m_Ptr++;
+            return (*this);
+        }
+
+        StringIterator operator++(int)
+        {
+            StringIterator temp = (*this);
+            m_Ptr++;
+            return temp;
+        }
+
+        StringIterator& operator--()
+        {
+            m_Ptr--;
+            return (*this);
+        }
+
+        StringIterator operator--(int)
+        {
+            StringIterator temp = (*this);
+            m_Ptr--;
+            return temp;
+        }
+
+        bool operator!=(const StringIterator& it)
+        {
+            return (m_Ptr != it.m_Ptr);
+        }
+
+        bool operator==(const StringIterator& it)
+        {
+            return (m_Ptr == it.m_Ptr);
+        }
+
+        StringIterator& operator= (const StringIterator& it)
+		{
+			this->m_Ptr = it.m_Ptr;
+			return *this;
+		}
+
+		RefType operator[] (SIZE_T index)
+		{
+			return *(m_Ptr + index);
+		}
+
+		PtrType operator->()
+		{
+			return m_Ptr;
+		}
+
+		RefType operator*()
+		{
+			return *m_Ptr;
+		}
+
+	public:
+		PtrType m_Ptr;
+
+	};
 
     template<typename type, SIZE_T initSize = 10, class allocator = Pawn::Memory::Allocator<type>>
     class PString
@@ -157,6 +250,26 @@ namespace Pawn
         PString& operator+=(const DataType& character)
         {
             return AddChar(character);
+        }
+
+        bool operator==(const PString& str)
+        {
+            bool equal;
+
+            if (str.GetSize() == this->m_Size)
+            {
+                equal = true;
+                for (SIZE_T i = 0; i < str.GetSize(); i++)
+                    if (str.m_Data[i] != this->m_Data[i])
+                    {
+                        equal = false;
+                        break;
+                    }
+
+                return true;
+            }
+            else
+                return false;
         }
 
         ReturnType& operator[](const SIZE_T index) noexcept

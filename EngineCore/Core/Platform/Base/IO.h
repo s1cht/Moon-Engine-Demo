@@ -1,8 +1,13 @@
 #pragma once
 
-#include "Core.h"
+#include "Core/CoreTypes.h"
 #include "Core/Containers/String.h"
+#include "Core/Containers/Array.h"
+//#include "Core/Containers/Map.h"
 #include "Core/Misc/Timepoint.h"
+
+#define PE_FAILED_IO(result) (result != Pawn::IO::IOError::OK);
+#define PE_FAILED_IO_INT(result) (result != (int32)Pawn::IO::IOError::OK);
 
 namespace Pawn::IO
 {
@@ -13,9 +18,23 @@ namespace Pawn::IO
 
 	};
 
+	enum class StringReadMode
+	{
+		Line,
+		Word,
+	};
+
 	enum class IOError
 	{
 		OK = 0,
+		FileNotOpened,
+		FileIsReadOnly,
+		ReadFileFailed,
+		WriteFileFailed,
+		SeekFailed,
+		PartialRead,
+		FlushFailed,
+		LockFailed,
 		UnknownMode,
 		Unknown
 	};
@@ -40,7 +59,7 @@ namespace Pawn::IO
 
 		virtual void Close() = 0;
 
-		virtual bool Read(String& output) = 0;
+		virtual bool Read(String& output, StringReadMode mode) = 0;
 
 		virtual bool Write(const String& input) = 0;
 
@@ -70,12 +89,13 @@ namespace Pawn::IO
 
 	};
 
-
 	/* Creates a temporary file				*/
 	/* Windows contains this file in %temp%	*/
 	extern CORE_API Memory::Reference<File> PCreateTempFile(const uchar* name);
 
 	extern CORE_API Memory::Reference<File> POpenFile(const uchar* path);
+
+	extern CORE_API Memory::Reference<File> POpenFile(const uchar* path, FileReadMode mode);
 
 	extern CORE_API bool PFileExists(const uchar* path);
 
@@ -86,5 +106,26 @@ namespace Pawn::IO
 	extern CORE_API bool PCreateFile(const uchar* path);
 
 	extern CORE_API bool PCreateDirectory(const uchar* path);
+	
+
+
+	class CORE_API DirectoryStorage
+	{
+	public:
+		struct Directory
+		{
+			const String DirectoryName;
+			const String DirectoryPath;
+		};
+
+	public:
+		static bool StoreDirectory(Directory dir);
+		static String GetDirectory(String directoryName);
+		static void Shutdown();
+
+	private:
+		static Array<Directory*, 30> s_Directories;
+
+	};
 
 }

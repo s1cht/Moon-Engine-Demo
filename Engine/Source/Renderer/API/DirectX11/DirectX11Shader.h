@@ -7,6 +7,13 @@ namespace Pawn::Render
 {
 	class PAWN_API DirectX11Shader : public Shader
 	{
+	private:
+		struct CompiledShader
+		{
+			void* ShaderPtr;
+			SIZE_T ShaderSize;
+		};
+
 	public:
 		DirectX11Shader(String path, Type type, bool compiled);
 		~DirectX11Shader();
@@ -22,7 +29,10 @@ namespace Pawn::Render
 		inline Shader::Type GetShaderType() const override { return m_Type; }
 
 	private:
-		void Init(String path);
+		void Init(String path, bool compiled);
+
+		CompiledShader CompileShader(String path);
+		CompiledShader ReadCompiledShader(String path);
 
 	private:
 		Memory::Reference<ID3D10Blob> m_Buffer;

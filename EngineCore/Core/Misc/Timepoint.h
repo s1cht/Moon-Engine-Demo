@@ -6,7 +6,7 @@
 
 namespace Pawn::Time
 {	
-	namespace Tick
+	namespace TickConstants
 	{
 		inline constexpr int64 Max =						0xFFFFFFFFFFFFFFFF;
 		inline constexpr int64 Min =						0x0000000000000000;
@@ -38,6 +38,8 @@ namespace Pawn::Time
 		uint16 Nanoseconds;
 	};
 
+	extern CORE_API StructurizedTime ConvertTickToTime(uint64 tick);
+
 	struct Timepoint
 	{
 
@@ -50,7 +52,7 @@ namespace Pawn::Time
 		Timepoint(uint64 ticks)
 			: Tick(ticks)
 		{
-			PE_ASSERT(!(ticks <= MaxTick || ticks >= MinTick), TEXT("Tick limit exceed!"));
+			PE_ASSERT(!(ticks <= TickConstants::Max || ticks >= TickConstants::Min), TEXT("Tick limit exceed!"));
 		}
 
 		StructurizedTime GetTime()
@@ -63,7 +65,5 @@ namespace Pawn::Time
 		uint64 Tick;
 
 	};
-
-	extern CORE_API StructurizedTime ConvertTickToTime(uint64 tick);
 
 }

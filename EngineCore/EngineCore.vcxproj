@@ -202,6 +202,7 @@
     <ClCompile Include="Core\Layer\LayerStack.cpp" />
     <ClCompile Include="Core\Math\Math.cpp" />
     <ClCompile Include="Core\Misc\Timepoint.cpp" />
+    <ClCompile Include="Core\Platform\Base\IO.cpp" />
     <ClCompile Include="Core\Platform\Windows\WindowsIO.cpp" />
     <ClCompile Include="Core\Platform\Windows\WindowsThread.cpp" />
     <ClCompile Include="Core\Utils\Logging\Logger.cpp" />

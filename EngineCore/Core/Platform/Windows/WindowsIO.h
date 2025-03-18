@@ -21,7 +21,7 @@ namespace Pawn::IO
 		bool Open(const uchar* path, FileReadMode mode) override;
 		void Close() override;
 
-		bool Read(String& output) override;
+		bool Read(String& output, StringReadMode mode) override;
 		bool Write(const String& input) override;
 		bool Append(const String& output) override;
 
@@ -46,6 +46,7 @@ namespace Pawn::IO
 	private:
 		HANDLE m_File;
 		FileInfo m_FileInfo;
+		FileReadMode m_FileReadMode;
 		
 		IOError m_LastError;
 

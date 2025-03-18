@@ -17,12 +17,12 @@ namespace Pawn::Memory
 	template<class T, class... val>
 	Reference<T> MakeReference(val... args)
 	{
-		return std::make_shared<T>(std::forward<val>(args));
+		return std::make_shared<T>(std::forward<val>(args)...);
 	}
 
 	template<class T, class... val>
-	Scope<T> MakeScope(val... args)
+	Scope<T> MakeScope(val&&... args)
 	{
-		return std::make_unique<T>(std::forward<val>(args));
+		return std::make_unique<T>(std::forward<val>(args)...);
 	}
 };
