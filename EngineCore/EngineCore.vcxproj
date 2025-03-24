@@ -179,6 +179,7 @@
     <ClInclude Include="Core\Memory\Pointers\Reference.h" />
     <ClInclude Include="Core\Memory\Pointers\ReferenceController.h" />
     <ClInclude Include="Core\Misc\Assertion.h" />
+    <ClInclude Include="Core\Misc\Pair.h" />
     <ClInclude Include="Core\Misc\Time.h" />
     <ClInclude Include="Core\Platform\Base\BaseTypes.h" />
     <ClInclude Include="Core\Platform\Base\IO.h" />

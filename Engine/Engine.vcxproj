@@ -155,11 +155,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Assets\Mesh.h" />
-    <ClInclude Include="Source\Assets\AssetManager.h" />
     <ClInclude Include="PawnEngine.h" />
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
+    <ClInclude Include="Source\Assets\AssetManager.h" />
+    <ClInclude Include="Source\Assets\Mesh.h" />
     <ClInclude Include="Source\Events\ApplicationEvents.h" />
     <ClInclude Include="Source\Events\KeyEvents.h" />
     <ClInclude Include="Source\Events\MouseEvents.h" />
@@ -190,9 +190,9 @@
     <ClInclude Include="Source\Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Assets\Mesh.cpp" />
-    <ClCompile Include="Source\Assets\AssetManager.cpp" />
     <ClCompile Include="Source\Application\Application.cpp" />
+    <ClCompile Include="Source\Assets\AssetManager.cpp" />
+    <ClCompile Include="Source\Assets\Mesh.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
     <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp" />
     <ClCompile Include="Source\Input\Keycodes.cpp" />
