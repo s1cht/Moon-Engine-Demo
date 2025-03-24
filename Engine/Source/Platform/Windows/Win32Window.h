@@ -22,7 +22,7 @@ namespace Pawn {
 		inline HWND GetWindowHandle() { return m_Window; };
 
 	public:
-		virtual void OnUpdate() override;
+		virtual void OnUpdate(float64 deltaTime) override;
 
 	private:
 		void Init();

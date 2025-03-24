@@ -3,8 +3,8 @@
 #include "Core/CoreTypes.h"
 #include "Core/Containers/String.h"
 #include "Core/Containers/Array.h"
-//#include "Core/Containers/Map.h"
-#include "Core/Misc/Timepoint.h"
+#include "Core/Containers/Map.h"
+#include "Core/Misc/Time.h"
 
 #define PE_FAILED_IO(result) (result != Pawn::IO::IOError::OK);
 #define PE_FAILED_IO_INT(result) (result != (int32)Pawn::IO::IOError::OK);
@@ -35,6 +35,7 @@ namespace Pawn::IO
 		PartialRead,
 		FlushFailed,
 		LockFailed,
+		EndOfFile,
 		UnknownMode,
 		Unknown
 	};
@@ -67,6 +68,8 @@ namespace Pawn::IO
 
 		virtual bool Seek(SIZE_T position) = 0;
 
+		virtual bool SeekToLine(SIZE_T line) = 0;
+
 		virtual SIZE_T Tell() = 0;
 
 		virtual bool Eof() const = 0;
@@ -79,7 +82,7 @@ namespace Pawn::IO
 
 		virtual void Flush() = 0;
 
-		virtual bool ReadBinary(void* data, SIZE_T size) = 0;
+		virtual bool ReadBinary(void* data, SIZE_T& size) = 0;
 
 		virtual IOError GetFileLastError() const  = 0;
 

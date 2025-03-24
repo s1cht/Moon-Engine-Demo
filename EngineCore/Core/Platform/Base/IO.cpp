@@ -11,7 +11,7 @@ namespace Pawn::IO
 		if (!result)
 			return false;
 
-		s_Directories.PushBack(&dir);
+		s_Directories.PushBack(new Directory(dir));
 		return true;
 	}
 

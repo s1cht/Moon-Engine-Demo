@@ -29,13 +29,14 @@ namespace Pawn::IO
 		void Flush() override;
 
 		bool Seek(SIZE_T position) override;
+		bool SeekToLine(SIZE_T line) override;
 		SIZE_T Tell() override;
 
 		bool Eof() const override;
 		bool IsOpen()  const override;
 
 		SIZE_T GetFileSize() const override;
-		bool ReadBinary(void* data, SIZE_T size) override;
+		bool ReadBinary(void* data, SIZE_T& size) override;
 
 		String ReadAll() override;
 

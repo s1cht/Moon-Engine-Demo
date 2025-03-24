@@ -8,14 +8,9 @@ namespace Pawn::Render
 	class PAWN_API DirectX11Shader : public Shader
 	{
 	private:
-		struct CompiledShader
-		{
-			void* ShaderPtr;
-			SIZE_T ShaderSize;
-		};
 
 	public:
-		DirectX11Shader(String path, Type type, bool compiled);
+		DirectX11Shader(const uchar* fileName, Type type, bool compiled);
 		~DirectX11Shader();
 
 
@@ -24,20 +19,22 @@ namespace Pawn::Render
 		void Unbind() override;
 
 	public:
-		inline Memory::Reference<ID3D10Blob> GetBuffer() { return m_Buffer; }
-		inline SIZE_T GetBufferSize() const { return m_BufferSize; }
+		inline const void* GetBuffer() { return m_ShaderBuffer.ShaderPtr; }
+		inline SIZE_T GetBufferSize() const { return m_ShaderBuffer.ShaderSize; }
+		inline CompiledShader GetShaderBuffer() const { return m_ShaderBuffer; }
+
 		inline Shader::Type GetShaderType() const override { return m_Type; }
 
 	private:
-		void Init(String path, bool compiled);
+		void Init(const uchar* fileName, bool compiled);
 
-		CompiledShader CompileShader(String path);
-		CompiledShader ReadCompiledShader(String path);
+		CompiledShader CompileShader(const String& path, const String& compiledPath);
+		CompiledShader ReadCompiledShader(const String& path);
 
 	private:
-		Memory::Reference<ID3D10Blob> m_Buffer;
-		SIZE_T m_BufferSize;
 		Shader::Type m_Type;
+
+		CompiledShader m_ShaderBuffer;
 
 		void* m_Shader;
 		SIZE_T m_ShaderSize;

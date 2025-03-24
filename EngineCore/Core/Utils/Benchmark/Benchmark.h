@@ -6,7 +6,7 @@
 
 #ifndef PLATFORM_WINDOWS
 
-#include <chrono>CoreTypes
+#include <chrono>
 #define BNCHM_SEC(x) std::chrono::x
 
 template<typename T>
@@ -56,7 +56,7 @@ inline void Benchmarker<T>::Stop()
 class Benchmarker
 {
 public:
-    Benchmarker(const ansichar* unit, const uchar* benchmarkName, SIZE_T iterCount)
+    Benchmarker(const uchar* unit, const uchar* benchmarkName, SIZE_T iterCount)
         : m_Unit(unit), m_BenchmarkName(benchmarkName), m_IterCount(iterCount)
     {
         QueryPerformanceFrequency(&m_Frequency);
@@ -72,17 +72,16 @@ public:
 private:
     void Stop()
     {
-        // Вычисляем разницу в тиках и переводим в наносекунды
         int64 elapsedTicks = m_EndTime.QuadPart - m_StartTime.QuadPart;
         float64 durationNs = (elapsedTicks * 1e9) / m_Frequency.QuadPart;
         float64 oneIteration = (m_IterCount > 0) ? durationNs / (float64)m_IterCount : 0;
 
         if (m_IterCount > 1)
-            PE_BENCHMARK_LOG("Scope {} with {} iterations, lasted: {:.3f} {}. Average per iteration: {:.5f} {}", PE_LOG_STR(m_BenchmarkName), m_IterCount, 
+            PE_BENCHMARK_LOG(TEXT("Scope {} with {} iterations, lasted: {:.3f} {}. Average per iteration: {:.5f} {}"), m_BenchmarkName, m_IterCount, 
                 durationNs, m_Unit, 
                 oneIteration, m_Unit);
         else
-            PE_BENCHMARK_LOG("Scope {}, lasted: {:.3f} {}", PE_LOG_STR(m_BenchmarkName), durationNs, m_Unit);
+            PE_BENCHMARK_LOG(TEXT("Scope {}, lasted: {:.3f} {}"), m_BenchmarkName, durationNs, m_Unit);
     }
 
 private:
@@ -91,11 +90,11 @@ private:
     LARGE_INTEGER m_Frequency{};
 
     const uchar* m_BenchmarkName;
-    const ansichar* m_Unit;
+    const uchar* m_Unit;
     SIZE_T m_IterCount;
 };
 
-#define Benchmark(unit, name) auto _BENCHMARK = Benchmarker("nanoseconds", name, 0);
-#define IterationBenchmark(unit, name, iterCount) auto _BENCHMARK = Benchmarker("nanoseconds", name, iterCount);
+#define Benchmark(unit, name) auto _BENCHMARK = Benchmarker(TEXT("nanoseconds"), name, 0);
+#define IterationBenchmark(unit, name, iterCount) auto _BENCHMARK = Benchmarker(TEXT("nanoseconds"), name, iterCount);
 
 #endif

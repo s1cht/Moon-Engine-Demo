@@ -258,6 +258,69 @@ namespace Pawn
         return AnsiString(&value, 1);
     }
 
+    CORE_API int64 StringToInt(const String& str, SIZE_T* pos, int8 base)
+    {
+        int64 result;
+        uchar* endPtr;
+        const uchar* strSt = str.GetString();
+
+        if (sizeof(uchar) == 2)
+            result = wcstoll(strSt, &endPtr, base);
+        else if (sizeof(uchar) == 1)
+            result = wcstoll(strSt, &endPtr, base);
+        else
+            PE_ASSERT(false, TEXT("Currently 8-bit & 16-bit strings are supported!"));
+
+        if (pos != nullptr)
+        {
+            *pos = static_cast<SIZE_T>(endPtr - strSt);
+        }
+
+        return result;
+    }
+
+	CORE_API uint64 StringToUint(const String& str, SIZE_T* pos, int8 base)
+	{
+		uint64 result;
+		uchar* endPtr;
+		const uchar* strSt = str.GetString();
+
+		if (sizeof(uchar) == 2)
+			result = wcstoull(strSt, &endPtr, base);
+		else if (sizeof(uchar) == 1)
+			result = wcstoull(strSt, &endPtr, base);
+		else
+			PE_ASSERT(false, TEXT("Currently 8-bit & 16-bit strings are supported!"));
+
+		if (pos != nullptr)
+		{
+			*pos = static_cast<SIZE_T>(endPtr - strSt);
+		}
+
+		return result;
+	}
+
+    CORE_API float64 StringToFloat(const String& str, SIZE_T* pos)
+    {
+        float64 result;
+		uchar* endPtr;
+		const uchar* strSt = str.GetString();
+
+		if (sizeof(uchar) == 2)
+			result = wcstod(strSt, &endPtr);
+		else if (sizeof(uchar) == 1)
+			result = wcstod(strSt, &endPtr);
+		else
+			PE_ASSERT(false, TEXT("Currently 8-bit & 16-bit strings are supported!"));
+
+		if (pos != nullptr)
+		{
+			*pos = static_cast<SIZE_T>(endPtr - strSt);
+		}
+
+		return result;
+    }
+
     CORE_API AnsiString operator+(const ansichar* str1, const AnsiString& str2)
     {
         AnsiString result(str1);

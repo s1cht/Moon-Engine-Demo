@@ -58,7 +58,7 @@ namespace Pawn {
 		virtual bool GetFocused() { return m_Data.Focused; }
 
 	public:
-		virtual void OnUpdate() = 0;
+		virtual void OnUpdate(float64 deltaTime) = 0;
 
 	public:
 		static Window* Create(WindowProperties props = WindowProperties());

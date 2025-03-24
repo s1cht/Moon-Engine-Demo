@@ -2,6 +2,7 @@
 
 #include "Allocator.h"
 #include "Iterator.h"
+#include <memory>
 
 namespace Pawn::Memory
 {

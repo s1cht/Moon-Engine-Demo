@@ -3,6 +3,8 @@
 #include "ImGuiReferences.h"
 #include "Renderer/Renderer.h"
 #include "Application/Application.h"
+#include <Core/Misc/Time.h>
+
 
 namespace Pawn::Render::Imgui
 {
@@ -29,10 +31,13 @@ namespace Pawn::Render::Imgui
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
+		io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
+		io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
+	
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -79,13 +84,21 @@ namespace Pawn::Render::Imgui
 		}
 	}
 
-	void ImGuiLayer::OnImGuiRender()
+	void ImGuiLayer::OnImGuiRender(float64 deltaTime)
 	{
 		if (m_Disabled)
 			return;
 		static bool visible = true;
 
-		ImGui::ShowDemoWindow(&visible);
+		//ImGui::ShowDemoWindow(&visible);
+
+		if (ImGui::Begin("DeltaTime", &visible))
+		{
+			ImGui::Text("%.5f", deltaTime);
+			ImGui::Text("A FPS: %d", Pawn::Time::Time::GetAverageFPS());
+			ImGui::Text("I FPS: %d", Pawn::Time::Time::GetInstantFPS());
+			ImGui::End();
+		}
 	}
 
 	void ImGuiLayer::BeginRender()

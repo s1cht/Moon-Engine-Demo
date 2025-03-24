@@ -255,7 +255,7 @@ namespace Pawn::Render
 		}
 
 		result = render->GetDevice()->CreateInputLayout(polygonLayout.Data(), (uint32)polygonLayout.GetSize(),
-			m_VertexShader->GetBuffer()->GetBufferPointer(), m_VertexShader->GetBufferSize(), &temp);
+			m_VertexShader->GetBuffer(), m_VertexShader->GetBufferSize(), &temp);
 
 		if (FAILED(result))
 		{

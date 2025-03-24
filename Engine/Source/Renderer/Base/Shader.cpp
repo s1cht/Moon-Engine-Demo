@@ -3,15 +3,18 @@
 
 namespace Pawn::Render
 {
-	Shader* Shader::CreateShader(const String& path, Shader::Type type, bool compiled)
+	const uchar* Shader::s_ShaderSourceExtension;
+	const uchar* Shader::s_CompiledShaderExtension;
+
+	Shader* Shader::CreateShader(const uchar* fileName, Shader::Type type, bool compiled)
 	{
 		if (compiled)
-			return CreateCompiledShader(path, type);
+			return CreateCompiledShader(fileName, type);
 		else
-			return CreateAndCompileShader(path, type);
+			return CreateAndCompileShader(fileName, type);
 	}
 
-	Shader* Shader::CreateCompiledShader(const String& path, Shader::Type type)
+	Shader* Shader::CreateCompiledShader(const uchar* fileName, Shader::Type type)
 	{
 		RendererAPI::API render = Renderer::GetRenderAPI();
 
@@ -27,7 +30,7 @@ namespace Pawn::Render
 			}
 			case Pawn::Render::RendererAPI::API::DirectX11:
 			{
-				return CreateCompiledDirectX11Shader(path, type);
+				return CreateCompiledDirectX11Shader(fileName, type);
 				break;
 			}
 		}
@@ -35,7 +38,7 @@ namespace Pawn::Render
 		return nullptr;
 	}
 
-	Shader* Shader::CreateAndCompileShader(const String& path, Shader::Type type)
+	Shader* Shader::CreateAndCompileShader(const uchar* fileName, Shader::Type type)
 	{
 		RendererAPI::API render = Renderer::GetRenderAPI();
 
@@ -51,7 +54,7 @@ namespace Pawn::Render
 		}
 		case Pawn::Render::RendererAPI::API::DirectX11:
 		{
-			return CreateAndCompileDirectX11Shader(path, type);
+			return CreateAndCompileDirectX11Shader(fileName, type);
 			break;
 		}
 		}

@@ -37,16 +37,7 @@ namespace Pawn::IO
 
 	WindowsFile::~WindowsFile()
 	{
-		if (!m_Opened)
-		{
-			PE_ERROR("Tried to closed closed file!");
-			return;
-		}
-
-		if (!CloseHandle(m_File))
-		{
-			PE_ERROR(TEXT("File failed to close! Error: {0}"), GetLastError());
-		}
+		Close();
 	}
 
 	bool WindowsFile::Open(const uchar* path, FileReadMode mode)
@@ -78,13 +69,13 @@ namespace Pawn::IO
 			return false;
 		}
 
-		m_File = CreateFileW(path, readFlags, FILE_SHARE_DELETE,
+		m_File = CreateFileW(path, readFlags, NULL,
 			NULL,
 			canCreateNewFile ? OPEN_ALWAYS : OPEN_EXISTING,
 			readFlags == GENERIC_READ ? FILE_ATTRIBUTE_READONLY : FILE_ATTRIBUTE_NORMAL,
 			nullptr);
 
-		if (!m_File)
+		if (m_File == INVALID_HANDLE_VALUE)
 		{
 			DWORD error = GetLastError();
 			PE_ERROR("{0}", error);
@@ -125,11 +116,13 @@ namespace Pawn::IO
 		{
 			PE_ERROR(TEXT("File failed to close! Error: {0}"), GetLastError());
 		}
+		m_Opened = false;
+		m_EOF = true;
 	}
 
 	bool WindowsFile::Read(String& output, StringReadMode mode)
 	{
-		uchar byte;
+		uchar byte = TEXT(' ');
 		DWORD bytesRead;
 		
 		output.Clear();
@@ -240,6 +233,44 @@ namespace Pawn::IO
 		return true;
 	}
 
+	bool WindowsFile::SeekToLine(SIZE_T line)
+	{
+		if (!m_Opened)
+		{
+			m_LastError = IOError::FileNotOpened;
+			return false;
+		}
+
+		if (!Seek(0))
+			return false;
+
+		uint32 currentLine = 0;
+		char buffer[1];
+		DWORD bytesRead;
+		bool found = false;
+
+		while (currentLine < line)
+		{
+			if (!ReadFile(m_File, buffer, 1, &bytesRead, nullptr) || bytesRead == 0)
+			{
+				m_EOF = true;
+				m_LastError = IOError::EndOfFile;
+				return false;
+			}
+
+			if (buffer[0] == '\n')
+				currentLine++;
+		}
+
+		if (currentLine == line)
+			found = true;
+		else
+			m_LastError = IOError::EndOfFile;
+
+		m_EOF = (Tell() >= GetFileSize());
+		return found;
+	}
+
 	SIZE_T WindowsFile::Tell()
 	{
 		if (!m_Opened)
@@ -311,7 +342,7 @@ namespace Pawn::IO
 		}
 	}
 
-	bool WindowsFile::ReadBinary(void* data, SIZE_T size)
+	bool WindowsFile::ReadBinary(void* data, SIZE_T& size)
 	{
 		if (!m_Opened)
 		{
@@ -403,7 +434,7 @@ namespace Pawn::IO
 		if (!file->IsOpen())
 		{
 			PE_ERROR(TEXT("IO: File can't be opened! Error: {0}"), (uint32)file->GetFileLastError());
-			return nullptr;
+			return Memory::MakeReference<WindowsFile>();
 		}
 
 		return file;
@@ -418,7 +449,7 @@ namespace Pawn::IO
 		if (!file->IsOpen())
 		{
 			PE_ERROR(TEXT("IO: File can't be opened! Error: {0}"), (uint32)file->GetFileLastError());
-			return nullptr;
+			return Memory::MakeReference<WindowsFile>();
 		}
 
 		return file;

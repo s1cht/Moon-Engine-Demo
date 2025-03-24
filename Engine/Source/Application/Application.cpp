@@ -10,6 +10,8 @@
 #include <Core/Utils/MemWatch/MemWatch.h>
 #include <Core/Containers/String.h>
 #include <Core/Containers/Array.h>
+#include <Core/Platform/Base/IO.h>
+#include <Core/Misc/Time.h>
 
 namespace Pawn {
 
@@ -34,6 +36,12 @@ namespace Pawn {
 		m_ImGuiLayer = new Render::Imgui::ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
 
+		String str = IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
+
+		IO::DirectoryStorage::StoreDirectory(IO::DirectoryStorage::Directory(TEXT("Assets"), (str + TEXT("assets\\"))));
+		IO::DirectoryStorage::StoreDirectory(IO::DirectoryStorage::Directory(TEXT("Shaders"), (str + TEXT("assets\\Shaders\\Source\\"))));
+		IO::DirectoryStorage::StoreDirectory(IO::DirectoryStorage::Directory(TEXT("CompiledShaders"), (str + TEXT("assets\\Shaders\\Compiled\\"))));
+
 		m_Runs = true;
 	}
 
@@ -47,7 +55,9 @@ namespace Pawn {
 	{
 		while (m_Runs)
 		{
-			m_Window->OnUpdate();
+			float64 delta = Pawn::Time::Time::Update().AsMilliseconds();
+			
+			m_Window->OnUpdate(delta);
 
 			Render::RenderCommand::Clear(Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
 
@@ -55,14 +65,16 @@ namespace Pawn {
 
 			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
 			{
-				(*layer)->OnUpdate();
+				(*layer)->OnUpdate(delta);
 			}
 
 			Render::Renderer::EndScene();
-
+			
 			m_ImGuiLayer->BeginRender();
+
 			for (auto layer : m_LayerStack)
-				layer->OnImGuiRender();
+				layer->OnImGuiRender(delta);
+
 			m_ImGuiLayer->EndRender();
 
 			m_ImGuiLayer->PostRender();

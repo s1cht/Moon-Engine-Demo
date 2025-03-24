@@ -46,8 +46,8 @@ namespace Pawn
 		return m_Data.WindowSize.Y;
 	}
 
-	void Win32Window::OnUpdate()
-	{
+	void Win32Window::OnUpdate(float64 deltaTime)
+{
 		MSG message = {};
 
 		while (PeekMessageW(&message, m_Window, 0, 0, PM_REMOVE))

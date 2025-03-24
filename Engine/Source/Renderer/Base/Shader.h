@@ -13,6 +13,12 @@ namespace Pawn::Render
 			Vertex, Pixel, Compute, Geometry, Hull, Domain
 		};
 
+		struct CompiledShader
+		{
+			void* ShaderPtr;
+			SIZE_T ShaderSize;
+		};
+
 	public:
 		virtual ~Shader() {};
 
@@ -22,20 +28,45 @@ namespace Pawn::Render
 		virtual Shader::Type GetShaderType() const = 0;
 
 	public:
-		static Shader* CreateShader(const String& path, Shader::Type type, bool compiled);
+		static Shader* CreateShader(const uchar* fileName, Shader::Type type, bool compiled);
 
 	public:
-		static Shader* CreateCompiledShader(const String& path, Shader::Type type);
-		static Shader* CreateAndCompileShader(const String& path, Shader::Type type);
+		static Shader* CreateCompiledShader(const uchar* fileName, Shader::Type type);
+		static Shader* CreateAndCompileShader(const uchar* fileName, Shader::Type type);
 
 	// Compiled
 	public:
-		static Shader* CreateCompiledDirectX11Shader(const String& path, Shader::Type type);
+		static Shader* CreateCompiledDirectX11Shader(const uchar* fileName, Shader::Type type);
 
 	// Read then compile
 	public:
-		static Shader* CreateAndCompileDirectX11Shader(const String& path, Shader::Type type);
+		static Shader* CreateAndCompileDirectX11Shader(const uchar* fileName, Shader::Type type);
 
+	public:
+		static void SetShaderSourceExtension(const uchar* extension)
+		{
+			s_ShaderSourceExtension = extension;
+		}
+
+		static const uchar* GetShaderSourceExtension()
+		{
+			return s_ShaderSourceExtension;
+		}
+
+	public:
+		static void SetCompiledShaderExtension(const uchar* extension)
+		{
+			s_CompiledShaderExtension = extension;
+		}
+
+		static const uchar* GetCompiledShaderExtension()
+		{
+			return s_CompiledShaderExtension;
+		}
+
+	private:
+		static const uchar* s_ShaderSourceExtension;
+		static const uchar* s_CompiledShaderExtension;
 
 	};
 }

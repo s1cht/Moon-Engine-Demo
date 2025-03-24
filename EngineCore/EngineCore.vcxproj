@@ -153,8 +153,10 @@
     <ClInclude Include="Core\Bitwise.h" />
     <ClInclude Include="Core\Containers\Algorithm.h" />
     <ClInclude Include="Core\Containers\Array.h" />
+    <ClInclude Include="Core\Containers\Map.h" />
     <ClInclude Include="Core\Containers\String.h" />
     <ClInclude Include="Core\Containers\String\BasicString.h" />
+    <ClInclude Include="Core\Containers\String\Map.h" />
     <ClInclude Include="Core\Containers\String\StringMacros.h" />
     <ClInclude Include="Core\Containers\String\StringShared.h" />
     <ClInclude Include="Core\Containers\String\StringView.h" />
@@ -177,7 +179,7 @@
     <ClInclude Include="Core\Memory\Pointers\Reference.h" />
     <ClInclude Include="Core\Memory\Pointers\ReferenceController.h" />
     <ClInclude Include="Core\Misc\Assertion.h" />
-    <ClInclude Include="Core\Misc\Timepoint.h" />
+    <ClInclude Include="Core\Misc\Time.h" />
     <ClInclude Include="Core\Platform\Base\BaseTypes.h" />
     <ClInclude Include="Core\Platform\Base\IO.h" />
     <ClInclude Include="Core\Platform\Base\Thread.h" />
@@ -189,6 +191,7 @@
     <ClInclude Include="Core\Platform\Windows\WindowsIncludes.h" />
     <ClInclude Include="Core\Platform\Windows\WindowsPlatform.h" />
     <ClInclude Include="Core\Platform\Windows\WindowsThread.h" />
+    <ClInclude Include="Core\Platform\Windows\WindowsTime.h" />
     <ClInclude Include="Core\Utils\Benchmark\Benchmark.h" />
     <ClInclude Include="Core\Utils\Logging\Logger.h" />
     <ClInclude Include="Core\Utils\MemWatch\MemWatch.h" />
@@ -201,10 +204,11 @@
     <ClCompile Include="Core\Layer\Layer.cpp" />
     <ClCompile Include="Core\Layer\LayerStack.cpp" />
     <ClCompile Include="Core\Math\Math.cpp" />
-    <ClCompile Include="Core\Misc\Timepoint.cpp" />
+    <ClCompile Include="Core\Misc\Time.cpp" />
     <ClCompile Include="Core\Platform\Base\IO.cpp" />
     <ClCompile Include="Core\Platform\Windows\WindowsIO.cpp" />
     <ClCompile Include="Core\Platform\Windows\WindowsThread.cpp" />
+    <ClCompile Include="Core\Platform\Windows\WindowsTime.cpp" />
     <ClCompile Include="Core\Utils\Logging\Logger.cpp" />
     <ClCompile Include="Core\Utils\MemWatch\MemWatch.cpp" />
   </ItemGroup>

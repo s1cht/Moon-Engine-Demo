@@ -14,7 +14,7 @@ namespace Pawn::Render::Imgui
 		void OnDetach() override;
 
 		void OnEvent(Event& event) override;
-		void OnImGuiRender() override;
+		void OnImGuiRender(float64 deltaTime) override;
 
 
 	public:

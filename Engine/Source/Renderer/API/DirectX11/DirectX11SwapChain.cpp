@@ -68,7 +68,7 @@ namespace Pawn::Render
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainFSDesc = {};
 
-		swapChainDesc.BufferCount = 1;		// Only a back buffer
+		swapChainDesc.BufferCount = 1;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -77,7 +77,7 @@ namespace Pawn::Render
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 		swapChainDesc.Width = window->GetWidth();
 		swapChainDesc.Height = window->GetHeight();
-		swapChainDesc.Flags = 0;
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
 
 		// Multisampling
 		swapChainDesc.SampleDesc.Count = 1;

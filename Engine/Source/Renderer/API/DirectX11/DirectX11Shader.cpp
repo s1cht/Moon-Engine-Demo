@@ -6,20 +6,20 @@
 namespace Pawn::Render
 {
 
-	Shader* Shader::CreateCompiledDirectX11Shader(const String& path, Shader::Type type)
+	Shader* Shader::CreateCompiledDirectX11Shader(const uchar* fileName, Shader::Type type)
 	{
-		return new DirectX11Shader(path, type, true);
+		return new DirectX11Shader(fileName, type, true);
 	}
 
-	Shader* Shader::CreateAndCompileDirectX11Shader(const String& path, Shader::Type type)
+	Shader* Shader::CreateAndCompileDirectX11Shader(const uchar* fileName, Shader::Type type)
 	{
-		return new DirectX11Shader(path, type, false);
+		return new DirectX11Shader(fileName, type, false);
 	}
 
-	DirectX11Shader::DirectX11Shader(String path, Type type, bool compiled)
+	DirectX11Shader::DirectX11Shader(const uchar* fileName, Type type, bool compiled)
 		: m_Type(type)
 	{
-		Init(path, compiled);
+		Init(fileName, compiled);
 	}
 
 	DirectX11Shader::~DirectX11Shader()
@@ -37,10 +37,11 @@ namespace Pawn::Render
 			}
 			m_Shader = nullptr;
 		}
-		if (m_Buffer)
+		if (m_ShaderBuffer.ShaderPtr)
 		{
-			m_Buffer->Release();
-			m_Buffer = nullptr;
+			delete m_ShaderBuffer.ShaderPtr;
+			m_ShaderBuffer.ShaderPtr = nullptr;
+			m_ShaderBuffer.ShaderSize = 0;
 		}
 	}
 
@@ -122,67 +123,215 @@ namespace Pawn::Render
 		}
 	}
 
-	void DirectX11Shader::Init(String path, bool compiled)
+	void DirectX11Shader::Init(const uchar* fileName, bool compiled)
 	{
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
+		HRESULT result;
+		bool exists;
+
+		String compiledShaderPath = IO::DirectoryStorage::GetDirectory(TEXT("CompiledShaders")) + StringView(fileName) + Shader::GetCompiledShaderExtension();
+		String shaderSourcePath = IO::DirectoryStorage::GetDirectory(TEXT("Shaders")) + StringView(fileName) + Shader::GetShaderSourceExtension();
+
+		if (compiled)
+		{
+			exists = IO::PFileExists(compiledShaderPath.GetString());
+			if (exists)
+			{
+				m_ShaderBuffer = ReadCompiledShader(compiledShaderPath);
+				if (m_ShaderBuffer.ShaderSize <= 0)
+				{
+					PE_ASSERT(false, TEXT("Compilation failed! Error: {0}"));
+					return;
+				}
+			}
+			else
+			{
+				m_ShaderBuffer = CompileShader(shaderSourcePath, compiledShaderPath);
+				if (m_ShaderBuffer.ShaderSize <= 0)
+				{
+					PE_ASSERT(false, TEXT("Compilation failed! Error: {0}"));
+					return;
+				}
+			}
+		}
+		else
+		{
+			m_ShaderBuffer = CompileShader(shaderSourcePath, compiledShaderPath);
+			if (m_ShaderBuffer.ShaderSize <= 0)
+			{
+				PE_ASSERT(false, TEXT("Compilation failed! Error: {0}"));
+				return;
+			}
+		}
+
+		switch (m_Type)
+		{
+		case Pawn::Render::Shader::Type::None: PE_ASSERT(false, TEXT("Creation of None shader is prohibited!")) break;
+		case Pawn::Render::Shader::Type::Vertex:
+		{
+			ID3D11VertexShader* shader;
+			result = render->GetDevice()->CreateVertexShader(m_ShaderBuffer.ShaderPtr, m_ShaderBuffer.ShaderSize, nullptr, &shader);
+			if (FAILED(result))
+			{
+				PE_ASSERT(false, TEXT("VertexShader creation failed! Error: {0}"), (int32)result);
+				if (shader)
+					shader->Release();
+				return;
+			}
+			m_ShaderSize = sizeof(shader);
+			m_Shader = static_cast<void*>(shader);
+
+			break;
+		}
+		case Pawn::Render::Shader::Type::Pixel:
+		{
+			ID3D11PixelShader* shader;
+			result = render->GetDevice()->CreatePixelShader(m_ShaderBuffer.ShaderPtr, m_ShaderBuffer.ShaderSize, nullptr, &shader);
+			if (FAILED(result))
+			{
+				PE_ASSERT(false, TEXT("PixelShader creation failed! Error: {0}"), (int32)result);
+				if (shader)
+					shader->Release();
+				return;
+			}
+			m_ShaderSize = sizeof(shader);
+			m_Shader = static_cast<void*>(shader);
+
+			break;
+		}
+		case Pawn::Render::Shader::Type::Compute:
+		{
+			ID3D11ComputeShader* shader;
+			result = render->GetDevice()->CreateComputeShader(m_ShaderBuffer.ShaderPtr, m_ShaderBuffer.ShaderSize, nullptr, &shader);
+			if (FAILED(result))
+			{
+				PE_ASSERT(false, TEXT("ComputeShader creation failed! Error: {0}"), (int32)result);
+				if (shader)
+					shader->Release();
+				return;
+			}
+			m_ShaderSize = sizeof(shader);
+			m_Shader = static_cast<void*>(shader);
+
+			break;
+		}
+		case Pawn::Render::Shader::Type::Geometry:
+		{
+			ID3D11GeometryShader* shader;
+			result = render->GetDevice()->CreateGeometryShader(m_ShaderBuffer.ShaderPtr, m_ShaderBuffer.ShaderSize, nullptr, &shader);
+			if (FAILED(result))
+			{
+				PE_ASSERT(false, TEXT("GeometryShader creation failed! Error: {0}"), (int32)result);
+				if (shader)
+					shader->Release();
+				return;
+			}
+			m_ShaderSize = sizeof(shader);
+			m_Shader = static_cast<void*>(shader);
+
+			break;
+		}
+		case Pawn::Render::Shader::Type::Hull:
+		{
+			ID3D11HullShader* shader;
+			result = render->GetDevice()->CreateHullShader(m_ShaderBuffer.ShaderPtr, m_ShaderBuffer.ShaderSize, nullptr, &shader);
+			if (FAILED(result))
+			{
+				PE_ASSERT(false, TEXT("HullShader creation failed! Error: {0}"), (int32)result);
+				if (shader)
+					shader->Release();
+				return;
+			}
+			m_ShaderSize = sizeof(shader);
+			m_Shader = static_cast<void*>(shader);
+
+			break;
+		}
+		case Pawn::Render::Shader::Type::Domain:
+		{
+			ID3D11DomainShader* shader;
+			result = render->GetDevice()->CreateDomainShader(m_ShaderBuffer.ShaderPtr, m_ShaderBuffer.ShaderSize, nullptr, &shader);
+			if (FAILED(result))
+			{
+				PE_ASSERT(false, TEXT("VertexShader creation failed! Error: {0}"), (int32)result);
+				if (shader)
+					shader->Release();
+				return;
+			}
+			m_ShaderSize = sizeof(shader);
+			m_Shader = static_cast<void*>(shader);
+
+			break;
+		}
+		}
+	}
+
+	DirectX11Shader::CompiledShader DirectX11Shader::CompileShader(const String& path, const String& compiledPath)
+	{
+		using namespace IO;
+
+		Memory::Reference<File> file = POpenFile(path.GetString());
+		Memory::Reference<File> fileWrite = POpenFile(compiledPath.GetString(), IO::FileReadMode::WriteAndRead);
+
 		HRESULT result;
 		uint32 flags;
 		ID3D10Blob* temp;
 		ID3D10Blob* errorBlob;
 		const ansichar* entryPoint = nullptr;
 		const ansichar* shaderFeatureLevel = nullptr;
+		CompiledShader output;
 
 		switch (m_Type)
 		{
-		case Pawn::Render::Shader::Type::None:
-		{
-			PE_ASSERT(false, TEXT("DirectX11: ShaderType was None!"));
-			return;
-		}
-		case Pawn::Render::Shader::Type::Vertex:
-		{
-			entryPoint = "VSMain";
-			shaderFeatureLevel = "vs_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Pixel:
-		{
-			entryPoint = "PSMain";
-			shaderFeatureLevel = "ps_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Compute:
-		{
-			entryPoint = "CSMain";
-			shaderFeatureLevel = "cs_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Geometry:
-		{
-			entryPoint = "GSMain";
-			shaderFeatureLevel = "gs_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Hull:
-		{
-			entryPoint = "HSMain";
-			shaderFeatureLevel = "hs_5_0";
-			break;
-		}
-		case Pawn::Render::Shader::Type::Domain:
-		{
-			entryPoint = "DSMain";
-			shaderFeatureLevel = "ds_5_0";
-			break;
-		}
-		default:
-		{
-			PE_ASSERT(false, TEXT("Unknown shader type!"));
-			return;
-		}
+			case Pawn::Render::Shader::Type::None:
+			{
+				PE_ASSERT(false, TEXT("DirectX11: ShaderType was None!"));
+				return CompiledShader(nullptr, 0);
+			}
+			case Pawn::Render::Shader::Type::Vertex:
+			{
+				entryPoint = "VSMain";
+				shaderFeatureLevel = "vs_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Pixel:
+			{
+				entryPoint = "PSMain";
+				shaderFeatureLevel = "ps_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Compute:
+			{
+				entryPoint = "CSMain";
+				shaderFeatureLevel = "cs_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Geometry:
+			{
+				entryPoint = "GSMain";
+				shaderFeatureLevel = "gs_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Hull:
+			{
+				entryPoint = "HSMain";
+				shaderFeatureLevel = "hs_5_0";
+				break;
+			}
+			case Pawn::Render::Shader::Type::Domain:
+			{
+				entryPoint = "DSMain";
+				shaderFeatureLevel = "ds_5_0";
+				break;
+			}
+			default:
+			{
+				PE_ASSERT(false, TEXT("Unknown shader type!"));
+				return CompiledShader(nullptr, 0);
+			}
 		}
 
-		flags = 0;
+		flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
 
 		result = D3DCompileFromFile(path.GetString(), nullptr,
 			D3D_COMPILE_STANDARD_FILE_INCLUDE,
@@ -199,129 +348,50 @@ namespace Pawn::Render
 			}
 			if (temp)
 				temp->Release();
-		}
-		else
-		{
-			m_Buffer = Memory::Scope<ID3D10Blob>(temp);
-			m_BufferSize = m_Buffer->GetBufferSize();
-		}
 
-		switch (m_Type)
-		{
-		case Pawn::Render::Shader::Type::None: PE_ASSERT(false, TEXT("Creation of None shader is prohibited!")) break;
-		case Pawn::Render::Shader::Type::Vertex:
-		{
-			ID3D11VertexShader* shader;
-			result = render->GetDevice()->CreateVertexShader(m_Buffer->GetBufferPointer(), m_BufferSize, nullptr, &shader);
-			if (FAILED(result))
-			{
-				PE_ASSERT(false, TEXT("VertexShader creation failed! Error: {0}"), (int32)result);
-				if (shader)
-					shader->Release();
-				return;
-			}
-			m_ShaderSize = sizeof(shader);
-			m_Shader = static_cast<void*>(shader);
-
-			break;
+			return CompiledShader(nullptr, 0);
 		}
-		case Pawn::Render::Shader::Type::Pixel:
-		{
-			ID3D11PixelShader* shader;
-			result = render->GetDevice()->CreatePixelShader(m_Buffer->GetBufferPointer(), m_BufferSize, nullptr, &shader);
-			if (FAILED(result))
-			{
-				PE_ASSERT(false, TEXT("PixelShader creation failed! Error: {0}"), (int32)result);
-				if (shader)
-					shader->Release();
-				return;
-			}
-			m_ShaderSize = sizeof(shader);
-			m_Shader = static_cast<void*>(shader);
-
-			break;
-		}
-		case Pawn::Render::Shader::Type::Compute:
-		{
-			ID3D11ComputeShader* shader;
-			result = render->GetDevice()->CreateComputeShader(m_Buffer->GetBufferPointer(), m_BufferSize, nullptr, &shader);
-			if (FAILED(result))
-			{
-				PE_ASSERT(false, TEXT("ComputeShader creation failed! Error: {0}"), (int32)result);
-				if (shader)
-					shader->Release();
-				return;
-			}
-			m_ShaderSize = sizeof(shader);
-			m_Shader = static_cast<void*>(shader);
-
-			break;
-		}
-		case Pawn::Render::Shader::Type::Geometry:
-		{
-			ID3D11GeometryShader* shader;
-			result = render->GetDevice()->CreateGeometryShader(m_Buffer->GetBufferPointer(), m_BufferSize, nullptr, &shader);
-			if (FAILED(result))
-			{
-				PE_ASSERT(false, TEXT("GeometryShader creation failed! Error: {0}"), (int32)result);
-				if (shader)
-					shader->Release();
-				return;
-			}
-			m_ShaderSize = sizeof(shader);
-			m_Shader = static_cast<void*>(shader);
-
-			break;
-		}
-		case Pawn::Render::Shader::Type::Hull:
-		{
-			ID3D11HullShader* shader;
-			result = render->GetDevice()->CreateHullShader(m_Buffer->GetBufferPointer(), m_BufferSize, nullptr, &shader);
-			if (FAILED(result))
-			{
-				PE_ASSERT(false, TEXT("HullShader creation failed! Error: {0}"), (int32)result);
-				if (shader)
-					shader->Release();
-				return;
-			}
-			m_ShaderSize = sizeof(shader);
-			m_Shader = static_cast<void*>(shader);
-
-			break;
-		}
-		case Pawn::Render::Shader::Type::Domain:
-		{
-			ID3D11DomainShader* shader;
-			result = render->GetDevice()->CreateDomainShader(m_Buffer->GetBufferPointer(), m_BufferSize, nullptr, &shader);
-			if (FAILED(result))
-			{
-				PE_ASSERT(false, TEXT("VertexShader creation failed! Error: {0}"), (int32)result);
-				if (shader)
-					shader->Release();
-				return;
-			}
-			m_ShaderSize = sizeof(shader);
-			m_Shader = static_cast<void*>(shader);
-
-			break;
-		}
-		}
-	}
-
-	DirectX11Shader::CompiledShader DirectX11Shader::CompileShader(String path)
-	{
-		using namespace IO;
-
-		//Memory::Reference<File> file = POpenFile()
-		CompiledShader output;
+		
+		output.ShaderPtr = nullptr;
+		output.ShaderSize = temp->GetBufferSize();
+		memcpy(output.ShaderPtr, temp->GetBufferPointer(), output.ShaderSize);
+		
+		fileWrite->Write(reinterpret_cast<const uchar*>(output.ShaderPtr));
+		fileWrite->Close();
 
 		return output;
 	}
 
-	DirectX11Shader::CompiledShader DirectX11Shader::ReadCompiledShader(String path)
+	DirectX11Shader::CompiledShader DirectX11Shader::ReadCompiledShader(const String& path)
 	{
+		using namespace IO;
+
+		bool result;
+		Memory::Reference<File> file;
 		CompiledShader output;
 
+		file = POpenFile(path.GetString());
+
+		output.ShaderSize = file->GetFileInfo().Size;
+		output.ShaderPtr = ::operator new(output.ShaderSize);
+
+		result = file->IsOpen();
+		if (!result)
+		{
+			PE_ERROR(TEXT("Can't find shader! Error: {0}, Path {1}"), (uint32)file->GetFileLastError(), path.GetString());
+			delete output.ShaderPtr;
+			return CompiledShader(nullptr, 0);
+		}
+
+		result = file->ReadBinary(output.ShaderPtr, output.ShaderSize);
+		if (!result)
+		{
+			PE_ERROR(TEXT("Can't read shader! Error: {0}, Path {1}"), (uint32)file->GetFileLastError(), path.GetString());
+			delete output.ShaderPtr;
+			return CompiledShader(nullptr, 0);
+		}
+
+		file->Close();
 
 		return output;
 	}

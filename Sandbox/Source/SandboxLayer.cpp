@@ -2,11 +2,16 @@
 #include <Application/Application.h>
 #include <Renderer/Renderer.h>
 #include <Renderer/RenderCommand.h>
+#include <Core/Platform/Base/IO.h>
+#include <Assets/Mesh.h>
 
 using namespace Pawn;
 
 void SandboxLayer::OnAttach()
 {
+	Memory::Reference<Assets::Mesh> mesh = Memory::Reference<Assets::Mesh>(new Assets::Mesh());
+
+	mesh->LoadFromFile(IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + String(TEXT("assets/Meshes/torch.obj")));
 
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
@@ -17,8 +22,12 @@ void SandboxLayer::OnAttach()
 	m_WindowHeight = (uint32)Application::Get().GetWindow()->GetHeight();
 
 	m_Primary = Memory::Reference<Render::PipelineState>(Render::PipelineState::Create());
-	m_VertexShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("assets/Shaders/vs_primary.hlsl"), Render::Shader::Type::Vertex, false));
-	m_PixelShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("assets/Shaders/ps_primary.hlsl"), Render::Shader::Type::Pixel, false));
+
+	Render::Shader::SetShaderSourceExtension(TEXT(".hlsl"));
+	Render::Shader::SetCompiledShaderExtension(TEXT(".cso"));
+
+	m_VertexShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("vs_primary"), Render::Shader::Type::Vertex, true));
+	m_PixelShader = Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("ps_primary"), Render::Shader::Type::Pixel, true));
 
 	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
 	m_Primary->SetVertexShader(m_VertexShader);
@@ -44,7 +53,7 @@ void SandboxLayer::OnAttach()
 	m_IndexBuffer = Memory::Reference<Render::IndexBuffer>(Render::IndexBuffer::Create((void*)indeces, 6, Render::Usage::Default));
 }
 
-void SandboxLayer::OnUpdate()
+void SandboxLayer::OnUpdate(float64 deltaTime)
 {
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },

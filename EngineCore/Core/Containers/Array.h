@@ -232,15 +232,13 @@ namespace Pawn
 		ReturnType& operator[](const SIZE_T index) noexcept
 		{
 			PE_CORE_ASSERT(index < m_Size, "Index in array is out of range!");
-			auto& returnVal = m_Data[index];
-			return returnVal;
+			return m_Data[index];
 		}
 
 		const ReturnType& operator[](const SIZE_T index) const noexcept
 		{
 			PE_CORE_ASSERT(index < m_Size, "Index in array is out of range!");
-			auto& returnVal = m_Data[index];
-			return returnVal;
+			return m_Data[index];
 		}
 
 	public:

@@ -1,7 +1,6 @@
 #include "Logger.h"
+#include "spdlog\async.h"
 #include "spdlog\sinks\stdout_color_sinks.h"
-
-#include <locale>
 
 namespace Pawn {
 
@@ -12,18 +11,37 @@ namespace Pawn {
 
 	void Logger::Init()
 	{
-		spdlog::set_pattern("%^[%T] %n: %v%$");
+#ifndef PE_DEBUG
+		spdlog::set_pattern("%^[%H:%I:%M:%S:%e ThreadID: %t] %n:%$ %v");
+#else
+		spdlog::set_pattern("%^[%H:%I:%M:%S:%e ThreadID: %t] [%@] %n:%$ %v");
+#endif
 
-		m_coreLogger = spdlog::stdout_color_mt("Core");
+		m_coreLogger = spdlog::stdout_color_mt<spdlog::async_factory>("Core");
+		m_clientLogger = spdlog::stdout_color_mt<spdlog::async_factory>("Client");
+		m_memoryLogger = spdlog::stdout_color_mt<spdlog::async_factory>("HeapMemory");
+		m_benchmarkLogger = spdlog::stdout_color_mt<spdlog::async_factory>("Benchmark");
+
+
+#ifdef PE_DEBUG
 		m_coreLogger->set_level(spdlog::level::trace);
-
-		m_clientLogger = spdlog::stdout_color_mt("Client");
 		m_clientLogger->set_level(spdlog::level::trace);
-
-		m_memoryLogger = spdlog::stdout_color_mt("HeapMemory");
 		m_memoryLogger->set_level(spdlog::level::trace);
-
-		m_benchmarkLogger = spdlog::stdout_color_mt("Benchmark");
 		m_benchmarkLogger->set_level(spdlog::level::trace);
+#else
+		m_coreLogger->set_level(spdlog::level::info);
+		m_clientLogger->set_level(spdlog::level::info);
+		m_memoryLogger->set_level(spdlog::level::warn);
+		m_benchmarkLogger->set_level(spdlog::level::off);
+#endif
+	}
+
+	void Logger::Shutdown()
+	{
+		m_coreLogger.reset();
+		m_clientLogger.reset();
+		m_memoryLogger.reset();
+		m_benchmarkLogger.reset();
+		spdlog::shutdown();
 	}
 }

@@ -15,7 +15,7 @@ public:
 	}
 	void OnAttach() override;
 
-	void OnUpdate() override;
+	void OnUpdate(float64 deltaTime) override;
 
 	void OnEvent(Pawn::Event& event) override;
 
