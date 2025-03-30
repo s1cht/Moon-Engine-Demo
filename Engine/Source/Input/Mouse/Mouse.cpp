@@ -1,7 +1,6 @@
-
 #include "Mouse.h"
 
-namespace Pawn
+namespace Pawn::Input::Devices
 {
 	Mouse::Mouse()
 	{
@@ -18,12 +17,12 @@ namespace Pawn
 
 		if (pressed)
 		{
-			MouseButtonPressedEvent event(PE_MOUSE_LEFTBUTTON);
+			Events::MouseButtonPressedEvent event(PE_MOUSE_LEFTBUTTON);
 			m_Callback(event);
 		}
 		else
 		{
-			MouseButtonReleasedEvent event(PE_MOUSE_LEFTBUTTON);
+			Events::MouseButtonReleasedEvent event(PE_MOUSE_LEFTBUTTON);
 			m_Callback(event);
 		}
 	}
@@ -34,12 +33,12 @@ namespace Pawn
 
 		if (pressed)
 		{
-			MouseButtonPressedEvent event(PE_MOUSE_RIGHTBUTTON);
+			Events::MouseButtonPressedEvent event(PE_MOUSE_RIGHTBUTTON);
 			m_Callback(event);
 		}
 		else
 		{
-			MouseButtonReleasedEvent event(PE_MOUSE_RIGHTBUTTON);
+			Events::MouseButtonReleasedEvent event(PE_MOUSE_RIGHTBUTTON);
 			m_Callback(event);
 		}
 	}
@@ -50,12 +49,12 @@ namespace Pawn
 
 		if (pressed)
 		{
-			MouseButtonPressedEvent event(PE_MOUSE_MIDDLEBUTTON);
+			Events::MouseButtonPressedEvent event(PE_MOUSE_MIDDLEBUTTON);
 			m_Callback(event);
 		}
 		else
 		{
-			MouseButtonReleasedEvent event(PE_MOUSE_MIDDLEBUTTON);
+			Events::MouseButtonReleasedEvent event(PE_MOUSE_MIDDLEBUTTON);
 			m_Callback(event);
 		}
 	}
@@ -67,7 +66,7 @@ namespace Pawn
 		m_MousePosition.x = x;
 		m_MousePosition.y = y;
 
-		MouseMovedEvent event(x, y, m_MouseDelta.x, m_MouseDelta.y);
+		Events::MouseMovedEvent event(x, y, m_MouseDelta.x, m_MouseDelta.y);
 		m_Callback(event);
 	}
 
@@ -83,12 +82,12 @@ namespace Pawn
 
 		if (pressed)
 		{
-			MouseButtonPressedEvent event(sideButton + 3);
+			Events::MouseButtonPressedEvent event(sideButton + 3);
 			m_Callback(event);
 		}
 		else
 		{
-			MouseButtonReleasedEvent event(sideButton + 3);
+			Events::MouseButtonReleasedEvent event(sideButton + 3);
 			m_Callback(event);
 		}
 

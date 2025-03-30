@@ -1,9 +1,9 @@
 #pragma once
-#include <Core.h>
-#include <Core/Math/Math.h>
 
-#include "Platform/Windows/Win32Platform.h"
 #include "Renderer/Base/Framebuffer.h"
+#include "Platform/Windows/Win32Platform.h"
+
+import Pawn.Core.Math;
 
 namespace Pawn::Render
 {

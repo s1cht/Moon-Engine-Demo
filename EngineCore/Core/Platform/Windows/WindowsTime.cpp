@@ -1,6 +1,6 @@
 #include "WindowsTime.h"
 
-namespace Pawn::Time
+namespace Pawn::Core::Clock
 {
 	WindowsTimeSource::WindowsTimeSource()
 	{

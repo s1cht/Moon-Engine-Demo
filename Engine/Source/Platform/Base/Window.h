@@ -1,33 +1,30 @@
 #pragma once
-#include "Core.h"
+#include <Core.h>
 #include "Input/Input.h"
-#include "Core/Events/Event.h"
-#include "Core/Containers/Array.h"
-#include "Core/Math/Vector2D.h"
-#include "Core/Containers/String.h"
+
+import Pawn.Core.Math;
+import Pawn.Core.Container.Array;
+
 
 // Base class for Window
 
-// temporary until string implemented
-typedef const uchar* WindowString;
-
-namespace Pawn {
-
+namespace Pawn 
+{
 	struct PAWN_API WindowProperties
 	{	
 	public:
-		WindowString WindowTitle;
-		Math::Vector2<uint16> WindowSize;
+		Pawn::Core::Containers::String WindowTitle;
+		Pawn::Core::Math::Vector2<uint16> WindowSize;
 
-		WindowProperties(WindowString title = TEXT("Pawn Engine"),
-			Math::Vector2<uint16> size = Math::Vector2<uint16>(1280, 960)
+		WindowProperties(Pawn::Core::Containers::String title = TEXT("Pawn Engine"),
+			Pawn::Core::Math::Vector2<uint16> size = Pawn::Core::Math::Vector2<uint16>(1280, 960)
 		) : WindowTitle(title), WindowSize(size) {};
 	};
 
 	class PAWN_API Window
 	{
 	public:
-		using EventCallbackFunc = std::function<void(Event&)>;
+		using EventCallbackFunc = std::function<void(Pawn::Core::Event&)>;
 
 	protected:
 		struct PAWN_API WindowData : WindowProperties
@@ -37,7 +34,7 @@ namespace Pawn {
 
 			EventCallbackFunc EventCallback;
 
-			WindowData(const EventCallbackFunc& callback, Input* inputHandler, const WindowProperties& props)
+			WindowData(const EventCallbackFunc& callback, Pawn::Input::InputController* inputHandler, const WindowProperties& props)
 				: EventCallback(callback), WindowProperties(props), Focused(false), EventCallbackIsSetUp(true) {
 			}
 			WindowData(const WindowProperties& props)

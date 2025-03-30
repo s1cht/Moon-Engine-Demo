@@ -1,15 +1,19 @@
-#pragma once
+module;
 
-#include "Core/CoreTypes.h"
-#include "Core/Containers/String.h"
-#include "Core/Containers/Array.h"
-#include "Core/Containers/Map.h"
-#include "Core/Misc/Time.h"
+#include "Core.h"
+
+export module Pawn.Core.IO.Base;
+
+import Pawn.Core.Memory;
+import Pawn.Core.Clock;
+import Pawn.Core.Container.Array;
+import Pawn.Core.Container.String;
+import Pawn.Core.Container.UnorderedMap;
 
 #define PE_FAILED_IO(result) (result != Pawn::IO::IOError::OK);
 #define PE_FAILED_IO_INT(result) (result != (int32)Pawn::IO::IOError::OK);
 
-namespace Pawn::IO
+export namespace Pawn::Core::IO
 {
 	enum class FileReadMode
 	{
@@ -42,11 +46,11 @@ namespace Pawn::IO
 
 	struct FileInfo
 	{
-		String Name;
+		Pawn::Core::Containers::String Name;
 		SIZE_T Size;
-		Time::Timepoint CreationTime;
-		Time::Timepoint  LastAccessTime;
-		Time::Timepoint  LastWriteTime;
+		Pawn::Core::Clock::Timepoint CreationTime;
+		Pawn::Core::Clock::Timepoint  LastAccessTime;
+		Pawn::Core::Clock::Timepoint  LastWriteTime;
 		uint32 Attributes;
 
 	};
@@ -60,11 +64,11 @@ namespace Pawn::IO
 
 		virtual void Close() = 0;
 
-		virtual bool Read(String& output, StringReadMode mode) = 0;
+		virtual bool Read(Pawn::Core::Containers::String& output, StringReadMode mode) = 0;
 
-		virtual bool Write(const String& input) = 0;
+		virtual bool Write(const Pawn::Core::Containers::String& input) = 0;
 
-		virtual bool Append(const String& output) = 0;
+		virtual bool Append(const Pawn::Core::Containers::String& output) = 0;
 
 		virtual bool Seek(SIZE_T position) = 0;
 
@@ -78,7 +82,7 @@ namespace Pawn::IO
 
 		virtual SIZE_T GetFileSize() const = 0;
 
-		virtual String ReadAll() = 0;
+		virtual Pawn::Core::Containers::String ReadAll() = 0;
 
 		virtual void Flush() = 0;
 
@@ -94,11 +98,11 @@ namespace Pawn::IO
 
 	/* Creates a temporary file				*/
 	/* Windows contains this file in %temp%	*/
-	extern CORE_API Memory::Reference<File> PCreateTempFile(const uchar* name);
+	extern CORE_API Pawn::Core::Memory::Reference<File> PCreateTempFile(const uchar* name);
 
-	extern CORE_API Memory::Reference<File> POpenFile(const uchar* path);
+	extern CORE_API Pawn::Core::Memory::Reference<File> POpenFile(const uchar* path);
 
-	extern CORE_API Memory::Reference<File> POpenFile(const uchar* path, FileReadMode mode);
+	extern CORE_API Pawn::Core::Memory::Reference<File> POpenFile(const uchar* path, FileReadMode mode);
 
 	extern CORE_API bool PFileExists(const uchar* path);
 
@@ -117,17 +121,17 @@ namespace Pawn::IO
 	public:
 		struct Directory
 		{
-			const String DirectoryName;
-			const String DirectoryPath;
+			const Pawn::Core::Containers::String DirectoryName;
+			const Pawn::Core::Containers::String DirectoryPath;
 		};
 
 	public:
 		static bool StoreDirectory(Directory dir);
-		static String GetDirectory(String directoryName);
+		static Pawn::Core::Containers::String GetDirectory(Pawn::Core::Containers::String directoryName);
 		static void Shutdown();
 
 	private:
-		static Array<Directory*, 30> s_Directories;
+		static  Pawn::Core::Containers::Array<Directory*, 30> s_Directories;
 
 	};
 

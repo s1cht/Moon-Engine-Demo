@@ -21,7 +21,7 @@ namespace Pawn::Render
 		void Init(void* data, SIZE_T size, Usage usage);
 
 	private:
-		Memory::Reference<ID3D11Buffer> m_Buffer;
+		Pawn::Core::Memory::Reference<ID3D11Buffer> m_Buffer;
 
 	};
 
@@ -43,7 +43,7 @@ namespace Pawn::Render
 		void Init(void* data, uint32 count, Usage usage);
 
 	private:
-		Memory::Reference<ID3D11Buffer> m_Buffer;
+		Pawn::Core::Memory::Reference<ID3D11Buffer> m_Buffer;
 		uint32 m_Count = 0;
 
 	};
@@ -66,7 +66,7 @@ namespace Pawn::Render
 
 	private:
 		uint32 m_Size = 0;
-		Memory::Reference<ID3D11Buffer> m_Buffer;
+		Pawn::Core::Memory::Reference<ID3D11Buffer> m_Buffer;
 
 	};
 

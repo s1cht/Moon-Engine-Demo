@@ -1,5 +1,6 @@
-
 #include "RendererAPI.h"
+
+#include <Core/Misc/Assertion.h>
 
 namespace Pawn::Render
 {

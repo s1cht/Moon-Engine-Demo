@@ -1,8 +1,13 @@
-#pragma once
+module;
 
-#include "Core/Platform/Base/IO.h"
+#include "Core.h"
 
-namespace Pawn::IO
+export module Pawn.Core.IO;
+
+import Pawn.Core.Container.String;
+export import Pawn.Core.IO.Base;
+
+export namespace Pawn::Core::IO
 {
 	class CORE_API WindowsFile : public File
 	{
@@ -10,8 +15,8 @@ namespace Pawn::IO
 		WindowsFile();
 		WindowsFile(const uchar* path);
 		WindowsFile(const uchar* path, FileReadMode mode);
-		WindowsFile(const String& path);
-		WindowsFile(const String& path, FileReadMode mode);
+		WindowsFile(const Containers::String& path);
+		WindowsFile(const Containers::String& path, FileReadMode mode);
 		WindowsFile(const WindowsFile&) = delete;
 
 		~WindowsFile() override;
@@ -21,9 +26,9 @@ namespace Pawn::IO
 		bool Open(const uchar* path, FileReadMode mode) override;
 		void Close() override;
 
-		bool Read(String& output, StringReadMode mode) override;
-		bool Write(const String& input) override;
-		bool Append(const String& output) override;
+		bool Read(Containers::String& output, StringReadMode mode) override;
+		bool Write(const Containers::String& input) override;
+		bool Append(const Containers::String& output) override;
 
 		bool Lock() override;
 		void Flush() override;
@@ -38,7 +43,7 @@ namespace Pawn::IO
 		SIZE_T GetFileSize() const override;
 		bool ReadBinary(void* data, SIZE_T& size) override;
 
-		String ReadAll() override;
+		Containers::String ReadAll() override;
 
 		IOError GetFileLastError() const override { return m_LastError; }
 

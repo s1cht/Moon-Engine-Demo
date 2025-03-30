@@ -1,9 +1,12 @@
 #pragma once
 #include <Core.h>
-#include <Core/Containers/Array.h>
-#include <Core/Containers/String.h>
 #include <Core/Misc/Assertion.h>
 #include "Renderer/Base/Shader.h"
+
+#include <Core/Misc/Assertion.h>
+
+import Pawn.Core.Container.Array;
+import Pawn.Core.Container.String;
 
 namespace Pawn::Render
 {
@@ -31,13 +34,13 @@ namespace Pawn::Render
 	struct BufferElement
 	{
 		ShaderType Type;
-		AnsiString Name;
+		Core::Containers::AnsiString Name;
 		SIZE_T Size;
 		SIZE_T Offset;
 		uint32 SemanticIndex;
 		uint32 InputSlot;
 
-		BufferElement(ShaderType type, AnsiString name, uint32 semanticIndex, uint32 inputSlot)
+		BufferElement(ShaderType type, Core::Containers::AnsiString name, uint32 semanticIndex, uint32 inputSlot)
 			: Type(type), Name(name), Size(SizeOfShaderType(type)), Offset(0), SemanticIndex(semanticIndex), InputSlot(inputSlot)
 		{
 		}
@@ -63,7 +66,7 @@ namespace Pawn::Render
 		}
 
 	public:
-		inline const Pawn::Array<BufferElement>& GetElements() const { return m_Elements; }
+		inline const Core::Containers::Array<BufferElement>& GetElements() const { return m_Elements; }
 		inline const uint32 GetStride() const { return m_Stride; }
 
 	private:
@@ -80,7 +83,7 @@ namespace Pawn::Render
 		}
 
 	private:
-		Array<BufferElement> m_Elements;
+		Core::Containers::Array<BufferElement> m_Elements;
 		uint32 m_Stride;
 
 	};

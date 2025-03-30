@@ -3,9 +3,12 @@
 #include "Renderer/Base/Buffer.h"
 
 #include <Core.h>
-#include <Core/Math/Math.h>
-#include <Core/Memory/PawnMemory.h>
-#include <Core/Containers/Array.h>
+
+import Pawn.Core.Math;
+import Pawn.Core.Memory;
+import Pawn.Core.Container.Array;
+import Pawn.Core.Container.String;
+import Pawn.Core.Container.StringView;
 
 namespace Pawn::Assets
 {
@@ -16,43 +19,33 @@ namespace Pawn::Assets
 		float32 normalX, normalY, normalZ;
 	};
 
-	enum class MeshFileFormats
-	{
-		None = 0,
-		Obj, Fbx
-	};
-
 	class PAWN_API Mesh
 	{
 	public: 
 		Mesh();
-		Mesh(const uchar* path, MeshFileFormats format = MeshFileFormats::Obj);
-		Mesh(const String& path, MeshFileFormats format = MeshFileFormats::Obj);
-		Mesh(String&& path, MeshFileFormats format = MeshFileFormats::Obj);
+		Mesh(const Pawn::Core::Containers::String& path);
 
 		~Mesh();
 
 	public:
-		bool LoadFromFile(const uchar* path, MeshFileFormats format = MeshFileFormats::Obj);
-		bool LoadFromFile(const String& path, MeshFileFormats format = MeshFileFormats::Obj);
-		bool LoadFromFile(String&& path, MeshFileFormats format = MeshFileFormats::Obj);
-
-	public:
-		Memory::Reference<Render::VertexBuffer> GetVertexBuffer();
-		Memory::Reference<Render::IndexBuffer> GetIndexBuffer();
-
-	public:
-
+		Pawn::Core::Memory::Reference<Render::VertexBuffer> GetVertexBuffer();
+		Pawn::Core::Memory::Reference<Render::IndexBuffer> GetIndexBuffer();
+		const Pawn::Core::Containers::StringView GetGroupName() const
+		{
+			return m_GroupName.ToStringView();
+		}
 
 	private:
-		void LoadOBJ(const uchar* filePath);
+		const Pawn::Core::Containers::String m_GroupName;
+
+		Pawn::Core::Containers::Array<Vertex> m_Vertexes;
+		Pawn::Core::Containers::Array<int32> m_Indexes;
+
+		Pawn::Core::Memory::Reference<Render::VertexBuffer> m_VertexBuffer;
+		Pawn::Core::Memory::Reference<Render::IndexBuffer> m_IndexBuffer;
 
 	private:
-		Array<Vertex> m_Vertexes;
-		Array<int32> m_Indexes;
-
-		Memory::Reference<Render::VertexBuffer> m_VertexBuffer;
-		Memory::Reference<Render::IndexBuffer> m_IndexBuffer;
+		friend class MeshParcer;
 
 	};
 }

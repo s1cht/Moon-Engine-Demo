@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Platform/Windows/Win32Platform.h"
 #include "Renderer/Base/Shader.h"
+#include "Platform/Windows/Win32Platform.h"
+
+import Pawn.Core.Container.String;
 
 namespace Pawn::Render
 {
 	class PAWN_API DirectX11Shader : public Shader
 	{
-	private:
-
 	public:
 		DirectX11Shader(const uchar* fileName, Type type, bool compiled);
 		~DirectX11Shader();
@@ -28,8 +28,8 @@ namespace Pawn::Render
 	private:
 		void Init(const uchar* fileName, bool compiled);
 
-		CompiledShader CompileShader(const String& path, const String& compiledPath);
-		CompiledShader ReadCompiledShader(const String& path);
+		CompiledShader CompileShader(const Pawn::Core::Containers::String& path, const Pawn::Core::Containers::String& compiledPath);
+		CompiledShader ReadCompiledShader(const Pawn::Core::Containers::String& path);
 
 	private:
 		Shader::Type m_Type;

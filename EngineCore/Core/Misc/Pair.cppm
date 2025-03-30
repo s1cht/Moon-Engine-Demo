@@ -1,10 +1,8 @@
-#pragma once
+export module Pawn.Core.Misc.Pair;
 
-#include "Core.h"
-
-namespace Pawm
+export namespace Pawn::Core::Misc
 {
-	template <class ValueType1, class ValueType2>
+	template <typename ValueType1, typename ValueType2>
 	struct Pair
 	{
 	public:
@@ -22,11 +20,6 @@ namespace Pawm
 		{
 			Value1 = other.Value1;
 			Value2 = other.Value2;
-		}
-		~Pair()
-		{
-			Value1.~ValueDataType1();
-			Value2.~ValueDataType2();
 		}
 
 

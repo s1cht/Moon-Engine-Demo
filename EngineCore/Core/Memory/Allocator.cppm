@@ -1,8 +1,10 @@
-#pragma once
+module;
 
-#include "Core/CoreTypes.h"
+#include "Core.h"
 
-namespace Pawn::Memory
+export module Pawn.Core.Memory.Allocator;
+
+export namespace Pawn::Core::Memory
 {
 	template <typename T>
 	class Allocator
@@ -16,17 +18,23 @@ namespace Pawn::Memory
 
 	public:
 
+		template <typename _Other>
+		struct Rebind
+		{
+			using Other = Allocator<_Other>;
+		};
+
 		DataType* Allocate(SIZE_T size)
 		{
 			return static_cast<DataType*>(::operator new(size));
 		}
 
-		void Deallocate(DataType* ptr)
+		void Deallocate(void* ptr)
 		{
 			::operator delete(ptr);
 		}
 
-		void Deallocate(DataType* ptr, SIZE_T size)
+		void Deallocate(void* ptr, SIZE_T size)
 		{
 			::operator delete(ptr, size);
 		}

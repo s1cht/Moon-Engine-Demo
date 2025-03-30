@@ -1,14 +1,19 @@
+#include <imgui.h>
 
 #include "Win32Window.h"
 #include "Win32Platform.h"
+
 #include "Input/Input.h"
+
 #include "Events/WindowEvents.h"
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
-#include <Core/Containers/String.h>
+
+#include <Core/Misc/Assertion.h>
 #include <Core/Utils/Logging/Logger.h>
-#include <Core/Utils/Benchmark/Benchmark.h>
-#include <imgui.h>
+
+import Pawn.Core.Container.String;
+import Pawn.Core.Utils.Benchmark;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -83,7 +88,7 @@ namespace Pawn
 		m_Window = CreateWindowExW(
 			0,													// Optional window styles.
 			PE_WND_CLASSNAME,									// Window class
-			m_Data.WindowTitle,									// Window text
+			m_Data.WindowTitle.GetString(),						// Window text
 			WS_OVERLAPPEDWINDOW,								// Window style
 																//
 			// Size and position								//
@@ -164,7 +169,7 @@ namespace Pawn
 			{
 				case WM_SETFOCUS:
 				{
-					WindowFocusedEvent event;
+					Pawn::Events::WindowFocusedEvent event;
 
 					wndData->Focused = true;
 					wndData->EventCallback(event);
@@ -173,7 +178,7 @@ namespace Pawn
 				}
 				case WM_KILLFOCUS:
 				{
-					WindowLostFocusEvent event;
+					Pawn::Events::WindowLostFocusEvent event;
 
 					wndData->Focused = false;
 					wndData->EventCallback(event);
@@ -185,7 +190,7 @@ namespace Pawn
 					wndData->WindowSize.X = LOWORD(lParam);
 					wndData->WindowSize.Y = HIWORD(lParam);
 
-					WindowResizedEvent event((float32)wndData->WindowSize.X, (float32)wndData->WindowSize.Y);
+					Pawn::Events::WindowResizedEvent event((float32)wndData->WindowSize.X, (float32)wndData->WindowSize.Y);
 					wndData->EventCallback(event);
 
 					break;
@@ -217,7 +222,7 @@ namespace Pawn
 					break;
 				}
 
-				Input::Get().GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), true);
+				Input::InputController::Get().GetKeyboard().SetKeyPressed((uint8)Input::InputController::ConvertPlatformKeycode(key), true);
 
 				break;
 			}
@@ -241,13 +246,13 @@ namespace Pawn
 					break;
 				}
 
-				Input::Get().GetKeyboard().SetKeyPressed((uint8)Input::ConvertPlatformKeycode(key), false);
+				Input::InputController::Get().GetKeyboard().SetKeyPressed((uint8)Input::InputController::ConvertPlatformKeycode(key), false);
 
 				break;
 			}
 			case WM_MOUSEMOVE:
 			{
-				Input::Get().GetMouse().SetMousePosition((float32)GET_X_LPARAM(lParam), (float32)GET_Y_LPARAM(lParam));
+				Input::InputController::Get().GetMouse().SetMousePosition((float32)GET_X_LPARAM(lParam), (float32)GET_Y_LPARAM(lParam));
 				break;
 			}
 

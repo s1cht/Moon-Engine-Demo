@@ -2,9 +2,10 @@
 #include "Core.h"
 #include "Input/Input.h"
 
-namespace Pawn {
+namespace Pawn::Input
+{
 #ifdef PLATFORM_WINDOWS
-	Keycode Input::ConvertPlatformKeycode(WORD keycode)
+	Keycode InputController::ConvertPlatformKeycode(WORD keycode)
 	{
 		BEGIN_KEYCODE_CONVERTATION;
 

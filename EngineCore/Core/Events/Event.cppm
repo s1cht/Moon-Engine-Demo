@@ -1,10 +1,12 @@
-#pragma once
+module;
 
 #include "Core.h"
-#include "Core/Bitwise.h"
-#include "Core/Containers/String.h"
 
-enum class EventType
+export module Pawn.Core.Event;
+
+import Pawn.Core.Container.String;
+
+export enum class EventType
 {
     None = 0,
     // Window events
@@ -17,9 +19,9 @@ enum class EventType
     MouseMoved, MouseScrolled, MouseButtonPressed, MouseButtonReleased
 };
 
-typedef int EVENT_CATEGORY; 
+export typedef int EVENT_CATEGORY; 
 
-enum EventCategory
+export enum EventCategory
 {
     None = 0,
     EventCategory_Application       = BIT(0),
@@ -29,29 +31,15 @@ enum EventCategory
     EventCategory_Mouse             = BIT(4),
 };
 
-#define FORMAT_EVENT_STRING(eventName, args) String(TEXT("Event ")) + String(eventName) + TEXT(" fired with data: ") + args
-#define EVENT_CLASS_GETSTRING(args)\
-    virtual String GetString() override { return FORMAT_EVENT_STRING(GetName(), args); }
-
-#define EVENT_CLASS_TYPE(type)\
-    static EventType GetStaticType() { return EventType::##type; }\
-    virtual EventType GetEventType() const override { return GetStaticType(); }\
-    virtual const uchar* GetName() const override { return TEXT(#type); }
-
-#define EVENT_CLASS_CATEGORY(category)\
-    virtual EVENT_CATEGORY GetEventCategory() const override { return category; }
-
-#define EVENT_CALLBACK_FUNCTION using EventCallbackFunc = std::function<void(Event&)>
-
-namespace Pawn {
-
+export namespace Pawn::Core
+{
     class CORE_API IEvent
     {
     public:
         virtual EventType GetEventType() const = 0;
         virtual EVENT_CATEGORY GetEventCategory() const = 0;
         virtual const uchar* GetName() const  = 0;
-        virtual String GetString() { return GetName(); }
+        virtual Pawn::Core::Containers::String GetString() { return GetName(); }
     
         inline bool IsInCategory(EventCategory category)
         {
@@ -88,6 +76,3 @@ namespace Pawn {
 
     typedef IEvent Event;
 }
-
-
-#define BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)

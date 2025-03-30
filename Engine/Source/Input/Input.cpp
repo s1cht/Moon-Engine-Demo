@@ -1,22 +1,22 @@
 #include "Input.h"
 
-namespace Pawn {
-
-	String Input::ConvertKeycodeToString(uint8 keycode)
+namespace Pawn::Input
+{
+	Pawn::Core::Containers::String InputController::ConvertKeycodeToString(uint8 keycode)
 	{
 		return m_Chars[keycode];
 	}
 
-	Input::Input()
+	InputController::InputController()
 	{
 		Init();
 	}
 
-	Input::~Input()
+	InputController::~InputController()
 	{
 	}
 
-	void Input::SetEventCallback(const EventCallbackFunc& callback)
+	void InputController::SetEventCallback(const EventCallbackFunc& callback)
 	{
 		m_Callback = callback; 
 		m_CallbackExists = true;
@@ -25,22 +25,22 @@ namespace Pawn {
 		m_Mouse.SetEventCallback(callback);
 	}
 
-	inline bool Input::IsMouseLeftButtonPressed()
+	inline bool InputController::IsMouseLeftButtonPressed()
 	{
 		return Get().GetMouse().IsLeftButtonPressed();
 	}
 
-	inline bool Input::IsMouseMiddleButtonPressed()
+	inline bool InputController::IsMouseMiddleButtonPressed()
 	{
 		return Get().GetMouse().IsMiddleButtonPressed();
 	}
 
-	inline bool Input::IsMouseRightButtonPressed()
+	inline bool InputController::IsMouseRightButtonPressed()
 	{
 		return Get().GetMouse().IsRightButtonPressed();
 	}
 
-	void Input::Init()
+	void InputController::Init()
 	{
 		for (SIZE_T i = 0; i < PE_MAX_KEYCODE_COUNT; i++)
 		{
@@ -48,22 +48,22 @@ namespace Pawn {
 		}
 	}
 
-	inline Math::Vector2D32 Input::GetMousePosition()
+	inline Pawn::Core::Math::Vector2D32 InputController::GetMousePosition()
 	{
 		return Get().GetMouse().GetPosition();
 	}
 
-	inline Math::Vector2D32 Input::GetMouseDelta()
+	inline Pawn::Core::Math::Vector2D32 InputController::GetMouseDelta()
 	{
 		return Get().GetMouse().GetMouseDelta();
 	}
 
-	bool Input::IsKeyUp(uint8 keycode)
+	bool InputController::IsKeyUp(uint8 keycode)
 	{
 		return !Get().m_Keyboard.IsKeyHolded(keycode);
 	}
 
-	bool Input::IsKeyDown(uint8 keycode)
+	bool InputController::IsKeyDown(uint8 keycode)
 	{
 		return Get().m_Keyboard.IsKeyHolded(keycode);
 	}

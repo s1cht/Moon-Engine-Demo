@@ -1,15 +1,16 @@
 #pragma once
 
-#include "Layer.h"
 #include "Core.h"
-#include "Core/Containers/Array.h"
+#include "Layer.h"
 
-namespace Pawn
+import Pawn.Core.Container.Array;
+
+namespace Pawn::Core
 {
 	class CORE_API LayerStack
 	{
 	private:
-		using Iterator = Array<Layer*>::Iterator;
+		using Iterator = Pawn::Core::Containers::Array<Layer*>::Iterator;
 
 	public:
 		LayerStack();
@@ -28,7 +29,7 @@ namespace Pawn
 		Iterator End() { return m_Layers.End(); }
 
 	private:
-		Array<Layer*> m_Layers;
+		Pawn::Core::Containers::Array<Layer*> m_Layers;
 		SIZE_T m_LayerInsertIndex;
 
 	};

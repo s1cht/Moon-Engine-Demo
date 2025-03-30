@@ -9,3 +9,5 @@
 #else
 	#define TEXT(x) x
 #endif
+
+#define PE_NAMED_VARIABLE_TOSTRING(type, value, name) TEXT(" [") TEXT(#type) TEXT("] ") name TEXT(" = ") + Pawn::Core::Containers::ToString(value) + TEXT(";")

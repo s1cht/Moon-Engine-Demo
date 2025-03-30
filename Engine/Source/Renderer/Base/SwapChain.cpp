@@ -3,6 +3,8 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
 
+#include <Core/Misc/Assertion.h>
+
 namespace Pawn::Render
 {
 	SwapChain* SwapChain::Create(Window* window)
@@ -11,20 +13,20 @@ namespace Pawn::Render
 
 		switch (renderApi)
 		{
-		case Pawn::Render::RendererAPI::API::None:
-		case Pawn::Render::RendererAPI::API::Vulkan:
-		case Pawn::Render::RendererAPI::API::DirectX12:
-		case Pawn::Render::RendererAPI::API::Metal:
-		{
-			PE_ASSERT(false, TEXT("SwapChain: Unsupported render API! {0}"), (int32)renderApi);
-			return nullptr;
-			break;
-		}
-		case Pawn::Render::RendererAPI::API::DirectX11:
-		{
-			return CreateDirectX11SwapChain(window);
-			break;
-		}
+			case Pawn::Render::RendererAPI::API::None:
+			case Pawn::Render::RendererAPI::API::Vulkan:
+			case Pawn::Render::RendererAPI::API::DirectX12:
+			case Pawn::Render::RendererAPI::API::Metal:
+			{
+				PE_ASSERT(false, TEXT("SwapChain: Unsupported render API! {0}"), (int32)renderApi);
+				return nullptr;
+				break;
+			}
+			case Pawn::Render::RendererAPI::API::DirectX11:
+			{
+				return CreateDirectX11SwapChain(window);
+				break;
+			}
 		}
 	}
 }

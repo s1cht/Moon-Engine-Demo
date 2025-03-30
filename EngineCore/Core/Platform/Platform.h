@@ -1,8 +1,5 @@
 #pragma once
 
-// STD includes
-#include <atomic>
-
 #ifdef _WIN32
 	#define PLATFORM_WINDOWS
 	#ifdef _WIN64

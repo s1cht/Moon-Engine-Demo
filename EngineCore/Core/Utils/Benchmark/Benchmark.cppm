@@ -1,8 +1,11 @@
-#pragma once
+module;
 
 #include "Core/CoreTypes.h"
 #include "Core/Utils/Logging/Logger.h"
-#include "Core/Containers/String.h"
+
+export module Pawn.Core.Utils.Benchmark;
+
+import Pawn.Core.Container.String;
 
 #ifndef PLATFORM_WINDOWS
 

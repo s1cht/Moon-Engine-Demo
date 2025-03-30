@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Core/Events/Event.h"
+#include "EventsShared.h"
 
-namespace Pawn {
+#include <Core/PawnMacros.h>
+import Pawn.Core.Event;
 
-    class WindowClosedEvent : public IEvent
+namespace Pawn::Events
+{
+    class WindowClosedEvent : public Core::Event
     {
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Window | EventCategory_Application);
@@ -12,7 +15,7 @@ namespace Pawn {
 
     };
 
-    class WindowMovedEvent : public IEvent
+    class WindowMovedEvent : public Core::Event
     {
     public:
         WindowMovedEvent(int32 x, int32 y) : m_x((float)x), m_y((float)y) {}
@@ -32,7 +35,7 @@ namespace Pawn {
 
     };
 
-    class WindowResizedEvent : public IEvent
+    class WindowResizedEvent : public Core::Event
     {
     public:
         WindowResizedEvent(int32 x, int32 y) : m_x((float)x), m_y((float)y) {}
@@ -52,7 +55,7 @@ namespace Pawn {
 
     };
 
-    class WindowFocusedEvent : public IEvent
+    class WindowFocusedEvent : public Core::Event
     {
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Window | EventCategory_Application);
@@ -60,7 +63,7 @@ namespace Pawn {
 
     };
 
-    class WindowLostFocusEvent : public IEvent
+    class WindowLostFocusEvent : public Core::Event
     {
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Window | EventCategory_Application);

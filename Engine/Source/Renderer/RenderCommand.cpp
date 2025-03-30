@@ -1,4 +1,3 @@
-
 #include "RenderCommand.h"
 
 namespace Pawn::Render

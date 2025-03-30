@@ -1,8 +1,11 @@
-#include "IO.h"
+module;
 
-namespace Pawn::IO
+#include "Core.h"
+
+module Pawn.Core.IO.Base;
+
+namespace Pawn::Core::IO
 {
-
 	bool DirectoryStorage::StoreDirectory(Directory dir)
 	{
 		bool result;
@@ -15,7 +18,7 @@ namespace Pawn::IO
 		return true;
 	}
 
-	Pawn::String DirectoryStorage::GetDirectory(String directoryName)
+	Containers::String DirectoryStorage::GetDirectory(Containers::String directoryName)
 	{
 		for (Directory* dir : s_Directories)
 		{
@@ -37,6 +40,6 @@ namespace Pawn::IO
 		}
 	}
 
-	Pawn::Array<Pawn::IO::DirectoryStorage::Directory*, 30> DirectoryStorage::s_Directories;
+	Containers::Array<DirectoryStorage::Directory*, 30> DirectoryStorage::s_Directories;
 
 }

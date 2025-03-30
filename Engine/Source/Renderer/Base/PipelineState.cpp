@@ -2,6 +2,8 @@
 
 #include "Renderer/Renderer.h"
 
+#include <Core/Misc/Assertion.h>
+
 namespace Pawn::Render
 {
     PipelineState* PipelineState::Create()

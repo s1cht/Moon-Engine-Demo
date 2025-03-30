@@ -1,8 +1,7 @@
-
 #include "Keyboard.h"
 
-namespace Pawn {
-
+namespace Pawn::Input::Devices
+{
 	Keyboard::Keyboard()
 	{
 		for (SIZE_T i = 0; i < PE_MAX_KEYCODE_COUNT; i++)
@@ -22,7 +21,7 @@ namespace Pawn {
 			if (m_KeyRepeatCount[key] < PE_MAX_REPEAT_COUNT)
 				m_KeyRepeatCount[key]++;
 
-			KeyInputStartedEvent inputStartedEvent(key, m_KeyRepeatCount[key]);
+			Events::KeyInputStartedEvent inputStartedEvent(key, m_KeyRepeatCount[key]);
 			m_Callback(inputStartedEvent);
 
 			return;
@@ -34,16 +33,15 @@ namespace Pawn {
 		{
 			m_KeyRepeatCount[key] = 0;
 
-			KeyInputEndedEvent inputEndedEvent(key);
+			Events::KeyInputEndedEvent inputEndedEvent(key);
 			m_Callback(inputEndedEvent);
 		}
 		else
 		{
-			KeyInputStartedEvent inputStartedEvent(key, m_KeyRepeatCount[key]);
+			Events::KeyInputStartedEvent inputStartedEvent(key, m_KeyRepeatCount[key]);
 			m_Callback(inputStartedEvent);
 		}
 		
 		return;
 	}
-
 };

@@ -1,6 +1,13 @@
-#include "Math.h"
+module Pawn.Core.Math;
 
-namespace Pawn::Math
+#include "Vector2D.h"
+#include "Vector3D.h"
+#include "Vector4D.h"
+
+
+#define IMPL_VEC_CONSTANTS(vector, var, ...) 	template<typename T> vector<T> const vector<T>::var = vector<T>(__VA_ARGS__);
+
+namespace Pawn::Core::Math
 {
 	///////////////////// ---------------------------------------
 	// Vector2 statics // ---------------------------------------

@@ -1,9 +1,12 @@
 #pragma once
 
-#include <Core/CoreTypes.h>
+#include <Core.h>
 
 #include "Renderer/Base/Buffer.h"
 #include "Renderer/Base/Shader.h"
+
+import Pawn.Core.Memory;
+import Pawn.Core.Container.Array;
 
 namespace Pawn::Render
 {
@@ -76,16 +79,16 @@ namespace Pawn::Render
 			bool multisampleEnabled, int32 sampleCount ) = 0;
 		
 
-		virtual void SetVertexShader(Memory::Reference<Shader> vertexShader) = 0;
-		virtual void SetPixelShader(Memory::Reference<Shader> pixelShader) = 0;
-		virtual void SetComputeShader(Memory::Reference<Shader> computeShader) = 0;
-		virtual void SetGeometryShader(Memory::Reference<Shader> geometryShader) = 0;
-		virtual void SetHullShader(Memory::Reference<Shader> hullShader) = 0;
-		virtual void SetDomainShader(Memory::Reference<Shader> domainShader) = 0;
+		virtual void SetVertexShader(Pawn::Core::Memory::Reference<Shader> vertexShader) = 0;
+		virtual void SetPixelShader(Pawn::Core::Memory::Reference<Shader> pixelShader) = 0;
+		virtual void SetComputeShader(Pawn::Core::Memory::Reference<Shader> computeShader) = 0;
+		virtual void SetGeometryShader(Pawn::Core::Memory::Reference<Shader> geometryShader) = 0;
+		virtual void SetHullShader(Pawn::Core::Memory::Reference<Shader> hullShader) = 0;
+		virtual void SetDomainShader(Pawn::Core::Memory::Reference<Shader> domainShader) = 0;
 
 		virtual void BindInput() = 0;
 		virtual void Bind() = 0;
-		virtual void BindUniforms(Array<Uniform*>& uniforms, Shader::Type stage) = 0;
+		virtual void BindUniforms(Pawn::Core::Containers::Array<Uniform*>& uniforms, Shader::Type stage) = 0;
 
 	public:
 		static PipelineState* Create();

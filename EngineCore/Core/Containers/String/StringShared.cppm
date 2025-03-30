@@ -1,9 +1,10 @@
-#pragma once
+module;
 
-#include "StringMacros.h"
 #include "Core.h"
 
-namespace Pawn
+export module Pawn.Core.Container.StringShared;
+
+export namespace Pawn
 {
 	template<typename T>
 	SIZE_T GetStringSize(const T* str)

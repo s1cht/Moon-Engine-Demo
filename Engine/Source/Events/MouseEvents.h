@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Core/Events/Event.h"
+#include "EventsShared.h"
 
-namespace Pawn {
+#include <Core/PawnMacros.h>
+import Pawn.Core.Event;
 
-    class MouseEvent : public IEvent
+namespace Pawn::Events
+{
+    class MouseEvent : public Core::Event
     {
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Input | EventCategory_Mouse);

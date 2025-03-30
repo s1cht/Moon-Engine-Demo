@@ -1,6 +1,13 @@
-#include "Core/Misc/Time.h"
+module;
 
-namespace Pawn::Time
+#include "Core.h"
+#include "Core/Misc/Assertion.h"
+
+module Pawn.Core.Clock;
+
+import Pawn.Core.Memory;
+
+namespace Pawn::Core::Clock
 {
 	Memory::Scope<TimeSource> Time::s_Source = nullptr;
 	Timepoint Time::s_LastFrame{};
@@ -51,6 +58,26 @@ namespace Pawn::Time
 
 		UpdateFPS();
 		return s_DeltaTime;
+	}
+
+	Pawn::Core::Clock::Timestep Time::GetDeltaTime()
+	{
+		return s_DeltaTime;
+	}
+
+	float64 Time::GetDeltaSeconds()
+	{
+		return s_DeltaTime.AsSeconds();
+	}
+
+	uint32 Time::GetInstantFPS()
+	{
+		return s_InstantFPS;
+	}
+
+	uint32 Time::GetAverageFPS()
+	{
+		return s_AverageFPS;
 	}
 
 	StructurizedTime ConvertTickToTime(uint64 tick, uint64 frequency)

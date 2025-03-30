@@ -2,12 +2,14 @@
 #include "spdlog\async.h"
 #include "spdlog\sinks\stdout_color_sinks.h"
 
-namespace Pawn {
+import Pawn.Core.Memory;
 
-	std::shared_ptr<spdlog::logger> Logger::m_coreLogger;
-	std::shared_ptr<spdlog::logger> Logger::m_clientLogger;
-	std::shared_ptr<spdlog::logger> Logger::m_memoryLogger;
-	std::shared_ptr<spdlog::logger> Logger::m_benchmarkLogger;
+namespace Pawn::Core::Utils 
+{
+	Pawn::Core::Memory::Reference<spdlog::logger> Logger::m_coreLogger;
+	Pawn::Core::Memory::Reference<spdlog::logger> Logger::m_clientLogger;
+	Pawn::Core::Memory::Reference<spdlog::logger> Logger::m_memoryLogger;
+	Pawn::Core::Memory::Reference<spdlog::logger> Logger::m_benchmarkLogger;
 
 	void Logger::Init()
 	{

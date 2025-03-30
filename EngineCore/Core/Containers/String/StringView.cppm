@@ -1,10 +1,13 @@
-#pragma once
+module;
 
 #include "Core.h"
 #include "Core/Misc/Assertion.h"
-#include "Core/Memory/PawnMemory.h"
 
-namespace Pawn
+export module Pawn.Core.Container.StringView;
+
+import Pawn.Core.Container.StringShared;
+
+export namespace Pawn::Core::Containers
 {
 	template<typename type, SIZE_T initSize, class allocator>
 	class PString;
@@ -76,19 +79,10 @@ namespace Pawn
 		}
 
 	private:
-		static SIZE_T GetStringSize(PtrType str)
-		{
-			if (!str) return 0;
-			SIZE_T size = 0;
-			while (str[size] != '\0') size++;
-			return size;
-		}
-
-	private:
 		PtrType m_Data;
 		SIZE_T m_Size;
 	};
 
-	using StringView = PStringView<uchar>;   // UTF-16
-	using AnsiStringView = PStringView<ansichar>; // ANSI
+	typedef PStringView<uchar> StringView;   // UTF-16
+	typedef PStringView<ansichar> AnsiStringView; // ANSI
 }

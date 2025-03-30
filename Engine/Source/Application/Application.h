@@ -1,13 +1,18 @@
 #pragma once
-#include "Core.h"
-#include "Core/Layer/LayerStack.h"
-#include "Platform/Platform.h"
+
+#include <Core.h>
+#include <Core/Layer/LayerStack.h>
+
 #include "Input/Input.h"
+#include "Platform/Platform.h"
 #include "Renderer/ImGui/ImGuiLayer.h"
 #include "Events/WindowEvents.h"
 
-namespace Pawn {
+import Pawn.Core.Event;
+import Pawn.Core.Memory;
 
+namespace Pawn 
+{
 	class PAWN_API Application
 	{
 	public:
@@ -20,11 +25,11 @@ namespace Pawn {
 	public:
 		void Run();
 
-		void PushLayer(Layer* layer);
-		void PushOverlay(Layer* overlay);
+		void PushLayer(Core::Layer* layer);
+		void PushOverlay(Core::Layer* overlay);
 
 	public:
-		void OnEvent(Event& event);
+		void OnEvent(Core::Event& event);
 
 	public:
 		static Application& Get() { return *s_Instance; }
@@ -32,12 +37,12 @@ namespace Pawn {
 	private:
 		bool m_Runs;
 
-		LayerStack m_LayerStack;
+		Core::LayerStack m_LayerStack;
 	private:
-		bool OnWindowSizeEvent(WindowResizedEvent& event);
+		bool OnWindowSizeEvent(Pawn::Events::WindowResizedEvent& event);
 
 	private:
-		Pawn::Memory::Scope<Window> m_Window;
+		Pawn::Core::Memory::Scope<Window> m_Window;
 		Render::Imgui::ImGuiLayer* m_ImGuiLayer;
 
 	private:

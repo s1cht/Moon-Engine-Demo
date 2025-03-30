@@ -1,12 +1,16 @@
-#pragma once
+module;
+
 #include "Core.h"
 #include "Core/Utils/Logging/Logger.h"
-#include "Core/Memory/PawnMemory.h"
 #include "Core/Misc/Assertion.h"
+
+export module Pawn.Core.Container.Array;
+
+import Pawn.Core.Memory.Allocator;
 
 #define ARR_RESIZE_MULTIPLYER 2
 
-namespace Pawn
+export namespace Pawn::Core::Containers
 {
 	template<typename _Array>
 	class ArrayIterator

@@ -1,6 +1,9 @@
-#include "BasicString.h"
+module Pawn.Core.Container.String;
 
-namespace Pawn
+#include "Core.h"
+#include "Core/Misc/Assertion.h"
+
+namespace Pawn::Core::Containers
 {
     CORE_API String ToString(int8 value)
     {
@@ -17,10 +20,9 @@ namespace Pawn
         return ToString(static_cast<int64>(value));
     }
 
-    CORE_API String ToString(int64 value)
+    CORE_API Pawn::Core::Containers::String ToString(int64 value)
     {
         if (value == 0) return TEXT("0");
-
         bool is_negative = value < 0;
         String result;
 

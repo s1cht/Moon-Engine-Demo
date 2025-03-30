@@ -1,7 +1,10 @@
+#include "DirectX11Macros.h"
 #include "DirectX11Framebuffer.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/API/DirectX11/DirectX11Renderer.h"
 #include "Renderer/API/DirectX11/DirectX11SwapChain.h"
+
+#include <Core/Misc/Assertion.h>
 
 namespace Pawn::Render
 {

@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Application/Application.h"
-#include "Core/Utils/MemWatch/MemWatch.h"
-#include "Core/Containers/String.h"
-#include "Core/Platform/Base/IO.h"
 #include "Renderer/Base/Shader.h"
+#include <Core/Utils/Logging/Logger.h>
+#include <Core/Utils/MemWatch/MemWatch.h>
+
+import Pawn.Core.IO;
+import Pawn.Core.Clock;
 
 extern Pawn::Application* Pawn::CreateApplication();
 
@@ -12,21 +14,21 @@ extern Pawn::Application* Pawn::CreateApplication();
 
 int wmain(int32 argc, const uchar** argv)
 {
-	Pawn::Time::Time::Init();
+	Pawn::Core::Clock::Time::Init();
 	Pawn::MemWatch::Get();
-	Pawn::Logger::Init();
+	Pawn::Core::Utils::Logger::Init();
 	Pawn::MemWatch::EnableMemWatch();
 
 	for (int32 i = 0; i < argc; i++)
 	{
 		if (i == 0)
 		{
-			Pawn::String programPath = argv[0];
+			Pawn::Core::Containers::String programPath = argv[0];
 			
 			for (auto it = programPath.end() - 1; (*it) != TEXT('\\'); --it)
 				programPath.PopBack();
 
-			Pawn::IO::DirectoryStorage::StoreDirectory(Pawn::IO::DirectoryStorage::Directory(TEXT("ProgramPath"), programPath));
+			Pawn::Core::IO::DirectoryStorage::StoreDirectory(Pawn::Core::IO::DirectoryStorage::Directory(TEXT("ProgramPath"), programPath));
 		}
 	}
 
@@ -38,10 +40,10 @@ int wmain(int32 argc, const uchar** argv)
 	delete app;
 
 
-	Pawn::IO::DirectoryStorage::Shutdown();
+	Pawn::Core::IO::DirectoryStorage::Shutdown();
 	Pawn::MemWatch::OnExit();
-	Pawn::Logger::Shutdown();
-	Pawn::Time::Time::Shutdown();
+	Pawn::Core::Utils::Logger::Shutdown();
+	Pawn::Core::Clock::Time::Shutdown();
 }
 
 #endif

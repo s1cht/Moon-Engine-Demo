@@ -59,6 +59,7 @@
     <IntDir>..\bin-int\Debug-windows-x86_64\Engine\</IntDir>
     <TargetName>Engine</TargetName>
     <TargetExt>.dll</TargetExt>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -66,6 +67,7 @@
     <IntDir>..\bin-int\Release-windows-x86_64\Engine\</IntDir>
     <TargetName>Engine</TargetName>
     <TargetExt>.dll</TargetExt>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -73,19 +75,21 @@
     <IntDir>..\bin-int\Distribute-windows-x86_64\Engine\</IntDir>
     <TargetName>Engine</TargetName>
     <TargetExt>.dll</TargetExt>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>SPDLOG_BUILD_SHARED;PAWN_LIBRARY_BUILD;_WINDLL;PE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Source;vendor\spdlog\include;vendor\ImGui;..\EngineCore;C:\Windows\System32;C:\VulkanSDK\1.4.304.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Source;vendor\ImGui;vendor\spdlog\include;..\EngineCore;..\vendor\xxHash;C:\Windows\System32;C:\VulkanSDK\1.4.304.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -103,7 +107,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>SPDLOG_BUILD_SHARED;PAWN_LIBRARY_BUILD;_WINDLL;PE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Source;vendor\spdlog\include;vendor\ImGui;..\EngineCore;C:\Windows\System32;C:\VulkanSDK\1.4.304.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Source;vendor\ImGui;vendor\spdlog\include;..\EngineCore;..\vendor\xxHash;C:\Windows\System32;C:\VulkanSDK\1.4.304.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -113,6 +117,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -131,7 +136,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>SPDLOG_BUILD_SHARED;PAWN_LIBRARY_BUILD;_WINDLL;PE_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Source;vendor\spdlog\include;vendor\ImGui;..\EngineCore;C:\Windows\System32;C:\VulkanSDK\1.4.304.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Source;vendor\ImGui;vendor\spdlog\include;..\EngineCore;..\vendor\xxHash;C:\Windows\System32;C:\VulkanSDK\1.4.304.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -141,6 +146,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,6 +161,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Events\EventsShared.h" />
     <ClInclude Include="PawnEngine.h" />
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
@@ -174,6 +181,7 @@
     <ClInclude Include="Source\Platform\Windows\Win32Window.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Buffer.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.h" />
+    <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Macros.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Renderer.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Shader.h" />
@@ -190,30 +198,75 @@
     <ClInclude Include="Source\Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Application\Application.cpp" />
-    <ClCompile Include="Source\Assets\AssetManager.cpp" />
-    <ClCompile Include="Source\Assets\Mesh.cpp" />
-    <ClCompile Include="Source\Input\Input.cpp" />
-    <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp" />
-    <ClCompile Include="Source\Input\Keycodes.cpp" />
-    <ClCompile Include="Source\Input\Mouse\Mouse.cpp" />
-    <ClCompile Include="Source\Input\Windows\WinInput.cpp" />
-    <ClCompile Include="Source\Platform\Windows\Win32Window.cpp" />
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Buffer.cpp" />
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.cpp" />
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.cpp" />
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Renderer.cpp" />
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Shader.cpp" />
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.cpp" />
-    <ClCompile Include="Source\Renderer\Base\Buffer.cpp" />
-    <ClCompile Include="Source\Renderer\Base\Framebuffer.cpp" />
-    <ClCompile Include="Source\Renderer\Base\PipelineState.cpp" />
-    <ClCompile Include="Source\Renderer\Base\RendererAPI.cpp" />
-    <ClCompile Include="Source\Renderer\Base\Shader.cpp" />
-    <ClCompile Include="Source\Renderer\Base\SwapChain.cpp" />
-    <ClCompile Include="Source\Renderer\ImGui\ImGuiLayer.cpp" />
-    <ClCompile Include="Source\Renderer\RenderCommand.cpp" />
-    <ClCompile Include="Source\Renderer\Renderer.cpp" />
+    <ClCompile Include="Source\Application\Application.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\AssetManager.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\Mesh.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Input\Input.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Input\Keyboard\Keyboard.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Input\Mouse\Mouse.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Input\Windows\WinInput.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\Windows\Win32Window.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Buffer.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Renderer.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Shader.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Base\Buffer.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Base\Framebuffer.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Base\PipelineState.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Base\RendererAPI.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Base\Shader.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Base\SwapChain.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\ImGui\ImGuiLayer.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderCommand.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Renderer.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineCore\EngineCore.vcxproj">

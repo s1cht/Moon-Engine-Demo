@@ -1,6 +1,9 @@
+#include "DirectX11Macros.h"
 #include "DirectX11Buffer.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/API/DirectX11/DirectX11Renderer.h"
+
+#include <Core/Misc/Assertion.h>
 
 namespace Pawn::Render
 {
@@ -84,7 +87,7 @@ namespace Pawn::Render
             return;
         };
 
-        m_Buffer = Memory::Reference<ID3D11Buffer>(temp);
+        m_Buffer = Pawn::Core::Memory::Reference<ID3D11Buffer>(temp);
     }
     
     /////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +171,7 @@ namespace Pawn::Render
 			return;
 		};
 
-        m_Buffer = Memory::Reference<ID3D11Buffer>(temp);
+        m_Buffer = Pawn::Core::Memory::Reference<ID3D11Buffer>(temp);
         m_Count = count;
     }
 
@@ -393,7 +396,7 @@ namespace Pawn::Render
 			return;
 		};
 
-		m_Buffer = Memory::Reference<ID3D11Buffer>(temp);
+		m_Buffer = Pawn::Core::Memory::Reference<ID3D11Buffer>(temp);
 	}
 
 }

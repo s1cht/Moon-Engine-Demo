@@ -1,6 +1,4 @@
 #pragma once
-#include <Core.h>
-
 #include "Platform/Platform.h"
 #include "Renderer/Base/RendererAPI.h"
 
@@ -19,7 +17,7 @@ namespace Pawn::Render
 		void PostInit() override;
 		
 		void Present() override;
-		void Clear(Pawn::Math::Vector4D32 color) override;
+		void Clear(Pawn::Core::Math::Vector4D32 color) override;
 		void DrawIndexed(uint32 indexCount, uint32 index) override;
 		void Shutdown() override;
 
@@ -51,31 +49,4 @@ namespace Pawn::Render
 		DirectX11Framebuffer* m_Framebuffer;
 
 	};
-}
-
-#define PE_D3D11_CHECK(x)		\
-if (FAILED(x))					\
-{								\
-	Shutdown();					\
-	PE_ASSERT(false,			\
-TEXT(							\
-"Assertion failed! Error: {0}"	\
-),								\
-(int32)x);						\
-	return x;					\
-}
-
-#define PE_D3D11_RELEASE(x)		\
-if (x != nullptr)				\
-{								\
-	x->Release();				\
-	x = nullptr;				\
-}
-
-#define PE_D3D11_SHUTDOWN(x)	\
-if (x != nullptr)				\
-{								\
-	x->Shutdown();				\
-	delete x;					\
-	x = nullptr;				\
 }

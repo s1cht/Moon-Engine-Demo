@@ -1,15 +1,17 @@
-#pragma once
-
-#include "StringShared.h"
+module;
 
 #include "Core.h"
 #include "Core/Misc/Assertion.h"
-#include "Core/Memory/PawnMemory.h"
 #include "Core/Utils/Logging/Logger.h"
+
+export module Pawn.Core.Container.String;
+
+import Pawn.Core.Container.StringShared;
+import Pawn.Core.Memory.Allocator;
 
 #define STR_RESIZE_MULTIPLYER 1.5
 
-namespace Pawn
+export namespace Pawn::Core::Containers
 {
 	template<typename type>
 	class PStringView;
@@ -120,7 +122,7 @@ namespace Pawn
 
 	};
 
-	template<typename type, SIZE_T initSize = 10, class allocator = Pawn::Memory::Allocator<type>>
+	template<typename type, SIZE_T initSize = 10, class allocator = Pawn::Core::Memory::Allocator<type>>
 	class PString
 	{
 	public:
@@ -203,7 +205,7 @@ namespace Pawn
 	public:
 		PStringView<type> ToStringView() const
 		{
-			return StringView<type>(m_Data, m_Size);
+			return PStringView<type>(m_Data, m_Size);
 		}
 
 	public:
@@ -416,15 +418,6 @@ namespace Pawn
 		}
 
 	private:
-		static SIZE_T GetStringSize(const DataType* str)
-		{
-			if (!str) return 0;
-			SIZE_T size = 0;
-			while (str[size] != '\0') size++;
-			return size;
-		}
-
-	private:
 		AllocatorType m_Allocator;
 		Ptr m_Data;
 		SIZE_T m_Size;
@@ -483,6 +476,3 @@ namespace Pawn
 	CORE_API AnsiString operator+(const ansichar* str1, const AnsiString& str2);
 	CORE_API AnsiString operator+(const ansichar& str1, const AnsiString& str2);
 }
-
-#define var_to_string(type, value) TEXT(" [") TEXT(#type) TEXT("] ") TEXT(#value) TEXT(" = ") + Pawn::ToString(value) + TEXT(";")
-#define PE_NAMED_VARIABLE_TOSTRING(type, value, name) TEXT(" [") TEXT(#type) TEXT("] ") name TEXT(" = ") + Pawn::ToString(value) + TEXT(";")

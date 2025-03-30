@@ -1,11 +1,15 @@
+#include "DirectX11Macros.h"
 #include "DirectX11Shader.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/API/DirectX11/DirectX11Renderer.h"
-#include "Core/Platform/Windows/WindowsIO.h"
+
+#include <Core/Misc/Assertion.h>
+
+import Pawn.Core.IO;
+import Pawn.Core.Container.StringView;
 
 namespace Pawn::Render
 {
-
 	Shader* Shader::CreateCompiledDirectX11Shader(const uchar* fileName, Shader::Type type)
 	{
 		return new DirectX11Shader(fileName, type, true);
@@ -16,7 +20,7 @@ namespace Pawn::Render
 		return new DirectX11Shader(fileName, type, false);
 	}
 
-	DirectX11Shader::DirectX11Shader(const uchar* fileName, Type type, bool compiled)
+	DirectX11Shader::DirectX11Shader(const uchar* fileName, Shader::Type type, bool compiled)
 		: m_Type(type)
 	{
 		Init(fileName, compiled);
@@ -129,12 +133,12 @@ namespace Pawn::Render
 		HRESULT result;
 		bool exists;
 
-		String compiledShaderPath = IO::DirectoryStorage::GetDirectory(TEXT("CompiledShaders")) + StringView(fileName) + Shader::GetCompiledShaderExtension();
-		String shaderSourcePath = IO::DirectoryStorage::GetDirectory(TEXT("Shaders")) + StringView(fileName) + Shader::GetShaderSourceExtension();
+		Pawn::Core::Containers::String compiledShaderPath = Pawn::Core::IO::DirectoryStorage::GetDirectory(TEXT("CompiledShaders")) + Pawn::Core::Containers::StringView(fileName) + Shader::GetCompiledShaderExtension();
+		Pawn::Core::Containers::String shaderSourcePath = Pawn::Core::IO::DirectoryStorage::GetDirectory(TEXT("Shaders")) + Pawn::Core::Containers::StringView(fileName) + Shader::GetShaderSourceExtension();
 
 		if (compiled)
 		{
-			exists = IO::PFileExists(compiledShaderPath.GetString());
+			exists = Pawn::Core::IO::PFileExists(compiledShaderPath.GetString());
 			if (exists)
 			{
 				m_ShaderBuffer = ReadCompiledShader(compiledShaderPath);
@@ -266,12 +270,10 @@ namespace Pawn::Render
 		}
 	}
 
-	DirectX11Shader::CompiledShader DirectX11Shader::CompileShader(const String& path, const String& compiledPath)
+	DirectX11Shader::CompiledShader DirectX11Shader::CompileShader(const Pawn::Core::Containers::String& path, const Pawn::Core::Containers::String& compiledPath)
 	{
-		using namespace IO;
-
-		Memory::Reference<File> file = POpenFile(path.GetString());
-		Memory::Reference<File> fileWrite = POpenFile(compiledPath.GetString(), IO::FileReadMode::WriteAndRead);
+		Pawn::Core::Memory::Reference<Pawn::Core::IO::File> file = Pawn::Core::IO::POpenFile(path.GetString());
+		Pawn::Core::Memory::Reference<Pawn::Core::IO::File> fileWrite = Pawn::Core::IO::POpenFile(compiledPath.GetString(), Pawn::Core::IO::FileReadMode::WriteAndRead);
 
 		HRESULT result;
 		uint32 flags;
@@ -342,7 +344,7 @@ namespace Pawn::Render
 		{
 			if (errorBlob)
 			{
-				AnsiString str(static_cast<const ansichar*>(errorBlob->GetBufferPointer()), errorBlob->GetBufferSize());
+				Pawn::Core::Containers::AnsiString str(static_cast<const ansichar*>(errorBlob->GetBufferPointer()), errorBlob->GetBufferSize());
 				PE_ASSERT(false, "Shader compilation failed! Error: {0}", str.GetString());
 				errorBlob->Release();
 			}
@@ -362,15 +364,13 @@ namespace Pawn::Render
 		return output;
 	}
 
-	DirectX11Shader::CompiledShader DirectX11Shader::ReadCompiledShader(const String& path)
+	DirectX11Shader::CompiledShader DirectX11Shader::ReadCompiledShader(const Pawn::Core::Containers::String& path)
 	{
-		using namespace IO;
-
 		bool result;
-		Memory::Reference<File> file;
+		Pawn::Core::Memory::Reference<Pawn::Core::IO::File> file;
 		CompiledShader output;
 
-		file = POpenFile(path.GetString());
+		file = Pawn::Core::IO::POpenFile(path.GetString());
 
 		output.ShaderSize = file->GetFileInfo().Size;
 		output.ShaderPtr = ::operator new(output.ShaderSize);

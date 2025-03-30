@@ -1,5 +1,8 @@
-	#include "DirectX11Renderer.h"
+#include "DirectX11Macros.h"
+#include "DirectX11Renderer.h"
 #include "Application/Application.h"
+
+#include <Core/Misc/Assertion.h>
 
 namespace Pawn::Render
 {
@@ -87,7 +90,7 @@ namespace Pawn::Render
 		m_SwapChain->Present();
 	}
 
-	void DirectX11Renderer::Clear(Pawn::Math::Vector4D32 color)
+	void DirectX11Renderer::Clear(Pawn::Core::Math::Vector4D32 color)
 	{
 		m_DeviceContext->ClearRenderTargetView(m_Framebuffer->GetRenderTargetView(), color.XYZ);
 		m_DeviceContext->ClearDepthStencilView(m_Framebuffer->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);

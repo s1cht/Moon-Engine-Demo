@@ -6,7 +6,7 @@
 #include <Renderer/Base/PipelineState.h>
 #include <Events/WindowEvents.h>
 
-class SandboxLayer : public Pawn::Layer
+class SandboxLayer : public Pawn::Core::Layer
 {
 public:
 	SandboxLayer()
@@ -17,18 +17,18 @@ public:
 
 	void OnUpdate(float64 deltaTime) override;
 
-	void OnEvent(Pawn::Event& event) override;
+	void OnEvent(Pawn::Core::Event & event) override;
 
 private:
-	bool SetViewportSize(Pawn::WindowResizedEvent& event);
+	bool SetViewportSize(Pawn::Events::WindowResizedEvent& event);
 
 private:
-	Pawn::Memory::Reference<Pawn::Render::BufferLayout> m_Layout;
-	Pawn::Memory::Reference<Pawn::Render::PipelineState> m_Primary;
-	Pawn::Memory::Reference<Pawn::Render::Shader> m_VertexShader;
-	Pawn::Memory::Reference<Pawn::Render::Shader> m_PixelShader;
-	Pawn::Memory::Reference<Pawn::Render::VertexBuffer> m_VertexBuffer;
-	Pawn::Memory::Reference<Pawn::Render::IndexBuffer> m_IndexBuffer;
+	Pawn::Core::Memory::Reference<Pawn::Render::BufferLayout> m_Layout;
+	Pawn::Core::Memory::Reference<Pawn::Render::PipelineState> m_Primary;
+	Pawn::Core::Memory::Reference<Pawn::Render::Shader> m_VertexShader;
+	Pawn::Core::Memory::Reference<Pawn::Render::Shader> m_PixelShader;
+	Pawn::Core::Memory::Reference<Pawn::Render::VertexBuffer> m_VertexBuffer;
+	Pawn::Core::Memory::Reference<Pawn::Render::IndexBuffer> m_IndexBuffer;
 private:
 	uint32 m_WindowWidth;
 	uint32 m_WindowHeight;

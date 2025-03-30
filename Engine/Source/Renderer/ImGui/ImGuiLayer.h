@@ -1,9 +1,11 @@
 #pragma once
+
+#include <Core.h>
 #include <Core/Layer/Layer.h>
 
 namespace Pawn::Render::Imgui
 {
-	class PAWN_API ImGuiLayer : public Layer
+	class PAWN_API ImGuiLayer : public Pawn::Core::Layer
 	{
 	public:
 		ImGuiLayer();
@@ -13,7 +15,7 @@ namespace Pawn::Render::Imgui
 		void OnAttach() override;
 		void OnDetach() override;
 
-		void OnEvent(Event& event) override;
+		void OnEvent(Pawn::Core::Event& event) override;
 		void OnImGuiRender(float64 deltaTime) override;
 
 

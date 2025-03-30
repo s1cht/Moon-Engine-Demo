@@ -1,7 +1,9 @@
+#include "DirectX11Macros.h"
 #include "DirectX11PipilineState.h"
-
 #include "Renderer/API/DirectX11/DirectX11Renderer.h"
 #include "Renderer/RenderCommand.h"
+
+#include <Core/Misc/Assertion.h>
 
 
 namespace Pawn::Render
@@ -83,7 +85,7 @@ namespace Pawn::Render
 			PE_ASSERT(false, TEXT("DirectX11: Pipeline state. Creation failed! Error: {0}"), (uint32)result);
 			return;
 		}
-		m_DepthStencilState = Memory::Scope<ID3D11DepthStencilState>(temp);
+		m_DepthStencilState = Pawn::Core::Memory::Scope<ID3D11DepthStencilState>(temp);
 	}
 
 	void DirectX11PipelineState::SetBlendState(bool enableBlend, BlendMask mask)
@@ -123,7 +125,7 @@ namespace Pawn::Render
 			return;
 		}
 
-		m_BlendState = Memory::Scope<ID3D11BlendState>(temp);
+		m_BlendState = Pawn::Core::Memory::Scope<ID3D11BlendState>(temp);
 	}
 
 	void DirectX11PipelineState::SetRasterizerState(RasterizerCull cull, RasterizerFill fill,
@@ -176,7 +178,7 @@ namespace Pawn::Render
 			return;
 		}
 
-		m_RasterizerState = Memory::Scope<ID3D11RasterizerState>(temp);
+		m_RasterizerState = Pawn::Core::Memory::Scope<ID3D11RasterizerState>(temp);
 	}
 
 	void DirectX11PipelineState::SetInputLayout(BufferLayout& layout, InputClassification inputSlotClass, uint32 instanceDataStepRate)
@@ -186,7 +188,7 @@ namespace Pawn::Render
 
 		HRESULT result;
 		SIZE_T i;
-		Array<D3D11_INPUT_ELEMENT_DESC> polygonLayout;
+		Pawn::Core::Containers::Array<D3D11_INPUT_ELEMENT_DESC> polygonLayout;
 		ID3D11InputLayout* temp;
 
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
@@ -200,7 +202,7 @@ namespace Pawn::Render
 			{
 				for (uint8 row = 0; row < 4; ++row)
 				{
-					AnsiString str = (element.Name + ToAnsiString(row));
+					Pawn::Core::Containers::AnsiString str = (element.Name + Pawn::Core::Containers::ToAnsiString(row));
 					ansichar* buf = new ansichar[str.GetSize()];
 
 					D3D11_INPUT_ELEMENT_DESC desc = {};
@@ -220,7 +222,7 @@ namespace Pawn::Render
 			{
 				for (uint8 row = 0; row < 3; ++row)
 				{
-					AnsiString str = (element.Name + ToAnsiString(row));
+					Pawn::Core::Containers::AnsiString str = (element.Name + Pawn::Core::Containers::ToAnsiString(row));
 					ansichar* buf = new ansichar[str.GetSize()];
 
 					D3D11_INPUT_ELEMENT_DESC desc = {};
@@ -263,7 +265,7 @@ namespace Pawn::Render
 			return;
 		}
 
-		m_InputLayout = Memory::Scope<ID3D11InputLayout>(temp);
+		m_InputLayout = Pawn::Core::Memory::Scope<ID3D11InputLayout>(temp);
 	}
 
 	void DirectX11PipelineState::BindInput()
@@ -346,7 +348,7 @@ namespace Pawn::Render
 		}
 	}
 
-	void DirectX11PipelineState::SetVertexShader(Memory::Reference<Shader> vertexShader)
+	void DirectX11PipelineState::SetVertexShader(Pawn::Core::Memory::Reference<Shader> vertexShader)
 	{
 		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(vertexShader.get());
 		if (!raw)
@@ -362,7 +364,7 @@ namespace Pawn::Render
 		m_VertexShader.reset(raw);
 	}
 
-	void DirectX11PipelineState::SetPixelShader(Memory::Reference<Shader> pixelShader)
+	void DirectX11PipelineState::SetPixelShader(Pawn::Core::Memory::Reference<Shader> pixelShader)
 	{
 		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(pixelShader.get());
 		if (!raw)
@@ -378,7 +380,7 @@ namespace Pawn::Render
 		m_PixelShader.reset(raw);
 	}
 
-	void DirectX11PipelineState::SetComputeShader(Memory::Reference<Shader> computeShader)
+	void DirectX11PipelineState::SetComputeShader(Pawn::Core::Memory::Reference<Shader> computeShader)
 	{
 		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(computeShader.get());
 		if (!raw)
@@ -394,7 +396,7 @@ namespace Pawn::Render
 		m_PixelShader.reset(raw);
 	}
 
-	void DirectX11PipelineState::SetGeometryShader(Memory::Reference<Shader> geometryShader)
+	void DirectX11PipelineState::SetGeometryShader(Pawn::Core::Memory::Reference<Shader> geometryShader)
 	{
 		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(geometryShader.get());
 		if (!raw)
@@ -410,7 +412,7 @@ namespace Pawn::Render
 		m_PixelShader.reset(raw);
 	}
 
-	void DirectX11PipelineState::SetHullShader(Memory::Reference<Shader> hullShader)
+	void DirectX11PipelineState::SetHullShader(Pawn::Core::Memory::Reference<Shader> hullShader)
 	{
 		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(hullShader.get());
 		if (!raw)
@@ -426,7 +428,7 @@ namespace Pawn::Render
 		m_PixelShader.reset(raw);
 	}
 
-	void DirectX11PipelineState::SetDomainShader(Memory::Reference<Shader> domainShader)
+	void DirectX11PipelineState::SetDomainShader(Pawn::Core::Memory::Reference<Shader> domainShader)
 	{
 		DirectX11Shader* raw = dynamic_cast<DirectX11Shader*>(domainShader.get());
 		if (!raw)
@@ -442,7 +444,7 @@ namespace Pawn::Render
 		m_PixelShader.reset(raw);
 	}
 
-	void DirectX11PipelineState::BindUniforms(Array<Uniform*>& uniforms, Shader::Type stage)
+	void DirectX11PipelineState::BindUniforms(Pawn::Core::Containers::Array<Uniform*>& uniforms, Shader::Type stage)
 	{
 		if (stage == Shader::Type::None)
 		{

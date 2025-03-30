@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Core/Events/Event.h"
+#include "EventsShared.h"
 
-namespace Pawn {
+#include <Core/PawnMacros.h>
+import Pawn.Core.Event;
 
-    class KeyEvent : public IEvent
+namespace Pawn::Events
+{
+    class KeyEvent : public Core::Event
     {
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Keyboard | EventCategory_Input)
@@ -16,7 +19,7 @@ namespace Pawn {
         KeyEvent(int16 keycode) : m_KeyCode(keycode) {}
         int16 m_KeyCode;
 
-        friend class Input;
+        friend class InputController;
     };
 
     // Input started event. Args: keycode(int32), repeatCount(int32)

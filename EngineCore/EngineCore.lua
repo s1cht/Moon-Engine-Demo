@@ -1,8 +1,15 @@
 project "EngineCore"
+
+	if string.sub(_ACTION, 1, 5) == "gmake" then
+		error "GCC is not supported yet. Waiting for full C++20 modules support."
+	end
+
 	kind "SharedLib"
 	language "C++"
 	cppdialect "C++20"
 	staticruntime "off"
+	allmodulespublic "on"
+	scanformoduledependencies "on"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
@@ -13,6 +20,7 @@ project "EngineCore"
 	{
 		"Core/**.h",
 		"Core/**.cpp",
+		"Core/**.cppm", -- modules
 		"Core.h",
 	}
 
@@ -20,6 +28,7 @@ project "EngineCore"
 	{
 		includeDirs.EngineCore,
 		includeDirs.spdlog,
+		includeDirs.xxHash,
 	}
 
 	defines 
@@ -41,6 +50,16 @@ project "EngineCore"
 		{
 			("{COPYDIR} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox/")
 		}
+
+
+	filter "action:clang*"
+		buildoptions { "-fmodules-ts", "-fimplicit-modules", "-fimplicit-module-maps" }
+
+	filter "files:**.cppm"
+		compileas "Module"
+
+	filter "files:**.cpp"
+		compileas "C++"
 
 	filter "configurations:Debug"
 		defines "PE_DEBUG"

@@ -1,11 +1,12 @@
 #pragma once
 
 #include <Core.h>
-#include <Core/Math/Math.h>
 
 #include "Platform/Base/Window.h"
 #include "Events/WindowEvents.h"
 #include "Renderer/Base/Framebuffer.h"
+
+import Pawn.Core.Math;
 
 namespace Pawn::Render
 {
@@ -22,7 +23,7 @@ namespace Pawn::Render
 
 	public:
 		virtual void Present() = 0;
-		virtual void Clear(Pawn::Math::Vector4D32 color) = 0;
+		virtual void Clear(Pawn::Core::Math::Vector4D32 color) = 0;
 		virtual void DrawIndexed(uint32 indexCount, uint32 index) = 0;
 		virtual void Shutdown() = 0;
 

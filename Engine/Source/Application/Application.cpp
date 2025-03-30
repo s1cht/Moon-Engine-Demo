@@ -6,17 +6,19 @@
 
 #include <Core.h>
 #include <Core/Utils/Logging/Logger.h>
-#include <Core/Utils/Benchmark/Benchmark.h>
 #include <Core/Utils/MemWatch/MemWatch.h>
-#include <Core/Containers/String.h>
-#include <Core/Containers/Array.h>
-#include <Core/Platform/Base/IO.h>
-#include <Core/Misc/Time.h>
+
+#include <Core/Misc/Assertion.h>
+
+import Pawn.Core.IO;
+import Pawn.Core.Clock;
+import Pawn.Core.Container.Array;
+import Pawn.Core.Container.String;
+import Pawn.Core.Utils.Benchmark;
 
 namespace Pawn {
 
 	using namespace std::chrono_literals;
-	using namespace Math;
 
 	Application* Application::s_Instance;
 
@@ -26,8 +28,8 @@ namespace Pawn {
 		PE_ASSERT(!s_Instance, TEXT("Application is already created!"));
 		s_Instance = this;
 
-		Input::Get().SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
-		m_Window = Pawn::Memory::Scope<Window>(Window::Create());
+		Input::InputController::Get().SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		m_Window = Pawn::Core::Memory::Scope<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 		Render::Renderer::SetRenderAPI(Pawn::Render::RendererAPI::API::DirectX11);
@@ -36,11 +38,11 @@ namespace Pawn {
 		m_ImGuiLayer = new Render::Imgui::ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
 
-		String str = IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
+		Pawn::Core::Containers::String str = Pawn::Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
 
-		IO::DirectoryStorage::StoreDirectory(IO::DirectoryStorage::Directory(TEXT("Assets"), (str + TEXT("assets\\"))));
-		IO::DirectoryStorage::StoreDirectory(IO::DirectoryStorage::Directory(TEXT("Shaders"), (str + TEXT("assets\\Shaders\\Source\\"))));
-		IO::DirectoryStorage::StoreDirectory(IO::DirectoryStorage::Directory(TEXT("CompiledShaders"), (str + TEXT("assets\\Shaders\\Compiled\\"))));
+		Pawn::Core::IO::DirectoryStorage::StoreDirectory(Pawn::Core::IO::DirectoryStorage::Directory(TEXT("Assets"), (str + TEXT("assets\\"))));
+		Pawn::Core::IO::DirectoryStorage::StoreDirectory(Pawn::Core::IO::DirectoryStorage::Directory(TEXT("Shaders"), (str + TEXT("assets\\Shaders\\Source\\"))));
+		Pawn::Core::IO::DirectoryStorage::StoreDirectory(Pawn::Core::IO::DirectoryStorage::Directory(TEXT("CompiledShaders"), (str + TEXT("assets\\Shaders\\Compiled\\"))));
 
 		m_Runs = true;
 	}
@@ -55,11 +57,11 @@ namespace Pawn {
 	{
 		while (m_Runs)
 		{
-			float64 delta = Pawn::Time::Time::Update().AsMilliseconds();
+			float64 delta = Pawn::Core::Clock::Time::Update().AsMilliseconds();
 			
 			m_Window->OnUpdate(delta);
 
-			Render::RenderCommand::Clear(Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
+			Render::RenderCommand::Clear(Pawn::Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
 
 			Render::Renderer::BeginScene();
 
@@ -89,22 +91,22 @@ namespace Pawn {
 		}
 	}
 
-	void Application::PushLayer(Layer* layer)
+	void Application::PushLayer(Pawn::Core::Layer* layer)
 	{
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
 	}
 
-	void Application::PushOverlay(Layer* overlay)
+	void Application::PushOverlay(Pawn::Core::Layer* overlay)
 	{
 		m_LayerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
 
-	void Application::OnEvent(Event& event)
+	void Application::OnEvent(Pawn::Core::Event& event)
 	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowResizedEvent>(BIND_EVENT_FN(Application::OnWindowSizeEvent));
+		Pawn::Core::EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<Pawn::Events::WindowResizedEvent>(BIND_EVENT_FN(Application::OnWindowSizeEvent));
 
 		for (auto it = m_LayerStack.End(); it != m_LayerStack.Begin();)
 		{
@@ -115,7 +117,7 @@ namespace Pawn {
 
 	}
 
-	bool Application::OnWindowSizeEvent(WindowResizedEvent& event)
+	bool Application::OnWindowSizeEvent(Pawn::Events::WindowResizedEvent& event)
 	{
 		m_WindowUpdateX = (int32)event.GetSizeX();
 		m_WindowUpdateY = (int32)event.GetSizeY();

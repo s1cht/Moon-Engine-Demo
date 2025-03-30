@@ -16,11 +16,7 @@ workspace "Pawn Engine"
 	startproject "Sandbox"
 
 outputdir					= "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-
 engineVendor				= "%{wks.location}/Engine/vendor/"
-
-
-
 
 group "Dependencies"
 	include "vendor/Premake"
@@ -32,11 +28,18 @@ group "Core"
 	
 group "Misc"
 	project "Sandbox"
+
+		if string.sub(_ACTION, 1, 5) == "gmake" then
+			error "GCC is not supported yet. Waiting for full C++20 modules support."
+		end
+
 		location "Sandbox"
 		kind "ConsoleApp"
 		language "C++"
 		cppdialect "C++20"
 		staticruntime "off"
+		allmodulespublic "on"
+		scanformoduledependencies "on"
 
 		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -47,6 +50,7 @@ group "Misc"
 		{
 			"%{prj.name}/Source/**.h",
 			"%{prj.name}/Source/**.cpp",
+			"%{prj.name}/Source/**.cppm",
 		}
 
 		includedirs 
@@ -56,6 +60,7 @@ group "Misc"
 			includeDirs.EngineCore,
 			includeDirs.spdlog,
 			includeDirs.ImGui,
+			includeDirs.xxHash,
 		}
 
 		links 
@@ -70,11 +75,6 @@ group "Misc"
 			"%{wks.location}/bin/" .. outputdir .. "/Engine",
 		}
 
-		buildoptions
-		{
-			"/utf-8",
-		}
-
 		filter "system:windows"
 			systemversion "latest"
 			
@@ -83,6 +83,21 @@ group "Misc"
 				("mkdir ../bin/" .. outputdir .. "/Sandbox/assets"),
 				("{COPYDIR} %{wks.location}/%{prj.name}/assets ../bin/" .. outputdir .. "/Sandbox/assets"),
 			}
+
+		filter "action:vs*"
+			buildoptions
+			{
+				"/utf-8",
+			}
+
+		filter "action:clang*"
+			buildoptions { "-fmodules-ts", "-fimplicit-modules", "-fimplicit-module-maps" }
+
+		filter "files:**.cppm"
+			compileas "Module"
+
+		filter "files:**.cpp"
+			compileas "C++"
 
 		filter "configurations:Debug"
 			defines "PE_DEBUG"

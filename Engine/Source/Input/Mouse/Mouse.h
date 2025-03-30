@@ -1,12 +1,16 @@
 #pragma once
 
+#include <Core.h>
+#include <Core/Events/EventMacros.h>
+#include <Core/Utils/Logging/Logger.h>
+
 #include "Input/Keycodes.h"
-#include "Core.h"
-#include "Core/Math/Vector2D.h"
-#include "Core/Events/Event.h"
 #include "Events/MouseEvents.h"
 
-namespace Pawn
+import Pawn.Core.Event;
+import Pawn.Core.Math;
+
+namespace Pawn::Input::Devices
 {
 	class PAWN_API Mouse
 	{
@@ -46,12 +50,12 @@ namespace Pawn
 			return m_SideButtonDown[sideButton];
 		};
 
-		inline Math::Vector2D32 GetPosition()
+		inline Pawn::Core::Math::Vector2D32 GetPosition()
 		{
 			return m_MousePosition;
 		}
 
-		inline Math::Vector2D32 GetMouseDelta()
+		inline Pawn::Core::Math::Vector2D32 GetMouseDelta()
 		{
 			return m_MouseDelta;
 		}
@@ -87,8 +91,8 @@ namespace Pawn
 
 		bool m_SideButtonDown[PE_MAX_MOUSE_SIDEBTN_COUNT];
 
-		Math::Vector2D32 m_MousePosition;
-		Math::Vector2D32 m_MouseDelta;
+		Pawn::Core::Math::Vector2D32 m_MousePosition;
+		Pawn::Core::Math::Vector2D32 m_MouseDelta;
 
 	private:
 		bool m_CallbackExists = false;

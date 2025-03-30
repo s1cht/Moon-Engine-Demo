@@ -1,10 +1,13 @@
-#pragma once
+module;
 
 #include "Core.h"
 #include "Core/Misc/Assertion.h"
-#include "Core/Memory/PawnMemory.h"
+#include "Core/Utils/Logging/Logger.h"
 
-namespace Pawn::Time
+export module Pawn.Core.Clock;
+import Pawn.Core.Memory;
+
+export namespace Pawn::Core::Clock
 {
 	class CORE_API TimeSource
 	{
@@ -170,10 +173,10 @@ namespace Pawn::Time
 		static void Shutdown();
 
 		static Timestep Update();
-		static Timestep GetDeltaTime() { return s_DeltaTime; }
-		static float64 GetDeltaSeconds() { return s_DeltaTime.AsSeconds(); }
-		static uint32 GetInstantFPS() { return s_InstantFPS; }
-		static uint32 GetAverageFPS() { return s_AverageFPS; }
+		static Timestep GetDeltaTime(); 
+		static float64 GetDeltaSeconds(); 
+		static uint32 GetInstantFPS(); 
+		static uint32 GetAverageFPS(); 
 
 	private:
 		static void UpdateFPS();

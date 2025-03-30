@@ -19,7 +19,7 @@ namespace Pawn::Render
 			s_Renderer->Present();
 		}
 
-		inline static void Clear(Math::Vector4D32 color)
+		inline static void Clear(Pawn::Core::Math::Vector4D32 color)
 		{
 			s_Renderer->Clear(color);
 		}

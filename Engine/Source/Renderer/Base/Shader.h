@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core/Containers/String.h>
+#include <Core.h>
 
 namespace Pawn::Render
 {

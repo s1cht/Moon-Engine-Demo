@@ -1,30 +1,34 @@
 #pragma once
 
+#include <Core.h>
+
 #include "Keycodes.h"
 #include "Mouse/Mouse.h"
 #include "Keyboard/Keyboard.h"
-#include "Core.h"
-#include "Core/Math/Vector2D.h"
-#include "Core/Events/Event.h"
+
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
 
-namespace Pawn {
+import Pawn.Core.Math;
+import Pawn.Core.Event;
+import Pawn.Core.Container.String;
 
-	class PAWN_API Input
+namespace Pawn::Input
+{
+	class PAWN_API InputController
 	{
 	public:
-		using EventCallbackFunc = std::function<void(Event&)>;
+		using EventCallbackFunc = std::function<void(Pawn::Core::Event&)>;
 	public:
-		Input(const Input&) = delete;
+		InputController(const InputController&) = delete;
 
-		inline static Input& Get() {
-			static Input instance;
+		inline static InputController& Get() {
+			static InputController instance;
 			return instance;
 		};
 
 	public:
-		~Input();
+		~InputController();
 
 	public:
 		void SetEventCallback(const EventCallbackFunc& callback);
@@ -34,36 +38,36 @@ namespace Pawn {
 		inline static bool IsMouseMiddleButtonPressed();
 		inline static bool IsMouseRightButtonPressed();
 
-		inline static Math::Vector2D32 GetMousePosition();
-		inline static Math::Vector2D32 GetMouseDelta();
+		inline static Pawn::Core::Math::Vector2D32 GetMousePosition();
+		inline static Pawn::Core::Math::Vector2D32 GetMouseDelta();
 
 	public:
 		inline static bool IsKeyUp(uint8 keycode);
 		inline static bool IsKeyDown(uint8 keycode);
 
 	public:
-		static Keycode ConvertPlatformKeycode(uint16 keycode);
-		String ConvertKeycodeToString(uint8 keycode);
+		static Pawn::Input::Keycode ConvertPlatformKeycode(uint16 keycode);
+		Pawn::Core::Containers::String ConvertKeycodeToString(uint8 keycode);
 
 	public:
-		inline static Keyboard& GetKeyboard() { return Get().m_Keyboard; };
-		inline static Mouse& GetMouse() { return Get().m_Mouse; };
+		inline static Pawn::Input::Devices::Keyboard& GetKeyboard() { return Get().m_Keyboard; };
+		inline static Pawn::Input::Devices::Mouse& GetMouse() { return Get().m_Mouse; };
 
 	private:
-		Input();
+		InputController();
 
 	private:
 		void Init();
 
 	private:
-		Mouse m_Mouse;
-		Keyboard m_Keyboard;
+		Pawn::Input::Devices::Mouse m_Mouse;
+		Pawn::Input::Devices::Keyboard m_Keyboard;
 
 		bool m_CallbackExists = false;
 		EventCallbackFunc m_Callback;
 
 	private:
-		String m_Chars[PE_MAX_KEYCODE_COUNT];
+		Pawn::Core::Containers::String m_Chars[PE_MAX_KEYCODE_COUNT];
 
 	};
 

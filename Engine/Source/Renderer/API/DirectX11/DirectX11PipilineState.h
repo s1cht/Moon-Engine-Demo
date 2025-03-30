@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Core.h>
-
 #include "Renderer/Base/PipelineState.h"
 #include "Platform/Platform.h"
 #include "Renderer/API/DirectX11/DirectX11Buffer.h"
@@ -27,31 +25,31 @@ namespace Pawn::Render
 
 		void SetViewport(uint32 x, uint32 y) override;
 
-		void SetVertexShader(Memory::Reference<Shader> vertexShader) override;
-		void SetPixelShader(Memory::Reference<Shader> pixelShader) override;
-		void SetComputeShader(Memory::Reference<Shader> computeShader) override;
-		void SetGeometryShader(Memory::Reference<Shader> geometryShader) override;
-		void SetHullShader(Memory::Reference<Shader> hullShader) override;
-		void SetDomainShader(Memory::Reference<Shader> domainShader) override;
+		void SetVertexShader(Pawn::Core::Memory::Reference<Shader> vertexShader) override;
+		void SetPixelShader(Pawn::Core::Memory::Reference<Shader> pixelShader) override;
+		void SetComputeShader(Pawn::Core::Memory::Reference<Shader> computeShader) override;
+		void SetGeometryShader(Pawn::Core::Memory::Reference<Shader> geometryShader) override;
+		void SetHullShader(Pawn::Core::Memory::Reference<Shader> hullShader) override;
+		void SetDomainShader(Pawn::Core::Memory::Reference<Shader> domainShader) override;
 
 		void BindInput() override;
 		void Bind() override;
-		void BindUniforms(Array<Uniform*>& uniforms, Shader::Type stage) override;
+		void BindUniforms(Pawn::Core::Containers::Array<Uniform*>& uniforms, Shader::Type stage) override;
 
 	private:
 		D3D11_VIEWPORT m_Viewport;
-		Memory::Scope<ID3D11InputLayout> m_InputLayout;
-		Memory::Scope<ID3D11DepthStencilState> m_DepthStencilState;
-		Memory::Scope<ID3D11RasterizerState> m_RasterizerState;
-		Memory::Scope<ID3D11BlendState> m_BlendState;
+		Pawn::Core::Memory::Scope<ID3D11InputLayout> m_InputLayout;
+		Pawn::Core::Memory::Scope<ID3D11DepthStencilState> m_DepthStencilState;
+		Pawn::Core::Memory::Scope<ID3D11RasterizerState> m_RasterizerState;
+		Pawn::Core::Memory::Scope<ID3D11BlendState> m_BlendState;
 
 	private:
-		Memory::Reference<DirectX11Shader> m_VertexShader;
-		Memory::Reference<DirectX11Shader> m_PixelShader;
-		Memory::Reference<DirectX11Shader> m_ComputeShader;
-		Memory::Reference<DirectX11Shader> m_GeometryShader;
-		Memory::Reference<DirectX11Shader> m_HullShader;
-		Memory::Reference<DirectX11Shader> m_DomainShader;
+		Pawn::Core::Memory::Reference<DirectX11Shader> m_VertexShader;
+		Pawn::Core::Memory::Reference<DirectX11Shader> m_PixelShader;
+		Pawn::Core::Memory::Reference<DirectX11Shader> m_ComputeShader;
+		Pawn::Core::Memory::Reference<DirectX11Shader> m_GeometryShader;
+		Pawn::Core::Memory::Reference<DirectX11Shader> m_HullShader;
+		Pawn::Core::Memory::Reference<DirectX11Shader> m_DomainShader;
 
 	};
 }

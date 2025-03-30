@@ -1,11 +1,14 @@
-#include "WindowsIO.h"
+module;
+
+#include "Core/Utils/Logging/Logger.h"
 #include "Core/Platform/Windows/WindowsIncludes.h"
+
+module Pawn.Core.IO;
 
 #define PE_FILETIME_TO_TIMEPOINT(ft) ((static_cast<uint64>(ft.dwHighDateTime) << 32) + ft.dwLowDateTime - 116444736000000000LL) / 10000000LL;
 
-namespace Pawn::IO
+namespace Pawn::Core::IO
 {
-
 	WindowsFile::WindowsFile()
 		: m_FileInfo({}), m_File(nullptr), m_LastError(IOError::OK), m_Opened(false), m_EOF(false)
 	{
@@ -23,13 +26,13 @@ namespace Pawn::IO
 		Open(path, mode);
 	}
 
-	WindowsFile::WindowsFile(const String& path)
+	WindowsFile::WindowsFile(const Containers::String& path)
 		: m_FileInfo({}), m_File(nullptr), m_LastError(IOError::OK), m_Opened(false), m_EOF(false)
 	{
 		Open(path.GetString(), FileReadMode::Default);
 	}
 
-	WindowsFile::WindowsFile(const String& path, FileReadMode mode)
+	WindowsFile::WindowsFile(const Containers::String& path, FileReadMode mode)
 		: m_FileInfo({}), m_File(nullptr), m_LastError(IOError::OK), m_Opened(false), m_EOF(false)
 	{
 		Open(path.GetString(), mode);
@@ -120,7 +123,7 @@ namespace Pawn::IO
 		m_EOF = true;
 	}
 
-	bool WindowsFile::Read(String& output, StringReadMode mode)
+	bool WindowsFile::Read(Containers::String& output, StringReadMode mode)
 	{
 		uchar byte = TEXT(' ');
 		DWORD bytesRead;
@@ -156,7 +159,7 @@ namespace Pawn::IO
 		return output.GetSize() > 0;
 	}
 
-	bool WindowsFile::Write(const String& input)
+	bool WindowsFile::Write(const Containers::String& input)
 	{
 		if (m_FileReadMode == FileReadMode::Read)
 		{
@@ -186,7 +189,7 @@ namespace Pawn::IO
 		return true;
 	}
 
-	bool WindowsFile::Append(const String& output)
+	bool WindowsFile::Append(const Containers::String& output)
 	{
 		if (m_FileReadMode == FileReadMode::Read)
 		{
@@ -304,9 +307,9 @@ namespace Pawn::IO
 		return m_FileInfo.Size;
 	}
 
-	Pawn::String WindowsFile::ReadAll()
+	Containers::String WindowsFile::ReadAll()
 	{
-		String result;
+		Containers::String result;
 		SIZE_T size;
 		if (!m_Opened)
 		{

@@ -1,13 +1,12 @@
 #pragma once
 
+#include <Core.h>
 #include "Platform/Base/Window.h"
-#include "Core/Platform/Platform.h"
 
-namespace Pawn {
-
+namespace Pawn 
+{
 	class PAWN_API Win32Window : public Window
 	{
-
 	public:
 		Win32Window(const WindowProperties& properties);
 		virtual ~Win32Window();

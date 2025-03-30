@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Core.h"
+#include <math.h>
 
 /*													*/
 /*		Vector4 operator implementation macros		*/
@@ -15,7 +16,7 @@
 // Arithmetic calculation function implementation with number								
 #define _VECTOR4_OPERATOR_IMPL(_operator, type)												\
 		template<typename T>																\
-		Vector4<T> Pawn::Math::Vector4<T>::operator##_operator (const type& b) const		\
+		Vector4<T> Pawn::Core::Math::Vector4<T>::operator##_operator (const type& b) const		\
 		{																					\
 			Vector4 result;																	\
 			result.x = this->x _operator (T)b;												\
@@ -28,7 +29,7 @@
 // Arithmetic calculation function implementation with Vector4								
 #define _VECTOR4_VEC_OPERATOR_IMPL(_operator)												\
 		template<typename T>																\
-		Vector4<T> Pawn::Math::Vector4<T>::operator##_operator (const Vector4& b) const		\
+		Vector4<T> Pawn::Core::Math::Vector4<T>::operator##_operator (const Vector4& b) const		\
 		{																					\
 			Vector4 result;																	\
 			result.x = this->x _operator (T)b.x;											\
@@ -41,7 +42,7 @@
 // Arithmetic calculation function implementation with number and self						
 #define _VECTOR4_OPERATOR_IMPL_EQUAL(_operator, type)										\
 		template<typename T>																\
-		Vector4<T>& Pawn::Math::Vector4<T>::operator##_operator= (const type& b)			\
+		Vector4<T>& Pawn::Core::Math::Vector4<T>::operator##_operator= (const type& b)			\
 		{																					\
 			this->x _operator= (T)b;														\
 			this->y _operator= (T)b;														\
@@ -53,7 +54,7 @@
 // Arithmetic calculation function implementation with Vector4 and self						
 #define _VECTOR4_VEC_OPERATOR_IMPL_EQUAL(_operator)											\
 		template<typename T>																\
-		Vector4<T>& Pawn::Math::Vector4<T>::operator##_operator= (const Vector4& b)			\
+		Vector4<T>& Pawn::Core::Math::Vector4<T>::operator##_operator= (const Vector4& b)			\
 		{																					\
 			this->x _operator= (T)b.x;														\
 			this->y _operator= (T)b.y;														\
@@ -106,11 +107,14 @@
 		_VECTOR4_OPERATOR_DEF_EQUAL				(_operator, float32);						\
 		_VECTOR4_OPERATOR_DEF_EQUAL				(_operator, float64);						
 
-template<typename T>
-struct Vector2;
-
-namespace Pawn::Math
+namespace Pawn::Core::Math
 {
+	template<typename T>
+	struct Vector2;
+
+	template<typename T>
+	struct Vector3;
+
 	template<typename T>
 	struct Vector4
 	{
@@ -155,15 +159,29 @@ namespace Pawn::Math
 
 		inline bool operator== (const Vector4& b) const;
 
-		_VECTOR4_OPERATOR_DEF(+, Vector4);
-		_VECTOR4_OPERATOR_DEF(-, Vector4);
-		VECTOR4_OPERATOR_DEF(*);
-		VECTOR4_OPERATOR_DEF(/ );
+		Vector4<T> operator+ (const Vector4& b) const;
+		Vector4<T> operator- (const Vector4& b) const;
+		Vector4<T> operator* (const Vector4& b) const; Vector4<T> operator* (const int8& b) const; Vector4<T> operator* (const int16& b) const; Vector4<T> operator* (const int32& b) const;
+		Vector4<T> operator* (const int64& b) const; Vector4<T> operator* (const float32& b) const; Vector4<T> operator* (const float64& b) const;;
+		Vector4<T> operator/ (const Vector4& b) const; Vector4<T> operator/ (const int8& b) const; Vector4<T> operator/ (const int16& b) const; Vector4<T> operator/ (const int32& b) const;
+		Vector4<T> operator/ (const int64& b) const; Vector4<T> operator/ (const float32& b) const; Vector4<T> operator/ (const float64& b) const;;
 
-		_VECTOR4_OPERATOR_DEF_EQUAL(+, Vector4);
-		_VECTOR4_OPERATOR_DEF_EQUAL(-, Vector4);
-		VECTOR4_OPERATOR_DEF_EQUAL(*);
-		VECTOR4_OPERATOR_DEF_EQUAL(/ );
+		Vector4<T>& operator+= (const Vector4& b);
+		Vector4<T>& operator-= (const Vector4& b);
+		Vector4<T>& operator*= (const Vector4& b); 
+		Vector4<T>& operator*= (const int8& b); 
+		Vector4<T>& operator*= (const int16& b); 
+		Vector4<T>& operator*= (const int32& b);
+		Vector4<T>& operator*= (const int64& b);
+		Vector4<T>& operator*= (const float32& b); 
+		Vector4<T>& operator*= (const float64& b);
+		Vector4<T>& operator/= (const Vector4& b); 
+		Vector4<T>& operator/= (const int8& b); 
+		Vector4<T>& operator/= (const int16& b); 
+		Vector4<T>& operator/= (const int32& b);
+		Vector4<T>& operator/= (const int64& b); 
+		Vector4<T>& operator/= (const float32& b); 
+		Vector4<T>& operator/= (const float64& b);
 
 		// Normalize vector
 		Vector4<T> Normalize() const;
@@ -229,7 +247,7 @@ namespace Pawn::Math
 	}
 
 	template<typename T>
-	Vector4<T>& Pawn::Math::Vector4<T>::operator= (const Vector4& b)
+	Vector4<T>& Pawn::Core::Math::Vector4<T>::operator= (const Vector4& b)
 	{
 		this->x = (T)b.x;
 		this->y = (T)b.y;
@@ -239,52 +257,109 @@ namespace Pawn::Math
 	}
 
 	template<typename T>
-	inline bool Pawn::Math::Vector4<T>::operator== (const Vector4& b) const
+	inline bool Pawn::Core::Math::Vector4<T>::operator== (const Vector4& b) const
 	{
 		return (this->x == (T)b.x && this->y == (T)b.y && this->z == (T)b.z && this->w == (T)b.w);
 	}
 
-	_VECTOR4_VEC_OPERATOR_IMPL(+);
-	_VECTOR4_VEC_OPERATOR_IMPL(-);
-	VECTOR4_OPERATOR_IMPL(*);
-	VECTOR4_OPERATOR_IMPL(/ );
+	template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator+ (const Vector4& b) const {
+		Vector4 result; result.x = this->x + (T)b.x; result.y = this->y + (T)b.y; result.z = this->z + (T)b.z; result.w = this->w + (T)b.w; return result;
+	};
+	template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator- (const Vector4& b) const {
+		Vector4 result; result.x = this->x - (T)b.x; result.y = this->y - (T)b.y; result.z = this->z - (T)b.z; result.w = this->w - (T)b.w; return result;
+	};
+	template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator* (const Vector4& b) const {
+		Vector4 result; result.x = this->x * (T)b.x; result.y = this->y * (T)b.y; result.z = this->z * (T)b.z; result.w = this->w * (T)b.w; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator* (const int8& b) const {
+		Vector4 result; result.x = this->x * (T)b; result.y = this->y * (T)b; result.z = this->z * (T)b; result.w = this->w * (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator* (const int16& b) const {
+		Vector4 result; result.x = this->x * (T)b; result.y = this->y * (T)b; result.z = this->z * (T)b; result.w = this->w * (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator* (const int32& b) const {
+		Vector4 result; result.x = this->x * (T)b; result.y = this->y * (T)b; result.z = this->z * (T)b; result.w = this->w * (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator* (const int64& b) const {
+		Vector4 result; result.x = this->x * (T)b; result.y = this->y * (T)b; result.z = this->z * (T)b; result.w = this->w * (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator* (const float32& b) const {
+		Vector4 result; result.x = this->x * (T)b; result.y = this->y * (T)b; result.z = this->z * (T)b; result.w = this->w * (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator* (const float64& b) const {
+		Vector4 result; result.x = this->x * (T)b; result.y = this->y * (T)b; result.z = this->z * (T)b; result.w = this->w * (T)b; return result;
+	};;
+	template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator/ (const Vector4& b) const {
+		Vector4 result; result.x = this->x / (T)b.x; result.y = this->y / (T)b.y; result.z = this->z / (T)b.z; result.w = this->w / (T)b.w; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator/ (const int8& b) const {
+		Vector4 result; result.x = this->x / (T)b; result.y = this->y / (T)b; result.z = this->z / (T)b; result.w = this->w / (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator/ (const int16& b) const {
+		Vector4 result; result.x = this->x / (T)b; result.y = this->y / (T)b; result.z = this->z / (T)b; result.w = this->w / (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator/ (const int32& b) const {
+		Vector4 result; result.x = this->x / (T)b; result.y = this->y / (T)b; result.z = this->z / (T)b; result.w = this->w / (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator/ (const int64& b) const {
+		Vector4 result; result.x = this->x / (T)b; result.y = this->y / (T)b; result.z = this->z / (T)b; result.w = this->w / (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator/ (const float32& b) const {
+		Vector4 result; result.x = this->x / (T)b; result.y = this->y / (T)b; result.z = this->z / (T)b; result.w = this->w / (T)b; return result;
+	}; template<typename T> Vector4<T> Pawn::Core::Math::Vector4<T>::operator/ (const float64& b) const {
+		Vector4 result; result.x = this->x / (T)b; result.y = this->y / (T)b; result.z = this->z / (T)b; result.w = this->w / (T)b; return result;
+	};;
 
-	_VECTOR4_VEC_OPERATOR_IMPL_EQUAL(+);
-	_VECTOR4_VEC_OPERATOR_IMPL_EQUAL(-);
-	VECTOR4_OPERATOR_IMPL_EQ(*);
-	VECTOR4_OPERATOR_IMPL_EQ(/ );
+	template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator+= (const Vector4& b) {
+		this->x += (T)b.x; this->y += (T)b.y; this->z += (T)b.z; this->w += (T)b.w; return *this;
+	};
+	template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator-= (const Vector4& b) {
+		this->x -= (T)b.x; this->y -= (T)b.y; this->z -= (T)b.z; this->w -= (T)b.w; return *this;
+	};
+	template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator*= (const Vector4& b) {
+		this->x *= (T)b.x; this->y *= (T)b.y; this->z *= (T)b.z; this->w *= (T)b.w; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator*= (const int8& b) {
+		this->x *= (T)b; this->y *= (T)b; this->z *= (T)b; this->w *= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator*= (const int16& b) {
+		this->x *= (T)b; this->y *= (T)b; this->z *= (T)b; this->w *= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator*= (const int32& b) {
+		this->x *= (T)b; this->y *= (T)b; this->z *= (T)b; this->w *= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator*= (const int64& b) {
+		this->x *= (T)b; this->y *= (T)b; this->z *= (T)b; this->w *= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator*= (const float32& b) {
+		this->x *= (T)b; this->y *= (T)b; this->z *= (T)b; this->w *= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator*= (const float64& b) {
+		this->x *= (T)b; this->y *= (T)b; this->z *= (T)b; this->w *= (T)b; return *this;
+	};;
+	template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator/= (const Vector4& b) {
+		this->x /= (T)b.x; this->y /= (T)b.y; this->z /= (T)b.z; this->w /= (T)b.w; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator/= (const int8& b) {
+		this->x /= (T)b; this->y /= (T)b; this->z /= (T)b; this->w /= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator/= (const int16& b) {
+		this->x /= (T)b; this->y /= (T)b; this->z /= (T)b; this->w /= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator/= (const int32& b) {
+		this->x /= (T)b; this->y /= (T)b; this->z /= (T)b; this->w /= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator/= (const int64& b) {
+		this->x /= (T)b; this->y /= (T)b; this->z /= (T)b; this->w /= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator/= (const float32& b) {
+		this->x /= (T)b; this->y /= (T)b; this->z /= (T)b; this->w /= (T)b; return *this;
+	}; template<typename T> Vector4<T>& Pawn::Core::Math::Vector4<T>::operator/= (const float64& b) {
+		this->x /= (T)b; this->y /= (T)b; this->z /= (T)b; this->w /= (T)b; return *this;
+	};;
 
 	template<typename T>
-	Vector4<T> Pawn::Math::Vector4<T>::Normalize() const
+	Vector4<T> Pawn::Core::Math::Vector4<T>::Normalize() const
 	{
 		T len = Length();
 		return (*this) / len;
 	}
 
 	template<typename T>
-	Vector4<T> Pawn::Math::Vector4<T>::Lerp(Vector4& vec, float32 t) const
+	Vector4<T> Pawn::Core::Math::Vector4<T>::Lerp(Vector4& vec, float32 t) const
 	{
 		return LERP((*this), vec, t);
 	}
 
 	template<typename T>
-	float64 Pawn::Math::Vector4<T>::Length() const
+	float64 Pawn::Core::Math::Vector4<T>::Length() const
 	{
-		return std::sqrt(SQUARE_SUM_4((float64)this->x, (float64)this->y, (float64)this->z, (float64)this->w));
+		return sqrt(SQUARE_SUM_4((float64)this->x, (float64)this->y, (float64)this->z, (float64)this->w));
 	}
 
 	template<typename T>
-	float64 Pawn::Math::Vector4<T>::LengthSquared() const
+	float64 Pawn::Core::Math::Vector4<T>::LengthSquared() const
 	{
 		return SQUARE_SUM_4((float64)this->x, (float64)this->y, (float64)this->z, (float64)this->w);
 	}
-
-	// Default Vector3D. If you want use another type, then use Vector2<type>
-	typedef Vector4<float32> Vector4D32;
-	typedef Vector4<float64> Vector4D64;
-
-	typedef Vector4D64 Vector4D;
-
 };
 
 #undef _VECTOR4_OPERATOR_IMPL

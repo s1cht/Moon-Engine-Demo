@@ -1,10 +1,11 @@
-
 #include "ImGuiLayer.h"
 #include "ImGuiReferences.h"
 #include "Renderer/Renderer.h"
 #include "Application/Application.h"
-#include <Core/Misc/Time.h>
 
+#include <Core/Misc/Assertion.h>
+
+import Pawn.Core.Clock;
 
 namespace Pawn::Render::Imgui
 {
@@ -74,7 +75,7 @@ namespace Pawn::Render::Imgui
 		Shutdown();
 	}
 
-	void ImGuiLayer::OnEvent(Event& event)
+	void ImGuiLayer::OnEvent(Pawn::Core::Event& event)
 	{
 		if (m_EnabledEvents)
 		{
@@ -95,8 +96,8 @@ namespace Pawn::Render::Imgui
 		if (ImGui::Begin("DeltaTime", &visible))
 		{
 			ImGui::Text("%.5f", deltaTime);
-			ImGui::Text("A FPS: %d", Pawn::Time::Time::GetAverageFPS());
-			ImGui::Text("I FPS: %d", Pawn::Time::Time::GetInstantFPS());
+			ImGui::Text("A FPS: %d", Pawn::Core::Clock::Time::GetAverageFPS());
+			ImGui::Text("I FPS: %d", Pawn::Core::Clock::Time::GetInstantFPS());
 			ImGui::End();
 		}
 	}

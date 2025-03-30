@@ -1,5 +1,7 @@
 #pragma once
-#include <Core/Math/Vector2D.h>
+
+#include <Core.h>
+import Pawn.Core.Math;
 
 namespace Pawn
 {

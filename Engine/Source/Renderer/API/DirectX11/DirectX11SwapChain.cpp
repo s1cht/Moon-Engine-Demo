@@ -1,3 +1,4 @@
+#include "DirectX11Macros.h"
 #include "DirectX11SwapChain.h"
 #include "Renderer/RenderCommand.h"
 #include "Platform/Windows/Win32Window.h"
