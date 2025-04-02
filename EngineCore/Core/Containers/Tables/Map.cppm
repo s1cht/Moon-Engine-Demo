@@ -11,7 +11,7 @@ import Pawn.Core.Memory.Hasher;
 import Pawn.Core.Misc.Pair;
 
 
-namespace Pawn::Core::Containers
+export namespace Pawn::Core::Containers
 {
 	template<typename _Map>
 	class UMapIterator

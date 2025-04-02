@@ -1,8 +1,7 @@
 #include "Logger.h"
-#include "spdlog\async.h"
-#include "spdlog\sinks\stdout_color_sinks.h"
+#include <spdlog\async.h>
+#include <spdlog\sinks\stdout_color_sinks.h>
 
-import Pawn.Core.Memory;
 
 namespace Pawn::Core::Utils 
 {

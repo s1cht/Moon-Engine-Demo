@@ -1,6 +1,6 @@
 #include "AssetLoader.h"
-#include <Core/Utils/Logging/Logger.h>
 
+import Pawn.Core.Math;
 import Pawn.Core.IO;
 import Pawn.Core.Container.UnorderedMap;
 
@@ -34,28 +34,17 @@ namespace Pawn::Utility
 		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> uvCoords;
 		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> normals;
 
-		struct VertexKey {
-			int32 p, t, n;
-			VertexKey(int32 pos, int32 tex, int32 norm) : p(pos), t(tex), n(norm) {}
-			bool operator==(const VertexKey& other) const {
-				return p == other.p && t == other.t && n == other.n;
-			}
-		};
-
 		struct VertexEntry {
 			VertexKey key;
 			uint32 index;
 			VertexEntry(const VertexKey& k, uint32 idx) : key(k), index(idx) {}
 		};
 
-		Pawn::Core::Containers::UnorderedMap<VertexKey, Assets::Vertex> vert;
 		Pawn::Core::Containers::Array<VertexEntry> vertexMap;
 		Pawn::Core::Containers::Array<Assets::Vertex> vertices;
-		Pawn::Core::Containers::Array<int32> indices;
 
 		struct GroupEntry {
 			Pawn::Core::Containers::String name;
-			Pawn::Core::Containers::Array<Assets::Vertex> groupVertices;
 			Pawn::Core::Containers::Array<int32> groupIndices;
 			Pawn::Core::Containers::String material;
 
@@ -118,7 +107,7 @@ namespace Pawn::Utility
 			else if (subStr[0] == TEXT('g'))
 			{
 				pos = 2;
-				//Pawn::Core::Containers::String groupName = Pawn::Core::Containers::String(buf.GetString() + pos).Trim();
+				Pawn::Core::Containers::String groupName = Pawn::Core::Containers::String(buf.GetString() + pos);
 				bool found = false;
 				for (SIZE_T i = 0; i < groups.GetSize(); ++i)
 				{
@@ -186,24 +175,14 @@ namespace Pawn::Utility
 			}
 		}
 
-		AssetLoadResult resultLoad();
-		/*resultLoad.vertices = std::move(vertices);
-		resultLoad.indices = std::move(indices);
-
-		resultLoad.vertices.Clear();
-		resultLoad.indices.Clear();
+		AssetLoadResult resultLoad;
 		for (SIZE_T i = 0; i < groups.GetSize(); ++i)
 		{
-			SIZE_T offset = resultLoad.vertices.GetSize();
-			for (SIZE_T j = 0; j < groups[i].groupVertices.GetSize(); ++j)
-			{
-				resultLoad.vertices.PushBack(groups[i].groupVertices[j]);
-			}
-			for (SIZE_T j = 0; j < groups[i].groupIndices.GetSize(); ++j)
-			{
-				resultLoad.indices.EmplaceBack(groups[i].groupIndices[j] + offset);
-			}
-		*/}
+			auto mesh = Pawn::Core::Memory::MakeScope<Assets::Mesh>();
+			mesh->SetVertexes(std::move(vertices));
+			mesh->SetIndexes(std::move(groups[i].groupIndices));
+			resultLoad.Meshes.EmplaceBack(std::move(mesh));
+		}
 
 		return resultLoad;
 	}

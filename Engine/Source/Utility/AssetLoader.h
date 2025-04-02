@@ -8,13 +8,18 @@
 
 #pragma once
 
-#include <Core.h>
-
 #include "Assets/Mesh.h"
+#include <Core/Utils/Logging/Logger.h>
 
 import Pawn.Core.Memory;
 import Pawn.Core.Container.Array;
 import Pawn.Core.Container.String;
+
+namespace Pawn::Assets
+{
+	struct Vertex;
+	class Mesh;
+}
 
 namespace Pawn::Utility
 {
@@ -46,6 +51,23 @@ namespace Pawn::Utility
 
 	class PAWN_API AssetLoader
 	{
+	private:
+		struct VertexEntry 
+		{
+			VertexKey key;
+			uint32 index;
+			VertexEntry(const VertexKey& k, uint32 idx) : key(k), index(idx) {}
+		};
+
+		struct GroupEntry 
+		{
+			Pawn::Core::Containers::String Name;
+			Pawn::Core::Containers::Array<int32> GroupIndices;
+			Pawn::Core::Containers::String Material;
+
+			GroupEntry(const Pawn::Core::Containers::String& n) : Name(n) {}
+		};
+	
 	public:
 		static AssetLoadResult Load(const Pawn::Core::Containers::String& filePath, AssetFileFormats format = AssetFileFormats::OBJ);
 

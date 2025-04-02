@@ -98,8 +98,8 @@ namespace Pawn::Render::Imgui
 			ImGui::Text("%.5f", deltaTime);
 			ImGui::Text("A FPS: %d", Pawn::Core::Clock::Time::GetAverageFPS());
 			ImGui::Text("I FPS: %d", Pawn::Core::Clock::Time::GetInstantFPS());
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 
 	void ImGuiLayer::BeginRender()

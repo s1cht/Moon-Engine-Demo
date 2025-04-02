@@ -421,7 +421,7 @@ namespace Pawn::Core::IO
 		Memory::Reference<File> file = Memory::MakeReference<WindowsFile>(reinterpret_cast<const uchar*>(tempFileName), FileReadMode::WriteAndRead);
 		if (!file->IsOpen())
 		{
-			PE_ERROR(TEXT("IO: Failed to open temporary file! Win32 error: {0}")), (uint32)(file->GetFileLastError());
+			PE_ERROR(TEXT("IO: Failed to open temporary file! Win32 error: {0}"), (uint32)(file->GetFileLastError()));
 			return nullptr;
 		}
 

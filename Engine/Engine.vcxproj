@@ -161,13 +161,13 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Events\EventsShared.h" />
     <ClInclude Include="PawnEngine.h" />
     <ClInclude Include="Source\Application\Application.h" />
     <ClInclude Include="Source\Application\EntryPoint.h" />
     <ClInclude Include="Source\Assets\AssetManager.h" />
     <ClInclude Include="Source\Assets\Mesh.h" />
     <ClInclude Include="Source\Events\ApplicationEvents.h" />
+    <ClInclude Include="Source\Events\EventsShared.h" />
     <ClInclude Include="Source\Events\KeyEvents.h" />
     <ClInclude Include="Source\Events\MouseEvents.h" />
     <ClInclude Include="Source\Events\WindowEvents.h" />
@@ -196,6 +196,7 @@
     <ClInclude Include="Source\Renderer\ImGui\ImGuiReferences.h" />
     <ClInclude Include="Source\Renderer\RenderCommand.h" />
     <ClInclude Include="Source\Renderer\Renderer.h" />
+    <ClInclude Include="Source\Utility\AssetLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application\Application.cpp">
@@ -265,6 +266,9 @@
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="Source\Renderer\Renderer.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Utility\AssetLoader.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
   </ItemGroup>

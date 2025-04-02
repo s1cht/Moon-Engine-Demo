@@ -25,3 +25,6 @@ export namespace Pawn::Core::Math
 	typedef Vector4<float64> Vector4D64;
 	typedef Vector4D64 Vector4D;
 }
+
+export Pawn::Core::Math::Matrix3x3;
+export Pawn::Core::Math::Matrix4x4;

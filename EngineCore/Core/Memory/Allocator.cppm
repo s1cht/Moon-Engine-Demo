@@ -42,7 +42,10 @@ export namespace Pawn::Core::Memory
 		template <class Val, class... varg>
 		void Construct(Val* ptr, varg&&... args)
 		{
-			new(static_cast<void*>(ptr)) Val(std::forward<varg>(args)...);
+			if constexpr (std::is_trivially_copyable_v<Val>)
+				*ptr = Val(std::forward<varg>(args)...);
+			else
+				new (static_cast<void*>(ptr)) Val(std::forward<varg>(args)...);
 		}
 
 		void Destroy(DataType* ptr)

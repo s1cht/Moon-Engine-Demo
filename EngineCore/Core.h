@@ -3,6 +3,8 @@
 #include "Core/CoreTypes.h" 
 #include "Core/PawnMacros.h"
 
+#include <initializer_list>
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #define CORE_API

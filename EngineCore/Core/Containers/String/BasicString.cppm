@@ -291,24 +291,24 @@ export namespace Pawn::Core::Containers
 			return AddChar(character);
 		}
 
-		bool operator==(const PString& str)
+		bool operator==(const PString& str) const
 		{
-			bool equal;
+			if (str.GetSize() != m_Size)
+				return false;
 
-			if (str.GetSize() == this->m_Size)
+			if constexpr (std::is_trivially_copyable_v<DataType>)
 			{
-				equal = true;
-				for (SIZE_T i = 0; i < str.GetSize(); i++)
-					if (str.m_Data[i] != this->m_Data[i])
-					{
-						equal = false;
-						break;
-					}
-
-				return equal;
+				return memcmp(m_Data, str.m_Data, m_Size * sizeof(DataType)) == 0;
 			}
 			else
-				return false;
+			{
+				for (SIZE_T i = 0; i < m_Size; i++)
+				{
+					if (m_Data[i] != str.m_Data[i])
+						return false;
+				}
+				return true;
+			}
 		}
 
 		ReturnType& operator[](const SIZE_T index) noexcept
@@ -425,8 +425,8 @@ export namespace Pawn::Core::Containers
 
 	};
 
-	typedef PString<uchar, 10> String;
-	typedef PString<ansichar, 10> AnsiString;
+	typedef PString<uchar, 10, Pawn::Core::Memory::Allocator<uchar>> String;
+	typedef PString<ansichar, 10, Pawn::Core::Memory::Allocator<ansichar>> AnsiString;
 
 	//template<typename convertTo, SIZE_T strSize = 10, typename allocator = Allocator<uchar>>
 	//CORE_API PString<strSize, allocator> TToString(convertTo value);

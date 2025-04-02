@@ -26,4 +26,25 @@ namespace Pawn::Assets
 	{
 		return m_IndexBuffer;
 	}
+
+	void Mesh::SetVertexes(Pawn::Core::Containers::Array<Vertex> vertexes)
+	{
+		m_Vertexes = vertexes;
+	}
+
+	void Mesh::SetIndexes(Pawn::Core::Containers::Array<int32> indexes)
+	{
+		m_Indexes = indexes;
+	}
+
+	void Mesh::SetGroupName(Pawn::Core::Containers::String groupName)
+	{
+		groupName = m_GroupName;
+	}
+
+	void Mesh::CreateBuffers()
+	{
+
+	}
+
 }

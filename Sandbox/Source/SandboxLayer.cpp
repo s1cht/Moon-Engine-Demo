@@ -3,14 +3,17 @@
 #include <Renderer/Renderer.h>
 #include <Renderer/RenderCommand.h>
 #include <Assets/Mesh.h>
+#include "Utility/AssetLoader.h"
+
+import Pawn.Core.IO;
 
 using namespace Pawn;
 
 void SandboxLayer::OnAttach()
 {
-	//Core::Memory::Reference<Assets::Mesh> mesh = Core::Memory::Reference<Assets::Mesh>(new Assets::Mesh());
+	Core::Memory::Reference<Assets::Mesh> mesh = Core::Memory::Reference<Assets::Mesh>(new Assets::Mesh());
 
-	//Utility::AssetLoader::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + String(TEXT("assets/Meshes/torch.obj")));
+	Utility::AssetLoader::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/torch.obj")));
 
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },

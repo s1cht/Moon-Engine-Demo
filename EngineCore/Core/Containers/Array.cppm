@@ -114,6 +114,7 @@ export namespace Pawn::Core::Containers
 
 	};
 
+
 	template<class T, SIZE_T initSize = 20, class allocator = Memory::Allocator<T>>
 	class Array
 	{
@@ -302,11 +303,25 @@ export namespace Pawn::Core::Containers
 
 			if (m_Data && m_Capacity > 0)
 			{
-				for (SIZE_T i = 0; i < m_Size; i++)
-					new(&newBlock[i]) DataType(std::move(m_Data[i]));
+				if constexpr (std::is_trivially_copyable_v<DataType>)
+				{
+					memcpy(newBlock, m_Data, m_Size * sizeof(DataType));
+				}
+				else
+				{
+					for (SIZE_T i = 0; i < m_Size; i++)
+					{
+						new (&newBlock[i]) DataType(std::move(m_Data[i]));
+					}
 
-				for (SIZE_T i = 0; i < m_Size; i++)
-					m_Data[i].~DataType();
+					if constexpr (!std::is_trivially_destructible_v<DataType>)
+					{
+						for (SIZE_T i = 0; i < m_Size; i++)
+						{
+							m_Data[i].~DataType();
+						}
+					}
+				}
 
 				m_Allocator.Deallocate(m_Data, m_Capacity * sizeof(DataType));
 			}

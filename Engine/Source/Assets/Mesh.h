@@ -35,17 +35,21 @@ namespace Pawn::Assets
 			return m_GroupName.ToStringView();
 		}
 
+	public:
+		void SetVertexes(Pawn::Core::Containers::Array<Vertex> vertexes);
+		void SetIndexes(Pawn::Core::Containers::Array<int32> indexes);
+		void SetGroupName(Pawn::Core::Containers::String groupName);
+
+		void CreateBuffers();
+
 	private:
-		const Pawn::Core::Containers::String m_GroupName;
+		Pawn::Core::Containers::String m_GroupName;
 
 		Pawn::Core::Containers::Array<Vertex> m_Vertexes;
 		Pawn::Core::Containers::Array<int32> m_Indexes;
 
 		Pawn::Core::Memory::Reference<Render::VertexBuffer> m_VertexBuffer;
 		Pawn::Core::Memory::Reference<Render::IndexBuffer> m_IndexBuffer;
-
-	private:
-		friend class MeshParcer;
 
 	};
 }

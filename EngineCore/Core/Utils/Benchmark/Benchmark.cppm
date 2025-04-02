@@ -80,11 +80,15 @@ private:
         float64 oneIteration = (m_IterCount > 0) ? durationNs / (float64)m_IterCount : 0;
 
         if (m_IterCount > 1)
+        {
             PE_BENCHMARK_LOG(TEXT("Scope {} with {} iterations, lasted: {:.3f} {}. Average per iteration: {:.5f} {}"), m_BenchmarkName, m_IterCount, 
                 durationNs, m_Unit, 
                 oneIteration, m_Unit);
+        }
         else
+        {
             PE_BENCHMARK_LOG(TEXT("Scope {}, lasted: {:.3f} {}"), m_BenchmarkName, durationNs, m_Unit);
+        }
     }
 
 private:
