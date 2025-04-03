@@ -10,6 +10,7 @@
 
 #include "Assets/Mesh.h"
 #include <Core/Utils/Logging/Logger.h>
+#include <type_traits>
 
 import Pawn.Core.Memory;
 import Pawn.Core.Container.Array;
@@ -40,12 +41,36 @@ namespace Pawn::Utility
 		//Array<Memory::Scope<Assets::Animation>> Animations;
 	};
 
-	struct VertexKey {
-		int32 p, t, n;
-		VertexKey(int32 pos, int32 tex, int32 norm) : p(pos), t(tex), n(norm) {}
-		bool operator==(const VertexKey& other) const 
+	struct VertexKey
+	{
+		int32 positionIdx;
+		int32 uvIdx;
+		int32 normalIdx;
+
+		VertexKey() : positionIdx(0), uvIdx(0), normalIdx(0) {}
+		VertexKey(int32 p, int32 t, int32 n) : positionIdx(p), uvIdx(t), normalIdx(n) {}
+
+		VertexKey& operator=(const VertexKey& other)
 		{
-			return p == other.p && t == other.t && n == other.n;
+			positionIdx = other.positionIdx;
+			uvIdx = other.uvIdx;
+			normalIdx = other.normalIdx;
+		}
+
+		bool operator==(const VertexKey& other) const
+		{
+			return positionIdx == other.positionIdx && uvIdx == other.uvIdx && normalIdx == other.normalIdx;
+		}
+	};
+
+	struct VertexKeyHash
+	{
+		SIZE_T operator()(const VertexKey& key, SIZE_T) const
+		{
+			SIZE_T h1 = std::hash<int32>{}(key.positionIdx);
+			SIZE_T h2 = std::hash<int32>{}(key.uvIdx);
+			SIZE_T h3 = std::hash<int32>{}(key.normalIdx);
+			return h1 ^ (h2 << 1) ^ (h3 << 2);
 		}
 	};
 

@@ -165,6 +165,7 @@
     <ClInclude Include="Core\Math\Formulas.h" />
     <ClInclude Include="Core\Math\Matrix3x3.h" />
     <ClInclude Include="Core\Math\Matrix4x4.h" />
+    <ClInclude Include="Core\Math\Quaternion.h" />
     <ClInclude Include="Core\Math\Vector2D.h" />
     <ClInclude Include="Core\Math\Vector3D.h" />
     <ClInclude Include="Core\Math\Vector4D.h" />

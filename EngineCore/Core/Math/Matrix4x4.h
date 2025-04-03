@@ -24,10 +24,13 @@ namespace Pawn::Core::Math
 		{
 			float32 Matrix[4][4];
 			float32 a[4][4];
-			float32 a11, a12, a13, a14,
-				a21, a22, a23, a24,
-				a31, a32, a33, a34,
-				a41, a42, a43, a44;
+			struct
+			{
+				float32 a11, a12, a13, a14,
+						a21, a22, a23, a24,
+						a31, a32, a33, a34,
+						a41, a42, a43, a44;
+			};
 		};
 
 	public:

@@ -1,6 +1,7 @@
 module;
 
 #include "Core.h"
+#include <new>
 
 export module Pawn.Core.Memory.Allocator;
 
@@ -10,47 +11,45 @@ export namespace Pawn::Core::Memory
 	class Allocator
 	{
 	public:
-		using DataType = T;
+		using value_type = T;
 
 	public:
-		Allocator() {};
-		~Allocator() {};
+		Allocator() = default;
 
-	public:
+		template <typename U>
+		Allocator(const Allocator<U>&) noexcept {}
 
-		template <typename _Other>
+		value_type* Allocate(SIZE_T n)
+		{
+			constexpr size_t alignment = alignof(T);
+			void* ptr = ::operator new(n * sizeof(T), std::align_val_t{ alignment });
+			return static_cast<T*>(ptr);
+		}
+
+		void Deallocate(T* ptr, SIZE_T n)
+		{
+			::operator delete(ptr, std::align_val_t{ alignof(T) });
+		}
+
+		template <typename U>
 		struct Rebind
 		{
-			using Other = Allocator<_Other>;
+			using Other = Allocator<U>;
 		};
-
-		DataType* Allocate(SIZE_T size)
-		{
-			return static_cast<DataType*>(::operator new(size));
-		}
-
-		void Deallocate(void* ptr)
-		{
-			::operator delete(ptr);
-		}
-
-		void Deallocate(void* ptr, SIZE_T size)
-		{
-			::operator delete(ptr, size);
-		}
 
 		template <class Val, class... varg>
 		void Construct(Val* ptr, varg&&... args)
 		{
-			if constexpr (std::is_trivially_copyable_v<Val>)
-				*ptr = Val(std::forward<varg>(args)...);
-			else
-				new (static_cast<void*>(ptr)) Val(std::forward<varg>(args)...);
+			new (static_cast<void*>(ptr)) Val(std::forward<varg>(args)...);
 		}
 
-		void Destroy(DataType* ptr)
+		template <class Val>
+		void Destroy(Val* ptr)
 		{
-			ptr->~DataType();
+			ptr->~Val();
 		}
+
+		bool operator==(const Allocator&) const noexcept { return true; }
+		bool operator!=(const Allocator&) const noexcept { return false; }
 	};
 }

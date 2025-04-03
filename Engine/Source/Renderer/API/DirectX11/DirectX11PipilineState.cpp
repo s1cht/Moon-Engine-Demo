@@ -193,7 +193,7 @@ namespace Pawn::Render
 
 		DirectX11Renderer* render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
 
-		polygonLayout.Resize(layout.GetElements().GetSize() * 4);
+		polygonLayout.Reserve(layout.GetElements().GetSize() * 4);
 
 		i = 0;
 		for (BufferElement element : layout.GetElements())

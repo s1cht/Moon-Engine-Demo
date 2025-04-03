@@ -175,7 +175,7 @@ export namespace Pawn::Core::Containers
 
 			if (m_Data)
 			{
-				m_Allocator.Deallocate(m_Data, m_Capacity * sizeof(DataType));
+				m_Allocator.Deallocate(m_Data, m_Capacity);
 				m_Data = nullptr;
 			}
 		}
@@ -250,13 +250,13 @@ export namespace Pawn::Core::Containers
 		void Clear()
 		{
 			for (SIZE_T i = 0; i < m_Size; i++)
-				m_Data[i].~DataType();
+				m_Allocator.Destroy(&m_Data[i]);
 			m_Size = 0;
 		}
 
-		bool Resize(SIZE_T size)
+		bool Reserve(SIZE_T size)
 		{
-			return PResize(size);
+			return PReserve(size);
 		}
 
 	public:
@@ -296,7 +296,7 @@ export namespace Pawn::Core::Containers
 	private:
 		void Allocate(SIZE_T newCapacity)
 		{
-			DataType* newBlock = m_Allocator.Allocate(newCapacity * sizeof(DataType));
+			DataType* newBlock = m_Allocator.Allocate(newCapacity);
 
 			if (newCapacity < m_Size)
 				m_Size = newCapacity;
@@ -311,19 +311,12 @@ export namespace Pawn::Core::Containers
 				{
 					for (SIZE_T i = 0; i < m_Size; i++)
 					{
-						new (&newBlock[i]) DataType(std::move(m_Data[i]));
-					}
-
-					if constexpr (!std::is_trivially_destructible_v<DataType>)
-					{
-						for (SIZE_T i = 0; i < m_Size; i++)
-						{
-							m_Data[i].~DataType();
-						}
+						m_Allocator.Construct(&newBlock[i], std::move(m_Data[i]));
+						m_Allocator.Destroy(&m_Data[i]);
 					}
 				}
 
-				m_Allocator.Deallocate(m_Data, m_Capacity * sizeof(DataType));
+				m_Allocator.Deallocate(m_Data, m_Capacity);
 			}
 
 			m_Data = newBlock;
@@ -374,7 +367,7 @@ export namespace Pawn::Core::Containers
 
 			Ptr itPtr = m_Data + offset;
 			Ptr lastLoc = &m_Data[m_Size];
-		
+
 			CheckAndAllocate();
 
 			if (itPtr == lastLoc)
@@ -386,10 +379,11 @@ export namespace Pawn::Core::Containers
 			{
 				for (Ptr pos = lastLoc; pos > itPtr; --pos)
 				{
-					*pos = std::move(*(pos - 1));
+					m_Allocator.Construct(pos, std::move(*(pos - 1)));
+					m_Allocator.Destroy(pos - 1);
 				}
 
-				itPtr->~DataType();
+				m_Allocator.Destroy(itPtr);
 				m_Allocator.Construct(itPtr, std::forward<val>(args)...);
 				m_Size++;
 			}
@@ -420,7 +414,7 @@ export namespace Pawn::Core::Containers
 			return Iterator(wherePtr);
 		}
 
-		bool PResize(SIZE_T size)
+		bool PReserve(SIZE_T size)
 		{
 			if (size <= m_Capacity)
 				return false;

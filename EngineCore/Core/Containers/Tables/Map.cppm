@@ -13,13 +13,24 @@ import Pawn.Core.Misc.Pair;
 
 export namespace Pawn::Core::Containers
 {
+	template<typename KeyType, typename ValueType>
+	struct Node
+	{
+		const KeyType Key;
+		ValueType Value;
+		Node* NextNode;
+
+		Node(const KeyType& k, const ValueType& v) : Key(k), Value(v), NextNode(nullptr) {}
+		Node(KeyType&& k, ValueType&& v) : Key(std::move(k)), Value(std::move(v)), NextNode(nullptr) {}
+	};
+
 	template<typename _Map>
 	class UMapIterator
 	{
 	public:
-		using NodeType = _Map::Node;
+		using NodeType = typename _Map::NodeType;
 		using PtrType = NodeType*;
-		using ValueType = _Map::ReturnType;
+		using ValueType = typename _Map::ReturnType;
 
 	public:
 		UMapIterator(PtrType ptr, NodeType** buckets, SIZE_T num_buckets, SIZE_T bucket_index)
@@ -58,11 +69,13 @@ export namespace Pawn::Core::Containers
 		}
 
 		ValueType* operator->() {
-			return reinterpret_cast<ValueType*>(&m_Ptr->Key);
+			m_Pair = ValueType(m_Ptr->Key, m_Ptr->Value);
+			return reinterpret_cast<ValueType*>(&m_Pair);
 		}
 
 		ValueType& operator*() {
-			return *reinterpret_cast<ValueType*>(&m_Ptr->Key);
+			m_Pair = ValueType(m_Ptr->Key, m_Ptr->Value);
+			return m_Pair;
 		}
 
 	private:
@@ -70,6 +83,7 @@ export namespace Pawn::Core::Containers
 		NodeType** m_Buckets;
 		SIZE_T m_NumBuckets;
 		SIZE_T m_BucketIndex;
+		ValueType m_Pair;
 	};
 
 	template <typename keyType, typename valType, class _hasher = Core::Memory::Hasher<keyType>, class _allocator = Memory::Allocator<void>>
@@ -79,15 +93,7 @@ export namespace Pawn::Core::Containers
 		using KeyType = keyType;
 		using ValueType = valType;
 
-	private:
-		struct Node {
-			const KeyType Key;
-			ValueType Value;
-			Node* NextNode;
-
-			Node(const KeyType& k, const ValueType& v) : Key(k), Value(v), NextNode(nullptr) {}
-			Node(KeyType&& k, ValueType&& v) : Key(std::move(k)), Value(std::move(v)), NextNode(nullptr) {}
-		};
+		using NodeType = Node<KeyType, ValueType>;
 
 	public:
 		using ReturnType = Pawn::Core::Misc::Pair<KeyType, ValueType>;
@@ -95,35 +101,35 @@ export namespace Pawn::Core::Containers
 		using HasherType = _hasher;
 
 		using AllocatorType = _allocator;
-		using NodeAllocator = AllocatorType::template Rebind<UnorderedMap::Node>::Other;
+		using NodeAllocator = AllocatorType::template Rebind<NodeType>::Other;
 
 		using Iterator = UMapIterator<UnorderedMap>;
 
 	public:
 		UnorderedMap(SIZE_T initial_size = 16)
 			: m_Buckets(nullptr), m_NumElements(0), m_NumBuckets(0), m_MaxLoadFactor(1.0f),
-			m_Hash(HasherType()), m_NodeAllocator(NodeAllocator()) 
+			m_Hash(HasherType()), m_NodeAllocator(NodeAllocator())
 		{
 			AllocateBuckets(initial_size);
 		}
 
 		UnorderedMap(const UnorderedMap& other)
 			: m_Buckets(nullptr), m_NumElements(0), m_NumBuckets(0), m_MaxLoadFactor(other.m_MaxLoadFactor),
-			m_Hash(other.m_Hash), m_NodeAllocator(other.m_NodeAllocator) 
+			m_Hash(other.m_Hash), m_NodeAllocator(other.m_NodeAllocator)
 		{
 			AllocateBuckets(other.m_NumBuckets);
 
-			for (SIZE_T i = 0; i < other.m_NumBuckets; ++i) 
+			for (SIZE_T i = 0; i < other.m_NumBuckets; ++i)
 			{
 				Node* current = other.m_Buckets[i];
 				Node** tail = &m_Buckets[i];
-				while (current) 
+				while (current)
 				{
-					Node* new_node = m_NodeAllocator.allocate(sizeof(Node));
-					m_NodeAllocator.construct(new_node, current->key, current->value);
+					Node* new_node = m_NodeAllocator.Allocate(sizeof(Node));
+					m_NodeAllocator.Construct(new_node, current->Key, current->Value);
 					*tail = new_node;
-					tail = &new_node->next;
-					current = current->next;
+					tail = &new_node->NextNode;
+					current = current->NextNode;
 				}
 			}
 			m_NumElements = other.m_NumElements;
@@ -131,29 +137,29 @@ export namespace Pawn::Core::Containers
 
 		UnorderedMap(UnorderedMap&& other) noexcept
 			: m_Buckets(other.m_Buckets), m_NumElements(other.m_NumElements), m_NumBuckets(other.m_NumBuckets),
-			m_MaxLoadFactor(other.m_MaxLoadFactor), m_Hash(std::move(other.m_Hash)), m_NodeAllocator(std::move(other.m_NodeAllocator)) 
+			m_MaxLoadFactor(other.m_MaxLoadFactor), m_Hash(std::move(other.m_Hash)), m_NodeAllocator(std::move(other.m_NodeAllocator))
 		{
 			other.m_Buckets = nullptr;
 			other.m_NumElements = 0;
 			other.m_NumBuckets = 0;
 		}
 
-		~UnorderedMap() 
+		~UnorderedMap()
 		{
 			DeallocateBuckets();
 		}
 
 	public:
-		UnorderedMap& operator=(const UnorderedMap& other) 
+		UnorderedMap& operator=(const UnorderedMap& other)
 		{
-			if (this != &other) 
+			if (this != &other)
 			{
 				DeallocateBuckets();
 				m_Hash = other.m_Hash;
 				m_NodeAllocator = other.m_NodeAllocator;
 				m_MaxLoadFactor = other.m_MaxLoadFactor;
 				AllocateBuckets(other.m_NumBuckets);
-				for (SIZE_T i = 0; i < other.m_NumBuckets; ++i) 
+				for (SIZE_T i = 0; i < other.m_NumBuckets; ++i)
 				{
 					Node* current = other.m_Buckets[i];
 					Node** tail = &m_Buckets[i];
@@ -170,9 +176,9 @@ export namespace Pawn::Core::Containers
 			return *this;
 		}
 
-		UnorderedMap& operator=(UnorderedMap&& other) noexcept 
+		UnorderedMap& operator=(UnorderedMap&& other) noexcept
 		{
-			if (this != &other) 
+			if (this != &other)
 			{
 				DeallocateBuckets();
 
@@ -218,28 +224,28 @@ export namespace Pawn::Core::Containers
 			PInsert(key, value);
 		}
 
-		inline void Insert(KeyType&& key, ValueType&& value) 
+		inline void Insert(KeyType&& key, ValueType&& value)
 		{
 			PInsert(std::move(key), std::move(value));
 		}
 
-		inline ReturnType* Find(const KeyType& key) 
+		inline Iterator Find(const KeyType& key)
 		{
 			return PFind(key);
 		}
 
-		inline const ReturnType* Find(const KeyType& key) const
+		inline const Iterator Find(const KeyType& key) const
 		{
 			return PFind(key);
 		}
 
 		void Erase(const KeyType& key) {
 			SIZE_T index = GetBucketIndex(key);
-			Node* current = m_Buckets[index];
-			Node* prev = nullptr;
+			NodeType* current = m_Buckets[index];
+			NodeType* prev = nullptr;
 
 			while (current) {
-				if (current->key == key) 
+				if (current->key == key)
 				{
 					if (prev)
 						prev->next = current->next;
@@ -247,7 +253,7 @@ export namespace Pawn::Core::Containers
 						m_Buckets[index] = current->next;
 
 					m_NodeAllocator.Destroy(current);
-					m_NodeAllocator.Deallocate(current, sizeof(Node));
+					m_NodeAllocator.Deallocate(current, sizeof(NodeType));
 					m_NumElements--;
 					return;
 				}
@@ -257,12 +263,18 @@ export namespace Pawn::Core::Containers
 		}
 
 		inline SIZE_T Size() const
-		{ 
+		{
 			return m_NumElements;
 		}
 
-		inline void Clear() {
+		inline void Clear() 
+		{
 			ClearBuckets();
+		}
+
+		inline bool Reserve(SIZE_T capacity)
+		{
+			return PReserve(capacity);
 		}
 
 	public:
@@ -270,19 +282,20 @@ export namespace Pawn::Core::Containers
 			CheckAndRehash();
 
 			SIZE_T index = GetBucketIndex(key);
-			Node* current = m_Buckets[index];
+			NodeType* current = m_Buckets[index];
 
-			while (current) 
+			while (current)
 			{
-				if constexpr (std::is_same<KeyType, const uchar*>::value) 
-					if (strcmp(current->Key, key) == 0) return current->Value;
-				else 
-					if (current->Key == key) return current->Value;
+				if constexpr (std::is_same<KeyType, const char*>::value)
+					if (strcmp(current->Key, key) == 0)
+						return current->Value;
+					else
+						if (current->Key == key) return current->Value;
 				current = current->NextNode;
 			}
 
-			Node* newNode = m_NodeAllocator.Allocate(sizeof(Node));
-			m_NodeAllocator.Construct(newNode, key, ValueType());
+			NodeType* newNode = m_NodeAllocator.Allocate(1);
+			new (newNode) NodeType(key, ValueType());
 			newNode->NextNode = m_Buckets[index];
 			m_Buckets[index] = newNode;
 			m_NumElements++;
@@ -295,7 +308,7 @@ export namespace Pawn::Core::Containers
 			CheckAndRehash();
 
 			SIZE_T index = GetBucketIndex(key);
-			Node* current = m_Buckets[index];
+			NodeType* current = m_Buckets[index];
 
 			while (current)
 			{
@@ -307,7 +320,7 @@ export namespace Pawn::Core::Containers
 				current = current->NextNode;
 			}
 
-			Node* newNode = m_NodeAllocator.Allocate(sizeof(Node));
+			NodeType* newNode = m_NodeAllocator.Allocate(sizeof(NodeType));
 			m_NodeAllocator.Construct(newNode, key, value);
 			newNode->NextNode = m_Buckets[index];
 			m_Buckets[index] = newNode;
@@ -319,7 +332,7 @@ export namespace Pawn::Core::Containers
 			CheckAndRehash();
 
 			SIZE_T index = GetBucketIndex(key);
-			Node* current = m_Buckets[index];
+			NodeType* current = m_Buckets[index];
 
 			while (current)
 			{
@@ -331,28 +344,35 @@ export namespace Pawn::Core::Containers
 				current = current->NextNode;
 			}
 
-			Node* newNode = m_NodeAllocator.Allocate(sizeof(Node));
+			NodeType* newNode = m_NodeAllocator.Allocate(sizeof(NodeType));
 			m_NodeAllocator.Construct(newNode, std::move(key), std::move(value));
 			newNode->NextNode = m_Buckets[index];
 			m_Buckets[index] = newNode;
 			m_NumElements++;
 		}
 
-		ReturnType* PFind(const KeyType& key)
+		Iterator PFind(const KeyType& key)
 		{
 			SIZE_T index = GetBucketIndex(key);
-			Node* current = m_Buckets[index];
+			NodeType* current = m_Buckets[index];
 
-			while (current) {
-				if constexpr (std::is_same<KeyType, const char*>::value) 
-					if (strcmp(current->Key, key) == 0) 
-						return reinterpret_cast<const ReturnType*>(&current->Key);
-				else 
-					if (current->Key == key) 
-						return reinterpret_cast<const ReturnType*>(&current->Key);
+			while (current)
+			{
+				if (current->Key == key)
+					return Iterator(current, m_Buckets, m_NumBuckets, index);
 				current = current->NextNode;
 			}
-			return nullptr;
+			return End();
+		}
+
+		bool PReserve(SIZE_T capacity)
+		{
+			if (capacity <= m_NumBuckets)
+				return false;
+
+			Rehash(capacity);
+
+			return true;
 		}
 
 	private:
@@ -363,7 +383,7 @@ export namespace Pawn::Core::Containers
 
 		void AllocateBuckets(SIZE_T newBucketsCount)
 		{
-			m_Buckets = reinterpret_cast<Node**>(m_NodeAllocator.Allocate(newBucketsCount * sizeof(Node*)));
+			m_Buckets = reinterpret_cast<NodeType**>(m_NodeAllocator.Allocate(newBucketsCount * sizeof(NodeType*)));
 			for (SIZE_T i = 0; i < newBucketsCount; ++i)
 				m_Buckets[i] = nullptr;
 			m_NumBuckets = newBucketsCount;
@@ -374,7 +394,7 @@ export namespace Pawn::Core::Containers
 			if (m_Buckets)
 			{
 				ClearBuckets();
-				m_NodeAllocator.Deallocate(m_Buckets, m_NumBuckets * sizeof(Node*));
+				m_NodeAllocator.Deallocate(m_Buckets, m_NumBuckets * sizeof(NodeType*));
 				m_Buckets = nullptr;
 			}
 		}
@@ -383,12 +403,12 @@ export namespace Pawn::Core::Containers
 		{
 			for (SIZE_T i = 0; i < m_NumBuckets; ++i)
 			{
-				Node* current = m_Buckets[i];
+				NodeType* current = m_Buckets[i];
 				while (current) 
 				{
-					Node* next = current->NextNode;
+					NodeType* next = current->NextNode;
 					m_NodeAllocator.Destroy(current);
-					m_NodeAllocator.Deallocate(current, sizeof(Node));
+					m_NodeAllocator.Deallocate(current, sizeof(NodeType));
 					current = next;
 				}
 				m_Buckets[i] = nullptr;
@@ -399,24 +419,49 @@ export namespace Pawn::Core::Containers
 		void Rehash() 
 		{
 			SIZE_T newSize = m_NumBuckets * 2;
-			Node** newBuckets = reinterpret_cast<Node**>(m_NodeAllocator.Allocate(newSize * sizeof(Node*)));
+			NodeType** newBuckets = reinterpret_cast<NodeType**>(m_NodeAllocator.Allocate(newSize * sizeof(NodeType*)));
 			for (SIZE_T i = 0; i < newSize; ++i) 
 				newBuckets[i] = nullptr;
 
 			for (SIZE_T i = 0; i < m_NumBuckets; ++i) 
 			{
-				Node* current = m_Buckets[i];
+				NodeType* current = m_Buckets[i];
 				while (current)
 				{
-					Node* next = current->NextNode;
-					SIZE_T new_index = m_Hash(current->key, newSize);
+					NodeType* next = current->NextNode;
+					SIZE_T new_index = m_Hash(current->Key, newSize);
 					current->NextNode = newBuckets[new_index];
 					newBuckets[new_index] = current;
 					current = next;
 				}
 			}
 
-			m_NodeAllocator.Deallocate(reinterpret_cast<void*>(m_Buckets), m_NumBuckets * sizeof(Node*));
+			m_NodeAllocator.Deallocate(reinterpret_cast<void*>(m_Buckets), m_NumBuckets * sizeof(NodeType*));
+			m_Buckets = newBuckets;
+			m_NumBuckets = newSize;
+		}
+
+		void Rehash(SIZE_T numBuckets)
+		{
+			SIZE_T newSize = numBuckets;
+			NodeType** newBuckets = reinterpret_cast<NodeType**>(m_NodeAllocator.Allocate(newSize * sizeof(NodeType*)));
+			for (SIZE_T i = 0; i < newSize; ++i)
+				newBuckets[i] = nullptr;
+
+			for (SIZE_T i = 0; i < m_NumBuckets; ++i)
+			{
+				NodeType* current = m_Buckets[i];
+				while (current)
+				{
+					NodeType* next = current->NextNode;
+					SIZE_T new_index = m_Hash(current->Key, newSize);
+					current->NextNode = newBuckets[new_index];
+					newBuckets[new_index] = current;
+					current = next;
+				}
+			}
+
+			m_NodeAllocator.Deallocate(reinterpret_cast<void*>(m_Buckets), m_NumBuckets * sizeof(NodeType*));
 			m_Buckets = newBuckets;
 			m_NumBuckets = newSize;
 		}
@@ -429,7 +474,7 @@ export namespace Pawn::Core::Containers
 
 	private:
 		float m_MaxLoadFactor;
-		Node** m_Buckets;
+		NodeType** m_Buckets;
 		SIZE_T m_NumElements;
 		SIZE_T m_NumBuckets;
 

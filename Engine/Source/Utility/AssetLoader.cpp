@@ -4,6 +4,8 @@ import Pawn.Core.Math;
 import Pawn.Core.IO;
 import Pawn.Core.Container.UnorderedMap;
 
+#include <unordered_map>
+
 namespace Pawn::Utility
 {
 	AssetLoadResult AssetLoader::Load(const Pawn::Core::Containers::String& filePath, AssetFileFormats format)
@@ -30,20 +32,30 @@ namespace Pawn::Utility
 			return AssetLoadResult();
 		}
 
+		file = Pawn::Core::IO::POpenFile(filePath);
+		result = file->IsOpen();
+		if (!result)
+		{
+			PE_ERROR(TEXT("File is not opened! Error: {0}"), (uint32)file->GetFileLastError());
+			return AssetLoadResult();
+		}
+
 		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> positions;
-		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> uvCoords;
+		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector2D32> uvCoords;
 		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> normals;
 
-		struct VertexEntry {
-			VertexKey key;
-			uint32 index;
-			VertexEntry(const VertexKey& k, uint32 idx) : key(k), index(idx) {}
-		};
+		positions.Reserve(1000);
+		uvCoords.Reserve(1000);
+		normals.Reserve(1000);
 
-		Pawn::Core::Containers::Array<VertexEntry> vertexMap;
+		Pawn::Core::Containers::UnorderedMap<VertexKey, uint32, VertexKeyHash> vertexMap;
 		Pawn::Core::Containers::Array<Assets::Vertex> vertices;
 
-		struct GroupEntry {
+		vertexMap.Reserve(1000); 
+		vertices.Reserve(1000);
+
+		struct GroupEntry 
+		{
 			Pawn::Core::Containers::String name;
 			Pawn::Core::Containers::Array<int32> groupIndices;
 			Pawn::Core::Containers::String material;
@@ -54,14 +66,6 @@ namespace Pawn::Utility
 
 		groups.EmplaceBack(TEXT("default"));
 		SIZE_T currentGroupIdx = 0;
-
-		file = Pawn::Core::IO::POpenFile(filePath);
-		result = file->IsOpen();
-		if (!result)
-		{
-			PE_ERROR(TEXT("File is not opened! Error: {0}"), (uint32)file->GetFileLastError());
-			return AssetLoadResult();
-		}
 
 		Pawn::Core::Containers::String buf;
 		SIZE_T pos = 0;
@@ -83,25 +87,42 @@ namespace Pawn::Utility
 				if (subStr[1] == TEXT('\0') || subStr[1] == TEXT(' '))
 				{
 					pos = 0;
-					positions.EmplaceBack((float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos), 0.f, 0.f);
-					positions[positions.GetSize() - 1].Y = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
-					positions[positions.GetSize() - 1].Z = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					float32 x = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos);
+					float32 y = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					float32 z = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					if (pos == 0)
+					{
+						PE_ERROR(TEXT("Invalid position data in line: {0}"), buf.GetString());
+						continue;
+					}
+					positions.EmplaceBack(x, y, z);
 				}
 				// Texture
 				else if (subStr[1] == TEXT('t'))
 				{
 					pos = 0;
-					uvCoords.EmplaceBack((float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos), 0.f, 0.f);
-					uvCoords[uvCoords.GetSize() - 1].Y = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
-					uvCoords[uvCoords.GetSize() - 1].Z = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					float32 u = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos);
+					float32 v = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					if (pos == 0)
+					{
+						PE_ERROR(TEXT("Invalid texture coordinate data in line: {0}"), buf.GetString());
+						continue;
+					}
+					uvCoords.EmplaceBack(u, v);
 				}
 				// Normals
 				else if (subStr[1] == TEXT('n'))
 				{
 					pos = 0;
-					normals.EmplaceBack((float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos), 0.f, 0.f);
-					normals[normals.GetSize() - 1].Y = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
-					normals[normals.GetSize() - 1].Z = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					float32 x = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos);
+					float32 y = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					float32 z = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					if (pos == 0)
+					{
+						PE_ERROR(TEXT("Invalid normal data in line: {0}"), buf.GetString());
+						continue;
+					}
+					normals.EmplaceBack(x, y, z);
 				}
 			}
 			else if (subStr[0] == TEXT('g'))
@@ -138,18 +159,21 @@ namespace Pawn::Utility
 					int32 n = (int32)Pawn::Core::Containers::StringToUint(posB, &pos) - 1;
 					posB += pos + 1;
 
+					if (pos == 0)
+					{
+						PE_ERROR(TEXT("Invalid face data in line: {0}"), buf.GetString());
+						continue;
+					}
+
 					VertexKey key(p, t, n);
 					uint32 index = 0;
 					bool found = false;
 
-					for (SIZE_T j = 0; j < vertexMap.GetSize(); ++j)
+					auto it = vertexMap.Find(key);
+					if (it != vertexMap.End())
 					{
-						if (vertexMap[j].key == key)
-						{
-							index = vertexMap[j].index;
-							found = true;
-							break;
-						}
+						index = it->Value2;
+						found = true;
 					}
 
 					if (!found)
@@ -160,14 +184,14 @@ namespace Pawn::Utility
 						face.z = positions[p].Z;
 						face.uvU = uvCoords[t].X;
 						face.uvV = uvCoords[t].Y;
-						face.uvW = uvCoords[t].Z;
+						face.uvW = 0.0f;
 						face.normalX = normals[n].X;
 						face.normalY = normals[n].Y;
 						face.normalZ = normals[n].Z;
 
 						index = static_cast<uint32>(vertices.GetSize());
 						vertices.PushBack(face);
-						vertexMap.EmplaceBack(key, index);
+						vertexMap.Insert(key, index);
 					}
 
 					groups[currentGroupIdx].groupIndices.EmplaceBack(index);
