@@ -80,7 +80,7 @@ namespace Pawn::Render
 		window = Application::Get().GetWindow();
 
  		m_SwapChain = new DirectX11SwapChain(window);
-		m_Framebuffer = new DirectX11Framebuffer(window->GetWidth(), window->GetHeight(), true);
+		m_Framebuffer = new DirectX11Framebuffer((uint32)window->GetWidth(), (uint32)window->GetHeight(), true);
 
 		m_Framebuffer->Bind();
 	}
@@ -92,7 +92,7 @@ namespace Pawn::Render
 
 	void DirectX11Renderer::Clear(Pawn::Core::Math::Vector4D32 color)
 	{
-		m_DeviceContext->ClearRenderTargetView(m_Framebuffer->GetRenderTargetView(), color.XYZ);
+		m_DeviceContext->ClearRenderTargetView(m_Framebuffer->GetRenderTargetView(), color.XYZW);
 		m_DeviceContext->ClearDepthStencilView(m_Framebuffer->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 

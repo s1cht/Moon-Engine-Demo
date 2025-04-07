@@ -38,11 +38,6 @@ project "EngineCore"
 		"_WINDLL",
 	}
 
-	buildoptions
-	{
-		"/utf-8",
-	}
-
 	filter "system:windows"
 		systemversion "latest"
 
@@ -50,7 +45,12 @@ project "EngineCore"
 		{
 			("{COPYDIR} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox/")
 		}
+	filter "action:vs*"
 
+		buildoptions
+		{
+			"/utf-8",
+		}
 
 	filter "action:clang*"
 		buildoptions { "-fmodules-ts", "-fimplicit-modules", "-fimplicit-module-maps" }

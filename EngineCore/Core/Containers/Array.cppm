@@ -221,16 +221,24 @@ export namespace Pawn::Core::Containers
 
 		Array& operator=(const Array& other)
 		{
-			m_Allocator = other.m_Allocator;
-			m_Size = other.m_Size;
-			m_Capacity = other.m_Capacity;
-			m_Data = nullptr;
+			if (this != &other)
+			{
+				Clear();
+				if (m_Data)
+				{
+					m_Allocator.Deallocate(m_Data, m_Capacity);
+					m_Data = nullptr;
+				}
 
-			Allocate(m_Capacity);
+				m_Allocator = other.m_Allocator;
+				m_Size = other.m_Size;
+				m_Capacity = other.m_Capacity;
 
-			for (SIZE_T i = 0; i < m_Size; i++)
-				m_Data[i] = other.m_Data[i];
+				Allocate(m_Capacity);
 
+				for (SIZE_T i = 0; i < m_Size; i++)
+					m_Allocator.Construct(&m_Data[i], other.m_Data[i]);
+			}
 			return *this;
 		}
 
@@ -249,6 +257,9 @@ export namespace Pawn::Core::Containers
 	public:
 		void Clear()
 		{
+			if (m_Size == 0)
+				return;
+
 			for (SIZE_T i = 0; i < m_Size; i++)
 				m_Allocator.Destroy(&m_Data[i]);
 			m_Size = 0;

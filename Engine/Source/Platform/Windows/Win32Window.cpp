@@ -41,12 +41,12 @@ namespace Pawn
 		m_Data.EventCallbackIsSetUp = true;
 	}
 
-	uint16 Win32Window::GetWidth()
+	float32 Win32Window::GetWidth()
 	{
 		return m_Data.WindowSize.X;
 	}
 
-	uint16 Win32Window::GetHeight()
+	float32 Win32Window::GetHeight()
 	{
 		return m_Data.WindowSize.Y;
 	}
@@ -81,7 +81,7 @@ namespace Pawn
 
 		RegisterClassExW(&wc);
 
-		RECT windowViewport = { 0, 0, m_Data.WindowSize.X, m_Data.WindowSize.Y };
+		RECT windowViewport = { 0, 0, (LONG)m_Data.WindowSize.X, (LONG)m_Data.WindowSize.Y };
 		AdjustWindowRect(&windowViewport, WS_OVERLAPPEDWINDOW, FALSE);
 
 		PE_INFO("Creating window");

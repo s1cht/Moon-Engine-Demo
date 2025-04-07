@@ -2,8 +2,8 @@
 #include <Application/Application.h>
 #include <Renderer/Renderer.h>
 #include <Renderer/RenderCommand.h>
-#include <Assets/Mesh.h>
-#include "Utility/AssetLoader.h"
+
+#include <Assets/AssetManager.h>
 
 import Pawn.Core.IO;
 
@@ -11,9 +11,15 @@ using namespace Pawn;
 
 void SandboxLayer::OnAttach()
 {
+	bool result;
+
 	Core::Memory::Reference<Assets::Mesh> mesh = Core::Memory::Reference<Assets::Mesh>(new Assets::Mesh());
 
-	Utility::AssetLoader::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/torch.obj")));
+	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/torch.obj")));
+	if (!result)
+	{
+		PE_ERROR(TEXT("Failed to load asset!"));
+	}
 
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },

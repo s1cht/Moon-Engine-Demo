@@ -161,8 +161,7 @@
     <ClInclude Include="Core\Events\EventMacros.h" />
     <ClInclude Include="Core\Layer\Layer.h" />
     <ClInclude Include="Core\Layer\LayerStack.h" />
-    <ClInclude Include="Core\Math\Constants.h" />
-    <ClInclude Include="Core\Math\Formulas.h" />
+    <ClInclude Include="Core\Math\MathMacros.h" />
     <ClInclude Include="Core\Math\Matrix3x3.h" />
     <ClInclude Include="Core\Math\Matrix4x4.h" />
     <ClInclude Include="Core\Math\Quaternion.h" />
@@ -226,6 +225,9 @@
       <ObjectFileName>$(IntDir)\Math1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
+    <ClCompile Include="Core\Math\Matrix3x3.cpp" />
+    <ClCompile Include="Core\Math\Matrix4x4.cpp" />
+    <ClCompile Include="Core\Math\Quaternion.cpp" />
     <ClCompile Include="Core\Memory\Allocator.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>

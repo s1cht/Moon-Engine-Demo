@@ -3,13 +3,18 @@ module;
 #include "Vector2D.h"
 #include "Vector3D.h"
 #include "Vector4D.h"
+#include "Quaternion.h"
 #include "Matrix3x3.h"
 #include "Matrix4x4.h"
+#include "MathMacros.h"
 
 export module Pawn.Core.Math;
 
 export namespace Pawn::Core::Math
 {
+	inline float64 Lerp(float64 a, float64 b, float64 d);
+	inline float32 Lerp(float32 a, float32 b, float32 d);
+
 	// Vector2
 	typedef Vector2<float32> Vector2D32;
 	typedef Vector2<float64> Vector2D64;
@@ -25,6 +30,3 @@ export namespace Pawn::Core::Math
 	typedef Vector4<float64> Vector4D64;
 	typedef Vector4D64 Vector4D;
 }
-
-export Pawn::Core::Math::Matrix3x3;
-export Pawn::Core::Math::Matrix4x4;

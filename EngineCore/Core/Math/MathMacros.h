@@ -1,8 +1,17 @@
 #pragma once
 
+// Constants
+#define PI (3.141592653589793L)
+
+// Math functions
+
 // Linear interpolation
 #define LERP(a, b, t)\
 					(a + (b - a) * t)
+
+// To radians
+#define RAD(x)\
+	(x * (PI / 180))
 
 // Sum of 2 squares
 #define SQUARE_SUM_2(a, b)\

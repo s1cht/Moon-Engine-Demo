@@ -4,7 +4,6 @@ import Pawn.Core.Math;
 import Pawn.Core.IO;
 import Pawn.Core.Container.UnorderedMap;
 
-#include <unordered_map>
 
 namespace Pawn::Utility
 {
@@ -64,7 +63,6 @@ namespace Pawn::Utility
 		};
 		Pawn::Core::Containers::Array<GroupEntry> groups;
 
-		groups.EmplaceBack(TEXT("default"));
 		SIZE_T currentGroupIdx = 0;
 
 		Pawn::Core::Containers::String buf;
@@ -75,7 +73,8 @@ namespace Pawn::Utility
 			result = file->Read(buf, Pawn::Core::IO::StringReadMode::Line);
 			if (!result)
 			{
-				PE_ERROR(TEXT("Failed file reading! Error: {0}"), (int32)file->GetFileLastError());
+				if (!file->Eof())
+					PE_ERROR(TEXT("Failed file reading! Error: {0}"), (int32)file->GetFileLastError());
 				break;
 			}
 
@@ -202,11 +201,14 @@ namespace Pawn::Utility
 		AssetLoadResult resultLoad;
 		for (SIZE_T i = 0; i < groups.GetSize(); ++i)
 		{
-			auto mesh = Pawn::Core::Memory::MakeScope<Assets::Mesh>();
+			auto mesh = Pawn::Core::Memory::Reference<Assets::Mesh>(new Assets::Mesh(std::move(groups[i].name)));
 			mesh->SetVertexes(std::move(vertices));
 			mesh->SetIndexes(std::move(groups[i].groupIndices));
 			resultLoad.Meshes.EmplaceBack(std::move(mesh));
 		}
+
+		for (auto mesh = resultLoad.Meshes.Begin(); mesh != resultLoad.Meshes.End(); mesh++)
+			PE_INFO(TEXT("Mesh {0} read!"), (*mesh)->GetGroupName().GetData());
 
 		return resultLoad;
 	}

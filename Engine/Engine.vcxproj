@@ -192,6 +192,7 @@
     <ClInclude Include="Source\Renderer\Base\RendererAPI.h" />
     <ClInclude Include="Source\Renderer\Base\Shader.h" />
     <ClInclude Include="Source\Renderer\Base\SwapChain.h" />
+    <ClInclude Include="Source\Renderer\Camera\Camera.h" />
     <ClInclude Include="Source\Renderer\ImGui\ImGuiLayer.h" />
     <ClInclude Include="Source\Renderer\ImGui\ImGuiReferences.h" />
     <ClInclude Include="Source\Renderer\RenderCommand.h" />

@@ -102,6 +102,7 @@ export namespace Pawn::Core::Containers
 
 		using AllocatorType = _allocator;
 		using NodeAllocator = AllocatorType::template Rebind<NodeType>::Other;
+		using BucketAllocator = AllocatorType::template Rebind<NodeType*>::Other;
 
 		using Iterator = UMapIterator<UnorderedMap>;
 
@@ -353,6 +354,7 @@ export namespace Pawn::Core::Containers
 
 		Iterator PFind(const KeyType& key)
 		{
+			if (m_NumElements <= 0) return End();
 			SIZE_T index = GetBucketIndex(key);
 			NodeType* current = m_Buckets[index];
 
@@ -383,7 +385,7 @@ export namespace Pawn::Core::Containers
 
 		void AllocateBuckets(SIZE_T newBucketsCount)
 		{
-			m_Buckets = reinterpret_cast<NodeType**>(m_NodeAllocator.Allocate(newBucketsCount * sizeof(NodeType*)));
+			m_Buckets = reinterpret_cast<NodeType**>(m_BucketAllocator.Allocate(newBucketsCount * sizeof(NodeType*)));
 			for (SIZE_T i = 0; i < newBucketsCount; ++i)
 				m_Buckets[i] = nullptr;
 			m_NumBuckets = newBucketsCount;
@@ -394,7 +396,7 @@ export namespace Pawn::Core::Containers
 			if (m_Buckets)
 			{
 				ClearBuckets();
-				m_NodeAllocator.Deallocate(m_Buckets, m_NumBuckets * sizeof(NodeType*));
+				m_BucketAllocator.Deallocate(m_Buckets, m_NumBuckets * sizeof(NodeType*));
 				m_Buckets = nullptr;
 			}
 		}
@@ -419,7 +421,7 @@ export namespace Pawn::Core::Containers
 		void Rehash() 
 		{
 			SIZE_T newSize = m_NumBuckets * 2;
-			NodeType** newBuckets = reinterpret_cast<NodeType**>(m_NodeAllocator.Allocate(newSize * sizeof(NodeType*)));
+			NodeType** newBuckets = reinterpret_cast<NodeType**>(m_BucketAllocator.Allocate(newSize * sizeof(NodeType*)));
 			for (SIZE_T i = 0; i < newSize; ++i) 
 				newBuckets[i] = nullptr;
 
@@ -436,7 +438,7 @@ export namespace Pawn::Core::Containers
 				}
 			}
 
-			m_NodeAllocator.Deallocate(reinterpret_cast<void*>(m_Buckets), m_NumBuckets * sizeof(NodeType*));
+			m_BucketAllocator.Deallocate(m_Buckets, m_NumBuckets * sizeof(NodeType*));
 			m_Buckets = newBuckets;
 			m_NumBuckets = newSize;
 		}
@@ -444,7 +446,7 @@ export namespace Pawn::Core::Containers
 		void Rehash(SIZE_T numBuckets)
 		{
 			SIZE_T newSize = numBuckets;
-			NodeType** newBuckets = reinterpret_cast<NodeType**>(m_NodeAllocator.Allocate(newSize * sizeof(NodeType*)));
+			NodeType** newBuckets = reinterpret_cast<NodeType**>(m_BucketAllocator.Allocate(newSize * sizeof(NodeType*)));
 			for (SIZE_T i = 0; i < newSize; ++i)
 				newBuckets[i] = nullptr;
 
@@ -461,7 +463,7 @@ export namespace Pawn::Core::Containers
 				}
 			}
 
-			m_NodeAllocator.Deallocate(reinterpret_cast<void*>(m_Buckets), m_NumBuckets * sizeof(NodeType*));
+			m_BucketAllocator.Deallocate(m_Buckets, m_NumBuckets * sizeof(NodeType*));
 			m_Buckets = newBuckets;
 			m_NumBuckets = newSize;
 		}
@@ -480,6 +482,7 @@ export namespace Pawn::Core::Containers
 
 	private:
 		NodeAllocator m_NodeAllocator;
+		BucketAllocator m_BucketAllocator;
 		HasherType m_Hash;
 
 	};

@@ -1,282 +1,307 @@
-//
-//					Vector2D.h
-//		Part of Pawn Engines math library
-//
-
 #pragma once
 
 #include "Core.h"
-#include "Core/Math/Constants.h"
-#include "Core/Math/Formulas.h"
+#include "MathMacros.h"
 #include <cmath>
+#include <type_traits>
 
 namespace Pawn::Core::Math
 {
 	template<typename T>
 	struct Vector2
 	{
+		static_assert(std::is_floating_point_v<T>, "T must be a number with floating point!");
+
+	public:
 		union
 		{
-			struct
-			{
-				T x, y;
-			};
-			struct
-			{
-				T X, Y;
-			};
+			struct { T x, y; };
+			struct { T X, Y; };
 			T XY[2];
 		};
 
-		// (0, 0)
-		static const Vector2 ZeroVector;
-		// (0, 1)
-		static const Vector2 UpVector;
-		// (0, -1)
-		static const Vector2 DownVector;
-		// (-1, 0)
-		static const Vector2 LeftVector;
-		// (1, 0)
-		static const Vector2 RightVector;
+	public:
+		CORE_API static const Vector2<T> ZeroVector;
 
-		Vector2();
+		CORE_API static const Vector2<T> UpVector;
 
-		Vector2(T scalar);
+		CORE_API static const Vector2<T> DownVector;
 
-		Vector2(T _x, T _y);
+		CORE_API static const Vector2<T> LeftVector;
 
-		Vector2(const Vector2& otherVec);
+		CORE_API static const Vector2<T> RightVector;
 
-		Vector2(Vector2&& otherVec) noexcept;
+	public:
+		inline Vector2();
 
-		// Operators
+		inline Vector2(T scalar);
 
-		Vector2<T>& operator= (const Vector2& b);
+		inline Vector2(T _x, T _y);
 
-		inline bool operator== (const Vector2& b) const;
+		inline Vector2(const Vector2& otherVec);
 
-		Vector2<T> operator+ (const Vector2& b) const;
-		Vector2<T> operator- (const Vector2& b) const;
-		Vector2<T> operator* (const Vector2& b) const; Vector2<T> operator* (const int8& b) const; Vector2<T> operator* (const int16& b) const; Vector2<T> operator* (const int32& b) const;
-		Vector2<T> operator* (const int64& b) const; Vector2<T> operator* (const float32& b) const; Vector2<T> operator* (const float64& b) const;
-		Vector2<T> operator/ (const Vector2& b) const; Vector2<T> operator/ (const int8& b) const; Vector2<T> operator/ (const int16& b) const; Vector2<T> operator/ (const int32& b) const;
-		Vector2<T> operator/ (const int64& b) const; Vector2<T> operator/ (const float32& b) const; Vector2<T> operator/ (const float64& b) const;
+		inline Vector2(Vector2&& otherVec) noexcept;
 
-		Vector2<T>& operator+= (const Vector2& b);
-		Vector2<T>& operator-= (const Vector2& b);
-		Vector2<T>& operator*= (const Vector2& b); Vector2<T>& operator*= (const int8& b); Vector2<T>& operator*= (const int16& b); Vector2<T>& operator*= (const int32& b); 
-		Vector2<T>& operator*= (const int64& b); Vector2<T>& operator*= (const float32& b); Vector2<T>& operator*= (const float64& b);;
-		Vector2<T>& operator/= (const Vector2& b); Vector2<T>& operator/= (const int8& b); Vector2<T>& operator/= (const int16& b); Vector2<T>& operator/= (const int32& b); 
-		Vector2<T>& operator/= (const int64& b); Vector2<T>& operator/= (const float32& b); Vector2<T>& operator/= (const float64& b);;
+	public:
+		Vector2<T>& operator=(const Vector2& b);
 
-		// Normalize vector
+		bool operator==(const Vector2& b) const;
+
+		Vector2<T> operator+(const Vector2& b) const;
+
+		Vector2<T> operator-(const Vector2& b) const;
+
+		Vector2<T> operator*(const Vector2& b) const;
+
+		template<typename U>
+		Vector2<T> operator*(U scalar) const;
+
+		Vector2<T> operator/(const Vector2& b) const;
+
+		template<typename U>
+		Vector2<T> operator/(U scalar) const;
+
+		Vector2<T>& operator+=(const Vector2& b);
+
+		Vector2<T>& operator-=(const Vector2& b);
+
+		Vector2<T>& operator*=(const Vector2& b);
+
+		template<typename U>
+		Vector2<T>& operator*=(U scalar);
+
+		Vector2<T>& operator/=(const Vector2& b);
+
+		template<typename U>
+		Vector2<T>& operator/=(U scalar);
+
+	public:
+
 		Vector2<T> Normalize() const;
 
-		//
-		Vector2<T> Lerp(Vector2& vec, float32 t) const;
+		Vector2<T> Lerp(const Vector2& vec, float32 t) const;
 
-		// Get angle (in radians) between vectors
 		float64 GetAngleBetweenVectors(const Vector2& other) const;
 
-		// Get angle (in radians) between vectors
 		float64 GetAngleBetweenVectorsInDegrees(const Vector2& other) const;
 
-		// Dot product of two vectors
-		inline float64 Dot(const Vector2& other) const;
+		T Dot(const Vector2& other) const;
 
-		// Preudo dot product of two vectors
-		inline float64 Cross(const Vector2& other) const;
+		T Cross(const Vector2& other) const;
 
-		// Length of vector
-		inline float64 Length() const;
+		T Length() const;
 
-		// Squared length
-		inline float64 LengthSquared() const;
+		T LengthSquared() const;
+
+		Vector2<T> Project(const Vector2& other) const;
+
+		Vector2<T> Reflect(const Vector2& normal) const;
 
 	};
 
 	template<typename T>
-	inline Vector2<T>::Vector2()
-		: x(0.f), y(0.f) {
-	}
+	inline Vector2<T>::Vector2() : x(0), y(0) {}
 
 	template<typename T>
-	inline Vector2<T>::Vector2(T scalar)
-		: x(scalar), y(scalar) {
-	}
+	inline Vector2<T>::Vector2(T scalar) : x(scalar), y(scalar) {}
 
 	template<typename T>
-	inline Vector2<T>::Vector2(T _x, T _y)
-		: x(_x), y(_y) {
-	}
+	inline Vector2<T>::Vector2(T _x, T _y) : x(_x), y(_y) {}
 
 	template<typename T>
-	inline Vector2<T>::Vector2(const Vector2& otherVec)
+	inline Vector2<T>::Vector2(const Vector2& otherVec) : x(otherVec.x), y(otherVec.y) {}
+
+	template<typename T>
+	inline Vector2<T>::Vector2(Vector2&& otherVec) noexcept : x(otherVec.x), y(otherVec.y) {}
+
+	template<typename T>
+	inline Vector2<T>& Vector2<T>::operator=(const Vector2& b)
 	{
-		x = otherVec.x;
-		y = otherVec.y;
-	}
-
-	template<typename T>
-	inline Vector2<T>::Vector2(Vector2&& otherVec) noexcept
-	{
-		x = otherVec.x;
-		y = otherVec.y;
-	}
-
-	template<typename T>
-	Vector2<T>& Pawn::Core::Math::Vector2<T>::operator= (const Vector2& b)
-	{
-		this->x = (T)b.x;
-		this->y = (T)b.y;
+		x = b.x;
+		y = b.y;
 		return *this;
 	}
 
 	template<typename T>
-	inline bool Pawn::Core::Math::Vector2<T>::operator== (const Vector2& b) const
+	inline bool Vector2<T>::operator==(const Vector2& b) const
 	{
-		return (this->x == (T)b.x && this->y == (T)b.y);
+		if constexpr (std::is_floating_point_v<T>)
+		{
+			constexpr T epsilon = static_cast<T>(1e-6);
+			return std::abs(x - b.x) < epsilon &&
+				std::abs(y - b.y) < epsilon;
+		}
+		else
+		{
+			return x == b.x && y == b.y;
+		}
 	}
 
-	template<typename T> 
-	Vector2<T> Pawn::Core::Math::Vector2<T>::operator+ (const Vector2& b) const 
+	template<typename T>
+	inline Vector2<T> Vector2<T>::operator+(const Vector2& b) const
 	{
-		Vector2 result; result.x = this->x + (T)b.x; result.y = this->y + (T)b.y; return result;
-	};
-	template<typename T> 
-	Vector2<T> Pawn::Core::Math::Vector2<T>::operator- (const Vector2& b) const 
-	{
-		Vector2 result; result.x = this->x - (T)b.x; result.y = this->y - (T)b.y; return result;
-	};
-	template<typename T> 
-	Vector2<T> Pawn::Core::Math::Vector2<T>::operator* (const Vector2& b) const 
-	{
-		Vector2 result; result.x = this->x * (T)b.x; result.y = this->y * (T)b.y; return result;
-	}; 
-	template<typename T> 
-	Vector2<T> Pawn::Core::Math::Vector2<T>::operator* (const int8& b) const 
-	{
-		Vector2 result; result.x = this->x * (T)b; result.y = this->y * (T)b; return result;
-	}; 
-	template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator* (const int16& b) const 
-	{
-		Vector2 result; result.x = this->x * (T)b; result.y = this->y * (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator* (const int32& b) const {
-		Vector2 result; result.x = this->x * (T)b; result.y = this->y * (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator* (const int64& b) const {
-		Vector2 result; result.x = this->x * (T)b; result.y = this->y * (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator* (const float32& b) const {
-		Vector2 result; result.x = this->x * (T)b; result.y = this->y * (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator* (const float64& b) const {
-		Vector2 result; result.x = this->x * (T)b; result.y = this->y * (T)b; return result;
-	};;
-	template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator/ (const Vector2& b) const {
-		Vector2 result; result.x = this->x / (T)b.x; result.y = this->y / (T)b.y; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator/ (const int8& b) const {
-		Vector2 result; result.x = this->x / (T)b; result.y = this->y / (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator/ (const int16& b) const {
-		Vector2 result; result.x = this->x / (T)b; result.y = this->y / (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator/ (const int32& b) const {
-		Vector2 result; result.x = this->x / (T)b; result.y = this->y / (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator/ (const int64& b) const {
-		Vector2 result; result.x = this->x / (T)b; result.y = this->y / (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator/ (const float32& b) const {
-		Vector2 result; result.x = this->x / (T)b; result.y = this->y / (T)b; return result;
-	}; template<typename T> Vector2<T> Pawn::Core::Math::Vector2<T>::operator/ (const float64& b) const {
-		Vector2 result; result.x = this->x / (T)b; result.y = this->y / (T)b; return result;
-	};;
-
-	template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator+= (const Vector2& b) {
-		this->x += (T)b.x; this->y += (T)b.y; return *this;
-	};
-	template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator-= (const Vector2& b) {
-		this->x -= (T)b.x; this->y -= (T)b.y; return *this;
-	};
-	template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator*= (const Vector2& b) {
-		this->x *= (T)b.x; this->y *= (T)b.y; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator*= (const int8& b) {
-		this->x *= (T)b; this->y *= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator*= (const int16& b) {
-		this->x *= (T)b; this->y *= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator*= (const int32& b) {
-		this->x *= (T)b; this->y *= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator*= (const int64& b) {
-		this->x *= (T)b; this->y *= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator*= (const float32& b) {
-		this->x *= (T)b; this->y *= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator*= (const float64& b) {
-		this->x *= (T)b; this->y *= (T)b; return *this;
-	};;
-	template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator/= (const Vector2& b) {
-		this->x /= (T)b.x; this->y /= (T)b.y; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator/= (const int8& b) {
-		this->x /= (T)b; this->y /= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator/= (const int16& b) {
-		this->x /= (T)b; this->y /= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator/= (const int32& b) {
-		this->x /= (T)b; this->y /= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator/= (const int64& b) {
-		this->x /= (T)b; this->y /= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator/= (const float32& b) {
-		this->x /= (T)b; this->y /= (T)b; return *this;
-	}; template<typename T> Vector2<T>& Pawn::Core::Math::Vector2<T>::operator/= (const float64& b) {
-		this->x /= (T)b; this->y /= (T)b; return *this;
-	};;
+		return Vector2<T>(x + b.x, y + b.y);
+	}
 
 	template<typename T>
-	Vector2<T> Pawn::Core::Math::Vector2<T>::Normalize() const
+	inline Vector2<T> Vector2<T>::operator-(const Vector2& b) const
+	{
+		return Vector2<T>(x - b.x, y - b.y);
+	}
+
+	template<typename T>
+	inline Vector2<T> Vector2<T>::operator*(const Vector2& b) const
+	{
+		return Vector2<T>(x * b.x, y * b.y);
+	}
+
+	template<typename T>
+	template<typename U>
+	inline Vector2<T> Vector2<T>::operator*(U scalar) const
+	{
+		return Vector2<T>(static_cast<T>(x * scalar), static_cast<T>(y * scalar));
+	}
+
+	template<typename T>
+	inline Vector2<T> Vector2<T>::operator/(const Vector2& b) const
+	{
+		return Vector2<T>(
+			b.x != 0 ? x / b.x : 0,
+			b.y != 0 ? y / b.y : 0
+		);
+	}
+
+	template<typename T>
+	template<typename U>
+	inline Vector2<T> Vector2<T>::operator/(U scalar) const
+	{
+		if (scalar == 0) return Vector2<T>(0);
+		return Vector2<T>(static_cast<T>(x / scalar), static_cast<T>(y / scalar));
+	}
+
+	template<typename T>
+	inline Vector2<T>& Vector2<T>::operator+=(const Vector2& b)
+	{
+		x += b.x;
+		y += b.y;
+		return *this;
+	}
+
+	template<typename T>
+	inline Vector2<T>& Vector2<T>::operator-=(const Vector2& b)
+	{
+		x -= b.x;
+		y -= b.y;
+		return *this;
+	}
+
+	template<typename T>
+	inline Vector2<T>& Vector2<T>::operator*=(const Vector2& b)
+	{
+		x *= b.x;
+		y *= b.y;
+		return *this;
+	}
+
+	template<typename T>
+	template<typename U>
+	inline Vector2<T>& Vector2<T>::operator*=(U scalar)
+	{
+		x = static_cast<T>(x * scalar);
+		y = static_cast<T>(y * scalar);
+		return *this;
+	}
+
+	template<typename T>
+	inline Vector2<T>& Vector2<T>::operator/=(const Vector2& b)
+	{
+		x = b.x != 0 ? x / b.x : 0;
+		y = b.y != 0 ? y / b.y : 0;
+		return *this;
+	}
+
+	template<typename T>
+	template<typename U>
+	inline Vector2<T>& Vector2<T>::operator/=(U scalar)
+	{
+		if (scalar == 0) return *this = Vector2<T>(0);
+		x = static_cast<T>(x / scalar);
+		y = static_cast<T>(y / scalar);
+		return *this;
+	}
+
+	template<typename T>
+	inline Vector2<T> Vector2<T>::Normalize() const
 	{
 		T len = Length();
-		return (*this) / len;
+		if (len == 0) return Vector2<T>(0);
+		return *this / len;
 	}
 
 	template<typename T>
-	Vector2<T> Pawn::Core::Math::Vector2<T>::Lerp(Vector2& vec, float32 t) const
+	inline Vector2<T> Vector2<T>::Lerp(const Vector2& vec, float32 t) const
 	{
-		return LERP((*this), vec, t);
+		return LERP(*this, vec, t);
 	}
 
 	template<typename T>
-	float64 Pawn::Core::Math::Vector2<T>::GetAngleBetweenVectors(const Vector2& other) const
+	inline float64 Vector2<T>::GetAngleBetweenVectors(const Vector2& other) const
 	{
-		return acos(this->Dot(other) / (this->Length() * other.Length()));
+		T dot = Dot(other);
+		T len = Length() * other.Length();
+		if (len == 0) return 0.0;
+		return std::acos(static_cast<float64>(dot) / static_cast<float64>(len));
 	}
 
 	template<typename T>
-	float64 Pawn::Core::Math::Vector2<T>::GetAngleBetweenVectorsInDegrees(const Vector2& other) const
+	inline float64 Vector2<T>::GetAngleBetweenVectorsInDegrees(const Vector2& other) const
 	{
-		return acos(this->Dot(other) / (this->Length() * other.Length()));
+		return GetAngleBetweenVectors(other) * 180.0 / PI;
 	}
 
 	template<typename T>
-	float64 Pawn::Core::Math::Vector2<T>::Dot(const Vector2& other) const
+	inline T Vector2<T>::Dot(const Vector2& other) const
 	{
-		return (float64)this->x * (float64)other.x + (float64)this->y * (float64)other.y;
+		return x * other.x + y * other.y;
 	}
 
 	template<typename T>
-	float64 Pawn::Core::Math::Vector2<T>::Cross(const Vector2& other) const
+	inline T Vector2<T>::Cross(const Vector2& other) const
 	{
-		return (float64)this->x * (float64)other.x - (float64)this->y * (float64)other.y;
+		return x * other.y - y * other.x;
 	}
 
 	template<typename T>
-	float64 Pawn::Core::Math::Vector2<T>::Length() const
+	inline T Vector2<T>::Length() const
 	{
-		return sqrt(SQUARE_SUM_2((float64)this->x, (float64)this->y));
+		return static_cast<T>(std::sqrt(static_cast<double>(x * x + y * y)));
 	}
 
 	template<typename T>
-	float64 Pawn::Core::Math::Vector2<T>::LengthSquared() const
+	inline T Vector2<T>::LengthSquared() const
 	{
-		return SQUARE_SUM_2((float64)this->x, (float64)this->y);
+		return x * x + y * y;
 	}
 
-};
+	template<typename T>
+	inline Vector2<T> Vector2<T>::Project(const Vector2& other) const
+	{
+		T dot = Dot(other);
+		T lenSquared = other.LengthSquared();
+		if (lenSquared == 0) return Vector2<T>(0);
+		return other * (dot / lenSquared);
+	}
 
-#undef _VECTOR2_OPERATOR_IMPL
-#undef _VECTOR2_VEC_OPERATOR_IMPL
-#undef _VECTOR2_OPERATOR_IMPL_EQUAL
-#undef _VECTOR2_VEC_OPERATOR_IMPL_EQUAL
-#undef VECTOR2_OPERATOR_IMPL
-#undef VECTOR2_OPERATOR_IMPL_EQ
+	template<typename T>
+	inline Vector2<T> Vector2<T>::Reflect(const Vector2& normal) const
+	{
+		return *this - normal * (2 * Dot(normal));
+	}
+
+	template<typename T, typename U>
+	inline Vector2<T> operator*(U scalar, const Vector2<T>& vec)
+	{
+		return vec * scalar;
+	}
+
+}

@@ -140,11 +140,16 @@ namespace Pawn::Core::IO
 
 		while (!m_EOF)
 		{
-			if (!ReadFile(m_File, &byte, 1, &bytesRead, nullptr) || bytesRead == 0)
+			if (!ReadFile(m_File, &byte, 1, &bytesRead, nullptr))
 			{
 				DWORD error = GetLastError();
-				PE_ERROR("Failed to read file! Win32 error: {0}", error);
+				PE_ERROR("Failed to read file! Win32 error: {0}, {1}", error, Tell());
 				m_LastError = IOError::ReadFileFailed;
+				m_EOF = true;
+				break;
+			}
+			if (bytesRead == 0)
+			{
 				m_EOF = true;
 				break;
 			}
@@ -155,7 +160,7 @@ namespace Pawn::Core::IO
 
 			output += byte;
 		}
-
+	
 		return output.GetSize() > 0;
 	}
 
@@ -254,11 +259,15 @@ namespace Pawn::Core::IO
 
 		while (currentLine < line)
 		{
-			if (!ReadFile(m_File, buffer, 1, &bytesRead, nullptr) || bytesRead == 0)
+			if (!ReadFile(m_File, buffer, 1, &bytesRead, nullptr))
 			{
 				m_EOF = true;
 				m_LastError = IOError::EndOfFile;
 				return false;
+			}
+			if (bytesRead == 0)
+			{
+				m_EOF = true;
 			}
 
 			if (buffer[0] == '\n')

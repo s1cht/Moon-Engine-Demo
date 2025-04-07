@@ -76,8 +76,8 @@ namespace Pawn::Render
 		swapChainDesc.Stereo = false;
 		swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-		swapChainDesc.Width = window->GetWidth();
-		swapChainDesc.Height = window->GetHeight();
+		swapChainDesc.Width = (uint32)window->GetWidth();
+		swapChainDesc.Height = (uint32)window->GetHeight();
 		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
 
 		// Multisampling

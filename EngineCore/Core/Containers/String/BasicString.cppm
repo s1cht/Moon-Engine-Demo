@@ -9,7 +9,7 @@ export module Pawn.Core.Container.String;
 import Pawn.Core.Container.StringShared;
 import Pawn.Core.Memory.Allocator;
 
-#define STR_RESIZE_MULTIPLYER 1.5
+#define STR_RESIZE_MULTIPLYER 2
 
 export namespace Pawn::Core::Containers
 {
@@ -410,6 +410,14 @@ export namespace Pawn::Core::Containers
 		{
 			if (m_Size + 1 >= m_Capacity)
 				Allocate((SIZE_T)(m_Capacity * STR_RESIZE_MULTIPLYER));
+
+			if (m_Size == 0)
+			{
+				m_Data[0] = character;
+				m_Size++;
+				m_Data[m_Size] = '\0';
+				return *this;
+			}
 
 			m_Data[m_Size] = character;
 			m_Size++;

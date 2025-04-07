@@ -34,7 +34,7 @@ namespace Pawn::Utility
 
 	struct AssetLoadResult
 	{
-		Pawn::Core::Containers::Array<Pawn::Core::Memory::Scope<Assets::Mesh>> Meshes;
+		Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> Meshes;
 
 		// For future
 		//Array<Memory::Scope<Assets::Material>> Materials;
@@ -55,6 +55,8 @@ namespace Pawn::Utility
 			positionIdx = other.positionIdx;
 			uvIdx = other.uvIdx;
 			normalIdx = other.normalIdx;
+
+			return *this;
 		}
 
 		bool operator==(const VertexKey& other) const
@@ -65,12 +67,23 @@ namespace Pawn::Utility
 
 	struct VertexKeyHash
 	{
-		SIZE_T operator()(const VertexKey& key, SIZE_T) const
+		SIZE_T operator()(const VertexKey& key, SIZE_T tableSize) const
 		{
-			SIZE_T h1 = std::hash<int32>{}(key.positionIdx);
-			SIZE_T h2 = std::hash<int32>{}(key.uvIdx);
-			SIZE_T h3 = std::hash<int32>{}(key.normalIdx);
-			return h1 ^ (h2 << 1) ^ (h3 << 2);
+			constexpr SIZE_T FNV_PRIME = 16777619u;
+			constexpr SIZE_T FNV_OFFSET = 2166136261u;
+
+			SIZE_T hash = FNV_OFFSET;
+
+			hash ^= static_cast<SIZE_T>(key.positionIdx);
+			hash *= FNV_PRIME;
+
+			hash ^= static_cast<SIZE_T>(key.uvIdx);
+			hash *= FNV_PRIME;
+
+			hash ^= static_cast<SIZE_T>(key.normalIdx);
+			hash *= FNV_PRIME;
+
+			return hash % tableSize;
 		}
 	};
 

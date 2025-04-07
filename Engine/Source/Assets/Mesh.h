@@ -36,9 +36,13 @@ namespace Pawn::Assets
 		}
 
 	public:
-		void SetVertexes(Pawn::Core::Containers::Array<Vertex> vertexes);
-		void SetIndexes(Pawn::Core::Containers::Array<int32> indexes);
-		void SetGroupName(Pawn::Core::Containers::String groupName);
+		void SetVertexes(const Pawn::Core::Containers::Array<Vertex>& vertexes);
+		void SetIndexes(const Pawn::Core::Containers::Array<int32>& indexes);
+		void SetGroupName(const Pawn::Core::Containers::String& groupName);
+
+		void SetVertexes(Pawn::Core::Containers::Array<Vertex>&& vertexes);
+		void SetIndexes(Pawn::Core::Containers::Array<int32>&& indexes);
+		void SetGroupName(Pawn::Core::Containers::String&& groupName);
 
 		void CreateBuffers();
 

@@ -14,10 +14,10 @@ namespace Pawn
 	{	
 	public:
 		Pawn::Core::Containers::String WindowTitle;
-		Pawn::Core::Math::Vector2<uint16> WindowSize;
+		Pawn::Core::Math::Vector2D32 WindowSize;
 
 		WindowProperties(Pawn::Core::Containers::String title = TEXT("Pawn Engine"),
-			Pawn::Core::Math::Vector2<uint16> size = Pawn::Core::Math::Vector2<uint16>(1280, 960)
+			Pawn::Core::Math::Vector2D32 size = Pawn::Core::Math::Vector2D32(1280.f, 960.f)
 		) : WindowTitle(title), WindowSize(size) {};
 	};
 
@@ -50,8 +50,8 @@ namespace Pawn
 		virtual void SetEventCallback(const EventCallbackFunc& callback) = 0;
 
 	public:
-		virtual uint16 GetWidth() = 0;
-		virtual uint16 GetHeight() = 0;
+		virtual float32 GetWidth() = 0;
+		virtual float32 GetHeight() = 0;
 		virtual bool GetFocused() { return m_Data.Focused; }
 
 	public:
