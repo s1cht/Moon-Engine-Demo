@@ -19,12 +19,12 @@ namespace Pawn::Render
 
     DirectX11VertexBuffer::DirectX11VertexBuffer(void* data, SIZE_T size, Usage usage)
     {
+        m_Buffer = nullptr;
         Init(data, size, usage);
     }
 
     DirectX11VertexBuffer::~DirectX11VertexBuffer()
     {
-        PE_D3D11_RELEASE(m_Buffer);
     }
 
     void DirectX11VertexBuffer::Bind(BufferLayout& layout)
@@ -87,7 +87,7 @@ namespace Pawn::Render
             return;
         };
 
-        m_Buffer = Pawn::Core::Memory::Reference<ID3D11Buffer>(temp);
+        m_Buffer = Buffer::BufferType(temp);
     }
     
     /////////////////////////////////////////////////////////////////////////////////////
@@ -101,12 +101,12 @@ namespace Pawn::Render
 
     DirectX11IndexBuffer::DirectX11IndexBuffer(void* data, uint32 count, Usage usage)
     {
+        m_Buffer = nullptr;
         Init(data, count, usage);
     }
     
     DirectX11IndexBuffer::~DirectX11IndexBuffer()
     {
-        PE_D3D11_RELEASE(m_Buffer);
     }
     
     void DirectX11IndexBuffer::Bind()
@@ -171,7 +171,7 @@ namespace Pawn::Render
 			return;
 		};
 
-        m_Buffer = Pawn::Core::Memory::Reference<ID3D11Buffer>(temp);
+        m_Buffer = Buffer::BufferType(temp);
         m_Count = count;
     }
 
@@ -279,13 +279,13 @@ namespace Pawn::Render
     }
 
 	DirectX11Uniform::DirectX11Uniform(SIZE_T size, Usage usage)
-{
+    {
+        m_Buffer = nullptr;
         Init(size, usage);
 	}
 
 	DirectX11Uniform::~DirectX11Uniform()
 	{
-        PE_D3D11_RELEASE(m_Buffer);
 	}
 
 	void DirectX11Uniform::Bind(uint32 index, Shader::Type stage)
@@ -389,14 +389,14 @@ namespace Pawn::Render
 		bufferDesc.MiscFlags = 0;
 		bufferDesc.StructureByteStride = 0;
 
-		result = render->GetDevice()->CreateBuffer(&bufferDesc, nullptr, &temp);
+    	result = render->GetDevice()->CreateBuffer(&bufferDesc, nullptr, &temp);
 		if (FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("DirectX11: IndexBuffer: Creation failed!"));
+			PE_ASSERT(false, TEXT("DirectX11: Uniform: Creation failed!"));
 			return;
 		};
 
-		m_Buffer = Pawn::Core::Memory::Reference<ID3D11Buffer>(temp);
+		m_Buffer = Buffer::BufferType(temp);
 	}
 
 }

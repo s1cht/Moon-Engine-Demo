@@ -27,6 +27,7 @@ group "Core"
 	require "EngineCore"-- Engine
 	
 group "Misc"
+	require "Misc/CloneAssets"
 	project "Sandbox"
 
 		if string.sub(_ACTION, 1, 5) == "gmake" then
@@ -67,6 +68,8 @@ group "Misc"
 		{
 			"Engine",
 			"EngineCore",
+			"ImGui",
+			"CloneAssets",
 			"d3d9",
 		}
 
@@ -77,12 +80,6 @@ group "Misc"
 
 		filter "system:windows"
 			systemversion "latest"
-			
-			postbuildcommands
-			{
-				("mkdir ../bin/" .. outputdir .. "/Sandbox/assets"),
-				("{COPYDIR} %{wks.location}/%{prj.name}/assets ../bin/" .. outputdir .. "/Sandbox/assets"),
-			}
 
 		filter "action:vs*"
 			buildoptions

@@ -21,175 +21,166 @@ namespace Pawn::Utility
 
 	AssetLoadResult AssetLoader::LoadOBJ(const uchar* filePath)
 	{
-		bool result;
-		Pawn::Core::Memory::Reference<Pawn::Core::IO::File> file;
-
-		result = Pawn::Core::IO::PFileExists(filePath);
-		if (!result)
+		if (!Pawn::Core::IO::PFileExists(filePath))
 		{
 			PE_ERROR(TEXT("File {0} not found!"), filePath);
 			return AssetLoadResult();
 		}
 
-		file = Pawn::Core::IO::POpenFile(filePath);
-		result = file->IsOpen();
-		if (!result)
+		auto file = Pawn::Core::IO::POpenFile(filePath);
+		if (!file || !file->IsOpen())
 		{
-			PE_ERROR(TEXT("File is not opened! Error: {0}"), (uint32)file->GetFileLastError());
+			PE_ERROR(TEXT("File is not opened! Error: {0}"),
+				file ? (uint32)file->GetFileLastError() : 0);
 			return AssetLoadResult();
 		}
 
-		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> positions;
-		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector2D32> uvCoords;
-		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> normals;
+		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> positions(1000);
+		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector2D32> uvCoords(1000);
+		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> normals(1000);
 
-		positions.Reserve(1000);
-		uvCoords.Reserve(1000);
-		normals.Reserve(1000);
+		Pawn::Core::Containers::UnorderedMap<VertexKey, uint32, VertexKeyHash> vertexMap(1000);
+		Pawn::Core::Containers::Array<Assets::Vertex> vertices(1000);
 
-		Pawn::Core::Containers::UnorderedMap<VertexKey, uint32, VertexKeyHash> vertexMap;
-		Pawn::Core::Containers::Array<Assets::Vertex> vertices;
-
-		vertexMap.Reserve(1000); 
-		vertices.Reserve(1000);
-
-		struct GroupEntry 
+		struct GroupEntry
 		{
 			Pawn::Core::Containers::String name;
 			Pawn::Core::Containers::Array<int32> groupIndices;
 			Pawn::Core::Containers::String material;
 
-			GroupEntry(const Pawn::Core::Containers::String& n) : name(n) {}
+			GroupEntry(const Pawn::Core::Containers::String& n)
+				: name(n), groupIndices(1000) {
+			}
 		};
 		Pawn::Core::Containers::Array<GroupEntry> groups;
+		groups.Reserve(10);
 
 		SIZE_T currentGroupIdx = 0;
-
 		Pawn::Core::Containers::String buf;
-		SIZE_T pos = 0;
 
 		while (!file->Eof())
 		{
-			result = file->Read(buf, Pawn::Core::IO::StringReadMode::Line);
-			if (!result)
+			if (!file->Read(buf, Pawn::Core::IO::StringReadMode::Line))
 			{
 				if (!file->Eof())
-					PE_ERROR(TEXT("Failed file reading! Error: {0}"), (int32)file->GetFileLastError());
+					PE_ERROR(TEXT("Failed file reading! Error: {0}"),
+						(int32)file->GetFileLastError());
 				break;
 			}
 
-			Pawn::Core::Containers::StringView subStr = Pawn::Core::Containers::StringView(buf).Substring(0, 2);
+			if (buf.Empty() || buf[0] == TEXT('#'))
+				continue;
 
-			if (subStr[0] == TEXT('v'))
+			const uchar* line = buf.GetString();
+			SIZE_T pos = 0;
+
+			if (line[0] == TEXT('v'))
 			{
-				// Position
-				if (subStr[1] == TEXT('\0') || subStr[1] == TEXT(' '))
+				const uchar* data = line + 2;
+				if (line[1] == TEXT(' ') || line[1] == TEXT('\0'))
 				{
-					pos = 0;
-					float32 x = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos);
-					float32 y = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
-					float32 z = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					float32 x = (float32)Pawn::Core::Containers::StringToFloat(data, &pos);
+					float32 y = (float32)Pawn::Core::Containers::StringToFloat(data + pos, &pos);
+					float32 z = (float32)Pawn::Core::Containers::StringToFloat(data + pos, &pos);
 					if (pos == 0)
 					{
-						PE_ERROR(TEXT("Invalid position data in line: {0}"), buf.GetString());
+						PE_ERROR(TEXT("Invalid position data in line: {0}"), line);
 						continue;
 					}
 					positions.EmplaceBack(x, y, z);
 				}
-				// Texture
-				else if (subStr[1] == TEXT('t'))
+				else if (line[1] == TEXT('t'))
 				{
-					pos = 0;
-					float32 u = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos);
-					float32 v = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					float32 u = (float32)Pawn::Core::Containers::StringToFloat(data, &pos);
+					float32 v = (float32)Pawn::Core::Containers::StringToFloat(data + pos, &pos);
 					if (pos == 0)
 					{
-						PE_ERROR(TEXT("Invalid texture coordinate data in line: {0}"), buf.GetString());
+						PE_ERROR(TEXT("Invalid texture coordinate data in line: {0}"), line);
 						continue;
 					}
 					uvCoords.EmplaceBack(u, v);
 				}
-				// Normals
-				else if (subStr[1] == TEXT('n'))
+				else if (line[1] == TEXT('n'))
 				{
-					pos = 0;
-					float32 x = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + 2, &pos);
-					float32 y = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
-					float32 z = (float32)Pawn::Core::Containers::StringToFloat(buf.GetString() + pos, &pos);
+					float32 x = (float32)Pawn::Core::Containers::StringToFloat(data, &pos);
+					float32 y = (float32)Pawn::Core::Containers::StringToFloat(data + pos, &pos);
+					float32 z = (float32)Pawn::Core::Containers::StringToFloat(data + pos, &pos);
 					if (pos == 0)
 					{
-						PE_ERROR(TEXT("Invalid normal data in line: {0}"), buf.GetString());
+						PE_ERROR(TEXT("Invalid normal data in line: {0}"), line);
 						continue;
 					}
 					normals.EmplaceBack(x, y, z);
 				}
 			}
-			else if (subStr[0] == TEXT('g'))
+			else if (line[0] == TEXT('g'))
 			{
-				pos = 2;
-				Pawn::Core::Containers::String groupName = Pawn::Core::Containers::String(buf.GetString() + pos);
-				bool found = false;
-				for (SIZE_T i = 0; i < groups.GetSize(); ++i)
+				const uchar* groupStart = line + 2;
+				Pawn::Core::Containers::String groupName(groupStart);
+				if (!groupName.Empty())
 				{
-					if (groups[i].name == groupName)
+					bool found = false;
+					for (SIZE_T i = 0; i < groups.GetSize(); ++i)
 					{
-						currentGroupIdx = i;
-						found = true;
-						break;
+						if (groups[i].name == groupName)
+						{
+							currentGroupIdx = i;
+							found = true;
+							break;
+						}
+					}
+					if (!found)
+					{
+						groups.EmplaceBack(groupName);
+						currentGroupIdx = groups.GetSize() - 1;
 					}
 				}
-				if (!found)
-				{
-					groups.EmplaceBack(groupName);
-					currentGroupIdx = groups.GetSize() - 1;
-				}
 			}
-			else if (subStr[0] == TEXT('f'))
+			else if (line[0] == TEXT('f'))
 			{
-				pos = 0;
-				const uchar* posB = buf.GetString() + 1;
+				const uchar* posB = line + 1;
+				bool validFace = true;
 
-				for (int i = 0; i < 3; ++i)
+				for (int i = 0; i < 3 && validFace; ++i)
 				{
+					pos = 0;
 					int32 p = (int32)Pawn::Core::Containers::StringToUint(posB, &pos) - 1;
 					posB += pos + 1;
 					int32 t = (int32)Pawn::Core::Containers::StringToUint(posB, &pos) - 1;
 					posB += pos + 1;
 					int32 n = (int32)Pawn::Core::Containers::StringToUint(posB, &pos) - 1;
-					posB += pos + 1;
+					posB += pos;
 
-					if (pos == 0)
+					if (pos == 0 || p < 0 || t < 0 || n < 0 ||
+						p >= positions.GetSize() || t >= uvCoords.GetSize() || n >= normals.GetSize())
 					{
-						PE_ERROR(TEXT("Invalid face data in line: {0}"), buf.GetString());
-						continue;
+						PE_ERROR(TEXT("Invalid face data in line: {0}"), line);
+						validFace = false;
+						break;
 					}
 
 					VertexKey key(p, t, n);
-					uint32 index = 0;
-					bool found = false;
-
+					uint32 index;
 					auto it = vertexMap.Find(key);
+
 					if (it != vertexMap.End())
 					{
 						index = it->Value2;
-						found = true;
 					}
-
-					if (!found)
+					else
 					{
-						Assets::Vertex face;
-						face.x = positions[p].X;
-						face.y = positions[p].Y;
-						face.z = positions[p].Z;
-						face.uvU = uvCoords[t].X;
-						face.uvV = uvCoords[t].Y;
-						face.uvW = 0.0f;
-						face.normalX = normals[n].X;
-						face.normalY = normals[n].Y;
-						face.normalZ = normals[n].Z;
+						Assets::Vertex vertex;
+						vertex.x = positions[p].X;
+						vertex.y = positions[p].Y;
+						vertex.z = positions[p].Z;
+						vertex.uvU = uvCoords[t].X;
+						vertex.uvV = uvCoords[t].Y;
+						vertex.normalX = normals[n].X;
+						vertex.normalY = normals[n].Y;
+						vertex.normalZ = normals[n].Z;
 
 						index = static_cast<uint32>(vertices.GetSize());
-						vertices.PushBack(face);
+						vertices.PushBack(vertex);
 						vertexMap.Insert(key, index);
 					}
 
@@ -199,16 +190,51 @@ namespace Pawn::Utility
 		}
 
 		AssetLoadResult resultLoad;
-		for (SIZE_T i = 0; i < groups.GetSize(); ++i)
+		resultLoad.Meshes.Reserve(groups.GetSize());
+
+		for (auto& group : groups)
 		{
-			auto mesh = Pawn::Core::Memory::Reference<Assets::Mesh>(new Assets::Mesh(std::move(groups[i].name)));
-			mesh->SetVertexes(std::move(vertices));
-			mesh->SetIndexes(std::move(groups[i].groupIndices));
-			resultLoad.Meshes.EmplaceBack(std::move(mesh));
+			if (!group.groupIndices.Empty())
+			{
+				auto mesh = Pawn::Core::Memory::Reference<Assets::Mesh>(
+					new Assets::Mesh(group.name));
+
+				Pawn::Core::Containers::Array<Assets::Vertex> groupVertices;
+				groupVertices.Reserve(group.groupIndices.GetSize());
+
+				Pawn::Core::Containers::UnorderedMap<uint32, uint32> indexMap;
+				indexMap.Reserve(group.groupIndices.GetSize());
+
+				for (SIZE_T i = 0; i < group.groupIndices.GetSize(); ++i)
+				{
+					uint32 oldIndex = group.groupIndices[i];
+					uint32 newIndex;
+
+					auto it = indexMap.Find(oldIndex);
+					if (it == indexMap.End())
+					{
+						newIndex = static_cast<uint32>(groupVertices.GetSize());
+						groupVertices.PushBack(vertices[oldIndex]);
+						indexMap.Insert(oldIndex, newIndex);
+					}
+					else
+					{
+						newIndex = it->Value2;
+					}
+
+					group.groupIndices[i] = newIndex;
+				}
+
+				mesh->SetVertexes(std::move(groupVertices));
+				mesh->SetIndexes(std::move(group.groupIndices));
+				resultLoad.Meshes.EmplaceBack(std::move(mesh));
+			}
 		}
 
-		for (auto mesh = resultLoad.Meshes.Begin(); mesh != resultLoad.Meshes.End(); mesh++)
-			PE_INFO(TEXT("Mesh {0} read!"), (*mesh)->GetGroupName().GetData());
+		for (const auto& mesh : resultLoad.Meshes)
+		{
+			PE_INFO(TEXT("Mesh {0} read!"), mesh->GetGroupName().GetData());
+		}
 
 		return resultLoad;
 	}

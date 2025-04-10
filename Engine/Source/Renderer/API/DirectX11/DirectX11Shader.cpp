@@ -144,8 +144,14 @@ namespace Pawn::Render
 				m_ShaderBuffer = ReadCompiledShader(compiledShaderPath);
 				if (m_ShaderBuffer.ShaderSize <= 0)
 				{
-					PE_ASSERT(false, TEXT("Compilation failed! Error: {0}"));
-					return;
+					delete m_ShaderBuffer.ShaderPtr;
+					m_ShaderBuffer = CompileShader(shaderSourcePath, compiledShaderPath);
+					if (m_ShaderBuffer.ShaderSize <= 0)
+					{
+						delete m_ShaderBuffer.ShaderPtr;
+						PE_ASSERT(false, TEXT("Compilation failed! Error: {0}"));
+						return;
+					}
 				}
 			}
 			else
@@ -153,6 +159,7 @@ namespace Pawn::Render
 				m_ShaderBuffer = CompileShader(shaderSourcePath, compiledShaderPath);
 				if (m_ShaderBuffer.ShaderSize <= 0)
 				{
+					delete m_ShaderBuffer.ShaderPtr;
 					PE_ASSERT(false, TEXT("Compilation failed! Error: {0}"));
 					return;
 				}
@@ -272,7 +279,6 @@ namespace Pawn::Render
 
 	DirectX11Shader::CompiledShader DirectX11Shader::CompileShader(const Pawn::Core::Containers::String& path, const Pawn::Core::Containers::String& compiledPath)
 	{
-		Pawn::Core::Memory::Reference<Pawn::Core::IO::File> file = Pawn::Core::IO::POpenFile(path.GetString());
 		Pawn::Core::Memory::Reference<Pawn::Core::IO::File> fileWrite = Pawn::Core::IO::POpenFile(compiledPath.GetString(), Pawn::Core::IO::FileReadMode::WriteAndRead);
 
 		HRESULT result;
@@ -333,7 +339,14 @@ namespace Pawn::Render
 			}
 		}
 
+#ifdef PE_DEBUG
+		flags = D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_DEBUG | D3DCOMPILE_DEBUG_NAME_FOR_SOURCE;
+#else
 		flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+#endif
+
+		temp = nullptr;
+		errorBlob = nullptr;
 
 		result = D3DCompileFromFile(path.GetString(), nullptr,
 			D3D_COMPILE_STANDARD_FILE_INCLUDE,
@@ -342,23 +355,24 @@ namespace Pawn::Render
 			&temp, &errorBlob);
 		if (FAILED(result))
 		{
-			if (errorBlob)
+			if (errorBlob != nullptr)
 			{
 				Pawn::Core::Containers::AnsiString str(static_cast<const ansichar*>(errorBlob->GetBufferPointer()), errorBlob->GetBufferSize());
-				PE_ASSERT(false, "Shader compilation failed! Error: {0}", str.GetString());
+				PE_ASSERT(false, "Shader compilation failed! Error: {0} {1}", str.GetString(), result);
 				errorBlob->Release();
 			}
 			if (temp)
 				temp->Release();
 
+			PE_ASSERT(false, TEXT("Shader compilation failed! Error: {0}"), result);
 			return CompiledShader(nullptr, 0);
 		}
 		
-		output.ShaderPtr = nullptr;
 		output.ShaderSize = temp->GetBufferSize();
+		output.ShaderPtr = ::operator new(output.ShaderSize);
 		memcpy(output.ShaderPtr, temp->GetBufferPointer(), output.ShaderSize);
 		
-		fileWrite->Write(reinterpret_cast<const uchar*>(output.ShaderPtr));
+		fileWrite->RawWrite(output.ShaderPtr, output.ShaderSize);
 		fileWrite->Close();
 
 		return output;

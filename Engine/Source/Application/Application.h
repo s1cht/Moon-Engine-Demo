@@ -39,6 +39,7 @@ namespace Pawn
 
 		Core::LayerStack m_LayerStack;
 	private:
+		bool OnClosedEvent(Pawn::Events::WindowClosedEvent& event);
 		bool OnWindowSizeEvent(Pawn::Events::WindowResizedEvent& event);
 
 	private:

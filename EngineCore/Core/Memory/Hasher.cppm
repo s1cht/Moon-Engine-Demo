@@ -1,7 +1,11 @@
 module;
 
 #include "Core.h"
+
+#define XXH_STATIC_LINKING_ONLY 
+#define XXH_IMPLEMENTATION
 #include <xxhash.h>
+
 
 export module Pawn.Core.Memory.Hasher;
 
@@ -23,7 +27,13 @@ export namespace Pawn::Core::Memory
 
 		SIZE_T operator()(const T* data, SIZE_T tableSize) const
 		{
-			XXH64_hash_t hash = XXH64(data, sizeof(data), 0);
+			XXH64_hash_t hash = XXH64(data, sizeof(T), 0);
+			return static_cast<SIZE_T>(hash) % tableSize;
+		}
+
+		SIZE_T operator()(T data, SIZE_T tableSize) const
+		{
+			XXH64_hash_t hash = XXH64(&data, sizeof(T), 0);
 			return static_cast<SIZE_T>(hash) % tableSize;
 		}
 

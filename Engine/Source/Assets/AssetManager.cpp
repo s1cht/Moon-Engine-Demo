@@ -24,7 +24,7 @@ namespace Pawn::Assets
 		if (assetLoadResult.Meshes.GetSize() == 0)
 			return false;
 
-		for (auto mesh = assetLoadResult.Meshes.End(); mesh != assetLoadResult.Meshes.Begin(); --mesh)
+		for (auto mesh = assetLoadResult.Meshes.Begin(); mesh != assetLoadResult.Meshes.End(); ++mesh)
 		{
 			(*mesh)->CreateBuffers();
 			m_Meshes.EmplaceBack(std::move((*mesh)));

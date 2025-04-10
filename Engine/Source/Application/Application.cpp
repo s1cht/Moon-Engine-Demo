@@ -63,7 +63,6 @@ namespace Pawn {
 
 			Render::RenderCommand::Clear(Pawn::Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
 
-			Render::Renderer::BeginScene();
 
 			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
 			{
@@ -75,7 +74,7 @@ namespace Pawn {
 			m_ImGuiLayer->BeginRender();
 
 			for (auto layer : m_LayerStack)
-				layer->OnImGuiRender(delta);
+				layer->OnImGuiRender(delta, m_ImGuiLayer->GetContext());
 
 			m_ImGuiLayer->EndRender();
 
@@ -107,6 +106,7 @@ namespace Pawn {
 	{
 		Pawn::Core::EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<Pawn::Events::WindowResizedEvent>(BIND_EVENT_FN(Application::OnWindowSizeEvent));
+		dispatcher.Dispatch<Pawn::Events::WindowClosedEvent>(BIND_EVENT_FN(Application::OnClosedEvent));
 
 		for (auto it = m_LayerStack.End(); it != m_LayerStack.Begin();)
 		{
@@ -115,6 +115,13 @@ namespace Pawn {
 				break;
 		}
 
+	}
+
+	bool Application::OnClosedEvent(Pawn::Events::WindowClosedEvent& event)
+	{
+		m_Runs = false;
+
+		return false;
 	}
 
 	bool Application::OnWindowSizeEvent(Pawn::Events::WindowResizedEvent& event)

@@ -13,6 +13,12 @@ namespace Pawn::Render
 
 	DirectX11Renderer::DirectX11Renderer()
 	{
+		m_Device = nullptr;
+		m_DeviceContext = nullptr;
+
+		m_Factory = nullptr;
+		m_Output = nullptr;
+		m_Adapter = nullptr;
 		int32 result = Init();
 		PE_ASSERT(!result, TEXT("DirectX 11: Initialization failed! Error: {0}"), result);
 	}
@@ -29,8 +35,11 @@ namespace Pawn::Render
 		D3D_FEATURE_LEVEL featureLevel;
 		IDXGIDevice2* dxgiDevice;
 
+#ifdef PE_DEBUG
+		deviceFlags = D3D12_DEVICE_FLAG_DEBUG_LAYER_ENABLED;
+#else
 		deviceFlags = 0;
-		//deviceFlags |= D3D12_DEVICE_FLAG_DEBUG_LAYER_ENABLED;
+#endif
 
 		result = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, featureLevels, 1, D3D11_SDK_VERSION, &m_Device, &featureLevel, &m_DeviceContext);
 		if (result == DXGI_ERROR_UNSUPPORTED)

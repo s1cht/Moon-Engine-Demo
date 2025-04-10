@@ -97,10 +97,6 @@
       <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\bin\Debug-windows-x86_64\Engine;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>mkdir ../bin/Debug-windows-x86_64/Sandbox/assets
-xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Debug-windows-x86_64\Sandbox\assets</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -126,10 +122,6 @@ xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Debug-windows-x86_
       <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\bin\Release-windows-x86_64\Engine;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>mkdir ../bin/Release-windows-x86_64/Sandbox/assets
-xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Release-windows-x86_64\Sandbox\assets</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'">
     <ClCompile>
@@ -155,10 +147,6 @@ xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Release-windows-x8
       <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\bin\Distribute-windows-x86_64\Engine;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>mkdir ../bin/Distribute-windows-x86_64/Sandbox/assets
-xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Distribute-windows-x86_64\Sandbox\assets</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Source\SandboxLayer.h" />
@@ -177,6 +165,12 @@ xcopy /Q /E /Y /I $(SolutionDir)\$(ProjectName)\assets ..\bin\Distribute-windows
     </ProjectReference>
     <ProjectReference Include="..\EngineCore\EngineCore.vcxproj">
       <Project>{04E20003-F099-4250-59A1-1BAC4578DD40}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Engine\vendor\ImGui\ImGui.vcxproj">
+      <Project>{C0FF640D-2C14-8DBE-F595-301E616989EF}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Misc\CloneAssets\CloneAssets.vcxproj">
+      <Project>{89011C8C-F5B6-9481-7EAB-8E58EA5F8B85}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

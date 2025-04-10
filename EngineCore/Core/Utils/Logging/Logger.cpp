@@ -13,15 +13,15 @@ namespace Pawn::Core::Utils
 	void Logger::Init()
 	{
 #ifndef PE_DEBUG
-		spdlog::set_pattern("%^[%H:%I:%M:%S:%e ThreadID: %t] %n:%$ %v");
+		spdlog::set_pattern("%^[%H:%I:%M:%S:%e ThreadID: %t] %n: %$ %v");
 #else
-		spdlog::set_pattern("%^[%H:%I:%M:%S:%e ThreadID: %t] [%@] %n:%$ %v");
+		spdlog::set_pattern("%^[%H:%I:%M:%S:%e ThreadID: %t] [%@] %n: %$ %v");
 #endif
 
-		m_coreLogger = spdlog::stdout_color_mt<spdlog::async_factory>("Core");
-		m_clientLogger = spdlog::stdout_color_mt<spdlog::async_factory>("Client");
-		m_memoryLogger = spdlog::stdout_color_mt<spdlog::async_factory>("HeapMemory");
-		m_benchmarkLogger = spdlog::stdout_color_mt<spdlog::async_factory>("Benchmark");
+		m_coreLogger = spdlog::stdout_color_mt<spdlog::default_factory>("Core");
+		m_clientLogger = spdlog::stdout_color_mt<spdlog::default_factory>("Client");
+		m_memoryLogger = spdlog::stdout_color_mt<spdlog::default_factory>("HeapMemory");
+		m_benchmarkLogger = spdlog::stdout_color_mt<spdlog::default_factory>("Benchmark");
 
 
 #ifdef PE_DEBUG

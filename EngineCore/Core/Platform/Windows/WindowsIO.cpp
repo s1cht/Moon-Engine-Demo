@@ -164,6 +164,36 @@ namespace Pawn::Core::IO
 		return output.GetSize() > 0;
 	}
 
+	bool WindowsFile::RawWrite(void* input, SIZE_T size)
+	{
+		if (m_FileReadMode == FileReadMode::Read)
+		{
+			PE_ERROR(TEXT("Trying to write into read-only file!"));
+			m_LastError = IOError::FileIsReadOnly;
+			return false;
+		}
+
+		if (!m_Opened)
+		{
+			PE_ERROR("Writing in invalid file!");
+			m_LastError = IOError::FileNotOpened;
+			return false;
+		}
+
+		DWORD bytesWritten;
+
+		if (!WriteFile(m_File, input, (uint32)size, &bytesWritten, nullptr))
+		{
+			DWORD error = GetLastError();
+			PE_ERROR("Failed to write in file! Win32 error: {0}", error);
+			m_LastError = IOError::WriteFileFailed;
+			return false;
+		}
+
+		m_LastError = IOError::OK;
+		return true;
+	}
+
 	bool WindowsFile::Write(const Containers::String& input)
 	{
 		if (m_FileReadMode == FileReadMode::Read)

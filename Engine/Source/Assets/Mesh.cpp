@@ -63,7 +63,8 @@ namespace Pawn::Assets
 
 	void Mesh::CreateBuffers()
 	{
-
+		m_VertexBuffer.reset(Pawn::Render::VertexBuffer::Create(const_cast<Vertex*>(m_Vertexes.Data()), sizeof(Pawn::Assets::Vertex) * m_Vertexes.GetSize(), Pawn::Render::Usage::Default));
+		m_IndexBuffer.reset(Pawn::Render::IndexBuffer::Create(const_cast<int32*>(m_Indexes.Data()), (uint32)m_Indexes.GetSize(), Pawn::Render::Usage::Default));
 	}
 
 }

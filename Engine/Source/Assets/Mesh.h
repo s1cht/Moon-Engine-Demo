@@ -15,7 +15,7 @@ namespace Pawn::Assets
 	struct Vertex
 	{
 		float32 x, y, z;
-		float32 uvU, uvV, uvW;
+		float32 uvU, uvV;
 		float32 normalX, normalY, normalZ;
 	};
 

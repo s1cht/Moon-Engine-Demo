@@ -193,6 +193,7 @@
     <ClInclude Include="Source\Renderer\Base\Shader.h" />
     <ClInclude Include="Source\Renderer\Base\SwapChain.h" />
     <ClInclude Include="Source\Renderer\Camera\Camera.h" />
+    <ClInclude Include="Source\Renderer\Camera\PerpectiveCamera.h" />
     <ClInclude Include="Source\Renderer\ImGui\ImGuiLayer.h" />
     <ClInclude Include="Source\Renderer\ImGui\ImGuiReferences.h" />
     <ClInclude Include="Source\Renderer\RenderCommand.h" />
@@ -258,6 +259,9 @@
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="Source\Renderer\Base\SwapChain.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Camera\PerpectiveCamera.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="Source\Renderer\ImGui\ImGuiLayer.cpp">

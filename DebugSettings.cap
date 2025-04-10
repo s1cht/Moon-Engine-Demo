@@ -1,0 +1,28 @@
+{
+    "rdocCaptureSettings": 1,
+    "settings": {
+        "autoStart": false,
+        "commandLine": "",
+        "environment": [
+        ],
+        "executable": "D:\\Projects\\C++\\Repositories\\Pawn-Engine\\bin\\Debug-windows-x86_64\\Sandbox\\Sandbox.exe",
+        "inject": false,
+        "numQueuedFrames": 1,
+        "options": {
+            "allowFullscreen": false,
+            "allowVSync": false,
+            "apiValidation": false,
+            "captureAllCmdLists": false,
+            "captureCallstacks": true,
+            "captureCallstacksOnlyDraws": false,
+            "debugOutputMute": true,
+            "delayForDebugger": 1,
+            "hookIntoChildren": true,
+            "refAllResources": false,
+            "softMemoryLimit": 0,
+            "verifyBufferAccess": false
+        },
+        "queuedFrameCap": 1,
+        "workingDir": ""
+    }
+}

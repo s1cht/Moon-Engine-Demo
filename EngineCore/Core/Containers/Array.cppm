@@ -115,7 +115,7 @@ export namespace Pawn::Core::Containers
 	};
 
 
-	template<class T, SIZE_T initSize = 20, class allocator = Memory::Allocator<T>>
+	template<class T, class allocator = Memory::Allocator<T>>
 	class Array
 	{
 	public:
@@ -127,7 +127,13 @@ export namespace Pawn::Core::Containers
 
 	public:
 		Array()
-			: m_Data(nullptr), m_Size(0), m_Capacity(initSize), m_Allocator(AllocatorType())
+			: m_Data(nullptr), m_Size(0), m_Capacity(20), m_Allocator(AllocatorType())
+		{
+			Allocate(m_Capacity);
+		}
+
+		Array(SIZE_T size)
+			: m_Data(nullptr), m_Size(0), m_Capacity(size), m_Allocator(AllocatorType())
 		{
 			Allocate(m_Capacity);
 		}
@@ -150,7 +156,7 @@ export namespace Pawn::Core::Containers
 		{
 			m_Size = other.size();
 
-			Allocate(other.size() > initSize ? other.size() * ARR_RESIZE_MULTIPLYER : initSize);
+			Allocate(other.size() > 20 ? other.size() * ARR_RESIZE_MULTIPLYER : 20);
 
 			for (SIZE_T i = 0; i < other.size(); i++)
 				new(&m_Data[i]) DataType(std::move(other.begin()[i]));
@@ -268,6 +274,12 @@ export namespace Pawn::Core::Containers
 		bool Reserve(SIZE_T size)
 		{
 			return PReserve(size);
+		}
+
+	public:
+		inline bool Empty()
+		{
+			return m_Size <= 0;
 		}
 
 	public:

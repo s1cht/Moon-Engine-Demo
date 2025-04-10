@@ -5,6 +5,22 @@
 
 namespace Pawn::Render
 {
+	struct D3DScopeDestroyer
+	{
+		constexpr D3DScopeDestroyer() noexcept = default;
+
+		_CONSTEXPR23 void operator()(ID3D11Buffer* _Ptr) const noexcept{
+			static_assert(0 < sizeof(ID3D11Buffer), "can't delete an incomplete type");
+			_Ptr->Release();
+		}
+	};
+
+
+	namespace Buffer
+	{
+		using BufferType = Pawn::Core::Memory::Scope<ID3D11Buffer, D3DScopeDestroyer>;
+	};
+
 	class PAWN_API DirectX11VertexBuffer : public VertexBuffer
 	{
 	public:
@@ -21,7 +37,7 @@ namespace Pawn::Render
 		void Init(void* data, SIZE_T size, Usage usage);
 
 	private:
-		Pawn::Core::Memory::Reference<ID3D11Buffer> m_Buffer;
+		Buffer::BufferType m_Buffer;
 
 	};
 
@@ -43,7 +59,7 @@ namespace Pawn::Render
 		void Init(void* data, uint32 count, Usage usage);
 
 	private:
-		Pawn::Core::Memory::Reference<ID3D11Buffer> m_Buffer;
+		Buffer::BufferType m_Buffer;
 		uint32 m_Count = 0;
 
 	};
@@ -65,8 +81,8 @@ namespace Pawn::Render
 		void Init(SIZE_T size, Usage usage);
 
 	private:
+		Buffer::BufferType m_Buffer;
 		uint32 m_Size = 0;
-		Pawn::Core::Memory::Reference<ID3D11Buffer> m_Buffer;
 
 	};
 

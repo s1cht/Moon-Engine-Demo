@@ -26,19 +26,19 @@ namespace Pawn::Core::Math
 		};
 
 	public:
-		static const Vector3<T> ZeroVector;
+		CORE_API inline static const Vector3<T> ZeroVector() { static const Vector3<T> vec = Vector3<T>(0); return vec; }
 
-		static const Vector3<T> UpVector;
+		CORE_API inline static const Vector3<T> UpVector() { static const Vector3<T> vec = Vector3<T>(0, 1, 0); return vec; }
 
-		static const Vector3<T> DownVector;
+		CORE_API inline static const Vector3<T> DownVector() { static const Vector3<T> vec = Vector3<T>(0, -1, 0); return vec; }
 
-		static const Vector3<T> ForwardVector;
+		CORE_API inline static const Vector3<T> ForwardVector() { static const Vector3<T> vec = Vector3<T>(0, 0, 1); return vec; }
 
-		static const Vector3<T> BackwardVector;
+		CORE_API inline static const Vector3<T> BackwardVector() { static const Vector3<T> vec = Vector3<T>(0, 0, -1); return vec; }
 
-		static const Vector3<T> RightVector;
+		CORE_API inline static const Vector3<T> RightVector() { static const Vector3<T> vec = Vector3<T>(-1, 0, 0); return vec; }
 
-		static const Vector3<T> LeftVector;
+		CORE_API inline static const Vector3<T> LeftVector() { static const Vector3<T> vec = Vector3<T>(1, 0, 0); return vec; }
 
 	public:
 		inline Vector3();
@@ -85,6 +85,11 @@ namespace Pawn::Core::Math
 
 		template<typename U>
 		Vector3<T>& operator/=(U scalar);
+
+		template<typename U>
+		operator Vector3<U>() const;
+
+	public:
 
 		Vector3<T>& Normalize();
 
@@ -251,6 +256,13 @@ namespace Pawn::Core::Math
 		y = static_cast<T>(y / scalar);
 		z = static_cast<T>(z / scalar);
 		return *this;
+	}
+
+	template<typename T>
+	template<typename U>
+	inline Vector3<T>::operator Vector3<U>() const
+	{
+		return Vector3<U>(static_cast<U>(x), static_cast<U>(y), static_cast<U>(z));
 	}
 
 	template<typename T>

@@ -27,7 +27,7 @@ namespace Pawn::Render::Imgui
 			m_Disabled = true;
 			return;
 		}
-		ImGui::CreateContext();
+		m_ImGuiContext = ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -85,10 +85,12 @@ namespace Pawn::Render::Imgui
 		}
 	}
 
-	void ImGuiLayer::OnImGuiRender(float64 deltaTime)
+	void ImGuiLayer::OnImGuiRender(float64 deltaTime, ImGuiContext*)
 	{
 		if (m_Disabled)
 			return;
+
+		ImGui::SetCurrentContext(m_ImGuiContext);
 		static bool visible = true;
 
 		//ImGui::ShowDemoWindow(&visible);
@@ -108,6 +110,7 @@ namespace Pawn::Render::Imgui
 		if (m_Disabled)
 			return;
 
+		ImGui::SetCurrentContext(m_ImGuiContext);
 		renderAPI = Renderer::GetRenderAPI();
 
 		switch (renderAPI)
@@ -135,6 +138,8 @@ namespace Pawn::Render::Imgui
 	{
 		if (m_Disabled)
 			return;
+
+		ImGui::SetCurrentContext(m_ImGuiContext);
 		ImGui::Render();
 #ifdef PLATFORM_WINDOWS
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -147,6 +152,7 @@ namespace Pawn::Render::Imgui
 		if (m_Disabled)
 			return;
 
+		ImGui::SetCurrentContext(m_ImGuiContext);
 		renderAPI = Renderer::GetRenderAPI();
 
 		switch (renderAPI)
@@ -168,7 +174,8 @@ namespace Pawn::Render::Imgui
 		ImGui_ImplWin32_Shutdown();
 #endif
 
-		ImGui::DestroyContext();
+		ImGui::DestroyContext(m_ImGuiContext);
+		m_ImGuiContext = nullptr;
 	}
 
 	void ImGuiLayer::PostRender()
@@ -181,6 +188,11 @@ namespace Pawn::Render::Imgui
 			ImGui::RenderPlatformWindowsDefault();
 		}
 #endif
+	}
+
+	ImGuiContext* ImGuiLayer::GetContext()
+	{
+		return m_ImGuiContext;
 	}
 
 }

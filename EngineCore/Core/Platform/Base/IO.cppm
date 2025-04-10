@@ -68,6 +68,8 @@ export namespace Pawn::Core::IO
 
 		virtual bool Write(const Pawn::Core::Containers::String& input) = 0;
 
+		virtual bool RawWrite(void* input, SIZE_T size) = 0;
+
 		virtual bool Append(const Pawn::Core::Containers::String& output) = 0;
 
 		virtual bool Seek(SIZE_T position) = 0;
@@ -131,7 +133,7 @@ export namespace Pawn::Core::IO
 		static void Shutdown();
 
 	private:
-		static  Pawn::Core::Containers::Array<Directory*, 30> s_Directories;
+		static Pawn::Core::Containers::Array<Directory*> s_Directories;
 
 	};
 

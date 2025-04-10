@@ -195,6 +195,13 @@ namespace Pawn
 
 					break;
 				}
+				case WM_CLOSE:
+				{
+					Pawn::Events::WindowClosedEvent event;
+					wndData->EventCallback(event);
+
+					break;
+				}
 			}
 		}
 	

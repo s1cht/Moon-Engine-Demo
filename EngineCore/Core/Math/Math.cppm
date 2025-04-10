@@ -12,6 +12,7 @@ export module Pawn.Core.Math;
 
 export namespace Pawn::Core::Math
 {
+
 	inline float64 Lerp(float64 a, float64 b, float64 d);
 	inline float32 Lerp(float32 a, float32 b, float32 d);
 
@@ -29,4 +30,8 @@ export namespace Pawn::Core::Math
 	typedef Vector4<float32> Vector4D32;
 	typedef Vector4<float64> Vector4D64;
 	typedef Vector4D64 Vector4D;
+
+	typedef PMatrix3x3 Matrix3x3;
+	typedef PMatrix4x4 Matrix4x4;
+	typedef PQuaternion Quaternion;
 }

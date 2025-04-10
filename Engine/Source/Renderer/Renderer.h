@@ -3,6 +3,7 @@
 #include <Core.h>
 #include "Base/RendererAPI.h"
 #include "Base/Buffer.h"
+#include "Camera/Camera.h"
 
 namespace Pawn::Render
 {
@@ -15,7 +16,7 @@ namespace Pawn::Render
 		static void Shutdown();
 
 	public:
-		static void BeginScene();
+		static void BeginScene(Pawn::Core::Memory::Reference<Pawn::Render::Camera::Camera> camera);
 		static void EndScene();
 
 		static void Submit(uint32 indexCount, uint32 index);

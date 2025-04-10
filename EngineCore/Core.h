@@ -24,9 +24,12 @@
 
 	#ifdef PAWN_CORE_LIBRARY_BUILD
 		#define CORE_API DLLEXPORT
+		#define XXH_EXPORT
 	#else	
 		#define CORE_API DLLIMPORT
+		#define XXH_IMPORT
 	#endif 
+
 #else
 	#error Pawn Engine currently supports only Windows!
 #endif

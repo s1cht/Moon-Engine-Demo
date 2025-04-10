@@ -28,6 +28,7 @@ export namespace Pawn::Core::IO
 
 		bool Read(Containers::String& output, StringReadMode mode) override;
 		bool Write(const Containers::String& input) override;
+		bool RawWrite(void* input, SIZE_T size) override;
 		bool Append(const Containers::String& output) override;
 
 		bool Lock() override;

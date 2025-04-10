@@ -12,14 +12,14 @@ namespace Pawn::Render
 	{
 		RenderCommand::Shutdown();
 	}
-	void Renderer::BeginScene()
+	void Renderer::BeginScene(Pawn::Core::Memory::Reference<Pawn::Render::Camera::Camera> camera)
 	{
 	}
-	
+
 	void Renderer::EndScene()
 	{
 	}
-	
+
 	void Renderer::Submit(uint32 indexCount, uint32 index)
 	{
 		RenderCommand::DrawIndexed(indexCount, index);

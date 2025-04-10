@@ -5,25 +5,25 @@
 
 namespace Pawn::Core::Math
 {
-	inline const Quaternion Quaternion::Identity(1.0f, 0.0f, 0.0f, 0.0f);
+	const PQuaternion PQuaternion::Identity = PQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
 
-	Quaternion Quaternion::FromRadians(float32 _x, float32 _y, float32 _z)
+	PQuaternion PQuaternion::FromRadians(float32 _x, float32 _y, float32 _z)
 	{
-		Quaternion xRes(_x, Vector3<float32>::RightVector);
-		Quaternion yRes(_y, Vector3<float32>::UpVector);
-		Quaternion zRes(_z, Vector3<float32>::ForwardVector);
+		PQuaternion xRes(_x, Vector3<float32>::RightVector());
+		PQuaternion yRes(_y, Vector3<float32>::UpVector());
+		PQuaternion zRes(_z, Vector3<float32>::ForwardVector());
 		return (zRes * yRes * xRes).Normalized();
 	}
 
-	Quaternion Quaternion::FromRadians(const Vector3<float32>& radians)
+	PQuaternion PQuaternion::FromRadians(const Vector3<float32>& radians)
 	{
-		Quaternion xRes(radians.x, Vector3<float32>::RightVector);
-		Quaternion yRes(radians.y, Vector3<float32>::UpVector);
-		Quaternion zRes(radians.z, Vector3<float32>::ForwardVector);
+		PQuaternion xRes(radians.x, Vector3<float32>::RightVector());
+		PQuaternion yRes(radians.y, Vector3<float32>::UpVector());
+		PQuaternion zRes(radians.z, Vector3<float32>::ForwardVector());
 		return (zRes * yRes * xRes).Normalized();
 	}
 
-	Quaternion Quaternion::FromEulerAngles(float32 yaw, float32 pitch, float32 roll)
+	PQuaternion PQuaternion::FromEulerAngles(float32 yaw, float32 pitch, float32 roll)
 	{
 		float32 cy = std::cos(yaw * 0.5f);
 		float32 sy = std::sin(yaw * 0.5f);
@@ -32,7 +32,7 @@ namespace Pawn::Core::Math
 		float32 cr = std::cos(roll * 0.5f);
 		float32 sr = std::sin(roll * 0.5f);
 
-		Quaternion result(
+		PQuaternion result(
 			cr * cp * cy + sr * sp * sy,
 			sr * cp * cy - cr * sp * sy,
 			cr * sp * cy + sr * cp * sy,
@@ -41,24 +41,24 @@ namespace Pawn::Core::Math
 		return result.Normalized();
 	}
 
-	Quaternion Quaternion::FromEulerAngles(const Vector3<float32>& angles)
+	PQuaternion PQuaternion::FromEulerAngles(const Vector3<float32>& angles)
 	{
 		return FromEulerAngles(angles.z, angles.y, angles.x);
 	}
 
-	Matrix4x4 Quaternion::ToMatrix() const
+	PMatrix4x4 PQuaternion::ToMatrix() const
 	{
-		float32 xx = x * x;
-		float32 yy = y * y;
-		float32 zz = z * z;
-		float32 xy = x * y;
-		float32 xz = x * z;
-		float32 yz = y * z;
-		float32 wx = w * x;
-		float32 wy = w * y;
-		float32 wz = w * z;
+		float32 xx = (float32)(x * x);
+		float32 yy = (float32)(y * y);
+		float32 zz = (float32)(z * z);
+		float32 xy = (float32)(x * y);
+		float32 xz = (float32)(x * z);
+		float32 yz = (float32)(y * z);
+		float32 wx = (float32)(w * x);
+		float32 wy = (float32)(w * y);
+		float32 wz = (float32)(w * z);
 
-		return Matrix4x4(
+		return PMatrix4x4(
 			1.0f - 2.0f * (yy + zz), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
 			2.0f * (xy + wz), 1.0f - 2.0f * (xx + zz), 2.0f * (yz - wx), 0.0f,
 			2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (xx + yy), 0.0f,
@@ -66,41 +66,41 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Vector3<float32> Quaternion::RotateVector(const Vector3<float32>& vec) const
+	Vector3<float32> PQuaternion::RotateVector(const Vector3<float32>& vec) const
 	{
-		Quaternion vecQuat(0.0f, vec.x, vec.y, vec.z);
-		Quaternion result = (*this) * vecQuat * Inverse();
+		PQuaternion vecQuat(0.0f, vec.x, vec.y, vec.z);
+		PQuaternion result = (*this) * vecQuat * Inverse();
 		return Vector3<float32>(result.x, result.y, result.z);
 	}
 
-	Quaternion Quaternion::Inverse() const
+	PQuaternion PQuaternion::Inverse() const
 	{
 		float32 lenSq = LengthSquared();
 		if (lenSq > 1e-6f)
 		{
 			float32 invLenSq = 1.0f / lenSq;
-			return Quaternion(w * invLenSq, -x * invLenSq, -y * invLenSq, -z * invLenSq);
+			return PQuaternion(w * invLenSq, -x * invLenSq, -y * invLenSq, -z * invLenSq);
 		}
-		return Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
+		return PQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	Quaternion Quaternion::Conjugate() const
+	PQuaternion PQuaternion::Conjugate() const
 	{
-		return Quaternion(w, -x, -y, -z);
+		return PQuaternion(w, -x, -y, -z);
 	}
 
-	Quaternion Quaternion::Normalized() const
+	PQuaternion PQuaternion::Normalized() const
 	{
 		float32 len = Length();
 		if (len > 1e-6f)
 		{
 			float32 invLen = 1.0f / len;
-			return Quaternion(w * invLen, x * invLen, y * invLen, z * invLen);
+			return PQuaternion(w * invLen, x * invLen, y * invLen, z * invLen);
 		}
-		return Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
+		return PQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	Quaternion& Quaternion::Normalize()
+	PQuaternion& PQuaternion::Normalize()
 	{
 		float32 len = Length();
 		if (len > 1e-6f)
@@ -114,17 +114,17 @@ namespace Pawn::Core::Math
 		return *this;
 	}
 
-	float32 Quaternion::LengthSquared() const
+	float32 PQuaternion::LengthSquared() const
 	{
 		return w * w + x * x + y * y + z * z;
 	}
 
-	float32 Quaternion::Length() const
+	float32 PQuaternion::Length() const
 	{
 		return std::sqrt(LengthSquared());
 	}
 
-	Quaternion& Quaternion::operator*=(float32 number)
+	PQuaternion& PQuaternion::operator*=(float32 number)
 	{
 		w *= number;
 		x *= number;
@@ -133,20 +133,20 @@ namespace Pawn::Core::Math
 		return *this;
 	}
 
-	Quaternion& Quaternion::operator*=(const Quaternion& other)
+	PQuaternion& PQuaternion::operator*=(const PQuaternion& other)
 	{
 		*this = (*this) * other;
 		return *this;
 	}
 
-	Quaternion Quaternion::operator*(float32 number) const
+	PQuaternion PQuaternion::operator*(float32 number) const
 	{
-		return Quaternion(w * number, x * number, y * number, z * number);
+		return PQuaternion(w * number, x * number, y * number, z * number);
 	}
 
-	Quaternion Quaternion::operator*(const Quaternion& other) const
+	PQuaternion PQuaternion::operator*(const PQuaternion& other) const
 	{
-		return Quaternion(
+		return PQuaternion(
 			w * other.w - x * other.x - y * other.y - z * other.z,
 			w * other.x + x * other.w + y * other.z - z * other.y,
 			w * other.y - x * other.z + y * other.w + z * other.x,
@@ -154,7 +154,7 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Quaternion& Quaternion::operator=(const Quaternion& other)
+	PQuaternion& PQuaternion::operator=(const PQuaternion& other)
 	{
 		w = other.w;
 		x = other.x;
@@ -163,7 +163,7 @@ namespace Pawn::Core::Math
 		return *this;
 	}
 
-	bool Quaternion::operator==(const Quaternion& other) const
+	bool PQuaternion::operator==(const PQuaternion& other) const
 	{
 		float32 epsilon = 1e-6f;
 		return std::abs(w - other.w) < epsilon &&
@@ -172,11 +172,11 @@ namespace Pawn::Core::Math
 			std::abs(z - other.z) < epsilon;
 	}
 
-	Quaternion::Quaternion(float32 _w, float32 _x, float32 _y, float32 _z) : w(_w), x(_x), y(_y), z(_z) {}
+	PQuaternion::PQuaternion(float32 _w, float32 _x, float32 _y, float32 _z) : w(_w), x(_x), y(_y), z(_z) {}
 
-	Quaternion::Quaternion(const Vector4<float32>& val) : w(val.w), x(val.x), y(val.y), z(val.z) {}
+	PQuaternion::PQuaternion(const Vector4<float32>& val) : w(val.w), x(val.x), y(val.y), z(val.z) {}
 
-	Quaternion::Quaternion(float32 scalar, const Vector3<float32>& axis, bool degrees)
+	PQuaternion::PQuaternion(float32 scalar, const Vector3<float32>& axis, bool degrees)
 	{
 		if (degrees)
 			scalar = (float32)RAD(scalar);
@@ -194,7 +194,7 @@ namespace Pawn::Core::Math
 		z = sinHalf * normAxis.z;
 	}
 
-	Quaternion::Quaternion() : w(1.0f), x(0.0f), y(0.0f), z(0.0f) {}
+	PQuaternion::PQuaternion() : w(1.0f), x(0.0f), y(0.0f), z(0.0f) {}
 
 
 }

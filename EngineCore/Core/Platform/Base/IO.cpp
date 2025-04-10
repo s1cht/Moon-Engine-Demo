@@ -40,6 +40,6 @@ namespace Pawn::Core::IO
 		}
 	}
 
-	Containers::Array<DirectoryStorage::Directory*, 30> DirectoryStorage::s_Directories;
+	Containers::Array<DirectoryStorage::Directory*> DirectoryStorage::s_Directories;
 
 }

@@ -12,8 +12,11 @@ namespace Pawn::Core::Memory
 	export template<class T>
 	using WeakReference = std::weak_ptr<T>;
 
-	export template<class T>
-	using Scope = std::unique_ptr<T>;
+	//export template<class T>
+	//using Scope = std::unique_ptr<T>;
+
+	export template<class T, class U = std::default_delete<T>>
+	using Scope = std::unique_ptr<T, U>;
 
 	export template<class T, class... val>
 	Reference<T> MakeReference(val... args)

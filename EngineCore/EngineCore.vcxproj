@@ -225,9 +225,15 @@
       <ObjectFileName>$(IntDir)\Math1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Math\Matrix3x3.cpp" />
-    <ClCompile Include="Core\Math\Matrix4x4.cpp" />
-    <ClCompile Include="Core\Math\Quaternion.cpp" />
+    <ClCompile Include="Core\Math\Matrix3x3.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Math\Matrix4x4.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Math\Quaternion.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
     <ClCompile Include="Core\Memory\Allocator.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>

@@ -4,7 +4,7 @@
 
 namespace Pawn::Core::Math
 {
-	inline Matrix4x4::Matrix4x4()
+	inline PMatrix4x4::PMatrix4x4()
 		: a11(1.0f), a12(0.0f), a13(0.0f), a14(0.0f),
 		a21(0.0f), a22(1.0f), a23(0.0f), a24(0.0f),
 		a31(0.0f), a32(0.0f), a33(1.0f), a34(0.0f),
@@ -12,7 +12,7 @@ namespace Pawn::Core::Math
 	{
 	}
 
-	inline Matrix4x4::Matrix4x4(float32 scalar) noexcept
+	inline PMatrix4x4::PMatrix4x4(float32 scalar) noexcept
 		: a11(scalar), a12(0.0f), a13(0.0f), a14(0.0f),
 		a21(0.0f), a22(scalar), a23(0.0f), a24(0.0f),
 		a31(0.0f), a32(0.0f), a33(scalar), a34(0.0f),
@@ -20,7 +20,7 @@ namespace Pawn::Core::Math
 	{
 	}
 
-	inline Matrix4x4::Matrix4x4(
+	inline PMatrix4x4::PMatrix4x4(
 		const float32& a11, const float32& a12, const float32& a13, const float32& a14,
 		const float32& a21, const float32& a22, const float32& a23, const float32& a24,
 		const float32& a31, const float32& a32, const float32& a33, const float32& a34,
@@ -32,9 +32,9 @@ namespace Pawn::Core::Math
 	{
 	}
 
-	Matrix4x4 Matrix4x4::operator*(const float32& scalar) const
+	PMatrix4x4 PMatrix4x4::operator*(const float32& scalar) const
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			a11 * scalar, a12 * scalar, a13 * scalar, a14 * scalar,
 			a21 * scalar, a22 * scalar, a23 * scalar, a24 * scalar,
 			a31 * scalar, a32 * scalar, a33 * scalar, a34 * scalar,
@@ -42,7 +42,7 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4& Matrix4x4::operator*=(const float32& scalar)
+	PMatrix4x4& PMatrix4x4::operator*=(const float32& scalar)
 	{
 		a11 *= scalar; a12 *= scalar; a13 *= scalar; a14 *= scalar;
 		a21 *= scalar; a22 *= scalar; a23 *= scalar; a24 *= scalar;
@@ -51,14 +51,14 @@ namespace Pawn::Core::Math
 		return *this;
 	}
 
-	Matrix4x4& Matrix4x4::operator*=(const int32& scalar)
+	PMatrix4x4& PMatrix4x4::operator*=(const int32& scalar)
 	{
 		return *this *= static_cast<float32>(scalar);
 	}
 
-	Matrix4x4 Matrix4x4::operator*(const Matrix4x4& other) const
+	PMatrix4x4 PMatrix4x4::operator*(const PMatrix4x4& other) const
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			a11 * other.a11 + a12 * other.a21 + a13 * other.a31 + a14 * other.a41,
 			a11 * other.a12 + a12 * other.a22 + a13 * other.a32 + a14 * other.a42,
 			a11 * other.a13 + a12 * other.a23 + a13 * other.a33 + a14 * other.a43,
@@ -81,9 +81,9 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const
+	PMatrix4x4 PMatrix4x4::operator+(const PMatrix4x4& other) const
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			a11 + other.a11, a12 + other.a12, a13 + other.a13, a14 + other.a14,
 			a21 + other.a21, a22 + other.a22, a23 + other.a23, a24 + other.a24,
 			a31 + other.a31, a32 + other.a32, a33 + other.a33, a34 + other.a34,
@@ -91,7 +91,7 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4& Matrix4x4::operator+=(const Matrix4x4& other)
+	PMatrix4x4& PMatrix4x4::operator+=(const PMatrix4x4& other)
 	{
 		a11 += other.a11; a12 += other.a12; a13 += other.a13; a14 += other.a14;
 		a21 += other.a21; a22 += other.a22; a23 += other.a23; a24 += other.a24;
@@ -100,9 +100,9 @@ namespace Pawn::Core::Math
 		return *this;
 	}
 
-	Matrix4x4 Matrix4x4::operator-(const Matrix4x4& other) const
+	PMatrix4x4 PMatrix4x4::operator-(const PMatrix4x4& other) const
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			a11 - other.a11, a12 - other.a12, a13 - other.a13, a14 - other.a14,
 			a21 - other.a21, a22 - other.a22, a23 - other.a23, a24 - other.a24,
 			a31 - other.a31, a32 - other.a32, a33 - other.a33, a34 - other.a34,
@@ -110,7 +110,7 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4& Matrix4x4::operator-=(const Matrix4x4& other)
+	PMatrix4x4& PMatrix4x4::operator-=(const PMatrix4x4& other)
 	{
 		a11 -= other.a11; a12 -= other.a12; a13 -= other.a13; a14 -= other.a14;
 		a21 -= other.a21; a22 -= other.a22; a23 -= other.a23; a24 -= other.a24;
@@ -119,7 +119,7 @@ namespace Pawn::Core::Math
 		return *this;
 	}
 
-	bool Matrix4x4::operator==(const Matrix4x4& other) const
+	bool PMatrix4x4::operator==(const PMatrix4x4& other) const
 	{
 		constexpr float32 epsilon = 1e-6f;
 		return std::abs(a11 - other.a11) < epsilon &&
@@ -140,7 +140,7 @@ namespace Pawn::Core::Math
 			std::abs(a44 - other.a44) < epsilon;
 	}
 
-	float32 Matrix4x4::Determinant() const
+	float32 PMatrix4x4::Determinant() const
 	{
 		return a11 * MAT3x3_DET(a22, a23, a24, a32, a33, a34, a42, a43, a44)
 			- a12 * MAT3x3_DET(a21, a23, a24, a31, a33, a34, a41, a43, a44)
@@ -148,15 +148,15 @@ namespace Pawn::Core::Math
 			- a14 * MAT3x3_DET(a21, a22, a23, a31, a32, a33, a41, a42, a43);
 	}
 
-	Matrix4x4 Matrix4x4::Invert() const
+	PMatrix4x4 PMatrix4x4::Invert() const
 	{
 		float32 det = Determinant();
 		if (std::abs(det) < 1e-6f)
-			return Matrix4x4(0.0f);
+			return PMatrix4x4(0.0f);
 
 		float32 invDet = 1.0f / det;
 
-		Matrix4x4 result;
+		PMatrix4x4 result;
 		result.a11 = invDet * (a22 * (a33 * a44 - a34 * a43) - a23 * (a32 * a44 - a34 * a42) + a24 * (a32 * a43 - a33 * a42));
 		result.a12 = invDet * -(a21 * (a33 * a44 - a34 * a43) - a23 * (a31 * a44 - a34 * a41) + a24 * (a31 * a43 - a33 * a41));
 		result.a13 = invDet * (a21 * (a32 * a44 - a34 * a42) - a22 * (a31 * a44 - a34 * a41) + a24 * (a31 * a42 - a32 * a41));
@@ -180,9 +180,9 @@ namespace Pawn::Core::Math
 		return result;
 	}
 
-	Matrix4x4 Matrix4x4::Adjoint() const
+	PMatrix4x4 PMatrix4x4::Adjoint() const
 	{
-		Matrix4x4 result;
+		PMatrix4x4 result;
 
 		result.a11 = MAT3x3_DET(a22, a23, a24, a32, a33, a34, a42, a43, a44);
 		result.a12 = -MAT3x3_DET(a21, a23, a24, a31, a33, a34, a41, a43, a44);
@@ -207,9 +207,9 @@ namespace Pawn::Core::Math
 		return result;
 	}
 
-	Matrix4x4 Matrix4x4::Abs() const
+	PMatrix4x4 PMatrix4x4::Abs() const
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			std::abs(a11), std::abs(a12), std::abs(a13), std::abs(a14),
 			std::abs(a21), std::abs(a22), std::abs(a23), std::abs(a24),
 			std::abs(a31), std::abs(a32), std::abs(a33), std::abs(a34),
@@ -217,9 +217,9 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4 Matrix4x4::Transpose() const
+	PMatrix4x4 PMatrix4x4::Transpose() const
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			a11, a21, a31, a41,
 			a12, a22, a32, a42,
 			a13, a23, a33, a43,
@@ -227,19 +227,19 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4 Matrix4x4::FromQuaternion(const Quaternion& q)
+	PMatrix4x4 PMatrix4x4::FromQuaternion(const PQuaternion& q)
 	{
-		float32 xx = q.x * q.x;
-		float32 yy = q.y * q.y;
-		float32 zz = q.z * q.z;
-		float32 xy = q.x * q.y;
-		float32 xz = q.x * q.z;
-		float32 yz = q.y * q.z;
-		float32 wx = q.w * q.x;
-		float32 wy = q.w * q.y;
-		float32 wz = q.w * q.z;
+		float32 xx = (float32)(q.x * q.x);
+		float32 yy = (float32)(q.y * q.y);
+		float32 zz = (float32)(q.z * q.z);
+		float32 xy = (float32)(q.x * q.y);
+		float32 xz = (float32)(q.x * q.z);
+		float32 yz = (float32)(q.y * q.z);
+		float32 wx = (float32)(q.w * q.x);
+		float32 wy = (float32)(q.w * q.y);
+		float32 wz = (float32)(q.w * q.z);
 
-		return Matrix4x4(
+		return PMatrix4x4(
 			1.0f - 2.0f * (yy + zz), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
 			2.0f * (xy + wz), 1.0f - 2.0f * (xx + zz), 2.0f * (yz - wx), 0.0f,
 			2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (xx + yy), 0.0f,
@@ -247,9 +247,9 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4 Matrix4x4::Translation(const Vector3<float32>& translation)
+	PMatrix4x4 PMatrix4x4::Translation(const Vector3<float32>& translation)
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			1.0f, 0.0f, 0.0f, translation.X,
 			0.0f, 1.0f, 0.0f, translation.Y,
 			0.0f, 0.0f, 1.0f, translation.Z,
@@ -257,9 +257,9 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4 Matrix4x4::Scale(const Vector3<float32>& scale)
+	PMatrix4x4 PMatrix4x4::Scale(const Vector3<float32>& scale)
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			scale.X, 0.0f, 0.0f, 0.0f,
 			0.0f, scale.Y, 0.0f, 0.0f,
 			0.0f, 0.0f, scale.Z, 0.0f,
@@ -267,22 +267,22 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4 Matrix4x4::Perspective(float32 fov, float32 aspect, float32 _near, float32 _far)
+	PMatrix4x4 PMatrix4x4::Perspective(float32 fov, float32 aspect, float32 _near, float32 _far)
 	{
 		float32 tanHalfFov = std::tan(fov * 0.5f);
 		float32 zRange = _far - _near;
 
-		return Matrix4x4(
+		return PMatrix4x4(
 			1.0f / (aspect * tanHalfFov), 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f / tanHalfFov, 0.0f, 0.0f,
-			0.0f, 0.0f, -(_far + _near) / zRange, -2.0f * _far * _near / zRange,
+			0.0f, 0.0f, -((_far + _near) / zRange), -2.0f * _far * _near / zRange,
 			0.0f, 0.0f, -1.0f, 0.0f
 		);
 	}
 
-	Matrix4x4 Matrix4x4::Orthographic(float32 left, float32 right, float32 bottom, float32 top, float32 _near, float32 _far)
+	PMatrix4x4 PMatrix4x4::Orthographic(float32 left, float32 right, float32 bottom, float32 top, float32 _near, float32 _far)
 	{
-		return Matrix4x4(
+		return PMatrix4x4(
 			2.0f / (right - left), 0.0f, 0.0f, -(right + left) / (right - left),
 			0.0f, 2.0f / (top - bottom), 0.0f, -(top + bottom) / (top - bottom),
 			0.0f, 0.0f, -2.0f / (_far - _near), -(_far + _near) / (_far - _near),
@@ -290,13 +290,13 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4 Matrix4x4::LookAt(const Vector3<float32>& eye, const Vector3<float32>& target, const Vector3<float32>& up)
+	PMatrix4x4 PMatrix4x4::LookAt(const Vector3<float32>& eye, const Vector3<float32>& target, const Vector3<float32>& up)
 	{
 		Vector3<float32> zAxis = (target - eye).Normalized();
 		Vector3<float32> xAxis = up.Cross(zAxis).Normalized();
 		Vector3<float32> yAxis = zAxis.Cross(xAxis);
 
-		return Matrix4x4(
+		return PMatrix4x4(
 			xAxis.X, xAxis.Y, xAxis.Z, -xAxis.Dot(eye),
 			yAxis.X, yAxis.Y, yAxis.Z, -yAxis.Dot(eye),
 			-zAxis.X, -zAxis.Y, -zAxis.Z, zAxis.Dot(eye),
@@ -304,7 +304,7 @@ namespace Pawn::Core::Math
 		);
 	}
 
-	Matrix4x4 operator*(const float32& scalar, const Matrix4x4& mat)
+	PMatrix4x4 operator*(const float32& scalar, const PMatrix4x4& mat)
 	{
 		return mat * scalar;
 	}

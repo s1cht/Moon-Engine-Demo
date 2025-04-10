@@ -352,6 +352,12 @@ export namespace Pawn::Core::Containers
 		}
 
 	public:
+		inline bool Empty()
+		{
+			return m_Size <= 0;
+		}
+
+	public:
 		void Assign(const DataType*& ptr)
 		{
 			Assign(ptr, GetStringSize(ptr));
