@@ -14,9 +14,9 @@ namespace Pawn::Assets
 {
 	struct Vertex
 	{
-		float32 x, y, z;
-		float32 uvU, uvV;
-		float32 normalX, normalY, normalZ;
+		Pawn::Core::Math::Vector3D32 Position;
+		Pawn::Core::Math::Vector2D32 TextureCoordinate;
+		Pawn::Core::Math::Vector3D32 Normal;
 	};
 
 	class PAWN_API Mesh

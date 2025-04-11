@@ -25,7 +25,8 @@ void SandboxLayer::OnAttach()
 
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
-		{ Render::ShaderType::Float4, "COLOR", 0, 0 }
+		{ Render::ShaderType::Float2, "TCOORD", 0, 0 },
+		{ Render::ShaderType::Float3, "NORMALPOS", 0, 0 }
 	};
 
 	m_WindowWidth = (uint32)Application::Get().GetWindow()->GetWidth();
@@ -103,7 +104,8 @@ void SandboxLayer::OnUpdate(float64 deltaTime)
 {
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
-		{ Render::ShaderType::Float4, "COLOR", 0, 0 }
+		{ Render::ShaderType::Float2, "TCOORD", 0, 0 },
+		{ Render::ShaderType::Float3, "NORMALPOS", 0, 0 }
 	};
 
 	auto camPos = m_Camera->GetPosition();

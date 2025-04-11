@@ -250,13 +250,13 @@ export namespace Pawn::Core::Containers
 
 		ReturnType& operator[](const SIZE_T index) noexcept
 		{
-			PE_CORE_ASSERT(index < m_Size, "Index in array is out of range!");
+			PE_CORE_ASSERT(index < m_Capacity, "Index in array is out of range!");
 			return m_Data[index];
 		}
 
 		const ReturnType& operator[](const SIZE_T index) const noexcept
 		{
-			PE_CORE_ASSERT(index < m_Size, "Index in array is out of range!");
+			PE_CORE_ASSERT(index < m_Capacity, "Index in array is out of range!");
 			return m_Data[index];
 		}
 

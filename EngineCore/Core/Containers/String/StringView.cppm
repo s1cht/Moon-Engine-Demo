@@ -9,7 +9,7 @@ import Pawn.Core.Container.StringShared;
 
 export namespace Pawn::Core::Containers
 {
-	template<typename type, SIZE_T initSize, class allocator>
+	template<typename type, class allocator>
 	class PString;
 
 	template<typename type>
@@ -32,7 +32,7 @@ export namespace Pawn::Core::Containers
 		}
 
 		template<SIZE_T initSize, class allocator>
-		PStringView(const PString<DataType, initSize, allocator>& str)
+		PStringView(const PString<DataType, allocator>& str)
 			: m_Data(str.GetString()), m_Size(str.GetSize()) {
 		}
 
@@ -72,10 +72,10 @@ export namespace Pawn::Core::Containers
 			return PStringView(m_Data + start, newSize);
 		}
 
-		template<SIZE_T initSize, class allocator>
-		PString<DataType, initSize, allocator> ToString() const
+		template<class allocator>
+		PString<DataType, allocator> ToString() const
 		{
-			return PString<DataType, initSize, allocator>(m_Data, m_Size);
+			return PString<DataType, allocator>(m_Data, m_Size);
 		}
 
 	private:

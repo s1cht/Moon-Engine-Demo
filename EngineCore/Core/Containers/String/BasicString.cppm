@@ -4,8 +4,12 @@ module;
 #include "Core/Misc/Assertion.h"
 #include "Core/Utils/Logging/Logger.h"
 
+#include <bitset>
+
 export module Pawn.Core.Container.String;
 
+import Pawn.Core.Algorithm;
+import Pawn.Core.Container.Array;
 import Pawn.Core.Container.StringShared;
 import Pawn.Core.Memory.Allocator;
 
@@ -122,7 +126,7 @@ export namespace Pawn::Core::Containers
 
 	};
 
-	template<typename type, SIZE_T initSize = 10, class allocator = Pawn::Core::Memory::Allocator<type>>
+	template<typename type, class allocator = Pawn::Core::Memory::Allocator<type>>
 	class PString
 	{
 	public:
@@ -134,7 +138,7 @@ export namespace Pawn::Core::Containers
 
 	public:
 		PString()
-			: m_Data(nullptr), m_Size(0), m_Capacity(initSize), m_Allocator(AllocatorType())
+			: m_Data(nullptr), m_Size(0), m_Capacity(10), m_Allocator(AllocatorType())
 		{
 			Allocate(m_Capacity);
 		}
@@ -206,6 +210,11 @@ export namespace Pawn::Core::Containers
 		PStringView<type> ToStringView() const
 		{
 			return PStringView<type>(m_Data, m_Size);
+		}
+
+		operator PStringView<DataType>() const
+		{
+			return PStringView<DataType>(m_Data, m_Size);
 		}
 
 	public:
@@ -352,9 +361,132 @@ export namespace Pawn::Core::Containers
 		}
 
 	public:
-		inline bool Empty()
+		inline bool Empty() const
 		{
 			return m_Size <= 0;
+		}
+
+	public:
+
+		PString Substring(SIZE_T start, SIZE_T length = SIZE_MAX) const
+		{
+			PE_CORE_ASSERT(start <= m_Size, "Start index out of range!");
+			SIZE_T remaining = m_Size - start;
+			SIZE_T newSize = (length > remaining) ? remaining : length;
+			return PString(m_Data + start, newSize);
+		}
+
+	public:
+		inline SIZE_T Find(const PString& in, SIZE_T pos = 0) const
+		{
+			return PFind(in.GetString(), in.GetSize(), pos);
+		}
+
+		inline SIZE_T Find(const DataType* in, SIZE_T pos = 0) const
+		{
+			return PFind(in, GetStringSize(in), pos);
+		}
+
+		inline SIZE_T Find(const DataType* in, SIZE_T pos, SIZE_T n) const
+		{
+			return PFind(in, n, pos);
+		}
+
+		inline SIZE_T Find(DataType in, SIZE_T pos = 0) const
+		{
+			return PFind(const_cast<const DataType*>(&in), 1, pos);
+		}
+
+
+		inline 	SIZE_T FindFirst(const PString& in, SIZE_T pos = 0) const
+		{
+			return PFindFirst(in.GetString(), in.GetSize(), pos);
+		}
+
+		inline SIZE_T FindFirst(const DataType* in, SIZE_T pos = 0) const
+		{
+			return PFindFirst(in, GetStringSize(in), pos);
+		}
+
+		inline SIZE_T FindFirst(const DataType* in, SIZE_T pos, SIZE_T n) const
+		{
+			return PFindFirst(in, n, pos);
+		}
+
+		inline SIZE_T FindFirst(DataType in, SIZE_T pos = 0) const
+		{
+			return PFindFirst(const_cast<const DataType*>(&in), 1, pos);
+		}
+
+
+		inline SIZE_T FindFirstNot(const PString& in, SIZE_T pos = 0) const
+		{
+			return PFindFirstNot(in.GetString(), in.GetSize(), pos);
+		}
+
+		inline SIZE_T FindFirstNot(const DataType* in, SIZE_T pos = 0) const
+		{
+			return PFindFirstNot(in, GetStringSize(in), pos);
+		}
+
+		inline SIZE_T FindFirstNot(const DataType* in, SIZE_T pos, SIZE_T n) const
+		{
+			return PFindFirstNot(in, n, pos);
+		}
+
+		inline SIZE_T FindFirstNot(DataType in, SIZE_T pos = 0) const
+		{
+			return PFindFirstNot(const_cast<const DataType*>(&in), 1, pos);
+		}
+
+
+		inline SIZE_T FindLast(const PString& in, SIZE_T pos = 0) const
+		{
+			pos = pos == 0 ? m_Size : pos;
+			return PFindLast(in.GetString(), in.GetSize(), pos);
+		}
+
+		inline SIZE_T FindLast(const DataType* in, SIZE_T pos = 0) const
+		{
+			pos = pos == 0 ? m_Size : pos;
+			return PFindLast(in, GetStringSize(in), pos);
+		}
+
+		inline SIZE_T FindLast(const DataType* in, SIZE_T pos, SIZE_T n) const
+		{
+			pos = pos == 0 ? m_Size : pos;
+			return PFindLast(in, n, pos);
+		}
+
+		inline SIZE_T FindLast(DataType in, SIZE_T pos = 0) const
+		{
+			pos = pos == 0 ? m_Size : pos;
+			return PFindLast(const_cast<const DataType*>(&in), 1, pos);
+		}
+
+
+		inline SIZE_T FindLastNot(const PString& in, SIZE_T pos = 0) const
+		{
+			pos = pos == 0 ? m_Size : pos;
+			return PFindLastNot(in.GetString(), in.GetSize(), pos);
+		}
+
+		inline SIZE_T FindLastNot(const DataType* in, SIZE_T pos = 0) const
+		{
+			pos = pos == 0 ? m_Size : pos;
+			return PFindLastNot(in, GetStringSize(in), pos);
+		}
+
+		inline SIZE_T FindLastNot(const DataType* in, SIZE_T pos, SIZE_T n) const
+		{
+			pos = pos == 0 ? m_Size : pos;
+			return PFindLastNot(in, n, pos);
+		}
+
+		inline SIZE_T FindLastNot(DataType in, SIZE_T pos = 0) const
+		{
+			pos = pos == 0 ? m_Size : pos;
+			return PFindLastNot(const_cast<const DataType*>(&in), 1, pos);
 		}
 
 	public:
@@ -432,6 +564,241 @@ export namespace Pawn::Core::Containers
 		}
 
 	private:
+		// Find string algorithm.
+		// Needle - data to find in string
+		SIZE_T PFind(const DataType* needle, SIZE_T needleSize, SIZE_T startAt) const
+		{
+			if (needleSize == 0 || startAt >= m_Size || needleSize > m_Size - startAt)
+				return m_Size;
+
+			const Ptr firstChar = needle[0];
+			SIZE_T limit = m_Size - needleSize;
+
+			for (SIZE_T i = startAt; i <= limit; ++i)
+			{
+				if (m_Data[i] == firstChar)
+				{
+					bool match = true;
+					for (SIZE_T j = 1; j < needleSize; ++j)
+					{
+						if (m_Data[i + j] != needle[j])
+						{
+							match = false;
+							break;
+						}
+					}
+					if (match)
+						return i;
+				}
+			}
+			return m_Size;
+		}
+
+		SIZE_T PFindFirst(const DataType* needle, SIZE_T needleSize, SIZE_T startAt) const
+		{
+			if (!needle || needleSize == 0 || startAt >= m_Size)
+				return m_Size;
+
+			if (needleSize <= 16)
+			{
+				for (SIZE_T i = startAt; i < m_Size; ++i)
+				{
+					for (SIZE_T j = 0; j < needleSize; ++j)
+					{
+						if (m_Data[i] == needle[j])
+							return i;
+					}
+				}
+			}
+			else
+			{
+				if constexpr (sizeof(DataType) == 1)
+				{
+					bool table[256] = { false };
+					for (SIZE_T j = 0; j < needleSize; ++j)
+						table[static_cast<uint8_t>(needle[j])] = true;
+
+					for (SIZE_T i = startAt; i < m_Size; ++i)
+						if (table[static_cast<uint8_t>(m_Data[i])])
+							return i;
+				}
+				else if constexpr (sizeof(DataType) == 2)
+				{
+					std::bitset<65536> table;
+					for (SIZE_T j = 0; j < needleSize; ++j)
+						table.set(static_cast<uint16_t>(needle[j]));
+
+					for (SIZE_T i = startAt; i < m_Size; ++i)
+						if (table.test(static_cast<uint16_t>(m_Data[i])))
+							return i;
+				}
+				else
+				{
+					PE_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					return m_Size;
+				}
+			}
+
+			return m_Size;
+		}
+
+		SIZE_T PFindFirstNot(const DataType* needle, SIZE_T needleSize, SIZE_T startAt) const
+		{
+			if (!needle || needleSize == 0 || startAt >= m_Size)
+				return m_Size;
+
+			if (needleSize <= 16)
+			{
+				for (SIZE_T i = startAt; i < m_Size; ++i)
+				{
+					bool found = false;
+					for (SIZE_T j = 0; j < needleSize; ++j)
+					{
+						if (m_Data[i] == needle[j])
+						{
+							found = true;
+							break;
+						}
+					}
+					if (!found)
+						return i;
+				}
+			}
+			else
+			{
+				if constexpr (sizeof(DataType) == 1)
+				{
+					bool table[256] = { false };
+					for (SIZE_T j = 0; j < needleSize; ++j)
+						table[static_cast<uint8_t>(needle[j])] = true;
+
+					for (SIZE_T i = startAt; i < m_Size; ++i)
+						if (!table[static_cast<uint8_t>(m_Data[i])])
+							return i;
+				}
+				else if constexpr (sizeof(DataType) == 2)
+				{
+					std::bitset<65536> table;
+					for (SIZE_T j = 0; j < needleSize; ++j)
+						table.set(static_cast<uint16_t>(needle[j]));
+
+					for (SIZE_T i = startAt; i < m_Size; ++i)
+						if (!table.test(static_cast<uint16_t>(m_Data[i])))
+							return i;
+				}
+				else
+				{
+					PE_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					return m_Size;
+				}
+			}
+
+			return m_Size;
+		}
+
+		SIZE_T PFindLast(const DataType* needle, SIZE_T needleSize, SIZE_T startAt) const
+		{
+			if (!needle || needleSize == 0 || startAt >= m_Size)
+				return m_Size;
+
+			if (needleSize <= 16)
+			{
+				for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+				{
+					for (SIZE_T j = 0; j < needleSize; ++j)
+					{
+						if (m_Data[i] == needle[j])
+							return i;
+					}
+				}
+			}
+			else
+			{
+				if constexpr (sizeof(DataType) == 1)
+				{
+					bool table[256] = { false };
+					for (SIZE_T j = 0; j < needleSize; ++j)
+						table[static_cast<uint8_t>(needle[j])] = true;
+
+					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+						if (table[static_cast<uint8_t>(m_Data[i])])
+							return i;
+				}
+				else if constexpr (sizeof(DataType) == 2)
+				{
+					std::bitset<65536> table;
+					for (SIZE_T j = 0; j < needleSize; ++j)
+						table.set(static_cast<uint16_t>(needle[j]));
+
+					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+						if (table.test(static_cast<uint16_t>(m_Data[i])))
+							return i;
+				}
+				else
+				{
+					PE_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					return m_Size;
+				}
+			}
+
+			return m_Size;
+		}
+
+		SIZE_T PFindLastNot(const DataType* needle, SIZE_T needleSize, SIZE_T startAt) const
+		{
+			if (!needle || needleSize == 0 || startAt >= m_Size)
+				return m_Size;
+
+			if (needleSize <= 16)
+			{
+				for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+				{
+					bool found = false;
+					for (SIZE_T j = 0; j < needleSize; ++j)
+					{
+						if (m_Data[i] == needle[j])
+						{
+							found = true;
+							break;
+						}
+					}
+					if (found)
+						return i;
+				}
+			}
+			else
+			{
+				if constexpr (sizeof(DataType) == 1)
+				{
+					bool table[256] = { false };
+					for (SIZE_T j = 0; j < needleSize; ++j)
+						table[static_cast<uint8_t>(needle[j])] = true;
+
+					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+						if (!table[static_cast<uint8_t>(m_Data[i])])
+							return i;
+				}
+				else if constexpr (sizeof(DataType) == 2)
+				{
+					std::bitset<65536> table;
+					for (SIZE_T j = 0; j < needleSize; ++j)
+						table.set(static_cast<uint16_t>(needle[j]));
+
+					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+						if (!table.test(static_cast<uint16_t>(m_Data[i])))
+							return i;
+				}
+				else
+				{
+					PE_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					return m_Size;
+				}
+			}
+
+			return m_Size;
+		}
+
+	private:
 		AllocatorType m_Allocator;
 		Ptr m_Data;
 		SIZE_T m_Size;
@@ -439,8 +806,8 @@ export namespace Pawn::Core::Containers
 
 	};
 
-	typedef PString<uchar, 10, Pawn::Core::Memory::Allocator<uchar>> String;
-	typedef PString<ansichar, 10, Pawn::Core::Memory::Allocator<ansichar>> AnsiString;
+	typedef PString<uchar, Pawn::Core::Memory::Allocator<uchar>> String;
+	typedef PString<ansichar, Pawn::Core::Memory::Allocator<ansichar>> AnsiString;
 
 	//template<typename convertTo, SIZE_T strSize = 10, typename allocator = Allocator<uchar>>
 	//CORE_API PString<strSize, allocator> TToString(convertTo value);
