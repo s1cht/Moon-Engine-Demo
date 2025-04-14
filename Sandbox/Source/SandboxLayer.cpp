@@ -15,13 +15,23 @@ void SandboxLayer::OnAttach()
 {
 	bool result;
 
-	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/torch.obj")));
+	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/torch.obj")), true);
 	if (!result)
 	{
 		PE_ERROR(TEXT("Failed to load asset!"));
 	}
 
-	m_Torch = Assets::AssetManager::Get().GetMesh(TEXT("Wood_Cone.005"));
+	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/flashlight.obj")), true);
+	if (!result)
+	{
+		PE_ERROR(TEXT("Failed to load asset!"));
+	}
+
+	m_Flashlight.Reserve(4);
+	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Button")));
+	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Flashlight")));
+	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Glass")));
+	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Ring")));
 
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
@@ -81,23 +91,24 @@ void SandboxLayer::OnAttach()
 	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
 	m_Primary->SetVertexShader(m_VertexShader);
 	m_Primary->SetPixelShader(m_PixelShader);
-	m_Primary->SetDepthStencilState(false, true, Render::DepthComparison::Greater);
+	m_Primary->SetDepthStencilState(true, true, Render::DepthComparison::LessEqual);
 	m_Primary->SetRasterizerState(Render::RasterizerCull::Back, Render::RasterizerFill::Fill, true, false, true, false, 0, 0.f, false, 0);
 
-	m_Primary->SetBlendState(true, Render::BlendMask::All);
+	m_Primary->SetBlendState(false, Render::BlendMask::All);
 	m_Primary->SetInputLayout(layout, Pawn::Render::InputClassification::PerVertex, 0);
 
 	m_CameraBuffer = Core::Memory::Reference<Render::Uniform>(Render::Uniform::Create(sizeof(Core::Math::Matrix4x4), Render::Usage::Dynamic));
 	m_SceneBuffer = Core::Memory::Reference<Render::Uniform>(Render::Uniform::Create(sizeof(Core::Math::Matrix4x4), Render::Usage::Dynamic));
+	m_LightBuffer = Core::Memory::Reference<Render::Uniform>(Render::Uniform::Create(sizeof(Light), Render::Usage::Dynamic));
 
+	m_Light = { Pawn::Core::Math::Vector4D32(1), Pawn::Core::Math::Vector3D32(1), 1.f};
 	m_WorldMatrix = Core::Math::Matrix4x4(1);
 
 	m_Camera = Core::Memory::Reference<Render::Camera::Camera>(new Render::Camera::PerpectiveCamera());
 	m_Camera->SetFOV(90.f);
-	m_Camera->SetAspectRatio(1080.f / 1920.f);
+	m_Camera->SetAspectRatio(1920.f / 1080.f);
 	m_Camera->SetPosition(Core::Math::Vector3D(0));
 	m_Camera->SetRotation(0, 0, 0);
-
 }
 
 void SandboxLayer::OnUpdate(float64 deltaTime)
@@ -179,32 +190,25 @@ void SandboxLayer::OnUpdate(float64 deltaTime)
 	Core::Math::Matrix4x4 mat = m_Camera->GetProjViewMatrix().Transpose();
 
 	Render::Renderer::BeginScene(m_Camera);
-	D3DPERF_BeginEvent(0xffffffff, TEXT("Start"));
+	D3DPERF_BeginEvent(0xffffffff, TEXT("Flashlight render"));
 	m_CameraBuffer->SetData(const_cast<void*>(static_cast<const void*>(&mat)), sizeof(Core::Math::Matrix4x4));
 	m_SceneBuffer->SetData(static_cast<void*>(&m_WorldMatrix), sizeof(Core::Math::Matrix4x4));
+	m_LightBuffer->SetData(static_cast<void*>(&m_Light), sizeof(Light));
 	m_Primary->SetPrimitiveTopology(Pawn::Render::PrimitiveTopology::TriangleList, 0);
 	m_Primary->BindInput();
 
-#define TORCH
-
-#ifdef TORCH
-	m_Torch->GetVertexBuffer()->Bind(layout);
-	m_Torch->GetIndexBuffer()->Bind();
-#else
-	m_VertexBuffer->Bind(layout);
-	m_IndexBuffer->Bind();
-#endif
 	m_CameraBuffer->Bind(0, Render::Shader::Type::Vertex);
 	m_SceneBuffer->Bind(1, Render::Shader::Type::Vertex);
-
+	m_LightBuffer->Bind(0, Render::Shader::Type::Pixel);
 	m_Primary->Bind();
 	Render::RenderCommand::BindBackBuffer();
 
-#ifdef TORCH
-	Render::Renderer::Submit(m_Torch->GetIndexBuffer()->GetCount(), 0);
-#else
-	Render::Renderer::Submit(m_IndexBuffer->GetCount(), 0);
-#endif
+	for (const auto& mesh : m_Flashlight)
+	{
+		mesh->GetVertexBuffer()->Bind(layout);
+		mesh->GetIndexBuffer()->Bind();
+		Render::Renderer::Submit(mesh->GetIndexBuffer()->GetCount(), 0);
+	}
 
 	D3DPERF_EndEvent();
 }
@@ -270,6 +274,22 @@ void SandboxLayer::OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext)
 		if (ImGui::DragFloat("Camera AR Y", &CameraAspectRatioY, 0.1f, 0, 8120.f))
 		{
 			m_Camera->SetAspectRatio(CameraAspectRatioX / CameraAspectRatioY);
+		}
+	}
+
+	ImGui::End();
+
+	static bool lightUpdate = false;
+
+	if (ImGui::Begin("Light settings", &settsVisible))
+	{
+		if (ImGui::DragFloat4("Color", m_Light.Color.XYZW, 0.01f, 0.f, 1.f))
+		{
+			lightUpdate = true;
+		}
+		if (ImGui::DragFloat3("Direction", m_Light.Direction.XYZ, 0.01f, -1.f, 1.f))
+		{
+			lightUpdate = true;
 		}
 	}
 

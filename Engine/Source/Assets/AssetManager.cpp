@@ -13,13 +13,13 @@ namespace Pawn::Assets
 	{
 	}
 
-	bool AssetManager::LoadAsset(const Pawn::Core::Containers::String& path)
+	bool AssetManager::LoadAsset(const Pawn::Core::Containers::String& path, bool centered)
 	{
 		Pawn::Utility::AssetFileFormats fileFormat;
 		Pawn::Utility::AssetLoadResult assetLoadResult;
 
 		fileFormat = GetExtension(path);
-		assetLoadResult = Pawn::Utility::AssetLoader::Load(path, fileFormat);
+		assetLoadResult = Pawn::Utility::AssetLoader::Load(path, centered, fileFormat);
 
 		if (assetLoadResult.Meshes.GetSize() == 0)
 			return false;

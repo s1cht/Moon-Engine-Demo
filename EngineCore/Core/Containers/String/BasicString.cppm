@@ -854,6 +854,9 @@ export namespace Pawn::Core::Containers
 	CORE_API uint64 StringToUint(const String& str, SIZE_T* pos, int8 base = 10);
 	CORE_API float64 StringToFloat(const String& str, SIZE_T* pos);
 
+	CORE_API AnsiString StringToAnsiString(const String& str);
+	CORE_API String AnsiStringToString(const AnsiString& str);
+
 	CORE_API AnsiString operator+(const ansichar* str1, const AnsiString& str2);
 	CORE_API AnsiString operator+(const ansichar& str1, const AnsiString& str2);
 }

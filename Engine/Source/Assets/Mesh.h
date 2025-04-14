@@ -30,6 +30,8 @@ namespace Pawn::Assets
 	public:
 		Pawn::Core::Memory::Reference<Render::VertexBuffer> GetVertexBuffer();
 		Pawn::Core::Memory::Reference<Render::IndexBuffer> GetIndexBuffer();
+		Pawn::Core::Containers::Array<Vertex>& GetVertices();
+		Pawn::Core::Containers::Array<int32>& GetIndices();
 		const Pawn::Core::Containers::StringView GetGroupName() const
 		{
 			return m_GroupName.ToStringView();
@@ -38,7 +40,7 @@ namespace Pawn::Assets
 	public:
 		void SetVertexes(const Pawn::Core::Containers::Array<Vertex>& vertexes);
 		void SetIndexes(const Pawn::Core::Containers::Array<int32>& indexes);
-		void SetGroupName(const Pawn::Core::Containers::String& groupName);
+		void SetGroupName(Pawn::Core::Containers::String groupName);
 
 		void SetVertexes(Pawn::Core::Containers::Array<Vertex>&& vertexes);
 		void SetIndexes(Pawn::Core::Containers::Array<int32>&& indexes);

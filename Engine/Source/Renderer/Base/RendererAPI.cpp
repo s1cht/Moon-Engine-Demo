@@ -15,8 +15,12 @@ namespace Pawn::Render
 				return CreateDirectX11();
 				break;
 			}
-			case Pawn::Render::RendererAPI::API::None:
 			case Pawn::Render::RendererAPI::API::Vulkan:
+			{
+				return CreateVulkan();
+				break;
+			}
+			case Pawn::Render::RendererAPI::API::None:
 			case Pawn::Render::RendererAPI::API::DirectX12:
 			case Pawn::Render::RendererAPI::API::Metal:
 			{

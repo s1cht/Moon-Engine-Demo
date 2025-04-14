@@ -35,7 +35,7 @@ namespace Pawn::Render
 		virtual void UnbindBackBuffer() = 0;
 
 	public:
-		inline static void SetRendererAPI(API api) {};
+		inline static void SetRendererAPI(API api) { s_API = api; };
 		inline static API GetRendererAPI() { return s_API; };
 
 		static RendererAPI* Create();

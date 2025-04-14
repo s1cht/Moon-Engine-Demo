@@ -70,7 +70,6 @@ group "Misc"
 			"EngineCore",
 			"ImGui",
 			"CloneAssets",
-			"d3d9",
 		}
 
 		libdirs

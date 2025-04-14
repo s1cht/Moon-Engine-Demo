@@ -198,7 +198,7 @@ export namespace Pawn::Core::Containers
 			return m_Capacity;
 		}
 
-		inline const DataType* Data() const
+		inline DataType* Data()
 		{
 			return m_Data;
 		}
@@ -274,6 +274,12 @@ export namespace Pawn::Core::Containers
 		bool Reserve(SIZE_T size)
 		{
 			return PReserve(size);
+		}
+
+		void SetSize(SIZE_T size)
+		{
+			if (size <= m_Capacity)
+				m_Size = size;
 		}
 
 	public:

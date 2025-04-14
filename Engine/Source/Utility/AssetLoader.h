@@ -45,10 +45,10 @@ namespace Pawn::Utility
 	class PAWN_API AssetLoader
 	{
 	public:
-		static AssetLoadResult Load(const Pawn::Core::Containers::String& filePath, AssetFileFormats format = AssetFileFormats::OBJ);
+		static AssetLoadResult Load(const Pawn::Core::Containers::String& filePath, bool centered = false, AssetFileFormats format = AssetFileFormats::OBJ);
 
 	private:
-		static AssetLoadResult LoadOBJ(const uchar* filePath);
+		static AssetLoadResult LoadOBJ(const uchar* filePath, bool centered);
 		// For future
 		//static void LoadFBX(const uchar* filePath);
 

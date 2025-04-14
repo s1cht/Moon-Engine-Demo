@@ -13,10 +13,23 @@ import Pawn.Core.Memory;
 
 namespace Pawn 
 {
+	struct PAWN_API ApplicationProperties
+	{
+		int32 VersionMajor; 
+		int32 VersionMinor;
+		int32 VersionPatch;
+		Pawn::Core::Containers::String ApplicationName;
+
+		ApplicationProperties(int32 verMajor = 1, int32 verMinor = 0, int32 verPatch = 0, Pawn::Core::Containers::String appName = TEXT("Application"))
+			: VersionMajor(verMajor), VersionMinor(verMinor), VersionPatch(verPatch), ApplicationName(appName) {}
+	};
+
+	typedef ApplicationProperties ApplicationData;
+
 	class PAWN_API Application
 	{
 	public:
-		Application();
+		Application(ApplicationProperties props = ApplicationProperties());
 		virtual ~Application();
 
 	public:
@@ -29,6 +42,9 @@ namespace Pawn
 		void PushOverlay(Core::Layer* overlay);
 
 	public:
+		const ApplicationData& GetAppData() const { return m_AppData; }
+
+	public:
 		void OnEvent(Core::Event& event);
 
 	public:
@@ -38,6 +54,10 @@ namespace Pawn
 		bool m_Runs;
 
 		Core::LayerStack m_LayerStack;
+
+	private:
+		ApplicationData m_AppData;
+
 	private:
 		bool OnClosedEvent(Pawn::Events::WindowClosedEvent& event);
 		bool OnWindowSizeEvent(Pawn::Events::WindowResizedEvent& event);

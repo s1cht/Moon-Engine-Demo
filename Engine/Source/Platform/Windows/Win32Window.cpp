@@ -41,12 +41,12 @@ namespace Pawn
 		m_Data.EventCallbackIsSetUp = true;
 	}
 
-	float32 Win32Window::GetWidth()
+	float32 Win32Window::GetWidth() const
 	{
 		return m_Data.WindowSize.X;
 	}
 
-	float32 Win32Window::GetHeight()
+	float32 Win32Window::GetHeight() const
 	{
 		return m_Data.WindowSize.Y;
 	}

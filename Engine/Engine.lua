@@ -28,6 +28,8 @@ project "Engine"
 	{
 		"Source",
 		includeDirs.ImGui,
+		--Vulkan SDK
+		VULKAN_SDK .."/Include",
 
 		includeDirs.spdlog,
 		includeDirs.EngineCore,
@@ -63,12 +65,16 @@ project "Engine"
 		includedirs
 		{
 			"C:/Windows/System32",
-			"C:/VulkanSDK/1.4.304.1/Include",
+		}
+
+		libdirs
+		{
+			VULKAN_SDK .."/Lib",
 		}
 
 		links
 		{
-			"vulkan-1.dll",
+			"vulkan-1",
 			"d3d9",
 			"d3d11",
 			"d3d12",

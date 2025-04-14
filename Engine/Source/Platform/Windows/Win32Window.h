@@ -15,8 +15,8 @@ namespace Pawn
 		virtual void SetEventCallback(const EventCallbackFunc& callback) override;
 
 	public:
-		virtual float32 GetWidth() override;
-		virtual float32 GetHeight() override;
+		virtual float32 GetWidth() const override;
+		virtual float32 GetHeight() const override;
 
 		inline HWND GetWindowHandle() { return m_Window; };
 

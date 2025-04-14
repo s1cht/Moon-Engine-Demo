@@ -31,6 +31,16 @@ namespace Pawn::Assets
 		return m_IndexBuffer;
 	}
 
+	Pawn::Core::Containers::Array<Vertex>& Mesh::GetVertices()
+	{
+		return m_Vertexes;
+	}
+
+	Pawn::Core::Containers::Array<int32>& Mesh::GetIndices()
+	{
+		return m_Indexes;
+	}
+
 	void Mesh::SetVertexes(const Pawn::Core::Containers::Array<Vertex>& vertexes)
 	{
 		m_Vertexes = vertexes;
@@ -41,7 +51,7 @@ namespace Pawn::Assets
 		m_Indexes = indexes;
 	}
 
-	void Mesh::SetGroupName(const Pawn::Core::Containers::String& groupName)
+	void Mesh::SetGroupName(Pawn::Core::Containers::String groupName)
 	{
 		m_GroupName = groupName;
 	}

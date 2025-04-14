@@ -50,9 +50,10 @@ namespace Pawn
 		virtual void SetEventCallback(const EventCallbackFunc& callback) = 0;
 
 	public:
-		virtual float32 GetWidth() = 0;
-		virtual float32 GetHeight() = 0;
-		virtual bool GetFocused() { return m_Data.Focused; }
+		virtual float32 GetWidth() const = 0;
+		virtual float32 GetHeight() const = 0;
+		virtual bool GetFocused() const { return m_Data.Focused; }
+		virtual const Pawn::Core::Containers::String& GetWindowName() const { return m_Data.WindowTitle; }
 
 	public:
 		virtual void OnUpdate(float64 deltaTime) = 0;

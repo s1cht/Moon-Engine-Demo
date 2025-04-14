@@ -22,21 +22,26 @@ namespace Pawn {
 
 	Application* Application::s_Instance;
 
-	Application::Application()
-		: m_WindowUpdateX(0), m_WindowUpdateY(0)
+	Application::Application(ApplicationProperties props)
+		: m_WindowUpdateX(0), m_WindowUpdateY(0), m_AppData(props)
 	{	
 		PE_ASSERT(!s_Instance, TEXT("Application is already created!"));
 		s_Instance = this;
 
 		Input::InputController::Get().SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
-		m_Window = Pawn::Core::Memory::Scope<Window>(Window::Create());
+
+		Pawn::WindowProperties windowProps{};
+		windowProps.WindowTitle = m_AppData.ApplicationName;
+		windowProps.WindowSize = Pawn::Core::Math::Vector2D32(1920.f, 1050.f);
+
+		m_Window = Pawn::Core::Memory::Scope<Window>(Window::Create(windowProps));
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		Render::Renderer::SetRenderAPI(Pawn::Render::RendererAPI::API::DirectX11);
+		Render::Renderer::SetRenderAPI(Pawn::Render::RendererAPI::API::Vulkan);
 		Render::Renderer::Init();
 
-		m_ImGuiLayer = new Render::Imgui::ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
+		//m_ImGuiLayer = new Render::Imgui::ImGuiLayer();
+		//PushOverlay(m_ImGuiLayer);
 
 		Pawn::Core::Containers::String str = Pawn::Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
 
@@ -49,7 +54,7 @@ namespace Pawn {
 
 	Application::~Application()
 	{
-		m_ImGuiLayer->Shutdown();
+		//m_ImGuiLayer->Shutdown();
 		Render::Renderer::Shutdown();
 	}
 
@@ -61,32 +66,32 @@ namespace Pawn {
 			
 			m_Window->OnUpdate(delta);
 
-			Render::RenderCommand::Clear(Pawn::Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
+			//Render::RenderCommand::Clear(Pawn::Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
 
 
-			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
-			{
-				(*layer)->OnUpdate(delta);
-			}
+			//for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
+			//{
+			//	(*layer)->OnUpdate(delta);
+			//}
 
-			Render::Renderer::EndScene();
-			
-			m_ImGuiLayer->BeginRender();
+			//Render::Renderer::EndScene();
+			//
+			//m_ImGuiLayer->BeginRender();
 
-			for (auto layer : m_LayerStack)
-				layer->OnImGuiRender(delta, m_ImGuiLayer->GetContext());
+			//for (auto layer : m_LayerStack)
+			//	layer->OnImGuiRender(delta, m_ImGuiLayer->GetContext());
 
-			m_ImGuiLayer->EndRender();
+			//m_ImGuiLayer->EndRender();
 
-			m_ImGuiLayer->PostRender();
+			//m_ImGuiLayer->PostRender();
 
-			if (m_WindowUpdateX != 0 && m_WindowUpdateY != 0)
-			{
-				Render::RenderCommand::OnWindowUpdate(m_WindowUpdateX, m_WindowUpdateY);
-				m_WindowUpdateX = m_WindowUpdateY = 0;
-			}
+			//if (m_WindowUpdateX != 0 && m_WindowUpdateY != 0)
+			//{
+			//	Render::RenderCommand::OnWindowUpdate(m_WindowUpdateX, m_WindowUpdateY);
+			//	m_WindowUpdateX = m_WindowUpdateY = 0;
+			//}
 
-			Render::RenderCommand::Present();
+			//Render::RenderCommand::Present();
 		}
 	}
 

@@ -1,6 +1,8 @@
 engineVendor				= "%{wks.location}/Engine/vendor/"
 vendor						= "%{wks.location}/vendor/"
 
+VULKAN_SDK					= os.getenv("VULKAN_SDK")
+
 requireDirs					= {}
 requireDirs["EngineCore"]	= "%{wks.location}/EngineCore"
 requireDirs["Engine"]		= "%{wks.location}/Engine"

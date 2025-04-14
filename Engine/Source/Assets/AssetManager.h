@@ -21,7 +21,7 @@ namespace Pawn::Assets
 		~AssetManager();
 
 	public:
-		bool LoadAsset(const Pawn::Core::Containers::String& path);
+		bool LoadAsset(const Pawn::Core::Containers::String& path, bool centered = false);
 		Pawn::Core::Memory::Reference<Assets::Mesh> GetMesh(const Pawn::Core::Containers::String& meshName);
 
 	public:
@@ -30,7 +30,7 @@ namespace Pawn::Assets
 			static AssetManager instance;
 			return instance;
 		}
-		inline static bool Load(const Pawn::Core::Containers::String& path) { return Get().LoadAsset(path); }
+		inline static bool Load(const Pawn::Core::Containers::String& path, bool centered = false) { return Get().LoadAsset(path, centered); }
 
 	private:
 		Pawn::Utility::AssetFileFormats GetExtension(const Pawn::Core::Containers::String& path) const;

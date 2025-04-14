@@ -8,6 +8,13 @@
 #include <Events/WindowEvents.h>
 #include <Assets/Mesh.h>
 
+struct Light
+{
+	Pawn::Core::Math::Vector4D32 Color;
+	Pawn::Core::Math::Vector3D32 Direction;
+	float32 Padding;
+};
+
 class SandboxLayer : public Pawn::Core::Layer
 {
 public:
@@ -32,11 +39,16 @@ private:
 	Pawn::Core::Memory::Reference<Pawn::Render::Shader> m_PixelShader;
 	Pawn::Core::Memory::Reference<Pawn::Render::Uniform> m_CameraBuffer;
 	Pawn::Core::Memory::Reference<Pawn::Render::Uniform> m_SceneBuffer;
+	Pawn::Core::Memory::Reference<Pawn::Render::Uniform> m_LightBuffer;
 	Pawn::Core::Memory::Reference<Pawn::Render::IndexBuffer> m_IndexBuffer;
 	Pawn::Core::Memory::Reference<Pawn::Render::VertexBuffer> m_VertexBuffer;
-	Pawn::Core::Memory::Reference<Pawn::Assets::Mesh> m_Torch;
 
 	Pawn::Core::Math::Matrix4x4 m_WorldMatrix;
+	Light m_Light;
+
+private:
+	Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Pawn::Assets::Mesh>> m_Flashlight;
+
 
 private:
 	Pawn::Core::Memory::Reference<Pawn::Render::Camera::Camera> m_Camera;
