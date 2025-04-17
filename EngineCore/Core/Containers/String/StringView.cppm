@@ -53,6 +53,12 @@ export namespace Pawn::Core::Containers
 			return m_Data[index];
 		}
 
+		bool operator==(const DataType* str) const
+		{
+			if (m_Size != GetStringSize(str)) return false;
+			return memcmp(m_Data, str, m_Size * sizeof(DataType)) == 0;
+		}
+
 		bool operator==(const PStringView& other) const
 		{
 			if (m_Size != other.m_Size) return false;

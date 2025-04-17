@@ -1,4 +1,4 @@
-#include "PipelineState.h"
+#include "Pipeline.h"
 
 #include "Renderer/Renderer.h"
 
@@ -6,14 +6,13 @@
 
 namespace Pawn::Render
 {
-    PipelineState* PipelineState::Create()
+    Pipeline* Pipeline::Create()
     {
         RendererAPI::API renderAPI = Renderer::GetRenderAPI();
 
         switch (renderAPI)
         {
         case Pawn::Render::RendererAPI::API::None:
-        case Pawn::Render::RendererAPI::API::Vulkan:
         case Pawn::Render::RendererAPI::API::Metal:
         case Pawn::Render::RendererAPI::API::DirectX12:
         {
@@ -21,9 +20,14 @@ namespace Pawn::Render
             return nullptr;
             break;
         }
+        case Pawn::Render::RendererAPI::API::Vulkan:
+        {
+            //return CreateVulkanPipeline();
+            break;
+        }
         case Pawn::Render::RendererAPI::API::DirectX11:
         {
-            return CreateDirectX11PipelineState();
+            //return CreateDirectX11Pipeline();
             break;
         }
         }

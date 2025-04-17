@@ -85,11 +85,11 @@ namespace Pawn {
 
 			//m_ImGuiLayer->PostRender();
 
-			//if (m_WindowUpdateX != 0 && m_WindowUpdateY != 0)
-			//{
-			//	Render::RenderCommand::OnWindowUpdate(m_WindowUpdateX, m_WindowUpdateY);
-			//	m_WindowUpdateX = m_WindowUpdateY = 0;
-			//}
+			if (m_WindowUpdateX != 0 && m_WindowUpdateY != 0)
+			{
+				Render::RenderCommand::OnWindowUpdate(m_WindowUpdateX, m_WindowUpdateY);
+				m_WindowUpdateX = m_WindowUpdateY = 0;
+			}
 
 			//Render::RenderCommand::Present();
 		}

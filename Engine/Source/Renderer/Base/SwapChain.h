@@ -20,10 +20,11 @@ namespace Pawn
 			virtual void SetVSync(bool enabled) = 0;
 
 		public:
-			static SwapChain* Create(Window* window);
+			static SwapChain* Create(int32& result, Window* window);
 
 		private:
-			static SwapChain* CreateDirectX11SwapChain(Window* window);
+			static SwapChain* CreateVulkanSwapChain(int32& result);
+			static SwapChain* CreateDirectX11SwapChain(int32& result, Window* window);
 
 		};
 	};

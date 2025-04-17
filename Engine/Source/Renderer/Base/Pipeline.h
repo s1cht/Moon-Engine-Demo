@@ -58,12 +58,12 @@ namespace Pawn::Render
 		PerVertex, PerInstance
 	};
 
-	class PAWN_API PipelineState
+	class PAWN_API Pipeline
 	{
 	public:
-		virtual ~PipelineState() {};
+		virtual ~Pipeline() {};
 
-		virtual void SetInputLayout(BufferLayout& layout, InputClassification inputSlotClass, uint32 instanceDataStepRate) = 0;
+		/*virtual void SetInputLayout(BufferLayout& layout, InputClassification inputSlotClass, uint32 instanceDataStepRate) = 0;
 
 		virtual void SetPrimitiveTopology(PrimitiveTopology topology, uint8 patchListPointCount) = 0;
 
@@ -85,18 +85,19 @@ namespace Pawn::Render
 		virtual void SetGeometryShader(Pawn::Core::Memory::Reference<Shader> geometryShader) = 0;
 		virtual void SetHullShader(Pawn::Core::Memory::Reference<Shader> hullShader) = 0;
 		virtual void SetDomainShader(Pawn::Core::Memory::Reference<Shader> domainShader) = 0;
+		*/
 
 		virtual void BindInput() = 0;
 		virtual void Bind() = 0;
 		virtual void BindUniforms(Pawn::Core::Containers::Array<Uniform*>& uniforms, Shader::Type stage) = 0;
 
 	public:
-		static PipelineState* Create();
+		static Pipeline* Create();
 
 	private:
-		static PipelineState* CreateDirectX11PipelineState();
-		static PipelineState* CreateDirectX12PipelineState();
-		static PipelineState* CreateVulkanPipelineState();
+		static Pipeline* CreateDirectX11Pipeline();
+		static Pipeline* CreateDirectX12Pipeline();
+		static Pipeline* CreateVulkanPipeline();
 		//...
 
 	};

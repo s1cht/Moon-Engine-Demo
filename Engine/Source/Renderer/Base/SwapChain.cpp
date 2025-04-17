@@ -7,14 +7,13 @@
 
 namespace Pawn::Render
 {
-	SwapChain* SwapChain::Create(Window* window)
+	SwapChain* SwapChain::Create(int32& result, Window* window)
 	{
 		RendererAPI::API renderApi = Renderer::GetRenderAPI();
 
 		switch (renderApi)
 		{
 			case Pawn::Render::RendererAPI::API::None:
-			case Pawn::Render::RendererAPI::API::Vulkan:
 			case Pawn::Render::RendererAPI::API::DirectX12:
 			case Pawn::Render::RendererAPI::API::Metal:
 			{
@@ -22,9 +21,14 @@ namespace Pawn::Render
 				return nullptr;
 				break;
 			}
+			case Pawn::Render::RendererAPI::API::Vulkan:
+			{
+				return CreateVulkanSwapChain(result);
+				break;
+			}
 			case Pawn::Render::RendererAPI::API::DirectX11:
 			{
-				return CreateDirectX11SwapChain(window);
+				return CreateDirectX11SwapChain(result, window);
 				break;
 			}
 		}

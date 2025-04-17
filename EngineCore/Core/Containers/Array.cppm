@@ -133,9 +133,11 @@ export namespace Pawn::Core::Containers
 		}
 
 		Array(SIZE_T size)
-			: m_Data(nullptr), m_Size(0), m_Capacity(size), m_Allocator(AllocatorType())
+			: m_Data(nullptr), m_Size(size), m_Capacity(size), m_Allocator(AllocatorType())
 		{
 			Allocate(m_Capacity);
+			for (SIZE_T i = 0; i < m_Size; i++)
+				m_Allocator.Construct(&m_Data[i]);
 		}
 
 		Array(const Array& other)

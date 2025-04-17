@@ -206,7 +206,7 @@
     <ClCompile Include="Core\Containers\String\StringView.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Containers\Tables\Map.cppm">
+    <ClCompile Include="Core\Containers\Tables\UnorderedMap.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Events\Event.cppm">

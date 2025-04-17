@@ -190,7 +190,7 @@
     <ClInclude Include="Source\Renderer\API\Vulkan\VulkanRenderer.h" />
     <ClInclude Include="Source\Renderer\Base\Buffer.h" />
     <ClInclude Include="Source\Renderer\Base\Framebuffer.h" />
-    <ClInclude Include="Source\Renderer\Base\PipelineState.h" />
+    <ClInclude Include="Source\Renderer\Base\Pipeline.h" />
     <ClInclude Include="Source\Renderer\Base\RendererAPI.h" />
     <ClInclude Include="Source\Renderer\Base\Shader.h" />
     <ClInclude Include="Source\Renderer\Base\SwapChain.h" />
@@ -201,6 +201,7 @@
     <ClInclude Include="Source\Renderer\RenderCommand.h" />
     <ClInclude Include="Source\Renderer\Renderer.h" />
     <ClInclude Include="Source\Utility\AssetLoader.h" />
+    <ClInclude Include="Source\Renderer\API\Vulkan\VulkanSwapChain.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application\Application.cpp">
@@ -227,24 +228,12 @@
     <ClCompile Include="Source\Platform\Windows\Win32Window.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Buffer.cpp">
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.cpp">
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.cpp">
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Renderer.cpp">
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Shader.cpp">
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.cpp">
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Buffer.cpp" />
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Framebuffer.cpp" />
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11PipilineState.cpp" />
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Renderer.cpp" />
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11Shader.cpp" />
+    <ClCompile Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.cpp" />
     <ClCompile Include="Source\Renderer\API\Vulkan\VulkanRenderer.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
@@ -254,7 +243,7 @@
     <ClCompile Include="Source\Renderer\Base\Framebuffer.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\Base\PipelineState.cpp">
+    <ClCompile Include="Source\Renderer\Base\Pipeline.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="Source\Renderer\Base\RendererAPI.cpp">
@@ -281,6 +270,7 @@
     <ClCompile Include="Source\Utility\AssetLoader.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\API\Vulkan\VulkanSwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineCore\EngineCore.vcxproj">

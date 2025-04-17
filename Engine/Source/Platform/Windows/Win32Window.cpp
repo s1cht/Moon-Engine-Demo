@@ -105,7 +105,7 @@ namespace Pawn
 
 		PE_INFO("Setting up window data");
 		bool result = SetPropW(m_Window, L"WndData", &m_Data);
-		PE_CORE_ASSERT(!(result && GetLastError()), "Window user pointer assign failed! Error: {}", GetLastError());
+		PE_CORE_ASSERT(result && GetLastError(), "Window user pointer assign failed! Error: {}", GetLastError());
 		
 		ShowWindow(m_Window, 1);
 		PE_INFO("Window creation end");
@@ -118,7 +118,7 @@ namespace Pawn
 
 	LRESULT Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		ImGuiContext* imguiContext = ImGui::GetCurrentContext();
+		/*ImGuiContext* imguiContext = ImGui::GetCurrentContext();
 		if (!imguiContext)
 		{
 			return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -145,7 +145,7 @@ namespace Pawn
 		{
 			if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 				return true;
-		}
+		}*/
 
 		WindowData* wndData = static_cast<WindowData*>(GetPropW(hwnd, L"WndData"));
 

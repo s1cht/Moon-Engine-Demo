@@ -13,10 +13,8 @@ export namespace Pawn::Core::Algorithm
 	CORE_API Iterator Find(Iterator first, Iterator last, const T& value)
 	{
 		for (Iterator it = first; it != last; ++it)
-		{
 			if (*it == value)
 				return it;
-		}
 		return last;
 	}
 

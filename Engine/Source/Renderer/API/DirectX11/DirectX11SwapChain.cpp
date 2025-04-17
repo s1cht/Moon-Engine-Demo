@@ -6,7 +6,7 @@
 
 namespace Pawn::Render
 {
-	SwapChain* SwapChain::CreateDirectX11SwapChain(Window* window)
+	SwapChain* SwapChain::CreateDirectX11SwapChain(int32& result, Window* window)
 	{
 		return new DirectX11SwapChain(window);
 	}
