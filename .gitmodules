@@ -7,6 +7,3 @@
 [submodule "vendor/xxHash"]
 	path = vendor/xxHash
 	url = https://github.com/Cyan4973/xxHash
-[submodule "vendor/premake-cmake"]
-	path = vendor/premake-cmake
-	url = https://github.com/Jarod42/premake-cmake
