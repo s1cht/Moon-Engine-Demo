@@ -1,12 +1,12 @@
 [submodule "Engine/vendor/spdlog"]
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "GLFW"]
-	path = GLFW
-	url = https://github.com/TheCherno/GLFW
 [submodule "Engine/vendor/ImGui"]
 	path = Engine/vendor/ImGui
 	url = https://github.com/s1cht/ImGui
 [submodule "vendor/xxHash"]
 	path = vendor/xxHash
 	url = https://github.com/Cyan4973/xxHash
+[submodule "vendor/premake-cmake"]
+	path = vendor/premake-cmake
+	url = https://github.com/Jarod42/premake-cmake

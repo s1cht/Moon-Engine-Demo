@@ -83,6 +83,15 @@
     <None Include="..\..\EngineCore\EngineCore.lua" />
     <None Include="..\..\Misc\CloneAssets\CloneAssets.lua" />
     <None Include="..\..\premake5.lua" />
+    <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.0\spirv.lua" />
+    <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.1\spirv.lua" />
+    <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.2\spirv.lua" />
+    <None Include="..\DXC\external\SPIRV-Headers\include\spirv\unified1\spirv.lua" />
+    <None Include="..\premake-cmake\_manifest.lua" />
+    <None Include="..\premake-cmake\_preload.lua" />
+    <None Include="..\premake-cmake\cmake.lua" />
+    <None Include="..\premake-cmake\cmake_project.lua" />
+    <None Include="..\premake-cmake\cmake_workspace.lua" />
     <None Include="Customization\solutions.lua" />
     <None Include="premake5.lua" />
   </ItemGroup>

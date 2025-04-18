@@ -1,5 +1,8 @@
 include "./vendor/Premake/Customization/solutions.lua"
+include "./vendor/premake-cmake/cmake.lua"
 include "Dependencies.lua"
+
+premake.path = premake.path .. ";%{wks.location}vendor/DXC/"
 
 workspace "Pawn Engine"
 	architecture "x64"
@@ -69,7 +72,6 @@ group "Misc"
 			"Engine",
 			"EngineCore",
 			"ImGui",
-			"CloneAssets",
 		}
 
 		libdirs

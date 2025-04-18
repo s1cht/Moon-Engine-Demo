@@ -1,5 +1,4 @@
 project "Engine"
-
 	if string.sub(_ACTION, 1, 5) == "gmake" then
 		error "GCC is not supported yet. Waiting for full C++20 modules support."
 	end
@@ -47,6 +46,7 @@ project "Engine"
 	{
 		"EngineCore",
 		"ImGui",
+		"DXC",
 	}
 
 	libdirs
@@ -75,11 +75,9 @@ project "Engine"
 		links
 		{
 			"vulkan-1",
-			"d3d9",
 			"d3d11",
 			"d3d12",
 			"dxgi",
-			"d3dcompiler",
 		}
 
 	filter "action:vs*"
