@@ -34,14 +34,16 @@ export namespace Pawn::Core::Containers
 
 	public:
 		UMapIterator(PtrType ptr, NodeType** buckets, SIZE_T num_buckets, SIZE_T bucket_index)
-			: m_Ptr(ptr), m_Buckets(buckets), m_NumBuckets(num_buckets), m_BucketIndex(bucket_index) {
-		}
+			: m_Ptr(ptr), m_Buckets(buckets), m_NumBuckets(num_buckets), m_BucketIndex(bucket_index) 
+		{}
 
 		UMapIterator& operator++() {
-			if (m_Ptr && m_Ptr->NextNode) {
+			if (m_Ptr && m_Ptr->NextNode)
+			{
 				m_Ptr = m_Ptr->NextNode;
 			}
-			else {
+			else
+			{
 				m_Ptr = nullptr;
 				for (SIZE_T i = m_BucketIndex + 1; i < m_NumBuckets; ++i) {
 					if (m_Buckets[i]) {
@@ -54,28 +56,33 @@ export namespace Pawn::Core::Containers
 			return *this;
 		}
 
-		UMapIterator operator++(int) {
+		UMapIterator operator++(int) 
+		{
 			UMapIterator temp = *this;
 			++(*this);
 			return temp;
 		}
 
-		bool operator!=(const UMapIterator& it) const {
+		inline bool operator!=(const UMapIterator& it) const 
+		{
 			return m_Ptr != it.m_Ptr;
 		}
 
-		bool operator==(const UMapIterator& it) const {
+		inline bool operator==(const UMapIterator& it) const 
+		{
 			return m_Ptr == it.m_Ptr;
 		}
 
-		ValueType* operator->() {
+		ValueType* operator->() 
+		{
 			m_Pair = ValueType(m_Ptr->Key, m_Ptr->Value);
 			return reinterpret_cast<ValueType*>(&m_Pair);
 		}
 
-		ValueType& operator*() {
-			m_Pair = ValueType(m_Ptr->Key, m_Ptr->Value);
-			return m_Pair;
+		
+		inline ValueType& operator*()							
+		{
+			return ValueType(m_Ptr->Key, m_Ptr->Value);
 		}
 
 	private:
