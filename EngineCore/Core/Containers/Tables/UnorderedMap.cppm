@@ -10,7 +10,6 @@ import Pawn.Core.Memory.Allocator;
 import Pawn.Core.Memory.Hasher;
 import Pawn.Core.Misc.Pair;
 
-
 export namespace Pawn::Core::Containers
 {
 	template<typename KeyType, typename ValueType>
