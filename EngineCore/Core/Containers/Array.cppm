@@ -16,7 +16,6 @@ export namespace Pawn::Core::Containers
 	class ArrayIterator
 	{
 	public:
-		//using IteratorB = Memory::BaseIterator<_Array>;
 		using DataType = typename _Array::DataType;
 		using PtrType = DataType*;
 		using RefType = DataType&;
@@ -190,17 +189,17 @@ export namespace Pawn::Core::Containers
 
 	public:
 
-		inline SIZE_T GetSize() const
+		PE_NODISCARD inline SIZE_T GetSize() const
 		{
 			return m_Size;
 		}
 
-		inline SIZE_T GetCapacity() const
+		PE_NODISCARD inline SIZE_T GetCapacity() const
 		{
 			return m_Capacity;
 		}
 
-		inline DataType* Data()
+		PE_NODISCARD inline DataType* Data()
 		{
 			return m_Data;
 		}
@@ -285,7 +284,7 @@ export namespace Pawn::Core::Containers
 		}
 
 	public:
-		inline bool Empty()
+		PE_NODISCARD inline bool Empty()
 		{
 			return m_Size <= 0;
 		}
@@ -309,7 +308,7 @@ export namespace Pawn::Core::Containers
 		}
 
 		template <class... val>
-		ReturnType& EmplaceBack(val&&... args)
+		ReturnType& EmplaceBack(val&&... args) noexcept
 		{
 			return PEmplaceBack(std::forward<val>(args)...);
 		}

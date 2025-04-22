@@ -4,8 +4,14 @@
 
 #define BIT(x) (1 << x)
 
+// Attrubutes
+
 #define PE_DEPRECATED [[deprecated]]
 #define PE_DEPRECATED_M(text) [[deprecated(text)]]
+
+#define PE_NODISCARD [[nodiscard]]
+
+// Misc
 
 #define BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 
