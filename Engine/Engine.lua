@@ -50,6 +50,11 @@ project "Engine"
 		"%{wks.location}/bin/" .. outputdir .. "/EngineCore",
 	}
 
+	libdirs
+	{
+		VULKAN_SDK .."/Lib",
+	}
+
 	filter "system:windows"
 		systemversion "latest"
 
@@ -63,11 +68,6 @@ project "Engine"
 			"C:/Windows/System32",
 		}
 
-		libdirs
-		{
-			VULKAN_SDK .."/Lib",
-		}
-
 		links
 		{
 			"vulkan-1",
@@ -75,6 +75,10 @@ project "Engine"
 			"d3d12",
 			"dxgi",
 		}
+
+	filter "system:linux"
+		toolset "clang"
+		
 
 	filter "action:vs*"
 
@@ -90,7 +94,10 @@ project "Engine"
 		compileas "Module"
 
 	filter "files:**.cpp"
-		compileas "C++"
+		compileas "C++"		libdirs
+		{
+			VULKAN_SDK .."/Lib",
+		}
 
 	filter "configurations:Debug"
 		defines "PE_DEBUG"

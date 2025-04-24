@@ -40,6 +40,10 @@ project "EngineCore"
 		{
 			("{COPYDIR} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox/")
 		}
+
+	filter "system:linux"
+		toolset "clang"
+		
 	filter "action:vs*"
 
 		buildoptions
