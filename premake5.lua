@@ -29,11 +29,6 @@ group "Core"
 group "Misc"
 	require "Misc/CloneAssets"
 	project "Sandbox"
-
-		if string.sub(_ACTION, 1, 5) == "gmake" then
-			error "GCC is not supported yet. Waiting for full C++20 modules support."
-		end
-
 		location "Sandbox"
 		kind "ConsoleApp"
 		language "C++"

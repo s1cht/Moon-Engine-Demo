@@ -1,8 +1,4 @@
 project "Engine"
-	if string.sub(_ACTION, 1, 5) == "gmake" then
-		error "GCC is not supported yet. Waiting for full C++20 modules support."
-	end
-
 	kind "SharedLib"
 	language "C++"
 	cppdialect "C++20"
