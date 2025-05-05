@@ -1,11 +1,11 @@
 module;
 
 #include "Core.h"
-#include "Core/Misc/Assertion.h"
 
 module Pawn.Core.Clock;
 
 import Pawn.Core.Memory;
+import Pawn.Core.Utils.Logger;
 
 namespace Pawn::Core::Clock
 {

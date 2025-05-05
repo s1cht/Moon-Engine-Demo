@@ -1,12 +1,10 @@
-#pragma once
+module;
+export module Pawn.Core.Math.Matrix3x3;
 
 #include "Core.h"
-#include "MathMacros.h"
-#include <cmath>
+import Pawn.Core;
 
-#define MAT2x2_DET(a, b, c, d) (a * d - b * c)
-
-namespace Pawn::Core::Math
+export namespace Pawn::Core::Math
 {
 	struct PQuaternion;
 

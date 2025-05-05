@@ -1,7 +1,9 @@
-#include "Matrix3x3.h"
-#include "Quaternion.h"
+module Pawn.Core.Math.Matrix3x3;
 
-#define MAT2x2_DET(a, b, c, d) (a * d - b * c)
+#include "MathMacros.h"
+
+import Pawn.Core;
+import Pawn.Core.Math.Quaternion;
 
 namespace Pawn::Core::Math
 {

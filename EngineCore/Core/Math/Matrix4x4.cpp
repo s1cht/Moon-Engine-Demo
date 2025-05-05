@@ -1,6 +1,11 @@
-#include "Matrix4x4.h"
-#include "Core/Math/Quaternion.h"
-#include "Core/Math/Vector3D.h"
+module Pawn.Core.Math.Matrix4x4;
+
+#include "MathMacros.h"
+
+import Pawn.Core;
+import Pawn.Core.Math.Vector3;
+import Pawn.Core.Math.Vector4;
+import Pawn.Core.Math.Quaternion;
 
 namespace Pawn::Core::Math
 {

@@ -87,7 +87,7 @@
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
     </ClCompile>
@@ -113,7 +113,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
     </ClCompile>
@@ -140,7 +140,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
     </ClCompile>
@@ -157,36 +157,25 @@
   <ItemGroup>
     <ClInclude Include="Core.h" />
     <ClInclude Include="Core\Containers\String\StringMacros.h" />
-    <ClInclude Include="Core\CoreTypes.h" />
     <ClInclude Include="Core\Events\EventMacros.h" />
     <ClInclude Include="Core\Layer\Layer.h" />
     <ClInclude Include="Core\Layer\LayerStack.h" />
     <ClInclude Include="Core\Math\MathMacros.h" />
-    <ClInclude Include="Core\Math\Matrix3x3.h" />
-    <ClInclude Include="Core\Math\Matrix4x4.h" />
-    <ClInclude Include="Core\Math\Quaternion.h" />
-    <ClInclude Include="Core\Math\Vector2D.h" />
-    <ClInclude Include="Core\Math\Vector3D.h" />
-    <ClInclude Include="Core\Math\Vector4D.h" />
     <ClInclude Include="Core\Memory\Pointers\Reference.h" />
     <ClInclude Include="Core\Memory\Pointers\ReferenceController.h" />
-    <ClInclude Include="Core\Misc\Assertion.h" />
     <ClInclude Include="Core\PawnMacros.h" />
-    <ClInclude Include="Core\Platform\Base\BaseTypes.h" />
-    <ClInclude Include="Core\Platform\Base\Thread.h" />
     <ClInclude Include="Core\Platform\MacOS\MacIntTypes.h" />
     <ClInclude Include="Core\Platform\Platform.h" />
     <ClInclude Include="Core\Platform\Unix\UnixPlatform.h" />
-    <ClInclude Include="Core\Platform\Windows\WindowsDisableErrors.h" />
-    <ClInclude Include="Core\Platform\Windows\WindowsIncludes.h" />
-    <ClInclude Include="Core\Platform\Windows\WindowsPlatform.h" />
-    <ClInclude Include="Core\Platform\Windows\WindowsThread.h" />
-    <ClInclude Include="Core\Platform\Windows\WindowsTime.h" />
-    <ClInclude Include="Core\Platform\Windows\WindowsTypes.h" />
-    <ClInclude Include="Core\Utils\Logging\Logger.h" />
+    <ClInclude Include="Core\Platform\Windows\MSVCErrors.h" />
+    <ClInclude Include="Core\Platform\Windows\WindowsInclude.h" />
+    <ClInclude Include="Core\Platform\Windows\WindowsMacros.h" />
     <ClInclude Include="Core\Utils\MemWatch\MemWatch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Core.cppm">
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
     <ClCompile Include="Core\Containers\Algorithm.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
@@ -228,11 +217,32 @@
     <ClCompile Include="Core\Math\Matrix3x3.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="Core\Math\Matrix3x3.cppm">
+      <ObjectFileName>$(IntDir)\Matrix3x31.obj</ObjectFileName>
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
     <ClCompile Include="Core\Math\Matrix4x4.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="Core\Math\Matrix4x4.cppm">
+      <ObjectFileName>$(IntDir)\Matrix4x41.obj</ObjectFileName>
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
     <ClCompile Include="Core\Math\Quaternion.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Math\Quaternion.cppm">
+      <ObjectFileName>$(IntDir)\Quaternion1.obj</ObjectFileName>
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Math\Vector2.cppm">
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Math\Vector3.cppm">
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Math\Vector4.cppm">
+      <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Memory\Allocator.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
@@ -253,11 +263,17 @@
       <ObjectFileName>$(IntDir)\Time1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
+    <ClCompile Include="Core\Platform\Base\BaseTypes.cppm">
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
     <ClCompile Include="Core\Platform\Base\IO.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Platform\Base\IO.cppm">
       <ObjectFileName>$(IntDir)\IO1.obj</ObjectFileName>
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Platform\Windows\Windows.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Platform\Windows\WindowsIO.cpp">
@@ -267,17 +283,31 @@
       <ObjectFileName>$(IntDir)\WindowsIO1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Windows\WindowsThread.cpp">
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
     <ClCompile Include="Core\Platform\Windows\WindowsTime.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Platform\Windows\WindowsTime.cppm">
+      <ObjectFileName>$(IntDir)\WindowsTime1.obj</ObjectFileName>
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Platform\Windows\WindowsTypes.cppm">
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Types.cppm">
+      <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Utils\Benchmark\Benchmark.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Utils\Logging\Logger.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Utils\Logging\Logger.cppm">
+      <ObjectFileName>$(IntDir)\Logger1.obj</ObjectFileName>
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Core\Utils\Logging\spdlog.cppm">
+      <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Utils\MemWatch\MemWatch.cpp">
       <CompileAs>CompileAsCpp</CompileAs>

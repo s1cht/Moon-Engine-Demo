@@ -1,8 +1,9 @@
-#pragma once
-#include <type_traits>
+module;
+export module Pawn.Core.Types.Base;
 
+import std;
 
-struct BaseTypes 
+export struct BaseTypes 
 {
 	/*
 										-INTEGERS-

@@ -1,17 +1,13 @@
 module;
-
-#include "Core.h"
-
 export module Pawn.Core.IO.Base;
 
+#include "Core.h"
+import Pawn.Core.Types;
 import Pawn.Core.Memory;
 import Pawn.Core.Clock;
 import Pawn.Core.Container.Array;
 import Pawn.Core.Container.String;
 import Pawn.Core.Container.UnorderedMap;
-
-#define PE_FAILED_IO(result) (result != Pawn::IO::IOError::OK);
-#define PE_FAILED_IO_INT(result) (result != (int32)Pawn::IO::IOError::OK);
 
 export namespace Pawn::Core::IO
 {

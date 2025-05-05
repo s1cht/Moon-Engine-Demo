@@ -1,11 +1,10 @@
 module;
+export module Pawn.Core.Clock;
 
 #include "Core.h"
-#include "Core/Misc/Assertion.h"
-#include "Core/Utils/Logging/Logger.h"
-
-export module Pawn.Core.Clock;
+import Pawn.Core;
 import Pawn.Core.Memory;
+import Pawn.Core.Utils.Logger;
 
 export namespace Pawn::Core::Clock
 {
@@ -30,12 +29,12 @@ export namespace Pawn::Core::Clock
 			inline constexpr float64 Nanosecond = 0.001;
 			inline constexpr uint64 Microsecond = 10;
 			inline constexpr uint64 Millisecond = Microsecond * 1000;
-			constexpr uint64 Second = Millisecond * 1000;
-			constexpr uint64 Minute = Second * 60;
-			constexpr uint64 Hour = Minute * 60;
-			constexpr uint64 Day = Hour * 24;
-			constexpr uint64 Week = Day * 7;
-			constexpr uint64 Year = Day * 365;
+			inline constexpr uint64 Second = Millisecond * 1000;
+			inline constexpr uint64 Minute = Second * 60;
+			inline constexpr uint64 Hour = Minute * 60;
+			inline constexpr uint64 Day = Hour * 24;
+			inline constexpr uint64 Week = Day * 7;
+			inline constexpr uint64 Year = Day * 365;
 		}
 	}
 

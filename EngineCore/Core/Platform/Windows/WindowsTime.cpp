@@ -1,4 +1,4 @@
-#include "WindowsTime.h"
+module Pawn.Core.Windows.Time;
 
 namespace Pawn::Core::Clock
 {

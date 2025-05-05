@@ -1,14 +1,15 @@
 #pragma once
 
-#include "Core/CoreTypes.h" 
 #include "Core/PawnMacros.h"
-
-#include <initializer_list>
 
 #define _CRT_SECURE_NO_WARNINGS
 
 #define CORE_API
 #define PAWN_API
+
+#if defined(_MSC_VER)
+	#include "Core/Platform/Windows/MSVCErrors.h"
+#endif
 
 #ifdef PLATFORM_WINDOWS
 	#define SPDLOG_WCHAR_TO_UTF8_SUPPORT

@@ -1,6 +1,5 @@
 module;
 
-#include "Core.h"
 
 #define XXH_STATIC_LINKING_ONLY 
 #define XXH_IMPLEMENTATION
@@ -9,6 +8,8 @@ module;
 
 export module Pawn.Core.Memory.Hasher;
 
+#include "Core.h"
+import Pawn.Core;
 import Pawn.Core.Container.StringView;
 
 export namespace Pawn::Core::Memory

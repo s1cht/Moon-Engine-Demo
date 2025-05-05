@@ -1,11 +1,9 @@
 module;
-
-#include "Core/CoreTypes.h"
-#include "Core/Utils/Logging/Logger.h"
-
 export module Pawn.Core.Utils.Benchmark;
 
+import Pawn.Core;
 import Pawn.Core.Container.String;
+import Pawn.Core.Utils.Logger;
 
 #ifndef PLATFORM_WINDOWS
 

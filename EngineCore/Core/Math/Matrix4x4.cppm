@@ -1,13 +1,13 @@
-#pragma once
+module;
+export module Pawn.Core.Math.Matrix4x4;
 
 #include "Core.h"
-#include "MathMacros.h"
-#include <cmath>
 
-#define MAT3x3_DET(a11, a12, a13, a21, a22, a23, a31, a32, a33) \
-    (a11 * a22 * a33 + a12 * a23 * a31 + a13 * a21 * a32 - a13 * a22 * a31 - a12 * a21 * a33 - a11 * a23 * a32)
+import Pawn.Core;
+import Pawn.Core.Math.Vector3;
+import Pawn.Core.Math.Vector4;
 
-namespace Pawn::Core::Math
+export namespace Pawn::Core::Math
 {
 	struct PMatrix3x3;
 

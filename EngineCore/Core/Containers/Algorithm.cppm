@@ -1,10 +1,8 @@
 module;
-
-#include "Core.h"
-#include "Core/Misc/Assertion.h"
-
 export module Pawn.Core.Algorithm;
 
+#include "Core.h"
+import Pawn.Core.Utils.Logger;
 import Pawn.Core.Container.Array;
 
 export namespace Pawn::Core::Algorithm

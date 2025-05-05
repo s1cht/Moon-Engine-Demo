@@ -1,7 +1,7 @@
 module Pawn.Core.Container.String;
 
 #include "Core.h"
-#include "Core/Misc/Assertion.h"
+import Pawn.Core.Utils.Logger;
 
 namespace Pawn::Core::Containers
 {

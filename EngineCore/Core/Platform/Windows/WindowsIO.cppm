@@ -1,10 +1,10 @@
 module;
-
-#include "Core.h"
-
 export module Pawn.Core.IO;
 
+#include "Core.h"
+import Pawn.Core.Types;
 import Pawn.Core.Container.String;
+
 export import Pawn.Core.IO.Base;
 
 export namespace Pawn::Core::IO

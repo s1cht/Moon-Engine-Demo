@@ -1,5 +1,5 @@
-#pragma once
+module;
+export module Pawn.Windows;
 
 #include <Windows.h>
 #include <fileapi.h>
-#include <windowsx.h>

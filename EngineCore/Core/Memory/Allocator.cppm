@@ -1,9 +1,9 @@
 module;
 
-#include "Core.h"
-#include <new>
-
 export module Pawn.Core.Memory.Allocator;
+
+#include "Core.h"
+import Pawn.Core;
 
 export namespace Pawn::Core::Memory
 {

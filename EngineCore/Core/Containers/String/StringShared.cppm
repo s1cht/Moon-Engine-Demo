@@ -4,6 +4,8 @@ module;
 
 export module Pawn.Core.Container.StringShared;
 
+import Pawn.Core;
+
 export namespace Pawn
 {
 	template<typename T>

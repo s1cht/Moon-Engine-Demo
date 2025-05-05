@@ -1,12 +1,7 @@
 #pragma once
+/*
 #include "Core.h"
 #include "Core/Utils/Logging/Logger.h"
-
-/*
-	// Memory tracker singleton \\
-
-	
-*/
 
 namespace Pawn {
 
@@ -60,3 +55,5 @@ namespace Pawn {
 	};
 
 }
+
+*/

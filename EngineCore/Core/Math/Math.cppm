@@ -1,14 +1,14 @@
 module;
 
-#include "Vector2D.h"
-#include "Vector3D.h"
-#include "Vector4D.h"
-#include "Quaternion.h"
-#include "Matrix3x3.h"
-#include "Matrix4x4.h"
-#include "MathMacros.h"
-
 export module Pawn.Core.Math;
+
+import Pawn.Core;
+import Pawn.Core.Math.Matrix3x3;
+import Pawn.Core.Math.Matrix4x4;
+import Pawn.Core.Math.Quaternion;
+import Pawn.Core.Math.Vector2;
+import Pawn.Core.Math.Vector3;
+import Pawn.Core.Math.Vector4;
 
 export namespace Pawn::Core::Math
 {

@@ -1,8 +1,7 @@
 module;
 
 #include "Core.h"
-#include "Core/Utils/Logging/Logger.h"
-#include "Core/Misc/Assertion.h"
+import Pawn.Core.Utils.Logger;
 
 export module Pawn.Core.Container.Array;
 

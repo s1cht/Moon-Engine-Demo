@@ -1,9 +1,10 @@
 module;
 
-#include "Core.h"
 
 export module Pawn.Core.Event;
 
+#include "Core.h"
+import Pawn.Core;
 import Pawn.Core.Container.String;
 
 export enum class EventType

@@ -1,7 +1,10 @@
-#include "Logger.h"
-#include <spdlog\async.h>
-#include <spdlog\sinks\stdout_color_sinks.h>
+module Pawn.Core.Utils.Logger;
 
+#include "Core.h"
+
+import Pawn.Core;
+import Pawn.Core.Memory;
+import Pawn.Thirdparty.spdlog;
 
 namespace Pawn::Core::Utils 
 {

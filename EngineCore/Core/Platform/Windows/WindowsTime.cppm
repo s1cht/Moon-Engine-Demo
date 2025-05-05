@@ -1,8 +1,9 @@
-#pragma once
+module;
 
-#include "Core.h"
+export module Pawn.Core.Windows.Time;
 
 import Pawn.Core.Clock;
+import Pawn.Core.Windows;
 
 namespace Pawn::Core::Clock
 {

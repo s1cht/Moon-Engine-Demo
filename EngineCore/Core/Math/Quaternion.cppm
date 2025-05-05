@@ -1,10 +1,12 @@
-#pragma once
+module;
+export module Pawn.Core.Math.Quaternion;
 
 #include "Core.h"
-#include "MathMacros.h"
-#include <cmath>
+import Pawn.Core;
+import Pawn.Core.Math.Vector3;
+import Pawn.Core.Math.Vector4;
 
-namespace Pawn::Core::Math
+export namespace Pawn::Core::Math
 {
 	struct CORE_API PMatrix4x4;
 

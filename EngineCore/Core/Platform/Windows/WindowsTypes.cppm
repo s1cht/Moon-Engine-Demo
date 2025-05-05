@@ -1,6 +1,6 @@
-#pragma once
-
-#include "Core/Platform/Base/BaseTypes.h"
+module;
+export module Pawn.Core.Types.Windows;
+import Pawn.Core.Types.Base;
 
 // Windows platform types redefinition
 
@@ -16,4 +16,4 @@ struct WindowsPlatformTypes : BaseTypes
 
 };
 
-typedef WindowsPlatformTypes PlatformTypes;
+export typedef WindowsPlatformTypes PlatformTypes;

@@ -1,10 +1,9 @@
 module;
 
 #include "Core.h"
-#include "Core/Misc/Assertion.h"
-#include "Core/Utils/Logging/Logger.h"
 
-#include <bitset>
+import Pawn.Core;
+import Pawn.Core.Utils.Logger;
 
 export module Pawn.Core.Container.String;
 

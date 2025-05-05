@@ -1,9 +1,9 @@
-module;
-
-#include "Core/Utils/Logging/Logger.h"
-#include "Core/Platform/Windows/WindowsIncludes.h"
-
 module Pawn.Core.IO;
+
+#include "Core.h"
+#include "Core/Platform/Windows/WindowsInclude.h"
+import Pawn.Core;
+import Pawn.Core.Windows;
 
 #define PE_FILETIME_TO_TIMEPOINT(ft) ((static_cast<uint64>(ft.dwHighDateTime) << 32) + ft.dwLowDateTime - 116444736000000000LL) / 10000000LL;
 

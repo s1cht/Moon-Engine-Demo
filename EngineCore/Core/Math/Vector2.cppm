@@ -1,11 +1,11 @@
-#pragma once
+module;
+export module Pawn.Core.Math.Vector2;
 
 #include "Core.h"
 #include "MathMacros.h"
-#include <cmath>
-#include <type_traits>
+import Pawn.Core;
 
-namespace Pawn::Core::Math
+export namespace Pawn::Core::Math
 {
 	template<typename T>
 	struct Vector2

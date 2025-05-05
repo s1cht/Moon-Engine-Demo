@@ -1,7 +1,7 @@
 project "Engine"
 	kind "SharedLib"
 	language "C++"
-	cppdialect "C++20"
+	cppdialect "C++23"
 	staticruntime "off"
 	allmodulespublic "on"
 	scanformoduledependencies "on"
