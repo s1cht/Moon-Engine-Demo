@@ -273,6 +273,7 @@
       <ObjectFileName>$(IntDir)\IO1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
+    <ClCompile Include="Core\Platform\Platform.cppm" />
     <ClCompile Include="Core\Platform\Windows\Windows.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>

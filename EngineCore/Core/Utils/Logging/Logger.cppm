@@ -1,12 +1,24 @@
+
 module;
+
+#include "Core.h"
+#include <spdlog/spdlog.h>
+#include <spdlog/logger.h>
+#include <spdlog/async.h>
+#include <spdlog/async_logger.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/daily_file_sink.h>
+#include <spdlog/fmt/bin_to_hex.h>
+#include <spdlog/fmt/ostr.h>
 
 export module Pawn.Core.Utils.Logger;
 
-#include "Core.h"
+#if 0
 
 import Pawn.Core;
 import Pawn.Core.Memory;
-import Pawn.Thirdparty.spdlog;
 
 export namespace Pawn::Core::Utils 
 {
@@ -29,3 +41,5 @@ export namespace Pawn::Core::Utils
 	};
 
 }
+
+#endif

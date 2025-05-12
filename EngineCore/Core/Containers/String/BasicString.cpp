@@ -1,6 +1,8 @@
 module Pawn.Core.Container.String;
 
 #include "Core.h"
+import Pawn.Core;
+import Pawn.Platform;
 import Pawn.Core.Utils.Logger;
 
 namespace Pawn::Core::Containers

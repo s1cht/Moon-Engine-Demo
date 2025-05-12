@@ -1,17 +1,18 @@
 module;
-
-#include "Core.h"
-
-import Pawn.Core;
-import Pawn.Core.Utils.Logger;
+#include <cstring>
 
 export module Pawn.Core.Container.String;
+
+#include "Core.h"
+import Pawn.Core;
+import Pawn.Core.Utils.Logger;
 
 import Pawn.Core.Algorithm;
 import Pawn.Core.Container.Array;
 import Pawn.Core.Container.StringShared;
 import Pawn.Core.Memory.Allocator;
 
+#define SIZE_MAX 20
 #define STR_RESIZE_MULTIPLYER 2
 
 export namespace Pawn::Core::Containers
@@ -615,20 +616,20 @@ export namespace Pawn::Core::Containers
 				{
 					bool table[256] = { false };
 					for (SIZE_T j = 0; j < needleSize; ++j)
-						table[static_cast<uint8_t>(needle[j])] = true;
+						table[static_cast<uint8>(needle[j])] = true;
 
 					for (SIZE_T i = startAt; i < m_Size; ++i)
-						if (table[static_cast<uint8_t>(m_Data[i])])
+						if (table[static_cast<uint8>(m_Data[i])])
 							return i;
 				}
 				else if constexpr (sizeof(DataType) == 2)
 				{
 					std::bitset<65536> table;
 					for (SIZE_T j = 0; j < needleSize; ++j)
-						table.set(static_cast<uint16_t>(needle[j]));
+						table.set(static_cast<uint16>(needle[j]));
 
 					for (SIZE_T i = startAt; i < m_Size; ++i)
-						if (table.test(static_cast<uint16_t>(m_Data[i])))
+						if (table.test(static_cast<uint16>(m_Data[i])))
 							return i;
 				}
 				else
@@ -669,20 +670,20 @@ export namespace Pawn::Core::Containers
 				{
 					bool table[256] = { false };
 					for (SIZE_T j = 0; j < needleSize; ++j)
-						table[static_cast<uint8_t>(needle[j])] = true;
+						table[static_cast<uint8>(needle[j])] = true;
 
 					for (SIZE_T i = startAt; i < m_Size; ++i)
-						if (!table[static_cast<uint8_t>(m_Data[i])])
+						if (!table[static_cast<uint8>(m_Data[i])])
 							return i;
 				}
 				else if constexpr (sizeof(DataType) == 2)
 				{
 					std::bitset<65536> table;
 					for (SIZE_T j = 0; j < needleSize; ++j)
-						table.set(static_cast<uint16_t>(needle[j]));
+						table.set(static_cast<uint16>(needle[j]));
 
 					for (SIZE_T i = startAt; i < m_Size; ++i)
-						if (!table.test(static_cast<uint16_t>(m_Data[i])))
+						if (!table.test(static_cast<uint16>(m_Data[i])))
 							return i;
 				}
 				else
@@ -717,20 +718,20 @@ export namespace Pawn::Core::Containers
 				{
 					bool table[256] = { false };
 					for (SIZE_T j = 0; j < needleSize; ++j)
-						table[static_cast<uint8_t>(needle[j])] = true;
+						table[static_cast<uint8>(needle[j])] = true;
 
 					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
-						if (table[static_cast<uint8_t>(m_Data[i])])
+						if (table[static_cast<uint8>(m_Data[i])])
 							return i;
 				}
 				else if constexpr (sizeof(DataType) == 2)
 				{
 					std::bitset<65536> table;
 					for (SIZE_T j = 0; j < needleSize; ++j)
-						table.set(static_cast<uint16_t>(needle[j]));
+						table.set(static_cast<uint16>(needle[j]));
 
 					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
-						if (table.test(static_cast<uint16_t>(m_Data[i])))
+						if (table.test(static_cast<uint16>(m_Data[i])))
 							return i;
 				}
 				else
@@ -771,20 +772,20 @@ export namespace Pawn::Core::Containers
 				{
 					bool table[256] = { false };
 					for (SIZE_T j = 0; j < needleSize; ++j)
-						table[static_cast<uint8_t>(needle[j])] = true;
+						table[static_cast<uint8>(needle[j])] = true;
 
 					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
-						if (!table[static_cast<uint8_t>(m_Data[i])])
+						if (!table[static_cast<uint8>(m_Data[i])])
 							return i;
 				}
 				else if constexpr (sizeof(DataType) == 2)
 				{
 					std::bitset<65536> table;
 					for (SIZE_T j = 0; j < needleSize; ++j)
-						table.set(static_cast<uint16_t>(needle[j]));
+						table.set(static_cast<uint16>(needle[j]));
 
 					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
-						if (!table.test(static_cast<uint16_t>(m_Data[i])))
+						if (!table.test(static_cast<uint16>(m_Data[i])))
 							return i;
 				}
 				else

@@ -4,6 +4,7 @@ export module Pawn.Core.Math.Vector2;
 #include "Core.h"
 #include "MathMacros.h"
 import Pawn.Core;
+import Pawn.Core.Utils.Logger;
 
 export namespace Pawn::Core::Math
 {
@@ -165,6 +166,7 @@ export namespace Pawn::Core::Math
 	template<typename T>
 	inline Vector2<T> Vector2<T>::operator/(const Vector2& b) const
 	{
+		if (b == Vector2::ZeroVector) PE_ASSERT(false, TEXT("Multiplication by zero"));
 		return Vector2<T>(
 			b.x != 0 ? x / b.x : 0,
 			b.y != 0 ? y / b.y : 0

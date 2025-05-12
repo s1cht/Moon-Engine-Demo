@@ -2,8 +2,11 @@ module;
 export module Pawn.Core.Container.StringView;
 
 #include "Core.h"
+import Pawn.Core;
 import Pawn.Core.Utils.Logger;
 import Pawn.Core.Container.StringShared;
+
+#define SIZE_MAX 20
 
 export namespace Pawn::Core::Containers
 {

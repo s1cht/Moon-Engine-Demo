@@ -1,10 +1,12 @@
 module;
 
+#include <cstring>
 #include "Core.h"
 import Pawn.Core.Utils.Logger;
 
 export module Pawn.Core.Container.Array;
 
+import Pawn.Core;
 import Pawn.Core.Memory.Allocator;
 
 #define ARR_RESIZE_MULTIPLYER 2

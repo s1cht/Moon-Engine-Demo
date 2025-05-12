@@ -1,12 +1,10 @@
+#if 0
 module Pawn.Core.Utils.Logger;
-
-#include "Core.h"
 
 import Pawn.Core;
 import Pawn.Core.Memory;
-import Pawn.Thirdparty.spdlog;
 
-namespace Pawn::Core::Utils 
+namespace Pawn::Core::Utils
 {
 	Pawn::Core::Memory::Reference<spdlog::logger> Logger::m_coreLogger;
 	Pawn::Core::Memory::Reference<spdlog::logger> Logger::m_clientLogger;
@@ -28,10 +26,10 @@ namespace Pawn::Core::Utils
 
 
 #ifdef PE_DEBUG
-		m_coreLogger->set_level(spdlog::level::trace);
-		m_clientLogger->set_level(spdlog::level::trace);
-		m_memoryLogger->set_level(spdlog::level::trace);
-		m_benchmarkLogger->set_level(spdlog::level::trace);
+		m_coreLogger->set_level(spdlog::level::level_enum::trace);
+		m_clientLogger->set_level(spdlog::level::level_enum::trace);
+		m_memoryLogger->set_level(spdlog::level::level_enum::trace);
+		m_benchmarkLogger->set_level(spdlog::level::level_enum::trace);
 #else
 		m_coreLogger->set_level(spdlog::level::info);
 		m_clientLogger->set_level(spdlog::level::info);
@@ -49,3 +47,5 @@ namespace Pawn::Core::Utils
 		spdlog::shutdown();
 	}
 }
+
+#endif

@@ -6,6 +6,7 @@ import Pawn.Core.Utils.Logger;
 
 export module Pawn.Core.Container.UnorderedMap;
 
+import Pawn.Core;
 import Pawn.Core.Memory.Allocator;
 import Pawn.Core.Memory.Hasher;
 import Pawn.Core.Misc.Pair;
