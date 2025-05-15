@@ -1,8 +1,4 @@
-#if 0
-module Pawn.Core.Utils.Logger;
-
-import Pawn.Core;
-import Pawn.Core.Memory;
+#include "Logger.hpp"
 
 namespace Pawn::Core::Utils
 {

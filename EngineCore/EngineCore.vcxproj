@@ -155,50 +155,49 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Core.h" />
-    <ClInclude Include="Core\Containers\String\StringMacros.h" />
-    <ClInclude Include="Core\Events\EventMacros.h" />
-    <ClInclude Include="Core\Layer\Layer.h" />
-    <ClInclude Include="Core\Layer\LayerStack.h" />
-    <ClInclude Include="Core\Math\MathMacros.h" />
-    <ClInclude Include="Core\Memory\Pointers\Reference.h" />
-    <ClInclude Include="Core\Memory\Pointers\ReferenceController.h" />
-    <ClInclude Include="Core\PawnMacros.h" />
-    <ClInclude Include="Core\Platform\MacOS\MacIntTypes.h" />
-    <ClInclude Include="Core\Platform\Platform.h" />
-    <ClInclude Include="Core\Platform\Unix\UnixPlatform.h" />
-    <ClInclude Include="Core\Platform\Windows\MSVCErrors.h" />
-    <ClInclude Include="Core\Platform\Windows\WindowsInclude.h" />
-    <ClInclude Include="Core\Platform\Windows\WindowsMacros.h" />
-    <ClInclude Include="Core\Utils\MemWatch\MemWatch.h" />
+    <ClInclude Include="Core.hpp" />
+    <ClInclude Include="Core\Containers\String\String.hpp" />
+    <ClInclude Include="Core\Containers\String\StringMacros.hpp" />
+    <ClInclude Include="Core\Events\EventMacros.hpp" />
+    <ClInclude Include="Core\Layer\Layer.hpp" />
+    <ClInclude Include="Core\Layer\LayerStack.hpp" />
+    <ClInclude Include="Core\Math\MathMacros.hpp" />
+    <ClInclude Include="Core\Memory\PawnMemory.hpp" />
+    <ClInclude Include="Core\Memory\Pointers\Reference.hpp" />
+    <ClInclude Include="Core\Memory\Pointers\ReferenceController.hpp" />
+    <ClInclude Include="Core\Macros.hpp" />
+    <ClInclude Include="Core\Platform\MacOS\MacIntTypes.hpp" />
+    <ClInclude Include="Core\Platform\Platform.hpp" />
+    <ClInclude Include="Core\Platform\Unix\UnixPlatform.hpp" />
+    <ClInclude Include="Core\Platform\Windows\MSVCErrors.hpp" />
+    <ClInclude Include="Core\Platform\Windows\WindowsInclude.hpp" />
+    <ClInclude Include="Core\Platform\Windows\WindowsMacros.hpp" />
+    <ClInclude Include="Core\Utils\MemWatch\MemWatch.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core.cppm">
+    <ClCompile Include="Core\Containers\Algorithm.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Containers\Algorithm.cppm">
-      <CompileAs>CompileAsCppModule</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Core\Containers\Array.cppm">
+    <ClCompile Include="Core\Containers\Array.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Containers\String\BasicString.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Containers\String\BasicString.cppm">
+    <ClCompile Include="Core\Containers\String\BasicString.hpp">
       <ObjectFileName>$(IntDir)\BasicString1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Containers\String\StringShared.cppm">
+    <ClCompile Include="Core\Containers\String\StringShared.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Containers\String\StringView.cppm">
+    <ClCompile Include="Core\Containers\String\StringView.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Containers\Tables\UnorderedMap.cppm">
+    <ClCompile Include="Core\Containers\Tables\UnorderedMap.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Events\Event.cppm">
+    <ClCompile Include="Core\Events\Event.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Layer\Layer.cpp">
@@ -210,104 +209,94 @@
     <ClCompile Include="Core\Math\Math.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Math\Math.cppm">
+    <ClCompile Include="Core\Math\Math.hpp">
       <ObjectFileName>$(IntDir)\Math1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Math\Matrix3x3.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Math\Matrix3x3.cppm">
+    <ClCompile Include="Core\Math\Matrix3x3.hpp">
       <ObjectFileName>$(IntDir)\Matrix3x31.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Math\Matrix4x4.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Math\Matrix4x4.cppm">
+    <ClCompile Include="Core\Math\Matrix4x4.hpp">
       <ObjectFileName>$(IntDir)\Matrix4x41.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Math\Quaternion.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Math\Quaternion.cppm">
+    <ClCompile Include="Core\Math\Quaternion.hpp">
       <ObjectFileName>$(IntDir)\Quaternion1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Math\Vector2.cppm">
+    <ClCompile Include="Core\Math\Vector2.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Math\Vector3.cppm">
+    <ClCompile Include="Core\Math\Vector3.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Math\Vector4.cppm">
+    <ClCompile Include="Core\Math\Vector4.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Memory\Allocator.cppm">
+    <ClCompile Include="Core\Memory\Allocator.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Memory\Hasher.cppm">
+    <ClCompile Include="Core\Memory\Hasher.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Memory\PawnMemory.cppm">
-      <CompileAs>CompileAsCppModule</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Core\Misc\Pair.cppm">
+    <ClCompile Include="Core\Misc\Pair.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Misc\Time.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Misc\Time.cppm">
+    <ClCompile Include="Core\Misc\Time.hpp">
       <ObjectFileName>$(IntDir)\Time1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Base\BaseTypes.cppm">
+    <ClCompile Include="Core\Platform\Base\BaseTypes.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Platform\Base\IO.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Base\IO.cppm">
+    <ClCompile Include="Core\Platform\Base\IO.hpp">
       <ObjectFileName>$(IntDir)\IO1.obj</ObjectFileName>
-      <CompileAs>CompileAsCppModule</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Core\Platform\Platform.cppm" />
-    <ClCompile Include="Core\Platform\Windows\Windows.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Platform\Windows\WindowsIO.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Windows\WindowsIO.cppm">
+    <ClCompile Include="Core\Platform\Windows\WindowsIO.hpp">
       <ObjectFileName>$(IntDir)\WindowsIO1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Platform\Windows\WindowsTime.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Windows\WindowsTime.cppm">
+    <ClCompile Include="Core\Platform\Windows\WindowsTime.hpp">
       <ObjectFileName>$(IntDir)\WindowsTime1.obj</ObjectFileName>
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Windows\WindowsTypes.cppm">
+    <ClCompile Include="Core\Platform\Windows\WindowsTypes.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Types.cppm">
+    <ClCompile Include="Core\Types.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Utils\Benchmark\Benchmark.cppm">
+    <ClCompile Include="Core\Utils\Benchmark\Benchmark.hpp">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Utils\Logging\Logger.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Core\Utils\Logging\Logger.cppm">
+    <ClCompile Include="Core\Utils\Logging\Logger.hpp">
       <ObjectFileName>$(IntDir)\Logger1.obj</ObjectFileName>
-      <CompileAs>CompileAsCppModule</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Core\Utils\Logging\spdlog.cppm">
       <CompileAs>CompileAsCppModule</CompileAs>
     </ClCompile>
     <ClCompile Include="Core\Utils\MemWatch\MemWatch.cpp">

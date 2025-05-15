@@ -1,9 +1,5 @@
-module Pawn.Core.Math.Matrix3x3;
-
-#include "MathMacros.h"
-
-import Pawn.Core;
-import Pawn.Core.Math.Quaternion;
+#include "Matrix3x3.hpp"
+#include "Core/Math/Quaternion.hpp"
 
 namespace Pawn::Core::Math
 {

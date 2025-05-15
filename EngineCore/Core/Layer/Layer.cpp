@@ -1,6 +1,4 @@
-#include "Layer.h"
-
-import Pawn.Core.Container.String;
+#include "Layer.hpp"
 
 namespace Pawn::Core
 {

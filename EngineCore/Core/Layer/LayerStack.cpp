@@ -1,6 +1,5 @@
-#include "LayerStack.h"
-
-import Pawn.Core.Algorithm;
+#include "LayerStack.hpp"
+#include "Core/Containers/Algorithm.hpp"
 
 namespace Pawn::Core
 {

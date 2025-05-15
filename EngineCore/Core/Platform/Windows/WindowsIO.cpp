@@ -1,10 +1,6 @@
-module Pawn.Core.IO;
+#include "WindowsIO.hpp"
 
-#include "Core.h"
-#include "winnt.h"
-import Pawn.Core;
-import Pawn.Windows;
-
+#include "Core.hpp"
 
 #define PE_FILETIME_TO_TIMEPOINT(ft) ((static_cast<uint64>(ft.dwHighDateTime) << 32) + ft.dwLowDateTime - 116444736000000000LL) / 10000000LL;
 
