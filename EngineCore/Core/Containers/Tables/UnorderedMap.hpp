@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
+#include "Core/Misc/Pair.hpp"
 
 namespace Pawn::Core::Containers
 {

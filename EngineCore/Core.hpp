@@ -2,21 +2,9 @@
 
 #include "Core/Types.hpp"
 #include "Core/Macros.hpp"
-#include "Core/Memory/Allocator.hpp"
-#include "Core/Memory/PawnMemory.hpp"
-#include "Core/Containers/Algorithm.hpp"
-#include "Core/Containers/Array.hpp"
-#include "Core/Containers/String/String.hpp"
-#include "Core/Containers/Tables/UnorderedMap.hpp"
-#include "Core/Platform/Platform.hpp"
-#include "Core/Misc/Pair.hpp"
-#include "Core/Misc/Time.hpp"
-#include "Core/Layer/Layer.hpp"
-#include "Core/Layer/LayerStack.hpp"
-#include "Core/Events/Event.hpp"
-#include "Core/Math/Math.hpp"
 
 #include <cstring>
+#include <initializer_list>
 
 #define CORE_API
 #define PAWN_API
@@ -45,6 +33,8 @@
 		#define CORE_API DLLIMPORT
 		#define XXH_IMPORT
 	#endif 
+
+#elif defined(PLATFORM_LINUX)
 
 #else
 	#error "Pawn Engine currently supports only Windows!"

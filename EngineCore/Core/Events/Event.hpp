@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core.hpp"
+#include "Core/Containers/Array.hpp"
+#include "Core/Containers/String/String.hpp"
 
 enum class EventType
 {

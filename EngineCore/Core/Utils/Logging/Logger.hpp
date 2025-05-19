@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
+#include "Core/Memory/Memory.hpp"
 
 #include <spdlog/spdlog.h>
 #include <spdlog/logger.h>
@@ -12,7 +13,6 @@
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/fmt/bin_to_hex.h>
 #include <spdlog/fmt/ostr.h>
-
 
 namespace Pawn::Core::Utils 
 {

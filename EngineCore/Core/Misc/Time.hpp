@@ -2,8 +2,9 @@
 
 #include "Core.hpp"
 #include "Core/Utils/Logging/Logger.hpp"
+#include "Core/Memory/Memory.hpp"
 
-export namespace Pawn::Core::Clock
+namespace Pawn::Core::Clock
 {
 	class CORE_API TimeSource
 	{

@@ -2,6 +2,7 @@
 
 #include "Core.hpp"
 #include "Layer.hpp"
+#include "Core/Containers/Array.hpp"
 
 namespace Pawn::Core
 {

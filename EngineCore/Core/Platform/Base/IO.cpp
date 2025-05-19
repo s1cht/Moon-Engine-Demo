@@ -1,6 +1,4 @@
-module Pawn.Core.IO.Base;
-
-#include "Core.h"
+#include "IO.hpp"
 
 namespace Pawn::Core::IO
 {

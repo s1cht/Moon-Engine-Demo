@@ -1,14 +1,10 @@
-module;
-export module Pawn.Core.IO;
+#pragma once
 
-#include "Core.h"
-import Pawn.Platform;
-import Pawn.Core.Types;
-import Pawn.Core.Container.String;
+#include "Core.hpp"
+#include "Core/Platform/Base/IO.hpp"
+#include "Core/Containers/String/String.hpp"
 
-export import Pawn.Core.IO.Base;
-
-export namespace Pawn::Core::IO
+namespace Pawn::Core::IO
 {
 	class CORE_API WindowsFile : public File
 	{

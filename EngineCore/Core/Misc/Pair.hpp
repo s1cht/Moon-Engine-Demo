@@ -1,10 +1,7 @@
-module;
-
+#pragma once
 #include <type_traits>
 
-export module Pawn.Core.Misc.Pair;
-
-export namespace Pawn::Core::Misc
+namespace Pawn::Core::Misc
 {
 	template <typename ValueType1, typename ValueType2>
 	struct Pair

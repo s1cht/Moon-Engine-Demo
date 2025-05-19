@@ -3,8 +3,8 @@ project "EngineCore"
 	language "C++"
 	cppdialect "C++23"
 	staticruntime "off"
-	allmodulespublic "on"
-	scanformoduledependencies "on"
+	allmodulespublic "off"
+	scanformoduledependencies "off"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
@@ -14,10 +14,10 @@ project "EngineCore"
 	files
 	{
 		"Core/**.h",
+		"Core/**.hpp",
 		"Core/**.cpp",
 		"Core/**.cppm", -- modules
-		"Core.h",
-		"Core.cppm",
+		"Core.hpp",
 	}
 
 	includedirs 

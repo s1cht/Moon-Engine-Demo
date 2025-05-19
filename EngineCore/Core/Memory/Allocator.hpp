@@ -2,7 +2,7 @@
 
 #include "Core/Types.hpp"
 
-export namespace Pawn::Core::Memory
+namespace Pawn::Core::Memory
 {
 	template <typename T>
 	class Allocator

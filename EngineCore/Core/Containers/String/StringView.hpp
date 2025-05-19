@@ -3,9 +3,7 @@
 #include "Core/Utils/Logging/Logger.hpp"
 #include "Core/Containers/String/StringShared.hpp"
 
-#define SIZE_MAX 20
-
-export namespace Pawn::Core::Containers
+namespace Pawn::Core::Containers
 {
 	template<typename type, class allocator>
 	class PString;
@@ -68,7 +66,7 @@ export namespace Pawn::Core::Containers
 			return !(*this == other);
 		}
 
-		PStringView Substring(SIZE_T start, SIZE_T length = SIZE_MAX) const
+		PStringView Substring(SIZE_T start, SIZE_T length = 0) const
 		{
 			PE_CORE_ASSERT(start <= m_Size, "Start index out of range!");
 			SIZE_T remaining = m_Size - start;

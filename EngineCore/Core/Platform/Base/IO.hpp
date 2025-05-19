@@ -1,17 +1,11 @@
 #pragma once
 
-module;
-export module Pawn.Core.IO.Base;
+#include "Core.hpp"
+#include "Core/Containers/Array.hpp"
+#include "Core/Containers/String/String.hpp"
+#include "Core/Misc/Time.hpp"
 
-#include "Core.h"
-import Pawn.Core.Types;
-import Pawn.Core.Memory;
-import Pawn.Core.Clock;
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
-import Pawn.Core.Container.UnorderedMap;
-
-export namespace Pawn::Core::IO
+namespace Pawn::Core::IO
 {
 	enum class FileReadMode
 	{

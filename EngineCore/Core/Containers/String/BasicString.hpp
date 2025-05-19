@@ -1,12 +1,16 @@
 #pragma once
 
+#include "Core.hpp"
 #include "Core/Utils/Logging/Logger.hpp"
+#include "Core/Memory/Memory.hpp"
+#include "Core/Memory/Allocator.hpp"
 #include "Core/Containers/String/StringShared.hpp"
 
-#define SIZE_MAX 20
+#include <bitset>
+
 #define STR_RESIZE_MULTIPLYER 2
 
-export namespace Pawn::Core::Containers
+namespace Pawn::Core::Containers
 {
 	template<typename type>
 	class PStringView;
@@ -359,7 +363,7 @@ export namespace Pawn::Core::Containers
 
 	public:
 
-		PString Substring(SIZE_T start, SIZE_T length = SIZE_MAX) const
+		PString Substring(SIZE_T start, SIZE_T length = 0) const
 		{
 			PE_CORE_ASSERT(start <= m_Size, "Start index out of range!");
 			SIZE_T remaining = m_Size - start;

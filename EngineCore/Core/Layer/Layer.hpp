@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core.hpp"
+#include "Core/Events/Event.hpp"
+#include "Core/Containers/String/String.hpp"
 
 struct ImGuiContext;
 

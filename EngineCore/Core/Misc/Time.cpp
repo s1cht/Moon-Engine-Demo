@@ -1,11 +1,4 @@
-module;
-
-#include "Core.h"
-
-module Pawn.Core.Clock;
-
-import Pawn.Core.Memory;
-import Pawn.Core.Utils.Logger;
+#include "Time.hpp"
 
 namespace Pawn::Core::Clock
 {

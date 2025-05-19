@@ -43,5 +43,3 @@ namespace Pawn::Core::Utils
 		spdlog::shutdown();
 	}
 }
-
-#endif

@@ -8,6 +8,7 @@
 
 #if defined(_WIN64)
 	#define PLATFORM_WINDOWS
+	#include "Windows/WindowsInclude.hpp"
 	#include "Windows/WindowsMacros.hpp"
 #elif defined(__linux__)
 	#define PLATFORM_LINUX

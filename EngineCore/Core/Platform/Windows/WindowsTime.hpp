@@ -1,12 +1,8 @@
-module;
+#pragma once
+#include "Core.hpp"
+#include "Core/Misc/Time.hpp"
 
-export module Pawn.Core.Windows.Time;
-
-#include "Core.h"
-import Pawn.Windows;
-import Pawn.Core.Clock;
-
-export namespace Pawn::Core::Clock
+namespace Pawn::Core::Clock
 {
 	class CORE_API WindowsTimeSource : public TimeSource
 	{

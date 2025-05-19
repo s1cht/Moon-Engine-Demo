@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-export struct BaseTypes 
+struct BaseTypes 
 {
 	/*
 										-INTEGERS-
