@@ -1,12 +1,11 @@
 #pragma once
 
-#include <Core.h>
+#include <Core.hpp>
+#include <Core/Memory/Memory.hpp>
+#include <Core/Containers/Array.hpp>
 
 #include "Renderer/Base/Buffer.h"
 #include "Renderer/Base/Shader.h"
-
-import Pawn.Core.Memory;
-import Pawn.Core.Container.Array;
 
 namespace Pawn::Render
 {

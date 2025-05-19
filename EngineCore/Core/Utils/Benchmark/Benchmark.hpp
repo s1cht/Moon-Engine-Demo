@@ -1,9 +1,8 @@
-module;
-export module Pawn.Core.Utils.Benchmark;
+#pragma once
 
-import Pawn.Core;
-import Pawn.Core.Container.String;
-import Pawn.Core.Utils.Logger;
+#include <Core.hpp>
+#include <Core/Containers/String/String.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
 
 #ifndef PLATFORM_WINDOWS
 

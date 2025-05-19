@@ -1,7 +1,10 @@
 #pragma once
 
-#include <Core.h>
-#include <Core/Misc/Assertion.h>
+#include <Core.hpp>
+#include <Core/Memory/Memory.hpp>
+#include <Core/Platform/Base/IO.hpp>
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/String/String.hpp>
 
 #ifdef PLATFORM_WINDOWS
 	#define VK_USE_PLATFORM_WIN32_KHR
@@ -10,12 +13,11 @@
 
 #endif
 
-#include <vulkan/vulkan.hpp>
 #include "EngineDefines.h"
 #include "Renderer/Base/RendererAPI.h"
 #include "VulkanSwapChain.h"
 
-import Pawn.Core.Memory;
+#include <vulkan/vulkan.hpp>
 
 namespace Pawn::Render
 {

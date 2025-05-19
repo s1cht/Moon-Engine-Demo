@@ -1,8 +1,6 @@
 #include "Framebuffer.h"
 #include "Renderer/Renderer.h"
 
-#include <Core/Misc/Assertion.h>
-
 namespace  Pawn::Render
 {
     Framebuffer* Framebuffer::Create(uint32 x, uint32 y)

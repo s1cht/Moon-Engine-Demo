@@ -2,13 +2,11 @@
 
 #include "Renderer/Base/Buffer.h"
 
-#include <Core.h>
-
-import Pawn.Core.Math;
-import Pawn.Core.Memory;
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
-import Pawn.Core.Container.StringView;
+#include <Core.hpp>
+#include <Core/Math/Math.hpp>
+#include <Core/Memory/Memory.hpp>
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/String/String.hpp>
 
 namespace Pawn::Assets
 {

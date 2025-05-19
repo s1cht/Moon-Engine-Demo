@@ -1,12 +1,7 @@
 #include "AssetLoader.h"
 
-#include <Core/Math/MathMacros.h>
-
-import Pawn.Core.Math;
-import Pawn.Core.IO;
-import Pawn.Core.Algorithm;
-import Pawn.Core.Container.String;
-import Pawn.Core.Container.UnorderedMap;
+#include <Core/Containers/Tables/UnorderedMap.hpp>
+#include <Core/Platform/Base/IO.hpp>
 
 #define DEBUG_MESH
 //#define DEBUG_INDICES

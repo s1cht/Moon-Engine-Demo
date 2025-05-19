@@ -2,11 +2,11 @@
 
 #include "Application/Application.h"
 #include "Renderer/Base/Shader.h"
-#include <Core/Utils/Logging/Logger.h>
-#include <Core/Utils/MemWatch/MemWatch.h>
+#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Utils/MemWatch/MemWatch.hpp>
 
-import Pawn.Core.IO;
-import Pawn.Core.Clock;
+#include <Core/Platform/Base/IO.hpp>
+#include <Core/Misc/Time.hpp>
 
 extern Pawn::Application* Pawn::CreateApplication();
 

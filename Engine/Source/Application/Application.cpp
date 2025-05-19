@@ -4,17 +4,14 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
 
-#include <Core.h>
-#include <Core/Utils/Logging/Logger.h>
-#include <Core/Utils/MemWatch/MemWatch.h>
-
-#include <Core/Misc/Assertion.h>
-
-import Pawn.Core.IO;
-import Pawn.Core.Clock;
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
-import Pawn.Core.Utils.Benchmark;
+#include <Core.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Utils/MemWatch/MemWatch.hpp>
+#include <Core/Utils/Benchmark/Benchmark.hpp>
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/String/String.hpp>
+#include <Core/Platform/Base/IO.hpp>
+#include <Core/Misc/Time.hpp>
 
 namespace Pawn {
 

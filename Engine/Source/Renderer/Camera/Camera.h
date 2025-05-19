@@ -1,8 +1,7 @@
 #pragma once
 
-#include <Core.h>
-
-import Pawn.Core.Math;
+#include <Core.hpp>
+#include <Core/Math/Math.hpp>
 
 namespace Pawn::Render::Camera
 {

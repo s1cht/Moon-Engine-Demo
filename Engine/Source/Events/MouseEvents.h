@@ -2,8 +2,8 @@
 
 #include "EventsShared.h"
 
-#include <Core/PawnMacros.h>
-import Pawn.Core.Event;
+#include <Core.hpp>
+#include <Core/Events/Event.hpp>
 
 namespace Pawn::Events
 {

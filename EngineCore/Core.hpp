@@ -28,10 +28,10 @@
 
 	#ifdef PAWN_CORE_LIBRARY_BUILD
 		#define CORE_API DLLEXPORT
-		#define XXH_EXPORT
+		//#define XXH_EXPORT
 	#else	
 		#define CORE_API DLLIMPORT
-		#define XXH_IMPORT
+		//#define XXH_IMPORT
 	#endif 
 
 #elif defined(PLATFORM_LINUX)

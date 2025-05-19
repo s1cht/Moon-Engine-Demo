@@ -3,7 +3,8 @@
 #include "Renderer/Base/Framebuffer.h"
 #include "Platform/Windows/Win32Platform.h"
 
-import Pawn.Core.Math;
+#include <Core.hpp>
+#include <Core/Math/Math.hpp>
 
 namespace Pawn::Render
 {

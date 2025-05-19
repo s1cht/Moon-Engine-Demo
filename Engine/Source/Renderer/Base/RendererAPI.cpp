@@ -1,7 +1,5 @@
 #include "RendererAPI.h"
 
-#include <Core/Misc/Assertion.h>
-
 namespace Pawn::Render
 {
 	RendererAPI::API RendererAPI::s_API = RendererAPI::API::DirectX11;

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Core/Types.hpp"
+#include "Core.hpp"
 
 #define XXH_STATIC_LINKING_ONLY 
 #define XXH_IMPLEMENTATION
 #include <xxhash.h>
 
-export namespace Pawn::Core::Memory
+namespace Pawn::Core::Memory
 {
 	template <typename T>
 	struct Hasher

@@ -4,8 +4,6 @@
 #include "Renderer/API/DirectX11/DirectX11Renderer.h"
 #include "Renderer/API/DirectX11/DirectX11SwapChain.h"
 
-#include <Core/Misc/Assertion.h>
-
 namespace Pawn::Render
 {
 	Framebuffer* Framebuffer::CreateDirectX11Framebuffer(uint32 x, uint32 y)

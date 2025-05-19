@@ -1,12 +1,10 @@
 #pragma once
-#include <Core.h>
-#include <Core/Misc/Assertion.h>
+
+#include <Core.hpp>
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/String/String.hpp>
+
 #include "Renderer/Base/Shader.h"
-
-#include <Core/Misc/Assertion.h>
-
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
 
 namespace Pawn::Render
 {

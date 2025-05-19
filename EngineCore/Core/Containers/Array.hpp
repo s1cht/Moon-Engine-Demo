@@ -1,5 +1,6 @@
 #pragma once
 #include "Core.hpp"
+#include "Core/Memory/Allocator.hpp"
 
 #define ARR_RESIZE_MULTIPLYER 2
 

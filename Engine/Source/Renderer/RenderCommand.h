@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core.h>
+#include <Core.hpp>
 #include "Base/RendererAPI.h"
 #include "Base/SwapChain.h"
 #include "Base/Framebuffer.h"

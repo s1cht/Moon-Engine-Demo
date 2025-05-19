@@ -1,12 +1,11 @@
 #pragma once
 
-#include <Core.h>
+#include <Core.hpp>
+#include <Core/Math/Math.hpp>
 
 #include "Platform/Base/Window.h"
 #include "Events/WindowEvents.h"
 #include "Renderer/Base/Framebuffer.h"
-
-import Pawn.Core.Math;
 
 namespace Pawn::Render
 {

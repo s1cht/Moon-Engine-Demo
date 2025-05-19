@@ -9,12 +9,13 @@
 #pragma once
 
 #include "Assets/Mesh.h"
-#include <Core/Utils/Logging/Logger.h>
-#include <type_traits>
 
-import Pawn.Core.Memory;
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
+#include <Core.hpp>
+#include <Core/Memory/Memory.hpp>
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/String/String.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
+#include <type_traits>
 
 namespace Pawn::Assets
 {

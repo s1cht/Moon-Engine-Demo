@@ -1,11 +1,12 @@
 #pragma once
 
-#include <Core.h>
+#include <Core.hpp>
+#include <Core/Containers/String/String.hpp>
+#include <Core/Containers/Array.hpp>
+
 #include <vulkan/vulkan.hpp>
 #include "Renderer/Base/SwapChain.h"
 
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
 
 namespace Pawn::Render
 {

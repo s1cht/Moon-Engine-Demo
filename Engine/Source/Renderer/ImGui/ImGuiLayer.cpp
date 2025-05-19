@@ -3,9 +3,7 @@
 #include "Renderer/Renderer.h"
 #include "Application/Application.h"
 
-#include <Core/Misc/Assertion.h>
-
-import Pawn.Core.Clock;
+#include <Core/Misc/Time.hpp>
 
 namespace Pawn::Render::Imgui
 {

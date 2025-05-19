@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core/Platform/Platform.h>
+#include <Core/Platform/Platform.hpp>
 
 #ifndef PE_WND_CLASSNAME
 	#define PE_WND_CLASSNAME L"PEngineWindow"

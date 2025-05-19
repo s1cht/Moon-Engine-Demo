@@ -6,9 +6,9 @@
 
 #include "Source/Application/Application.h"
 
-#include <Core.h>
-#include <Core/Layer/Layer.h>
-#include <Core/Utils/Logging/Logger.h>
+#include <Core.hpp>
+#include <Core/Layer/Layer.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
 
 
 // --------------Entry point----------------------

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Core.h>
-#include <Core/Layer/Layer.h>
+#include <Core.hpp>
+#include <Core/Layer/Layer.hpp>
 #include "ImGuiReferences.h"
 
 namespace Pawn::Render::Imgui

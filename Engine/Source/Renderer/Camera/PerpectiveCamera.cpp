@@ -1,5 +1,5 @@
 #include "PerpectiveCamera.h"
-#include <Core/Math/MathMacros.h>
+#include <Core/Math/MathMacros.hpp>
 
 namespace Pawn::Render::Camera
 {

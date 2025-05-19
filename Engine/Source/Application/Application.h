@@ -1,15 +1,14 @@
 #pragma once
 
-#include <Core.h>
-#include <Core/Layer/LayerStack.h>
+#include <Core.hpp>
+#include <Core/Layer/LayerStack.hpp>
+#include <Core/Events/Event.hpp>
+#include <Core/Memory/Memory.hpp>
 
 #include "Input/Input.h"
 #include "Platform/Platform.h"
 #include "Renderer/ImGui/ImGuiLayer.h"
 #include "Events/WindowEvents.h"
-
-import Pawn.Core.Event;
-import Pawn.Core.Memory;
 
 namespace Pawn 
 {

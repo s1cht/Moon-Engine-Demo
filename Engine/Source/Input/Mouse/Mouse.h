@@ -1,14 +1,13 @@
 #pragma once
 
-#include <Core.h>
-#include <Core/Events/EventMacros.h>
-#include <Core/Utils/Logging/Logger.h>
+#include <Core.hpp>
+#include <Core/Events/EventMacros.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Events/Event.hpp>
+#include <Core/Math/Math.hpp>
 
 #include "Input/Keycodes.h"
 #include "Events/MouseEvents.h"
-
-import Pawn.Core.Event;
-import Pawn.Core.Math;
 
 namespace Pawn::Input::Devices
 {

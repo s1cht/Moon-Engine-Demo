@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core.h>
+#include <Core.hpp>
 
 #define PE_MAX_MOUSE_SIDEBTN_COUNT 6
 #define PE_MAX_KEYCODE_COUNT 256

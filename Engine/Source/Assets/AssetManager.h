@@ -1,15 +1,14 @@
 #pragma once
 
-#include <Core.h>
-#include <Core/Utils/Logging/Logger.h>
+#include <Core.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
 
 #include "Mesh.h"
 #include "Utility/AssetLoader.h"
 
-import Pawn.Core.Memory;
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
-import Pawn.Core.Container.StringView;
+#include <Core/Memory/Memory.hpp>
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/String/String.hpp>
 
 namespace Pawn::Assets
 {

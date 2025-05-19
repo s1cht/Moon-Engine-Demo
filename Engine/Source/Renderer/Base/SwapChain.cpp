@@ -3,8 +3,6 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
 
-#include <Core/Misc/Assertion.h>
-
 namespace Pawn::Render
 {
 	SwapChain* SwapChain::Create(int32& result, Window* window)

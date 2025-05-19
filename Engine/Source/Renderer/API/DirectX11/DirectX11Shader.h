@@ -3,7 +3,8 @@
 #include "Renderer/Base/Shader.h"
 #include "Platform/Windows/Win32Platform.h"
 
-import Pawn.Core.Container.String;
+#include <Core/Platform/Base/IO.hpp>
+#include <Core/Containers/String/String.hpp>
 
 namespace Pawn::Render
 {

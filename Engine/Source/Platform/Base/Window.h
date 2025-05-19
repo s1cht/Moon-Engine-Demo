@@ -1,10 +1,10 @@
 #pragma once
-#include <Core.h>
+
+#include <Core.hpp>
+#include <Core/Math/Math.hpp>
+#include <Core/Containers/Array.hpp>
+
 #include "Input/Input.h"
-
-import Pawn.Core.Math;
-import Pawn.Core.Container.Array;
-
 
 // Base class for Window
 

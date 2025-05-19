@@ -1,8 +1,6 @@
 #include "Shader.h"
 #include "Renderer/Renderer.h"
 
-#include <Core/Misc/Assertion.h>
-
 namespace Pawn::Render
 {
 	const uchar* Shader::s_ShaderSourceExtension;

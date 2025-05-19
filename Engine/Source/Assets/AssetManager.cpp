@@ -1,7 +1,5 @@
 #include "AssetManager.h"
-#include <Core/Misc/Assertion.h>
-
-import Pawn.Core.Algorithm;
+#include <Core/Containers/Algorithm.hpp>
 
 namespace Pawn::Assets
 {

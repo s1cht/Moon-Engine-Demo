@@ -1,11 +1,8 @@
 #pragma once
-#include <Core.h>
-#include <Core/PawnMacros.h>
+#include <Core.hpp>
 
 #include "Input/Keycodes.h"
 #include "Events/KeyEvents.h"
-
-import Pawn.Core.Event;
 
 #define PE_MAX_REPEAT_COUNT 50
 

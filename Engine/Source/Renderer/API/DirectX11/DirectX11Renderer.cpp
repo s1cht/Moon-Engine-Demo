@@ -2,8 +2,6 @@
 #include "DirectX11Renderer.h"
 #include "Application/Application.h"
 
-#include <Core/Misc/Assertion.h>
-
 namespace Pawn::Render
 {
 	inline RendererAPI* RendererAPI::CreateDirectX11()

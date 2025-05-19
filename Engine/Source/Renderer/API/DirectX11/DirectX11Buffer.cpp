@@ -3,8 +3,6 @@
 #include "Renderer/RenderCommand.h"
 #include "Renderer/API/DirectX11/DirectX11Renderer.h"
 
-#include <Core/Misc/Assertion.h>
-
 namespace Pawn::Render
 {
 

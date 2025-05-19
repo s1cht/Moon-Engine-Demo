@@ -2,6 +2,8 @@
 
 #include "Core.hpp"
 #include "Core/Misc/Pair.hpp"
+#include "Core/Memory/Hasher.hpp"
+#include "Core/Memory/Allocator.hpp"
 
 namespace Pawn::Core::Containers
 {

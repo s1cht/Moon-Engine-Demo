@@ -1,5 +1,5 @@
 
-#include "Core.h"
+#include <Core.hpp>
 #include "Input/Input.h"
 
 namespace Pawn::Input

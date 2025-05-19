@@ -9,11 +9,10 @@
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
 
-#include <Core/Misc/Assertion.h>
-#include <Core/Utils/Logging/Logger.h>
-
-import Pawn.Core.Container.String;
-import Pawn.Core.Utils.Benchmark;
+#include <Core.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Containers/String/String.hpp>
+#include <Core/Utils/Benchmark/Benchmark.hpp>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

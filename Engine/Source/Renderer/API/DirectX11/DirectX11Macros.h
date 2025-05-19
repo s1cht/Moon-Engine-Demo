@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core/Misc/Assertion.h>
+#include <Core.hpp>
 
 #define PE_D3D11_CHECK(x)		\
 if (FAILED(x))					\

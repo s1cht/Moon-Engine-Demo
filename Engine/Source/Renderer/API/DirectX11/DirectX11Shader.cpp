@@ -3,10 +3,8 @@
 #include "Renderer/RenderCommand.h"
 #include "Renderer/API/DirectX11/DirectX11Renderer.h"
 
-#include <Core/Misc/Assertion.h>
-
-import Pawn.Core.IO;
-import Pawn.Core.Container.StringView;
+#include <Core/Platform/Base/IO.hpp>
+#include <Core/Containers/String/String.hpp>
 
 namespace Pawn::Render
 {

@@ -1,6 +1,10 @@
 #pragma once
 
-#include <Core.h>
+#include <Core.hpp>
+
+#include <Core/Events/Event.hpp>
+#include <Core/Math/Math.hpp>
+#include <Core/Containers/String/String.hpp>
 
 #include "Keycodes.h"
 #include "Mouse/Mouse.h"
@@ -8,10 +12,6 @@
 
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
-
-import Pawn.Core.Math;
-import Pawn.Core.Event;
-import Pawn.Core.Container.String;
 
 namespace Pawn::Input
 {

@@ -5,7 +5,7 @@
 namespace Pawn::Core::Algorithm
 {
 	template<typename Iterator, typename T>
-	CORE_API Iterator Find(Iterator first, Iterator last, const T& value)
+	Iterator Find(Iterator first, Iterator last, const T& value)
 	{
 		for (Iterator it = first; it != last; ++it)
 			if (*it == value)
@@ -14,7 +14,7 @@ namespace Pawn::Core::Algorithm
 	}
 
 	template<typename Iterator, typename T>
-	CORE_API Iterator BinaryFind(Iterator first, Iterator last, const T& value)
+	Iterator BinaryFind(Iterator first, Iterator last, const T& value)
 	{
 		while (first < last)
 		{
@@ -32,7 +32,7 @@ namespace Pawn::Core::Algorithm
 	}
 
 	template<typename FirstIterator, typename SecondIterator>
-	CORE_API FirstIterator FindFirstOf(FirstIterator first, FirstIterator last,
+	FirstIterator FindFirstOf(FirstIterator first, FirstIterator last,
 		SecondIterator firstF, SecondIterator lastF)
 	{
 		for (; first != last; ++first)

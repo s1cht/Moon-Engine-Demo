@@ -42,7 +42,7 @@ project "Engine"
 	{
 		"EngineCore",
 		"ImGui",
-		"DXC",
+		--"DXC",
 	}
 
 	libdirs
