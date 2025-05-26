@@ -7,8 +7,6 @@
 
 #include <Assets/AssetManager.h>
 
-import Pawn.Core.IO;
-
 using namespace Pawn;
 
 void SandboxLayer::OnAttach()

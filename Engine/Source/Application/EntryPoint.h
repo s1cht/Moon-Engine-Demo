@@ -15,9 +15,9 @@ extern Pawn::Application* Pawn::CreateApplication();
 int wmain(int32 argc, const uchar** argv)
 {
 	Pawn::Core::Clock::Time::Init();
-	Pawn::MemWatch::Get();
+//	Pawn::MemWatch::Get();
 	Pawn::Core::Utils::Logger::Init();
-	Pawn::MemWatch::EnableMemWatch();
+//	Pawn::MemWatch::EnableMemWatch();
 
 	for (int32 i = 0; i < argc; i++)
 	{
@@ -41,7 +41,7 @@ int wmain(int32 argc, const uchar** argv)
 
 
 	Pawn::Core::IO::DirectoryStorage::Shutdown();
-	Pawn::MemWatch::OnExit();
+//	Pawn::MemWatch::OnExit();
 	Pawn::Core::Utils::Logger::Shutdown();
 	Pawn::Core::Clock::Time::Shutdown();
 }

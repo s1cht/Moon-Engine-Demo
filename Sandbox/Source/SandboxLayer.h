@@ -1,9 +1,9 @@
 #pragma once
-#include <Core.h>
-#include <Core/Layer/Layer.h>
+#include <Core.hpp>
+#include <Core/Layer/Layer.hpp>
 #include <Renderer/Base/Buffer.h>
 #include <Renderer/Base/Shader.h>
-#include <Renderer/Base/PipelineState.h>
+#include <Renderer/Base/Pipeline.h>
 #include <Renderer/Camera/Camera.h>
 #include <Events/WindowEvents.h>
 #include <Assets/Mesh.h>
@@ -34,7 +34,7 @@ private:
 
 private:
 	Pawn::Core::Memory::Reference<Pawn::Render::BufferLayout> m_Layout;
-	Pawn::Core::Memory::Reference<Pawn::Render::PipelineState> m_Primary;
+	Pawn::Core::Memory::Reference<Pawn::Render::Pipeline> m_Primary;
 	Pawn::Core::Memory::Reference<Pawn::Render::Shader> m_VertexShader;
 	Pawn::Core::Memory::Reference<Pawn::Render::Shader> m_PixelShader;
 	Pawn::Core::Memory::Reference<Pawn::Render::Uniform> m_CameraBuffer;

@@ -34,8 +34,8 @@ group "Misc"
 		language "C++"
 		cppdialect "C++23"
 		staticruntime "off"
-		allmodulespublic "on"
-		scanformoduledependencies "on"
+		allmodulespublic "off"
+		scanformoduledependencies "off"
 
 		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -57,6 +57,7 @@ group "Misc"
 			includeDirs.spdlog,
 			includeDirs.ImGui,
 			includeDirs.xxHash,
+			VULKAN_SDK .."/Include",
 		}
 
 		links 
