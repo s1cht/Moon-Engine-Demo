@@ -1,5 +1,5 @@
 #include <PawnEngine.h>
-//#include "SandboxLayer.h"
+#include "SandboxLayer.h"
 
 static Pawn::ApplicationProperties AppProps;
 
@@ -9,7 +9,7 @@ public:
 	App()
 		: Pawn::Application(AppProps)
 	{
-		//PushLayer(new SandboxLayer());
+		PushLayer(new SandboxLayer());
 	};
 	~App() {};
 

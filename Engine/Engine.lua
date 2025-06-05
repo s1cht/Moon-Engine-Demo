@@ -58,11 +58,6 @@ project "Engine"
 	filter "system:windows"
 		systemversion "latest"
 
-		postbuildcommands
-		{
-			("{COPYDIR} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox/")
-		}
-
 		includedirs
 		{
 			"C:/Windows/System32",

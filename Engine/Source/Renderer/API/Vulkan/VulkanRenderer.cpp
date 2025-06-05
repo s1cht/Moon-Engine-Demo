@@ -1,5 +1,6 @@
 #include "VulkanRenderer.h"
 #include "Application/Application.h"
+#include "VulkanMacros.hpp"
 
 #include <set>
 
@@ -56,6 +57,11 @@ namespace Pawn::Render
             delete m_SwapChain;
             m_SwapChain = nullptr;
         }
+		if (m_GraphicsCommandPool)
+		{
+            vkDestroyCommandPool(m_Device, m_GraphicsCommandPool, nullptr);
+            m_GraphicsCommandPool = nullptr;
+		}
         if (m_PresentQueue != nullptr)
         {
             m_PresentQueue = nullptr;
@@ -213,6 +219,14 @@ namespace Pawn::Render
             return result;
 		}
 
+        result = CreateCommandPool();
+        if (PE_VK_FAILED(result))
+        {
+            PE_ASSERT(TEXT("Vulkan: command pool creation failed! Error: {0}"), result);
+            Shutdown();
+            return result;
+        }
+
         return result;
     }
 
@@ -293,6 +307,7 @@ namespace Pawn::Render
 
         vkGetDeviceQueue(m_Device, m_GraphicsQueueFamily, 0, &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, m_PresentQueueFamily, 0, &m_PresentQueue);
+
         return PE_VK_RETURN_V(result);
     }
 
@@ -313,6 +328,19 @@ namespace Pawn::Render
 #else
         return PE_VK_RETURN_V(VulkanRendererErrors::UnsupportedPlatform);
 #endif
+
+        return PE_VK_RETURN_V(result);
+    }
+
+    int32 VulkanRenderer::CreateCommandPool()
+    {
+        VkResult result;
+        VkCommandPoolCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        createInfo.queueFamilyIndex = m_GraphicsQueueFamily;
+        createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+        result = vkCreateCommandPool(m_Device, &createInfo, nullptr, &m_GraphicsCommandPool);
 
         return PE_VK_RETURN_V(result);
     }

@@ -96,9 +96,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>..\bin\Debug-windows-x86_64\EngineCore\EngineCore.lib</ImportLibrary>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Q /E /Y /I ..\bin\Debug-windows-x86_64\EngineCore\EngineCore.dll ..\bin\Debug-windows-x86_64\Sandbox</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -123,9 +120,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>..\bin\Release-windows-x86_64\EngineCore\EngineCore.lib</ImportLibrary>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Q /E /Y /I ..\bin\Release-windows-x86_64\EngineCore\EngineCore.dll ..\bin\Release-windows-x86_64\Sandbox</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'">
     <ClCompile>
@@ -150,9 +144,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>..\bin\Distribute-windows-x86_64\EngineCore\EngineCore.lib</ImportLibrary>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Q /E /Y /I ..\bin\Distribute-windows-x86_64\EngineCore\EngineCore.dll ..\bin\Distribute-windows-x86_64\Sandbox</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Core.hpp" />

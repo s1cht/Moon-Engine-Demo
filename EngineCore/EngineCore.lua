@@ -9,6 +9,8 @@ project "EngineCore"
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
+	EngineCoreLib = "%{cfg.buildtarget.relpath}"
+
 	characterset "Unicode"
 
 	files
@@ -36,11 +38,6 @@ project "EngineCore"
 
 	filter "system:windows"
 		systemversion "latest"
-
-		postbuildcommands
-		{
-			("{COPYDIR} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox/")
-		}
 
 	filter "system:linux"
 		toolset "clang"

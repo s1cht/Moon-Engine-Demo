@@ -6,6 +6,7 @@
 #include "Platform/Base/Window.h"
 #include "Events/WindowEvents.h"
 #include "Renderer/Base/Framebuffer.h"
+#include "Renderer/Base/CommandBuffer.h"
 
 namespace Pawn::Render
 {

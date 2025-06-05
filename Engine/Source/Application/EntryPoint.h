@@ -44,6 +44,8 @@ int wmain(int32 argc, const uchar** argv)
 //	Pawn::MemWatch::OnExit();
 	Pawn::Core::Utils::Logger::Shutdown();
 	Pawn::Core::Clock::Time::Shutdown();
+
+	return 0;
 }
 
 #endif

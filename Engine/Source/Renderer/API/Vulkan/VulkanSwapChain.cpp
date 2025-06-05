@@ -2,6 +2,7 @@
 #include "Application/Application.h"
 #include "Renderer/RenderCommand.h"
 #include "VulkanRenderer.h"
+#include "VulkanMacros.hpp"
 #include <limits>
 #include <algorithm>
 

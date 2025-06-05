@@ -1,11 +1,15 @@
 #include "SandboxLayer.h"
+#include <Core/Platform/Base/IO.hpp>
 #include <Application/Application.h>
 #include <Renderer/Renderer.h>
 #include <Renderer/RenderCommand.h>
+#include <Renderer/Base/CommandBuffer.h>
 #include <Renderer/ImGui/ImGuiReferences.h>
 #include <Renderer/Camera/PerpectiveCamera.h>
 
+
 #include <Assets/AssetManager.h>
+
 
 using namespace Pawn;
 
@@ -31,6 +35,10 @@ void SandboxLayer::OnAttach()
 	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Glass")));
 	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Ring")));
 
+	Render::CommandBuffer* buffer = Render::CommandBuffer::CreateCommandBuffer();
+
+	/*
+
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
 		{ Render::ShaderType::Float2, "TCOORD", 0, 0 },
@@ -40,7 +48,7 @@ void SandboxLayer::OnAttach()
 	m_WindowWidth = (uint32)Application::Get().GetWindow()->GetWidth();
 	m_WindowHeight = (uint32)Application::Get().GetWindow()->GetHeight();
 
-	m_Primary = Core::Memory::Reference<Render::PipelineState>(Render::PipelineState::Create());
+	m_Primary = Core::Memory::Reference<Render::Pipeline>(Render::Pipeline::Create());
 
 	Render::Shader::SetShaderSourceExtension(TEXT(".hlsl"));
 	Render::Shader::SetCompiledShaderExtension(TEXT(".cso"));
@@ -107,10 +115,13 @@ void SandboxLayer::OnAttach()
 	m_Camera->SetAspectRatio(1920.f / 1080.f);
 	m_Camera->SetPosition(Core::Math::Vector3D(0));
 	m_Camera->SetRotation(0, 0, 0);
+	*/
 }
 
 void SandboxLayer::OnUpdate(float64 deltaTime)
 {
+	/*
+
 	Render::BufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
 		{ Render::ShaderType::Float2, "TCOORD", 0, 0 },
@@ -209,6 +220,7 @@ void SandboxLayer::OnUpdate(float64 deltaTime)
 	}
 
 	D3DPERF_EndEvent();
+	*/
 }
 
 void SandboxLayer::OnEvent(Core::Event& event)
@@ -216,7 +228,7 @@ void SandboxLayer::OnEvent(Core::Event& event)
 	Pawn::Core::EventDispatcher dispathcher(event);
 	dispathcher.Dispatch<Events::WindowResizedEvent>(BIND_EVENT_FN(SandboxLayer::SetViewportSize));
 
-	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
+	//m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
 }
 
 void SandboxLayer::OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext)
@@ -299,7 +311,7 @@ bool SandboxLayer::SetViewportSize(Pawn::Events::WindowResizedEvent& event)
 	m_WindowWidth = (uint32)event.GetSizeX();
 	m_WindowHeight = (uint32)event.GetSizeY();
 
-	m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
+	//m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
 
 	return false;
 }

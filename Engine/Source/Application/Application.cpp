@@ -65,14 +65,13 @@ namespace Pawn {
 
 			//Render::RenderCommand::Clear(Pawn::Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
 
-
-			//for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
-			//{
-			//	(*layer)->OnUpdate(delta);
-			//}
+			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
+			{
+				(*layer)->OnUpdate(delta);
+			}
 
 			//Render::Renderer::EndScene();
-			//
+			
 			//m_ImGuiLayer->BeginRender();
 
 			//for (auto layer : m_LayerStack)

@@ -72,6 +72,15 @@ group "Misc"
 			"%{wks.location}/bin/" .. outputdir .. "/Engine",
 		}
 
+		postbuildcommands
+		{
+			("{COPYDIR} ../bin/" .. outputdir .. "/EngineCore/EngineCore.dll ../bin/" .. outputdir .. "/Sandbox/"),
+			("{COPYDIR} ../bin/" .. outputdir .. "/Engine/Engine.dll ../bin/" .. outputdir .. "/Sandbox/")
+		}
+
+		print(EngineCoreLib)
+		print(EngineLib)
+
 		filter "system:windows"
 			systemversion "latest"
 

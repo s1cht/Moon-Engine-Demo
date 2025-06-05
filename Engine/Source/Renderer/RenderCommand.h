@@ -4,6 +4,7 @@
 #include "Base/RendererAPI.h"
 #include "Base/SwapChain.h"
 #include "Base/Framebuffer.h"
+#include "Base/CommandBuffer.h"
 
 namespace Pawn::Render
 {

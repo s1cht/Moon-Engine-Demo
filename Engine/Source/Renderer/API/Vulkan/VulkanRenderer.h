@@ -61,6 +61,7 @@ namespace Pawn::Render
 		inline VkDevice GetDevice() { return m_Device; }
 		inline VkQueue GetPresentQueue() { return m_PresentQueue; }
 		inline VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
+		inline VkCommandPool GetCommandPool() { return m_GraphicsCommandPool; };
 
 	private:
 		static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -77,6 +78,7 @@ namespace Pawn::Render
 		int32 CreateValidationLayer();
 		int32 CreateDevice();
 		int32 CreateWindowSurface();
+		int32 CreateCommandPool();
 
 	private:
 		void DestroyValidationLayer();
@@ -103,6 +105,8 @@ namespace Pawn::Render
 		VkQueue m_GraphicsQueue;
 		VkQueue m_PresentQueue;
 
+		VkCommandPool m_GraphicsCommandPool;
+
 		uint32 m_SelectedPhysicalDevice;
 
 		uint32 m_GraphicsQueueFamily;
@@ -126,6 +130,3 @@ namespace Pawn::Render
 
 	};
 }
-
-#define PE_VK_RETURN_V(val) (int32(val))
-#define PE_VK_FAILED(result) (result != (int32)VkResult::VK_SUCCESS || (int32)VulkanErrors::Success)
