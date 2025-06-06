@@ -179,16 +179,20 @@
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11Shader.h" />
     <ClInclude Include="Source\Renderer\API\DirectX11\DirectX11SwapChain.h" />
     <ClInclude Include="Source\Renderer\API\Vulkan\VulkanCommandBuffer.h" />
+    <ClInclude Include="Source\Renderer\API\Vulkan\VulkanFunctions.h" />
     <ClInclude Include="Source\Renderer\API\Vulkan\VulkanMacros.hpp" />
     <ClInclude Include="Source\Renderer\API\Vulkan\VulkanRenderer.h" />
+    <ClInclude Include="Source\Renderer\API\Vulkan\VulkanRenderPass.h" />
     <ClInclude Include="Source\Renderer\API\Vulkan\VulkanSwapChain.h" />
     <ClInclude Include="Source\Renderer\Base\Buffer.h" />
     <ClInclude Include="Source\Renderer\Base\CommandBuffer.h" />
     <ClInclude Include="Source\Renderer\Base\Framebuffer.h" />
     <ClInclude Include="Source\Renderer\Base\Pipeline.h" />
     <ClInclude Include="Source\Renderer\Base\RendererAPI.h" />
+    <ClInclude Include="Source\Renderer\Base\RenderPass.h" />
     <ClInclude Include="Source\Renderer\Base\Shader.h" />
     <ClInclude Include="Source\Renderer\Base\SwapChain.h" />
+    <ClInclude Include="Source\Renderer\Base\Texture.h" />
     <ClInclude Include="Source\Renderer\Camera\Camera.h" />
     <ClInclude Include="Source\Renderer\Camera\PerpectiveCamera.h" />
     <ClInclude Include="Source\Renderer\ImGui\ImGuiLayer.h" />
@@ -241,9 +245,11 @@
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="Source\Renderer\API\Vulkan\VulkanCommandBuffer.cpp" />
+    <ClCompile Include="Source\Renderer\API\Vulkan\VulkanFunctions.cpp" />
     <ClCompile Include="Source\Renderer\API\Vulkan\VulkanRenderer.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\API\Vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="Source\Renderer\API\Vulkan\VulkanSwapChain.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
@@ -260,12 +266,14 @@
     <ClCompile Include="Source\Renderer\Base\RendererAPI.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\Base\RenderPass.cpp" />
     <ClCompile Include="Source\Renderer\Base\Shader.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="Source\Renderer\Base\SwapChain.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\Base\Texture.cpp" />
     <ClCompile Include="Source\Renderer\Camera\PerpectiveCamera.cpp">
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>

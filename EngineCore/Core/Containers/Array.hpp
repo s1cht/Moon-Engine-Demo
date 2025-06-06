@@ -218,6 +218,17 @@ namespace Pawn::Core::Containers
 			return Iterator(m_Data + m_Size);
 		}
 
+		PE_NODISCARD inline DataType& Front() 
+		{
+			return *(m_Data);
+		}
+
+		PE_NODISCARD inline DataType& Back() 
+		{
+			return *(m_Data + m_Size);
+		}
+
+
 	public:
 
 		Array& operator=(const Array& other)

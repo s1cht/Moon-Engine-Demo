@@ -11,6 +11,59 @@ namespace Pawn::Render
 {
 	class Shader;
 
+	enum class PipelineBindPoint : uint8
+	{
+		None = 0,
+		Graphics, Compute,
+		RayTracing, SubpassShading,
+	};
+
+	enum class PipelineStageFlags : uint32
+	{
+		None = 0,
+		TopOfPipe								= BIT(0),
+		BottomOfPipe							= BIT(1),
+		DrawIndirect							= BIT(2),
+		VertexInput								= BIT(3),
+		VertexShader							= BIT(4),
+		TesselationEvaluationShader				= BIT(5),
+		TesselationControlShader				= BIT(6),
+		GeometryShader							= BIT(7),
+		FragmentShader							= BIT(8),
+		EarlyFragmentTests						= BIT(9),
+		LateFragmentTests						= BIT(10),
+		ColorAttachmentOutput					= BIT(11),
+		ComputeShader							= BIT(12),
+		Transfer								= BIT(13),
+		AllGraphics								= BIT(14),
+		AllCommands								= BIT(15),
+		RayTracing								= BIT(16),
+		AccelerationStructure					= BIT(17),
+		ConditionalRendering					= BIT(18),
+	};
+
+	enum class AccessFlags : uint32
+	{
+		None = 0,
+		IndirectCommandRead						= BIT(0),
+		IndexRead								= BIT(1),
+		VertexAttributeRead						= BIT(2),
+		UniformRead								= BIT(3),
+		InputAttachmentRead						= BIT(4),
+		ShaderRead								= BIT(5),
+		ShaderWrite								= BIT(6),
+		ColorAttachmentRead						= BIT(7),
+		ColorAttachmentWrite					= BIT(8),
+		DepthStencilRead						= BIT(9),
+		DepthStencilWrite						= BIT(10),
+		TransferRead							= BIT(11),
+		TransferWrite							= BIT(12),
+		HostRead								= BIT(13),
+		HostWrite								= BIT(14),
+		MemoryRead								= BIT(15),
+		MemoryWrite								= BIT(16),
+	};
+
 	enum class PrimitiveTopology
 	{
 		None = 0,
@@ -100,6 +153,38 @@ namespace Pawn::Render
 		//...
 
 	};
+
+	inline constexpr PAWN_API PipelineStageFlags operator|(Pawn::Render::PipelineStageFlags a, Pawn::Render::PipelineStageFlags b)
+	{
+		return static_cast<PipelineStageFlags>((uint32)a | (uint32)b);
+	}
+
+	inline constexpr PAWN_API AccessFlags operator|(Pawn::Render::AccessFlags a, Pawn::Render::AccessFlags b)
+	{
+		return static_cast<AccessFlags>((uint32)a | (uint32)b);
+	}
+
+	inline constexpr PAWN_API PipelineStageFlags operator|=(Pawn::Render::PipelineStageFlags& a, Pawn::Render::PipelineStageFlags b)
+	{
+		a = a | b;
+		return a;
+	}
+
+	inline constexpr PAWN_API AccessFlags operator|=(Pawn::Render::AccessFlags& a, Pawn::Render::AccessFlags b)
+	{
+		a = a | b;
+		return a;
+	}
+
+	inline constexpr PipelineStageFlags operator&(PipelineStageFlags a, PipelineStageFlags b)
+	{
+		return static_cast<PipelineStageFlags>(static_cast<uint32>(a) & static_cast<uint32>(b));
+	}
+
+	inline constexpr AccessFlags operator&(AccessFlags a, AccessFlags b)
+	{
+		return static_cast<AccessFlags>(static_cast<uint32>(a) & static_cast<uint32>(b));
+	}
 
 }
 
