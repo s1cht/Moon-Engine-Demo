@@ -236,4 +236,120 @@ namespace Pawn::Render
 
 		return static_cast<VkAccessFlags>(value);
 	}
+
+	constexpr Pawn::Render::Format ConvertFormatEngine(VkFormat format)
+	{
+		switch (format)
+		{
+			case VK_FORMAT_R8_UINT: return Format::R8_UINT;
+			case VK_FORMAT_R8_SINT: return Format::R8_SINT;
+			case VK_FORMAT_R8_SRGB: return Format::R8_SRGB;
+			case VK_FORMAT_R8_UNORM: return Format::R8_UNORM;
+			case VK_FORMAT_R8_SNORM: return Format::R8_SNORM;
+			case VK_FORMAT_R8G8_UINT: return Format::RG8_UINT;
+			case VK_FORMAT_R8G8_SINT: return Format::RG8_SINT;
+			case VK_FORMAT_R8G8_SRGB: return Format::RG8_SRGB;
+			case VK_FORMAT_R8G8_UNORM: return Format::RG8_UNORM;
+			case VK_FORMAT_R8G8_SNORM: return Format::RG8_SNORM;
+			case VK_FORMAT_R8G8B8_UINT: return Format::RGB8_UINT;
+			case VK_FORMAT_R8G8B8_SINT: return Format::RGB8_SINT;
+			case VK_FORMAT_R8G8B8_SRGB: return Format::RGB8_SRGB;
+			case VK_FORMAT_R8G8B8_UNORM: return Format::RGB8_UNORM;
+			case VK_FORMAT_R8G8B8_SNORM: return Format::RGB8_SNORM;
+			case VK_FORMAT_R8G8B8A8_UINT: return Format::RGBA8_UINT;
+			case VK_FORMAT_R8G8B8A8_SINT: return Format::RGBA8_SINT;
+			case VK_FORMAT_R8G8B8A8_SRGB: return Format::RGBA8_SRGB;
+			case VK_FORMAT_R8G8B8A8_UNORM: return Format::RGBA8_UNORM;
+			case VK_FORMAT_R8G8B8A8_SNORM: return Format::RGBA8_SNORM;
+
+			case VK_FORMAT_R16_UINT: return Format::R16_UINT;
+			case VK_FORMAT_R16_SINT: return Format::R16_SINT;
+			case VK_FORMAT_R16_UNORM: return Format::R16_UNORM;
+			case VK_FORMAT_R16_SNORM: return Format::R16_SNORM;
+			case VK_FORMAT_R16_SFLOAT: return Format::R16_SFLOAT;
+			case VK_FORMAT_R16G16_UINT: return Format::RG16_UINT;
+			case VK_FORMAT_R16G16_SINT: return Format::RG16_SINT;
+			case VK_FORMAT_R16G16_UNORM: return Format::RG16_UNORM;
+			case VK_FORMAT_R16G16_SNORM: return Format::RG16_SNORM;
+			case VK_FORMAT_R16G16_SFLOAT: return Format::RG16_SFLOAT;
+			case VK_FORMAT_R16G16B16_UINT: return Format::RGB16_UINT;
+			case VK_FORMAT_R16G16B16_SINT: return Format::RGB16_SINT;
+			case VK_FORMAT_R16G16B16_UNORM: return Format::RGB16_UNORM;
+			case VK_FORMAT_R16G16B16_SNORM: return Format::RGB16_SNORM;
+			case VK_FORMAT_R16G16B16_SFLOAT: return Format::RGB16_SFLOAT;
+			case VK_FORMAT_R16G16B16A16_UINT: return Format::RGBA16_UINT;
+			case VK_FORMAT_R16G16B16A16_SINT: return Format::RGBA16_SINT;
+			case VK_FORMAT_R16G16B16A16_UNORM: return Format::RGBA16_UNORM;
+			case VK_FORMAT_R16G16B16A16_SNORM: return Format::RGBA16_SNORM;
+			case VK_FORMAT_R16G16B16A16_SFLOAT: return Format::RGBA16_SFLOAT;
+
+			case VK_FORMAT_R32_UINT: return Format::R32_UINT;
+			case VK_FORMAT_R32_SINT: return Format::R32_SINT;
+			case VK_FORMAT_R32_SFLOAT: return Format::R32_SFLOAT;
+			case VK_FORMAT_R32G32_UINT: return Format::RG32_UINT;
+			case VK_FORMAT_R32G32_SINT: return Format::RG32_SINT;
+			case VK_FORMAT_R32G32_SFLOAT: return Format::RG32_SFLOAT;
+			case VK_FORMAT_R32G32B32_UINT: return Format::RGB32_UINT;
+			case VK_FORMAT_R32G32B32_SINT: return Format::RGB32_SINT;
+			case VK_FORMAT_R32G32B32_SFLOAT: return Format::RGB32_SFLOAT;
+			case VK_FORMAT_R32G32B32A32_UINT: return Format::RGBA32_UINT;
+			case VK_FORMAT_R32G32B32A32_SINT: return Format::RGBA32_SINT;
+			case VK_FORMAT_R32G32B32A32_SFLOAT: return Format::RGBA32_SFLOAT;
+
+			case VK_FORMAT_R64_UINT: return Format::R64_UINT;
+			case VK_FORMAT_R64_SINT: return Format::R64_SINT;
+			case VK_FORMAT_R64_SFLOAT: return Format::R64_SFLOAT;
+			case VK_FORMAT_R64G64_UINT: return Format::RG64_UINT;
+			case VK_FORMAT_R64G64_SINT: return Format::RG64_SINT;
+			case VK_FORMAT_R64G64_SFLOAT: return Format::RG64_SFLOAT;
+			case VK_FORMAT_R64G64B64_UINT: return Format::RGB64_UINT;
+			case VK_FORMAT_R64G64B64_SINT: return Format::RGB64_SINT;
+			case VK_FORMAT_R64G64B64_SFLOAT: return Format::RGB64_SFLOAT;
+			case VK_FORMAT_R64G64B64A64_UINT: return Format::RGBA64_UINT;
+			case VK_FORMAT_R64G64B64A64_SINT: return Format::RGBA64_SINT;
+			case VK_FORMAT_R64G64B64A64_SFLOAT: return Format::RGBA64_SFLOAT;
+
+			case VK_FORMAT_D16_UNORM: return Format::D16_UNORM;
+			case VK_FORMAT_D16_UNORM_S8_UINT: return Format::D16_UNORM_S8_UINT;
+			case VK_FORMAT_D24_UNORM_S8_UINT: return Format::D24_UNORM_S8_UINT;
+			case VK_FORMAT_D32_SFLOAT: return  Format::D32_SFLOAT;
+			case VK_FORMAT_D32_SFLOAT_S8_UINT: return Format::D32_SFLOAT_S8_UINT;
+			default:
+			{
+
+			}
+		}
+	}
+
+	constexpr Pawn::Render::ImageLayout ConvertImageLayoutEngine(VkImageLayout layout)
+	{
+		return ImageLayout::Undefined;
+	}
+
+	constexpr Pawn::Render::LoadOperation ConvertAttachmentLoadOperationEngine(VkAttachmentLoadOp operation)
+	{
+		return LoadOperation::None;
+	}
+
+	constexpr Pawn::Render::StoreOperation ConvertAttachmentStoreOperationEngine(VkAttachmentStoreOp operation)
+	{
+		return StoreOperation::None;
+	}
+
+	constexpr Pawn::Render::PipelineBindPoint ConvertPipelineBindPointEngine(VkPipelineBindPoint operation)
+	{
+		return PipelineBindPoint::None;
+	}
+
+	constexpr Pawn::Render::PipelineStageFlags ConvertPipelineStageFlagsEngine(VkPipelineStageFlags flags)
+	{
+		return PipelineStageFlags::None;
+	}
+
+	constexpr Pawn::Render::AccessFlags ConvertAccessFlagsEngine(VkAccessFlags flags)
+	{
+		return AccessFlags::None;
+	}
+
+
 }

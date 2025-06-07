@@ -2,6 +2,9 @@
 
 #include <Core.hpp>
 
+#include "Core/Math/Math.hpp"
+#include "Core/Misc/Rect2D.hpp"
+
 namespace Pawn::Render
 {
 	enum class Format : uint32
@@ -37,6 +40,82 @@ namespace Pawn::Render
 		D24_UNORM_S8_UINT,
 		D32_SFLOAT,
 		D32_SFLOAT_S8_UINT,
+
+	};
+
+	enum class ImageLayout : uint8
+	{
+		Undefined = 0,
+		Present,
+		ColorAttachment, DepthStencilAttachment,
+		ShaderReadOnly,
+		TransferSrc, TransferDst,
+	};
+
+	enum class ImageUsageFlags : uint32
+	{
+		None = 0,
+		TransferSrc						= BIT(0),
+		TransferDst						= BIT(1),
+		Sampled							= BIT(2),
+		Storage							= BIT(3),
+		ColorAttachment					= BIT(4),
+		DepthStencilAttachment			= BIT(5),
+		TransientAttachment				= BIT(6),
+		InputAttachment					= BIT(7),
+		HostTransfer					= BIT(8),
+		VideoDecodeDst					= BIT(9),
+		VideoDecodeSrc					= BIT(10),
+		VideoDecodeDpb					= BIT(11),
+	};
+
+	struct TextureSpecification
+	{
+		void* Data;
+		SIZE_T DataSize;
+		Format Format;
+		ImageUsageFlags Usage;
+		Pawn::Core::Containers::AnsiString DebugName;
+
+		bool bOwnsImage = false;
+	};
+
+	struct Texture2DSpecification : TextureSpecification
+	{
+		Pawn::Core::Math::Resolution2D<uint32> Resolution;
+	};
+
+	class PAWN_API Texture
+	{
+	public:
+		virtual ~Texture() = default;
+
+		virtual void Bind() = 0;
+		virtual void Unbind() = 0;
+
+		virtual bool IsLoaded() const = 0;
+
+		virtual void SetData(void* data, SIZE_T size) = 0;
+
+		virtual void* GetRawData() = 0;
+		virtual SIZE_T GetRawDataSize() = 0;
+
+		virtual Pawn::Core::Containers::StringView GetTexturePath() = 0;
+		virtual Pawn::Core::Containers::AnsiStringView GetDebugName() = 0;
+	};
+
+	class PAWN_API Texture2D : public Texture
+	{
+	public:
+		virtual Pawn::Render::Texture2DSpecification& GetSpecification() = 0;
+
+		virtual Pawn::Core::Math::Resolution2D<uint32> GetResolution() const = 0;
+
+	public:
+		static Texture2D* Create(Texture2DSpecification& specification);
+
+	private:
+		static Texture2D* CreateVulkanTexture(Texture2DSpecification& specification);
 
 	};
 }

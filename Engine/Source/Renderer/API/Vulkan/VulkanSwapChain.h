@@ -6,7 +6,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include "Renderer/Base/SwapChain.h"
-
+#include "VulkanTexture.h"
 
 namespace Pawn::Render
 {
@@ -32,13 +32,11 @@ namespace Pawn::Render
 		inline VkSurfaceFormatKHR GetFormats() { return m_Format; }
 		inline VkPresentModeKHR GetPresentMode() { return m_PresentMode; }
 		inline VkExtent2D GetExtent() { return m_Extent; }
-		inline Pawn::Core::Containers::Array<VkImage>& GetImages() { return m_Images; }
-		inline Pawn::Core::Containers::Array<VkImageView>& GetImageViews() { return m_ImageViews; }
+		inline Pawn::Core::Containers::Array<VulkanTexture2D>& GetImages() { return m_Images; }
 
 	private:
 		int32 CreateSwapChain(VulkanRenderer* renderer, VkSwapchainKHR oldSwapChain);
-		int32 CreateImageViews(VulkanRenderer* renderer);
-		void SetImages(VulkanRenderer* renderer);
+		int32 CreateImages(VulkanRenderer* renderer);
 		bool SetDetails(VkPhysicalDevice device, VkSurfaceKHR surface, 
 			Pawn::Core::Containers::Array<VkSurfaceFormatKHR>& formats,
 			Pawn::Core::Containers::Array<VkPresentModeKHR>& presentModes);
@@ -58,9 +56,8 @@ namespace Pawn::Render
 		VkSurfaceFormatKHR m_Format;
 		VkPresentModeKHR m_PresentMode;
 		VkSurfaceCapabilitiesKHR m_Capabilities;
-		
-		Pawn::Core::Containers::Array<VkImage> m_Images;
-		Pawn::Core::Containers::Array<VkImageView> m_ImageViews;
+
+		Pawn::Core::Containers::Array<VulkanTexture2D> m_Images;
 
 	};
 }

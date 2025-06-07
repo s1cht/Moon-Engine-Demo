@@ -6,6 +6,8 @@
 #include <limits>
 #include <algorithm>
 
+#include "VulkanFunctions.h"
+
 namespace Pawn::Render
 {
 	SwapChain* SwapChain::CreateVulkanSwapChain(int32& result)
@@ -28,14 +30,7 @@ namespace Pawn::Render
 	{
 		VulkanRenderer* renderer = static_cast<VulkanRenderer*>(RenderCommand::Get());
 
-		if (!m_ImageViews.Empty())
-		{
-			for (auto imageView : m_ImageViews)
-			{
-				vkDestroyImageView(renderer->GetDevice(), imageView, nullptr);
-				imageView = nullptr;
-			}
-		}
+		m_Images.Clear();
 		if (m_SwapChain != nullptr)
 		{
 			vkDestroySwapchainKHR(renderer->GetDevice(), m_SwapChain, nullptr);
@@ -53,14 +48,7 @@ namespace Pawn::Render
 		VkSwapchainKHR old = m_SwapChain;
 		m_SwapChain = nullptr;
 
-		if (!m_ImageViews.Empty())
-		{
-			for (auto imageView : m_ImageViews)
-			{
-				vkDestroyImageView(renderer->GetDevice(), imageView, nullptr);
-				imageView = nullptr;
-			}
-		}
+		m_Images.Clear();
 
 		result = CreateSwapChain(renderer, old);
 		if (PE_VK_FAILED(result))
@@ -70,13 +58,12 @@ namespace Pawn::Render
 			return;
 		}
 
-		SetImages(renderer);
 		m_ImageFormat = m_Format.format;
 
-		result = CreateImageViews(renderer);
+		result = CreateImages(renderer);
 		if (PE_VK_FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("Vulkan swap chain: Image views recreation failed! Error: {0}"), result);
+			PE_ASSERT(false, TEXT("Vulkan swap chain: Image recreation failed! Error: {0}"), result);
 			Shutdown();
 			return;
 		}
@@ -121,44 +108,33 @@ namespace Pawn::Render
 		return PE_VK_RETURN_V(vkCreateSwapchainKHR(renderer->GetDevice(), &createInfo, nullptr, &m_SwapChain));
 	}
 
-	int32 VulkanSwapChain::CreateImageViews(VulkanRenderer* renderer)
+	int32 VulkanSwapChain::CreateImages(VulkanRenderer* renderer)
 	{
-		VkResult result;
-		m_ImageViews.Reserve(m_Images.GetSize());
-		m_ImageViews.SetSize(m_Images.GetSize());
+		Core::Containers::Array<VkImage> swapChainImages;
+		Texture2DSpecification specs = {};
+		specs.bOwnsImage = true;
+		specs.Data = nullptr;
+		specs.DataSize = -1;
+		specs.Format = Pawn::Render::ConvertFormatEngine(m_ImageFormat);
+		specs.Usage = ImageUsageFlags::None;
+		specs.Resolution.x = m_Extent.width;
+		specs.Resolution.y = m_Extent.height;
+		
 
-		for (SIZE_T i = 0; i < m_Images.GetSize(); i++) 
-		{
-			VkImageViewCreateInfo createInfo{};
-			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			createInfo.image = m_Images[i];
-			createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			createInfo.format = m_ImageFormat;
-			createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			createInfo.subresourceRange.baseMipLevel = 0;
-			createInfo.subresourceRange.levelCount = 1;
-			createInfo.subresourceRange.baseArrayLayer = 0;
-			createInfo.subresourceRange.layerCount = 1;
-
-			result = vkCreateImageView(renderer->GetDevice(), &createInfo, nullptr, &m_ImageViews.Data()[i]);
-			if (PE_VK_FAILED(result))
-				return PE_VK_RETURN_V(result);
-		}
-
-		return PE_VK_RETURN_V(result);
-	}
-
-	void VulkanSwapChain::SetImages(VulkanRenderer* renderer)
-	{
 		uint32 count = 0;
 		vkGetSwapchainImagesKHR(renderer->GetDevice(), m_SwapChain, &count, nullptr);
-		m_Images.Reserve(count);
-		m_Images.SetSize(count);
-		vkGetSwapchainImagesKHR(renderer->GetDevice(), m_SwapChain, &count, m_Images.Data());
+		swapChainImages.Reserve(count);
+		swapChainImages.SetSize(count);
+		vkGetSwapchainImagesKHR(renderer->GetDevice(), m_SwapChain, &count, swapChainImages.Data());
+
+		for (uint32 i = 0; i < count; i++)
+		{
+			specs.DebugName = "SwapChain image" + Pawn::Core::Containers::ToAnsiString(1);
+
+			m_Images.EmplaceBack(VulkanTexture2D(swapChainImages[i], specs));
+		}
+
+		return 0;
 	}
 
 	bool VulkanSwapChain::SetDetails(VkPhysicalDevice device, VkSurfaceKHR surface,
@@ -271,15 +247,15 @@ namespace Pawn::Render
 			return PE_VK_RETURN_V(result);
 		}
 
-		SetImages(renderer);
 		m_ImageFormat = m_Format.format;
 
-		result = CreateImageViews(renderer);
+		result = CreateImages(renderer);
 		if (PE_VK_FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("Vulkan swap chain: Image views creation failed! Error: {0}"), result);
+			PE_ASSERT(false, TEXT("Vulkan swap chain: Image recreation failed! Error: {0}"), result);
 			Shutdown();
 			return PE_VK_RETURN_V(result);
+
 		}
 
 		return result;

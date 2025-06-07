@@ -6,7 +6,7 @@
 namespace Pawn::Core::Math
 {
 	template<typename T>
-	struct NumberPair
+	struct Resolution2D
 	{
 		T x;
 		T y;
@@ -15,7 +15,9 @@ namespace Pawn::Core::Math
 	struct Rect2D
 	{
 	public:
-		NumberPair<int32> Offset;
-		NumberPair<uint32> Extent;
+		Resolution2D<int32> Offset;
+		Resolution2D<uint32> Extent;
 	};
+
+
 }

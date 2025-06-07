@@ -7,9 +7,7 @@
 #include <Renderer/ImGui/ImGuiReferences.h>
 #include <Renderer/Camera/PerpectiveCamera.h>
 
-
 #include <Assets/AssetManager.h>
-
 
 using namespace Pawn;
 

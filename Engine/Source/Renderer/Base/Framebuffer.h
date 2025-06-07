@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core.hpp>
+#include "Renderer/Base/RenderPass.h"
 
 namespace Pawn::Render
 {
@@ -13,8 +14,9 @@ namespace Pawn::Render
 		virtual void Shutdown() = 0;
 
 	private:
-		static Framebuffer* Create(uint32 x, uint32 y);
+		//static Framebuffer* Create(uint32 x, uint32 y);
 		static Framebuffer* CreateDirectX11Framebuffer(uint32 x, uint32 y);
+		static Framebuffer* CreateVulkanFramebuffer();
 
 	};
 }

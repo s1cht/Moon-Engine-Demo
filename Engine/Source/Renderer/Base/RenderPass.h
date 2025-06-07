@@ -17,15 +17,6 @@ namespace Pawn::Render
 
 namespace Pawn::Render
 {
-	enum class ImageLayout : uint8
-	{
-		Undefined = 0,
-		Present,
-		ColorAttachment, DepthStencilAttachment,
-		ShaderReadOnly,
-		TransferSrc, TransferDst,
-	};
-
 	enum class StoreOperation : uint8
 	{
 		None = 0,
@@ -86,7 +77,6 @@ namespace Pawn::Render
 			float32 Depth;
 			uint32 Stencil;
 		} DepthClearValue;
-
 	};
 
 	struct RenderPassBeginInfo
