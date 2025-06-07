@@ -31,7 +31,7 @@ namespace Pawn::Render
 		Load, Clear,
 	};
 
-	struct AttachmentSpecification
+	struct PAWN_API AttachmentSpecification
 	{
 		Pawn::Render::Format AttachmentFormat;
 		Pawn::Render::StoreOperation StoreOp;
@@ -42,16 +42,15 @@ namespace Pawn::Render
 		bool IsStencil;
 	};
 
-	struct SubpassSpecification
+	struct PAWN_API SubpassSpecification
 	{
 		Pawn::Render::PipelineBindPoint PipelineBindPoint;
 		Pawn::Core::Containers::Array<uint64> InputAttachmentRefs;
 		Pawn::Core::Containers::Array<uint64> ColorAttachmentRefs;
 		uint64 DepthStencilAttachmentRef;
-
 	};
 
-	struct SubpassDependency
+	struct PAWN_API SubpassDependency
 	{
 		uint32 SubpassSrc;
 		uint32 SubpassDst;
@@ -61,7 +60,7 @@ namespace Pawn::Render
 		AccessFlags AccessFlagsDst;
 	};
 
-	struct RenderPassSpecification
+	struct PAWN_API RenderPassSpecification
 	{
 		Pawn::Core::Containers::Array<AttachmentSpecification> AttachmentSpecs;
 		Pawn::Core::Containers::Array<SubpassSpecification> SubpassSpecs;
@@ -91,8 +90,8 @@ namespace Pawn::Render
 	public:
 		virtual ~RenderPass() = default;
 
-		virtual void Begin(Pawn::Render::CommandBuffer* buffer, RenderPassBeginInfo& beginInfo);
-		virtual void End(Pawn::Render::CommandBuffer* buffer);
+		virtual void Begin(Pawn::Render::CommandBuffer* buffer, RenderPassBeginInfo& beginInfo) = 0;
+		virtual void End(Pawn::Render::CommandBuffer* buffer) = 0;
 
 	public:
 		static RenderPass* Create(RenderPassSpecification& specification);

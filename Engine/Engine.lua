@@ -29,6 +29,7 @@ project "Engine"
 		includeDirs.spdlog,
 		includeDirs.EngineCore,
 		includeDirs.xxHash,
+		includeDirs.DXC,
 	}
 
 	defines 

@@ -20,8 +20,8 @@ Pawn::Application* Pawn::CreateApplication()
 	AppProps = {};
 
 	AppProps.ApplicationName = TEXT("Sandbox");
-	AppProps.VersionMajor = 1;
-	AppProps.VersionMinor = 0;
+	AppProps.VersionMajor = 0;
+	AppProps.VersionMinor = 1;
 	AppProps.VersionPatch = 0;
 
 	return new App();

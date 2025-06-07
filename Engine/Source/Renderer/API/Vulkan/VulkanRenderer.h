@@ -52,6 +52,8 @@ namespace Pawn::Render
 		void BindBackBuffer() override;
 		void UnbindBackBuffer() override;
 
+		inline SwapChain* GetSwapChain() override { return m_SwapChain; };
+
 	public:
 		inline VkInstance GetInstance() { return m_Instance; }
 		inline VkSurfaceKHR GetSurface() { return m_Surface; }

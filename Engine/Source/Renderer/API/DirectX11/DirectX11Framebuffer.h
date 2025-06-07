@@ -15,10 +15,10 @@ namespace Pawn::Render
 		~DirectX11Framebuffer();
 
 	public:
-		virtual bool Bind() override;
-		virtual bool Unbind() override;
+		void Bind();
+		void Unbind();
 
-		virtual void Shutdown() override;
+		void Shutdown();
 
 	public:
 		ID3D11RenderTargetView* GetRenderTargetView() { return m_RTV; }

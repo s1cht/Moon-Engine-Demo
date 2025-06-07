@@ -1,6 +1,7 @@
 #pragma once
 #include "Core.hpp"
 #include "Core/Memory/Allocator.hpp"
+#include "Core/Utils/Logging/Logger.hpp"
 
 #define ARR_RESIZE_MULTIPLYER 2
 
@@ -225,7 +226,7 @@ namespace Pawn::Core::Containers
 
 		PE_NODISCARD inline DataType& Back() 
 		{
-			return *(m_Data + m_Size);
+			return *(m_Data + m_Size - 1);
 		}
 
 

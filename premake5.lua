@@ -18,95 +18,15 @@ workspace "Pawn Engine"
 outputdir					= "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 engineVendor				= "%{wks.location}/Engine/vendor/"
 
+require "Sandbox"
 group "Dependencies"
-	include "vendor/Premake"
-	require "Engine/vendor/ImGui" -- ImGui
+	require "vendor/ImGui" -- ImGui
+	require "Misc/BuildDXC" --DXC
 
 group "Core"
-	require "Engine"-- Engine
-	require "EngineCore"-- Engine
-	
+require "Engine"-- Engine
+require "EngineCore"-- Engine
+
 group "Misc"
+	include "vendor/Premake"
 	require "Misc/CloneAssets"
-	project "Sandbox"
-		location "Sandbox"
-		kind "ConsoleApp"
-		language "C++"
-		cppdialect "C++23"
-		staticruntime "off"
-		allmodulespublic "off"
-		scanformoduledependencies "off"
-
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
-		characterset "Unicode"
-
-		files 
-		{
-			"%{prj.name}/Source/**.h",
-			"%{prj.name}/Source/**.cpp",
-			"%{prj.name}/Source/**.cppm",
-		}
-
-		includedirs 
-		{
-			includeDirs.Engine,
-			includeDirs.EngineSrc,
-			includeDirs.EngineCore,
-			includeDirs.spdlog,
-			includeDirs.ImGui,
-			includeDirs.xxHash,
-			VULKAN_SDK .."/Include",
-		}
-
-		links 
-		{
-			"Engine",
-			"EngineCore",
-			"ImGui",
-		}
-
-		libdirs
-		{
-			"%{wks.location}/bin/" .. outputdir .. "/Engine",
-		}
-
-		postbuildcommands
-		{
-			("{COPYDIR} ../bin/" .. outputdir .. "/EngineCore/EngineCore.dll ../bin/" .. outputdir .. "/Sandbox/"),
-			("{COPYDIR} ../bin/" .. outputdir .. "/Engine/Engine.dll ../bin/" .. outputdir .. "/Sandbox/")
-		}
-
-		print(EngineCoreLib)
-		print(EngineLib)
-
-		filter "system:windows"
-			systemversion "latest"
-
-		filter "action:vs*"
-			buildoptions
-			{
-				"/utf-8",
-			}
-
-		filter "action:clang*"
-			buildoptions { "-fmodules-ts", "-fimplicit-modules", "-fimplicit-module-maps" }
-
-		filter "files:**.cppm"
-			compileas "Module"
-
-		filter "files:**.cpp"
-			compileas "C++"
-
-		filter "configurations:Debug"
-			defines "PE_DEBUG"
-			symbols "On"
-
-		filter "configurations:Release"
-			defines "PE_RELEASE"
-			optimize "On"
-
-		filter "configurations:Distribute"
-			defines "PE_DIST"
-			optimize "On"

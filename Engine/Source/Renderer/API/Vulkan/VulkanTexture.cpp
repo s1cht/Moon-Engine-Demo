@@ -51,22 +51,22 @@ namespace Pawn::Render
 
 	bool VulkanTexture2D::IsLoaded() const
 	{
-		
+		return false;
 	}
 
 	void VulkanTexture2D::SetData(void* data, SIZE_T size)
 	{
-
 	}
 
 	void* VulkanTexture2D::GetRawData()
 	{
+		return nullptr;
 
 	}
 
 	SIZE_T VulkanTexture2D::GetRawDataSize()
 	{
-		
+		return 0;
 	}
 
 	void VulkanTexture2D::Init()

@@ -349,7 +349,7 @@ namespace Pawn::Utility
 		bool readingStarted = false;
 		AssetLoadResult result;
 
-		result.Meshes = Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>>(10);
+		result.Meshes = Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>>();
 
 		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> positions(1000);
 		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector2D32> uvCoords(1000);

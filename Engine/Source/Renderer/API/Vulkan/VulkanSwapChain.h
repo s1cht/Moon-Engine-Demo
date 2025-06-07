@@ -32,7 +32,7 @@ namespace Pawn::Render
 		inline VkSurfaceFormatKHR GetFormats() { return m_Format; }
 		inline VkPresentModeKHR GetPresentMode() { return m_PresentMode; }
 		inline VkExtent2D GetExtent() { return m_Extent; }
-		inline Pawn::Core::Containers::Array<VulkanTexture2D>& GetImages() { return m_Images; }
+		inline Pawn::Core::Containers::Array<Texture2D*>& GetImages() override { return m_Images; }
 
 	private:
 		int32 CreateSwapChain(VulkanRenderer* renderer, VkSwapchainKHR oldSwapChain);
@@ -57,7 +57,7 @@ namespace Pawn::Render
 		VkPresentModeKHR m_PresentMode;
 		VkSurfaceCapabilitiesKHR m_Capabilities;
 
-		Pawn::Core::Containers::Array<VulkanTexture2D> m_Images;
+		Pawn::Core::Containers::Array<Texture2D*> m_Images;
 
 	};
 }

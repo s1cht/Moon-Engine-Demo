@@ -10,6 +10,8 @@
 
 namespace Pawn::Render
 {
+	class SwapChain;
+
 	class PAWN_API RendererAPI
 	{
 	public:
@@ -33,6 +35,8 @@ namespace Pawn::Render
 
 		virtual void BindBackBuffer() = 0;
 		virtual void UnbindBackBuffer() = 0;
+
+		virtual SwapChain* GetSwapChain() = 0;
 
 	public:
 		inline static void SetRendererAPI(API api) { s_API = api; };

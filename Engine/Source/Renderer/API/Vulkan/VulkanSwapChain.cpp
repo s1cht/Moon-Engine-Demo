@@ -119,7 +119,6 @@ namespace Pawn::Render
 		specs.Usage = ImageUsageFlags::None;
 		specs.Resolution.x = m_Extent.width;
 		specs.Resolution.y = m_Extent.height;
-		
 
 		uint32 count = 0;
 		vkGetSwapchainImagesKHR(renderer->GetDevice(), m_SwapChain, &count, nullptr);
@@ -131,7 +130,7 @@ namespace Pawn::Render
 		{
 			specs.DebugName = "SwapChain image" + Pawn::Core::Containers::ToAnsiString(1);
 
-			m_Images.EmplaceBack(VulkanTexture2D(swapChainImages[i], specs));
+			m_Images.EmplaceBack(new VulkanTexture2D(swapChainImages[i], specs));
 		}
 
 		return 0;

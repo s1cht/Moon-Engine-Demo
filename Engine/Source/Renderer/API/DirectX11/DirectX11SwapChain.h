@@ -18,6 +18,8 @@ namespace Pawn::Render
 		virtual void SetFullscreen(bool fullscreen) override;
 		virtual void SetVSync(bool enabled) override;
 
+		inline Pawn::Core::Containers::Array<Texture2D*>& GetImages() override { return m_images; };
+
 	public:
 		inline IDXGISwapChain1* GetSwapChain() { return m_SwapChain; }
 		inline ID3D11Texture2D* GetBackBuffer() { return m_BackBuffer; }
@@ -29,6 +31,7 @@ namespace Pawn::Render
 		bool m_VSYNCEnabled;
 		IDXGISwapChain1* m_SwapChain;
 		ID3D11Texture2D* m_BackBuffer;
+		Pawn::Core::Containers::Array<Texture2D*> m_images;
 
 	};
 };

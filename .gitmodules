@@ -10,3 +10,6 @@
 [submodule "vendor/ImGui"]
 	path = vendor/ImGui
 	url = https://github.com/s1cht/ImGui
+[submodule "vendor/DXC"]
+	path = vendor/DXC
+	url = https://github.com/microsoft/DirectXShaderCompiler

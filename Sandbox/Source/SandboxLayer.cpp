@@ -4,6 +4,8 @@
 #include <Renderer/Renderer.h>
 #include <Renderer/RenderCommand.h>
 #include <Renderer/Base/CommandBuffer.h>
+#include <Renderer/Base/RenderPass.h>
+#include <Renderer/Base/Framebuffer.h>
 #include <Renderer/ImGui/ImGuiReferences.h>
 #include <Renderer/Camera/PerpectiveCamera.h>
 
@@ -13,15 +15,15 @@ using namespace Pawn;
 
 void SandboxLayer::OnAttach()
 {
-	bool result;
+	bool result = true;
 
-	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/torch.obj")), true);
+//	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/torch.obj")), true);
 	if (!result)
 	{
 		PE_ERROR(TEXT("Failed to load asset!"));
 	}
 
-	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/flashlight.obj")), true);
+	//result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/flashlight.obj")), true);
 	if (!result)
 	{
 		PE_ERROR(TEXT("Failed to load asset!"));
@@ -33,7 +35,54 @@ void SandboxLayer::OnAttach()
 	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Glass")));
 	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Ring")));
 
+
 	Render::CommandBuffer* buffer = Render::CommandBuffer::CreateCommandBuffer();
+
+	Pawn::Core::Containers::Array<Render::Texture2D*> swapChainTextures = Render::RenderCommand::Get()->GetSwapChain()->GetImages();
+
+	auto imageSpec = swapChainTextures[0]->GetSpecification();
+	Render::AttachmentSpecification attachmentSpecs = {};
+	attachmentSpecs.IsStencil = false;
+	attachmentSpecs.IsDepth = false;
+	attachmentSpecs.AttachmentFormat = imageSpec.Format;
+	attachmentSpecs.LoadOp = Render::LoadOperation::Clear;
+	attachmentSpecs.StoreOp = Render::StoreOperation::Store;
+	attachmentSpecs.InitialLayout = Render::ImageLayout::Undefined;
+	attachmentSpecs.FinalLayout = Render::ImageLayout::Present;
+
+	Render::SubpassSpecification subpass = {};
+	subpass.ColorAttachmentRefs = { 0 };
+	subpass.DepthStencilAttachmentRef = ~0u;
+	subpass.PipelineBindPoint = Render::PipelineBindPoint::Graphics;
+
+	Render::SubpassDependency subpassDependency = {};
+	subpassDependency.SubpassSrc = ~0u;
+	subpassDependency.AccessFlagsDst = Render::AccessFlags::DepthStencilWrite | Render::AccessFlags::ColorAttachmentWrite;
+	subpassDependency.PipelineStageFlagsSrc = Render::PipelineStageFlags::ColorAttachmentOutput | Render::PipelineStageFlags::EarlyFragmentTests;
+	subpassDependency.PipelineStageFlagsDst = Render::PipelineStageFlags::ColorAttachmentOutput | Render::PipelineStageFlags::EarlyFragmentTests;
+
+	Render::RenderPassSpecification mainRPSpecs = {};
+	mainRPSpecs.AttachmentSpecs = { attachmentSpecs };
+	mainRPSpecs.SubpassSpecs = { subpass };
+	mainRPSpecs.SubpassDependencies = { subpassDependency };
+	mainRPSpecs.DebugName = "Main render pass";
+
+	Render::RenderPass* mainRenderPass = Render::RenderPass::Create(mainRPSpecs);
+
+	Pawn::Core::Containers::Array<Render::Framebuffer*> swapChainFramebuffers;
+	for (auto image : swapChainTextures)
+	{
+		Render::FramebufferSpecification framebufferSpecification = {};
+		framebufferSpecification.Attachments = { image };
+		framebufferSpecification.Layers = 1;
+		framebufferSpecification.RenderPass = mainRenderPass;
+		framebufferSpecification.Resolution.x = image->GetResolution().x;
+		framebufferSpecification.Resolution.y = image->GetResolution().y;
+
+		swapChainFramebuffers.EmplaceBack(Render::Framebuffer::Create(framebufferSpecification));
+	}
+
+	PE_INFO(TEXT("Hello world!"));
 
 	/*
 

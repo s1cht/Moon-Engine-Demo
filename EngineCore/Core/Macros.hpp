@@ -18,10 +18,7 @@
 #define PE_FAILED_IO(result) (result != Pawn::IO::IOError::OK);
 #define PE_FAILED_IO_INT(result) (result != (int32)Pawn::IO::IOError::OK);
 
-#if 0
-
-#if 1
-	//ifndef PE_DEBUG
+#ifndef PE_DEBUG
 	// Core logging macros
 	#define PE_CORE_TRACE(...)		Pawn::Core::Utils::Logger::GetCoreLogger()->trace(__VA_ARGS__)
 	#define PE_CORE_INFO(...)		Pawn::Core::Utils::Logger::GetCoreLogger()->info(__VA_ARGS__)
@@ -63,30 +60,6 @@
 	#define PE_BENCHMARK_LOG(...)	SPDLOG_LOGGER_INFO(Pawn::Core::Utils::Logger::GetBenchmarkLogger(), __VA_ARGS__)
 #endif
 
-#else
-
-	//ifndef PE_DEBUG
-	// Core logging macros
-	#define PE_CORE_TRACE(...)		
-	#define PE_CORE_INFO(...)		
-	#define PE_CORE_WARN(...)		
-	#define PE_CORE_ERROR(...)		
-	#define PE_CORE_CRITICAL(...)	
-	
-	//Client logging macros
-	#define PE_TRACE(...)			
-	#define PE_INFO(...)			
-	#define PE_WARN(...)			
-	#define PE_ERROR(...)			
-	#define PE_CRITICAL(...)		
-	
-	//Memory logging macros
-	#define PE_MEM_TRACE(...)		
-	
-	//Benchmark logging macros
-	#define PE_BENCHMARK_LOG(...)	
-
-#endif
 
 // Assertion
 #ifdef _DEBUG

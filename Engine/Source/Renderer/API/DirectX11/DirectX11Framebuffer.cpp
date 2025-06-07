@@ -26,25 +26,19 @@ namespace Pawn::Render
 		Shutdown();
 	}
 
-	bool DirectX11Framebuffer::Bind()
+	void DirectX11Framebuffer::Bind()
 	{
 		DirectX11Renderer* render;
 		render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
-		if (!render)
-			return false;
 
 		render->GetDeviceContext()->OMSetRenderTargets(1, &m_RTV, m_DepthStencilView);
-		return true;
 	}
 	
-	bool DirectX11Framebuffer::Unbind()
+	void DirectX11Framebuffer::Unbind()
 	{
 		DirectX11Renderer* render;
 		render = static_cast<DirectX11Renderer*>(RenderCommand::Get());
-		if (!render)
-			return false;
 		render->GetDeviceContext()->OMSetRenderTargets(0, nullptr, nullptr);
-		return true;
 	}
 
 	void DirectX11Framebuffer::Shutdown()

@@ -79,10 +79,16 @@
   <ItemGroup>
     <None Include="..\..\Dependencies.lua" />
     <None Include="..\..\Engine\Engine.lua" />
-    <None Include="..\..\Engine\vendor\ImGui\ImGui.lua" />
     <None Include="..\..\EngineCore\EngineCore.lua" />
+    <None Include="..\..\Misc\BuildDXC\BuildDXC.lua" />
     <None Include="..\..\Misc\CloneAssets\CloneAssets.lua" />
+    <None Include="..\..\Sandbox\Sandbox.lua" />
     <None Include="..\..\premake5.lua" />
+    <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.0\spirv.lua" />
+    <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.1\spirv.lua" />
+    <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.2\spirv.lua" />
+    <None Include="..\DXC\external\SPIRV-Headers\include\spirv\unified1\spirv.lua" />
+    <None Include="..\ImGui\ImGui.lua" />
     <None Include="..\premake-core\binmodules\example\premake5.lua" />
     <None Include="..\premake-core\binmodules\luasocket\etc\b64.lua" />
     <None Include="..\premake-core\binmodules\luasocket\etc\check-links.lua" />

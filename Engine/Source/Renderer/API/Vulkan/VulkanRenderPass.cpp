@@ -3,6 +3,7 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanFunctions.h"
 #include "VulkanMacros.hpp"
+#include "VulkanFramebuffer.h"
 #include "Renderer/RenderCommand.h"
 
 namespace Pawn::Render
@@ -56,7 +57,6 @@ namespace Pawn::Render
 		VkResult result;
 		VulkanRenderer* render = static_cast<VulkanRenderer*>(Render::RenderCommand::Get());
 
-		// Храним все описания, потом сохраняем их по указателям
 		Pawn::Core::Containers::Array<VkAttachmentDescription> attachmentDescriptions;
 		Pawn::Core::Containers::Array<VkAttachmentReference> globalAttachmentReferences;
 
@@ -125,7 +125,7 @@ namespace Pawn::Render
 		Pawn::Core::Containers::Array<VkSubpassDependency> subpassDependencies;
 		for (auto& dep : specification.SubpassDependencies)
 		{
-			VkSubpassDependency vkDep{};
+			VkSubpassDependency vkDep = {};
 			vkDep.srcSubpass = dep.SubpassSrc;
 			vkDep.dstSubpass = dep.SubpassDst;
 			vkDep.srcStageMask = Pawn::Render::ConvertPipelineStageFlagsVulkan(dep.PipelineStageFlagsSrc);

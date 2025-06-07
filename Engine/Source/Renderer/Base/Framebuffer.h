@@ -5,18 +5,25 @@
 
 namespace Pawn::Render
 {
+	class RenderPass;
+
+	struct FramebufferSpecification
+	{
+		RenderPass* RenderPass;
+		Pawn::Core::Math::Resolution2D<uint32> Resolution;
+		Pawn::Core::Containers::Array<Texture*> Attachments;
+		uint32 Layers;
+	};
+
 	class PAWN_API Framebuffer
 	{
 	public:
-		virtual bool Bind() = 0;
-		virtual bool Unbind() = 0;
+		virtual ~Framebuffer() = default;
 
-		virtual void Shutdown() = 0;
-
-	private:
-		//static Framebuffer* Create(uint32 x, uint32 y);
+	public:
+		static Framebuffer* Create(FramebufferSpecification& specification);
 		static Framebuffer* CreateDirectX11Framebuffer(uint32 x, uint32 y);
-		static Framebuffer* CreateVulkanFramebuffer();
+		static Framebuffer* CreateVulkanFramebuffer(FramebufferSpecification& specification);
 
 	};
 }
