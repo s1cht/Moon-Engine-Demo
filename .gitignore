@@ -9,3 +9,6 @@ bin-int
 **.vcxproj.filters
 **.sln
 *Makefile
+/Misc/BuildDXC/Testing/Temporary
+/Misc/BuildSPIRV-Tools/Testing/Temporary
+/vendor/DXCSln
