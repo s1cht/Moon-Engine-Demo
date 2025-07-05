@@ -183,7 +183,6 @@ namespace Pawn::Core::Containers
 		}
 
 	public:
-
 		PE_NODISCARD inline SIZE_T GetSize() const
 		{
 			return m_Size;

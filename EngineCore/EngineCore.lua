@@ -36,6 +36,11 @@ project "EngineCore"
 		"_WINDLL",
 	}
 
+	links
+	{
+		"xxHash",
+	}
+
 	filter "system:windows"
 		systemversion "latest"
 

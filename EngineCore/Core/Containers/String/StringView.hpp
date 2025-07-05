@@ -85,6 +85,7 @@ namespace Pawn::Core::Containers
 		SIZE_T m_Size;
 	};
 
-	typedef PStringView<uchar> StringView;   // UTF-16
-	typedef PStringView<ansichar> AnsiStringView; // ANSI
+	typedef PStringView<ansichar> AnsiStringView; // UTF-8
+	typedef PStringView<wchar> WideStringView; // UTF-16
+	typedef std::conditional_t<sizeof(uchar) == 2, WideStringView, AnsiStringView> StringView;
 }

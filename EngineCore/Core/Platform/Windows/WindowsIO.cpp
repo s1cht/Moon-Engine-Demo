@@ -78,14 +78,14 @@ namespace Pawn::Core::IO
 		if (m_File == INVALID_HANDLE_VALUE)
 		{
 			DWORD error = GetLastError();
-			PE_ERROR("{0}", error);
+			PE_ERROR("WindowsIO: file wasn't created! Win32 error: {0}", error);
 			return false;
 		}
 
 		if (!GetFileInformationByHandle(m_File, &info))
 		{
 			DWORD error = GetLastError();
-			PE_ERROR("{0}", error);
+			PE_ERROR("WindowsIO: couldn't get file information! Win32 error: {0}", error);
 			CloseHandle(m_File);
 			m_File = INVALID_HANDLE_VALUE;
 			m_Opened = false;
@@ -473,7 +473,7 @@ namespace Pawn::Core::IO
 		if (!file->IsOpen())
 		{
 			PE_ERROR(TEXT("IO: File can't be opened! Error: {0}"), (uint32)file->GetFileLastError());
-			return Memory::MakeReference<WindowsFile>();
+			return file;
 		}
 
 		return file;

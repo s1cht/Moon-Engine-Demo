@@ -492,7 +492,7 @@ namespace Pawn::Core::Containers
 
 		void Assign(const DataType*& ptr, SIZE_T size)
 		{
-			PE_ASSERT(ptr != nullptr && size != 0, TEXT("Assigning nullptr or ptr with size == 0 to string!"));
+			PE_ASSERT(ptr != nullptr, TEXT("Assigning nullptr to string!"));
 			if (size + 1 > m_Capacity)
 				Allocate(size + 1);
 
@@ -801,32 +801,12 @@ namespace Pawn::Core::Containers
 
 	};
 
-	typedef PString<uchar, Pawn::Core::Memory::Allocator<uchar>> String;
 	typedef PString<ansichar, Pawn::Core::Memory::Allocator<ansichar>> AnsiString;
+	typedef PString<wchar, Pawn::Core::Memory::Allocator<wchar>> WideString;
 
-	//template<typename convertTo, SIZE_T strSize = 10, typename allocator = Allocator<uchar>>
-	//CORE_API PString<strSize, allocator> TToString(convertTo value);
+	using String = PString<uchar, Pawn::Core::Memory::Allocator<uchar>>;
 
-	CORE_API String ToString(int8 value);
-	CORE_API String ToString(int16 value);
-	CORE_API String ToString(int32 value);
-	CORE_API String ToString(int64 value);
-
-	CORE_API String ToString(uint8 value);
-	CORE_API String ToString(uint16 value);
-	CORE_API String ToString(uint32 value);
-	CORE_API String ToString(uint64 value);
-
-	CORE_API String ToString(float32 value);
-	CORE_API String ToString(float64 value);
-
-	CORE_API String ToString(bool value);
-	CORE_API String ToString(const String& value);
-	CORE_API String ToString(const uchar& value);
-
-
-	CORE_API String operator+(const uchar* str1, const String& str2);
-	CORE_API String operator+(const uchar& str1, const String& str2);
+	// AnsiString conversion functions
 
 	CORE_API AnsiString ToAnsiString(int8 value);
 	CORE_API AnsiString ToAnsiString(int16 value);
@@ -845,13 +825,104 @@ namespace Pawn::Core::Containers
 	CORE_API AnsiString ToAnsiString(const AnsiString& value);
 	CORE_API AnsiString ToAnsiString(const ansichar& value);
 
+	CORE_API int64 AnsiStringToInt(const AnsiString& str, SIZE_T* pos, int8 base = 10);
+	CORE_API uint64 AnsiStringToUint(const AnsiString& str, SIZE_T* pos, int8 base = 10);
+	CORE_API float64 AnsiStringToFloat(const AnsiString& str, SIZE_T* pos);
+
+	CORE_API AnsiString operator+(const ansichar* str1, const AnsiString& str2);
+	CORE_API AnsiString operator+(const ansichar& str1, const AnsiString& str2);
+
+	// WideString conversion functions
+
+	CORE_API WideString ToWideString(int8 value);
+	CORE_API WideString ToWideString(int16 value);
+	CORE_API WideString ToWideString(int32 value);
+	CORE_API WideString ToWideString(int64 value);
+			 
+	CORE_API WideString ToWideString(uint8 value);
+	CORE_API WideString ToWideString(uint16 value);
+	CORE_API WideString ToWideString(uint32 value);
+	CORE_API WideString ToWideString(uint64 value);
+		
+	CORE_API WideString ToWideString(float32 value);
+	CORE_API WideString ToWideString(float64 value);
+			 
+	CORE_API WideString ToWideString(bool value);
+	CORE_API WideString ToWideString(const WideString& value);
+	CORE_API WideString ToWideString(const wchar& value);
+
+	CORE_API int64 WideStringToInt(const WideString& str, SIZE_T* pos, int8 base = 10);
+	CORE_API uint64 WideStringToUint(const WideString& str, SIZE_T* pos, int8 base = 10);
+	CORE_API float64 WideStringToFloat(const WideString& str, SIZE_T* pos);
+
+	CORE_API WideString operator+(const wchar* str1, const WideString& str2);
+	CORE_API WideString operator+(const wchar& str1, const WideString& str2);
+
+	// String conversion functions
+
+	CORE_API String ToString(int8 value);
+	CORE_API String ToString(int16 value);
+	CORE_API String ToString(int32 value);
+	CORE_API String ToString(int64 value);
+
+	CORE_API String ToString(uint8 value);
+	CORE_API String ToString(uint16 value);
+	CORE_API String ToString(uint32 value);
+	CORE_API String ToString(uint64 value);
+
+	CORE_API String ToString(float32 value);
+	CORE_API String ToString(float64 value);
+
+	CORE_API String ToString(bool value);
+	CORE_API String ToString(const String& value);
+	CORE_API String ToString(const uchar& value);
+
 	CORE_API int64 StringToInt(const String& str, SIZE_T* pos, int8 base = 10);
 	CORE_API uint64 StringToUint(const String& str, SIZE_T* pos, int8 base = 10);
 	CORE_API float64 StringToFloat(const String& str, SIZE_T* pos);
 
-	CORE_API AnsiString StringToAnsiString(const String& str);
-	CORE_API String AnsiStringToString(const AnsiString& str);
+	// String-to-string conversion
 
-	CORE_API AnsiString operator+(const ansichar* str1, const AnsiString& str2);
-	CORE_API AnsiString operator+(const ansichar& str1, const AnsiString& str2);
+	CORE_API AnsiString WideStringToAnsiString(const WideString& str);
+	CORE_API WideString AnsiStringToWideString(const AnsiString& str);
+
+	template <typename T>
+	WideString StringToWideString(const T& str)
+	{
+		static_assert(std::is_same_v<T, WideString> || std::is_same_v<T, AnsiString> || std::is_same_v<T, String>, "T is not a String!");
+		if constexpr (std::is_same_v<T, WideString>)
+			return str;
+		else
+			return AnsiStringToWideString(str);
+	}
+
+	template <typename T>
+	AnsiString StringToAnsiString(const T& str)
+	{
+		static_assert(std::is_same_v<T, WideString> || std::is_same_v<T, AnsiString> || std::is_same_v<T, String>, "T is not a String!");
+		if constexpr (std::is_same_v<T, WideString>)
+			return WideStringToAnsiString(str);
+		else
+			return str;
+	}
+
+	template <typename T>
+	String WideStringToString(const T& str)
+	{
+		static_assert(std::is_same_v<T, WideString>, "T is not a WideString!");
+		if constexpr (std::is_same_v<String, WideString>)
+			return str;
+		else
+			return WideStringToAnsiString(str);
+	}
+
+	template <typename T>
+	String AnsiStringToString(const T& str)
+	{
+		static_assert(std::is_same_v<T, AnsiString>, "T is not a AnsiString!");
+		if constexpr (std::is_same_v<String, AnsiString>)
+			return str;
+		else
+			return AnsiStringToWideString(str);
+	}
 }

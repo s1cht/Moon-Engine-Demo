@@ -288,11 +288,20 @@ namespace Pawn::Core::Containers
 
 			while (current)
 			{
-				if constexpr (std::is_same<KeyType, const char*>::value)
+				if constexpr (std::is_same_v<KeyType, const ansichar*>)
+				{
 					if (strcmp(current->Key, key) == 0)
 						return current->Value;
 					else
 						if (current->Key == key) return current->Value;
+				}
+				else if constexpr (std::is_same_v<KeyType, const wchar*>)
+				{
+					if (wcscmp(current->Key, key) == 0)
+						return current->Value;
+					else
+						if (current->Key == key) return current->Value;
+				}
 				current = current->NextNode;
 			}
 
