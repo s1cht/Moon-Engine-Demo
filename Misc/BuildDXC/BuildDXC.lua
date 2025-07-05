@@ -20,8 +20,8 @@ project "BuildDXC"
                 " -DCMAKE_BUILD_TYPE=" .. config ..
                 " -G Ninja",
 
-            "ninja -C " .. dxcBuild,
-
+            "ninja -C " .. dxcBuild,    
+            
             "{MKDIR} " .. dxcBin,   
             "{COPYFILE} " .. dxcBuild .. "/bin/*.* " .. dxcBin .. "/",
             "{COPYFILE} " .. dxcBuild .. "/lib/*.* " .. dxcBin .. "/"
@@ -36,14 +36,10 @@ project "BuildDXC"
         
     filter "configurations:Distribute"
         prebuildcommands(BuildDXC("MinSizeRel"))
-        
-        
-        
-        
-        
-        
-        
-        
-    
-        
-        
+
+
+    postbuildcommands
+    {
+        ("{RMDIR} %{wks.location}/bin/" .. outputdir .. "/%{prj.name}"),
+        ("{RMDIR} %{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}"),
+    }
