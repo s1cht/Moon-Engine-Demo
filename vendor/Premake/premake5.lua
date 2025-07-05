@@ -10,8 +10,13 @@ project "Premake"
 		"%{wks.location}/**.lua",
 	}
 
-	postbuildmessage "Regenerating project files with Premake5!"
-	postbuildcommands
+	prebuildmessage "Regenerating project files with Premake5!"
+	prebuildcommands
 	{
 		"\"%{prj.location}/Binaries/premake5\" %{_ACTION} --file=\"%{wks.location}premake5.lua\""
 	}
+	postbuildcommands
+	{
+        ("{RMDIR} %{wks.location}/bin/" .. outputdir .. "/%{prj.name}"),
+    }
+	

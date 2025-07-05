@@ -59,21 +59,30 @@
     <IntDir>..\..\bin-int\Distribute-windows-x86_64\Premake\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PostBuildEvent>
+    <PreBuildEvent>
       <Command>"$(ProjectDir)/Binaries/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
       <Message>Regenerating project files with Premake5!</Message>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>rmdir /S /Q $(SolutionDir)\bin\Debug-windows-x86_64\$(ProjectName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <PostBuildEvent>
+    <PreBuildEvent>
       <Command>"$(ProjectDir)/Binaries/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
       <Message>Regenerating project files with Premake5!</Message>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>rmdir /S /Q $(SolutionDir)\bin\Release-windows-x86_64\$(ProjectName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'">
-    <PostBuildEvent>
+    <PreBuildEvent>
       <Command>"$(ProjectDir)/Binaries/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
       <Message>Regenerating project files with Premake5!</Message>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>rmdir /S /Q $(SolutionDir)\bin\Distribute-windows-x86_64\$(ProjectName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -81,7 +90,9 @@
     <None Include="..\..\Engine\Engine.lua" />
     <None Include="..\..\EngineCore\EngineCore.lua" />
     <None Include="..\..\Misc\BuildDXC\BuildDXC.lua" />
+    <None Include="..\..\Misc\BuildSPIRV-Tools\BuildSPIRV-Tools.lua" />
     <None Include="..\..\Misc\CloneAssets\CloneAssets.lua" />
+    <None Include="..\..\Misc\CloneBinaries\CloneBinaries.lua" />
     <None Include="..\..\Sandbox\Sandbox.lua" />
     <None Include="..\..\premake5.lua" />
     <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.0\spirv.lua" />
@@ -89,6 +100,10 @@
     <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.2\spirv.lua" />
     <None Include="..\DXC\external\SPIRV-Headers\include\spirv\unified1\spirv.lua" />
     <None Include="..\ImGui\ImGui.lua" />
+    <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\1.0\spirv.lua" />
+    <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\1.1\spirv.lua" />
+    <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\1.2\spirv.lua" />
+    <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\unified1\spirv.lua" />
     <None Include="..\premake-core\binmodules\example\premake5.lua" />
     <None Include="..\premake-core\binmodules\luasocket\etc\b64.lua" />
     <None Include="..\premake-core\binmodules\luasocket\etc\check-links.lua" />
@@ -510,6 +525,7 @@
     <None Include="..\premake-core\tests\workspace\test_eachconfig.lua" />
     <None Include="..\premake-core\tests\workspace\test_location.lua" />
     <None Include="..\premake-core\tests\workspace\test_objdirs.lua" />
+    <None Include="..\xxHash\premake5.lua" />
     <None Include="Customization\solutions.lua" />
     <None Include="premake5.lua" />
   </ItemGroup>
