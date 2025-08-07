@@ -4,12 +4,12 @@
 #include "Layer.hpp"
 #include "Core/Containers/Array.hpp"
 
-namespace Pawn::Core
+namespace ME::Core
 {
 	class CORE_API LayerStack
 	{
 	private:
-		using Iterator = Pawn::Core::Containers::Array<Layer*>::Iterator;
+		using Iterator = ME::Core::Containers::Array<Layer*>::Iterator;
 
 	public:
 		LayerStack();
@@ -28,7 +28,7 @@ namespace Pawn::Core
 		Iterator End() { return m_Layers.End(); }
 
 	private:
-		Pawn::Core::Containers::Array<Layer*> m_Layers;
+		ME::Core::Containers::Array<Layer*> m_Layers;
 		SIZE_T m_LayerInsertIndex;
 
 	};

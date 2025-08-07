@@ -5,15 +5,17 @@
 #include "VulkanRenderer.h"
 #include "Renderer/Base/RenderPass.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	class PAWN_API VulkanRenderPass : public RenderPass
+	class MOON_API VulkanRenderPass : public RenderPass
 	{
 	public:
 		VulkanRenderPass(RenderPassSpecification& specification);
 		~VulkanRenderPass() override;
 
 	public:
+		void Shutdown() override;
+
 		void Begin(CommandBuffer* buffer, RenderPassBeginInfo& beginInfo) override;
 		void End(CommandBuffer* buffer) override;
 

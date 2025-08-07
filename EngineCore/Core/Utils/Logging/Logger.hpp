@@ -14,7 +14,7 @@
 #include <spdlog/fmt/bin_to_hex.h>
 #include <spdlog/fmt/ostr.h>
 
-namespace Pawn::Core::Utils 
+namespace ME::Core::Utils 
 {
 	class CORE_API Logger
 	{
@@ -22,16 +22,18 @@ namespace Pawn::Core::Utils
 		static void Init();
 		static void Shutdown();
 
-		inline static Pawn::Core::Memory::Reference<spdlog::logger>& GetCoreLogger() { return m_coreLogger; };
-		inline static Pawn::Core::Memory::Reference<spdlog::logger>& GetClientLogger() { return m_clientLogger; };
-		inline static Pawn::Core::Memory::Reference<spdlog::logger>& GetMemoryLogger() { return m_memoryLogger; };
-		inline static Pawn::Core::Memory::Reference<spdlog::logger>& GetBenchmarkLogger() { return m_benchmarkLogger; };
+		inline static ME::Core::Memory::Reference<spdlog::logger>& GetCoreLogger() { return m_CoreLogger; }
+		inline static ME::Core::Memory::Reference<spdlog::logger>& GetClientLogger() { return m_ClientLogger; }
+		inline static ME::Core::Memory::Reference<spdlog::logger>& GetRenderLogger() { return m_RenderLogger; }
+		inline static ME::Core::Memory::Reference<spdlog::logger>& GetMemoryLogger() { return m_MemoryLogger; }
+		inline static ME::Core::Memory::Reference<spdlog::logger>& GetBenchmarkLogger() { return m_BenchmarkLogger; }
 
 	private:
-		static Pawn::Core::Memory::Reference<spdlog::logger> m_coreLogger;
-		static Pawn::Core::Memory::Reference<spdlog::logger> m_clientLogger;
-		static Pawn::Core::Memory::Reference<spdlog::logger> m_memoryLogger;
-		static Pawn::Core::Memory::Reference<spdlog::logger> m_benchmarkLogger;
+		static ME::Core::Memory::Reference<spdlog::logger> m_CoreLogger;
+		static ME::Core::Memory::Reference<spdlog::logger> m_ClientLogger;
+		static ME::Core::Memory::Reference<spdlog::logger> m_RenderLogger;
+		static ME::Core::Memory::Reference<spdlog::logger> m_MemoryLogger;
+		static ME::Core::Memory::Reference<spdlog::logger> m_BenchmarkLogger;
 	};
 
 }

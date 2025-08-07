@@ -1,80 +1,80 @@
 #include "Mesh.h"
 
-namespace Pawn::Assets
+namespace ME::Assets
 {
-	Pawn::Assets::Mesh::Mesh()
+	ME::Assets::Mesh::Mesh()
 		: m_GroupName(TEXT("default"))
 	{
-		m_Vertexes = Pawn::Core::Containers::Array<Vertex>();
-		m_Indexes = Pawn::Core::Containers::Array<int32>();
+		m_Vertexes = ME::Core::Containers::Array<Vertex>();
+		m_Indexes = ME::Core::Containers::Array<int32>();
 	}
 
-	Pawn::Assets::Mesh::Mesh(const Pawn::Core::Containers::String& groupName)
+	ME::Assets::Mesh::Mesh(const ME::Core::Containers::String& groupName)
 		: m_GroupName(groupName)
 	{
-		m_Vertexes = Pawn::Core::Containers::Array<Vertex>();
-		m_Indexes = Pawn::Core::Containers::Array<int32>();
+		m_Vertexes = ME::Core::Containers::Array<Vertex>();
+		m_Indexes = ME::Core::Containers::Array<int32>();
 	}
 
-	Pawn::Assets::Mesh::~Mesh()
+	ME::Assets::Mesh::~Mesh()
 	{
 
 	}
 
-	Pawn::Core::Memory::Reference<Pawn::Render::VertexBuffer> Pawn::Assets::Mesh::GetVertexBuffer()
+	ME::Core::Memory::Reference<ME::Render::VertexBuffer> ME::Assets::Mesh::GetVertexBuffer()
 	{
 		return m_VertexBuffer;
 	}
 
-	Pawn::Core::Memory::Reference<Pawn::Render::IndexBuffer> Pawn::Assets::Mesh::GetIndexBuffer()
+	ME::Core::Memory::Reference<ME::Render::IndexBuffer> ME::Assets::Mesh::GetIndexBuffer()
 	{
 		return m_IndexBuffer;
 	}
 
-	Pawn::Core::Containers::Array<Vertex>& Mesh::GetVertices()
+	ME::Core::Containers::Array<Vertex>& Mesh::GetVertices()
 	{
 		return m_Vertexes;
 	}
 
-	Pawn::Core::Containers::Array<int32>& Mesh::GetIndices()
+	ME::Core::Containers::Array<int32>& Mesh::GetIndices()
 	{
 		return m_Indexes;
 	}
 
-	void Mesh::SetVertexes(const Pawn::Core::Containers::Array<Vertex>& vertexes)
+	void Mesh::SetVertexes(const ME::Core::Containers::Array<Vertex>& vertexes)
 	{
 		m_Vertexes = vertexes;
 	}
 
-	void Mesh::SetIndexes(const Pawn::Core::Containers::Array<int32>& indexes)
+	void Mesh::SetIndexes(const ME::Core::Containers::Array<int32>& indexes)
 	{
 		m_Indexes = indexes;
 	}
 
-	void Mesh::SetGroupName(Pawn::Core::Containers::String groupName)
+	void Mesh::SetGroupName(ME::Core::Containers::String groupName)
 	{
 		m_GroupName = groupName;
 	}
 
-	void Mesh::SetVertexes(Pawn::Core::Containers::Array<Vertex>&& vertexes)
+	void Mesh::SetVertexes(ME::Core::Containers::Array<Vertex>&& vertexes)
 	{
-		m_Vertexes = Pawn::Core::Containers::Array<Vertex>(std::move(vertexes));
+		m_Vertexes = ME::Core::Containers::Array<Vertex>(std::move(vertexes));
 	}
 
-	void Mesh::SetIndexes(Pawn::Core::Containers::Array<int32>&& indexes)
+	void Mesh::SetIndexes(ME::Core::Containers::Array<int32>&& indexes)
 	{
-		m_Indexes = Pawn::Core::Containers::Array<int32>(std::move(indexes));
+		m_Indexes = ME::Core::Containers::Array<int32>(std::move(indexes));
 	}
 
-	void Mesh::SetGroupName(Pawn::Core::Containers::String&& groupName)
+	void Mesh::SetGroupName(ME::Core::Containers::String&& groupName)
 	{
 		m_GroupName = std::move(groupName);
 	}
 
 	void Mesh::CreateBuffers()
 	{
-		m_VertexBuffer.reset(Pawn::Render::VertexBuffer::Create(const_cast<Vertex*>(m_Vertexes.Data()), sizeof(Pawn::Assets::Vertex) * m_Vertexes.GetSize(), Pawn::Render::Usage::Default));
-		m_IndexBuffer.reset(Pawn::Render::IndexBuffer::Create(const_cast<int32*>(m_Indexes.Data()), (uint32)m_Indexes.GetSize(), Pawn::Render::Usage::Default));
+		m_VertexBuffer.reset(ME::Render::VertexBuffer::Create(const_cast<Vertex*>(m_Vertexes.Data()), sizeof(ME::Assets::Vertex) * m_Vertexes.GetSize(), ME::Render::Usage::Default));
+		m_IndexBuffer.reset(ME::Render::IndexBuffer::Create(const_cast<int32*>(m_Indexes.Data()), (uint32)m_Indexes.GetSize(), ME::Render::Usage::Default));
 	}
 
 }

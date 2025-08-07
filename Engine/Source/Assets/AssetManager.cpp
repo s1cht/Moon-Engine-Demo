@@ -1,7 +1,7 @@
 #include "AssetManager.h"
 #include <Core/Containers/Algorithm.hpp>
 
-namespace Pawn::Assets
+namespace ME::Assets
 {
 	AssetManager::AssetManager()
 	{
@@ -11,13 +11,13 @@ namespace Pawn::Assets
 	{
 	}
 
-	bool AssetManager::LoadAsset(const Pawn::Core::Containers::String& path, bool centered)
+	bool AssetManager::LoadAsset(const ME::Core::Containers::String& path, bool centered)
 	{
-		Pawn::Utility::AssetFileFormats fileFormat;
-		Pawn::Utility::AssetLoadResult assetLoadResult;
+		ME::Utility::AssetFileFormats fileFormat;
+		ME::Utility::AssetLoadResult assetLoadResult;
 
 		fileFormat = GetExtension(path);
-		assetLoadResult = Pawn::Utility::AssetLoader::Load(path, centered, fileFormat);
+		assetLoadResult = ME::Utility::AssetLoader::Load(path, centered, fileFormat);
 
 		if (assetLoadResult.Meshes.GetSize() == 0)
 			return false;
@@ -31,9 +31,9 @@ namespace Pawn::Assets
 		return true;
 	}
 
-	Pawn::Utility::AssetFileFormats AssetManager::GetExtension(const Pawn::Core::Containers::String& path) const
+	ME::Utility::AssetFileFormats AssetManager::GetExtension(const ME::Core::Containers::String& path) const
 	{
-		Pawn::Core::Containers::String result = TEXT("");
+		ME::Core::Containers::String result = TEXT("");
 
 		for (SIZE_T i = path.GetSize() - 1; i >= 0; --i)
 		{
@@ -46,12 +46,12 @@ namespace Pawn::Assets
 		}
 
 		if (result == TEXT(".obj"))
-			return Pawn::Utility::AssetFileFormats::OBJ;
+			return ME::Utility::AssetFileFormats::OBJ;
 		else
-			return Pawn::Utility::AssetFileFormats::None;
+			return ME::Utility::AssetFileFormats::None;
 	}
 
-	Pawn::Core::Memory::Reference<Pawn::Assets::Mesh> AssetManager::GetMesh(const Pawn::Core::Containers::String& meshName)
+	ME::Core::Memory::Reference<ME::Assets::Mesh> AssetManager::GetMesh(const ME::Core::Containers::String& meshName)
 	{
 		for (auto mesh = m_Meshes.Begin(); mesh != m_Meshes.End(); ++mesh)
 			if ((*mesh)->GetGroupName() == meshName)

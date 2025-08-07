@@ -1,7 +1,7 @@
 include "./vendor/Premake/Customization/solutions.lua"
 include "Dependencies.lua"
 
-workspace "Pawn Engine"
+workspace "Moon Engine"
 	architecture "x64"
 	configurations {
 		"Debug", 

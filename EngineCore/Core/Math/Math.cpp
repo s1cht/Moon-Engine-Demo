@@ -1,6 +1,6 @@
 #include "Math.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	///////////////////// ---------------------------------------
 	// Vector2 statics // ---------------------------------------
@@ -16,6 +16,26 @@ namespace Pawn::Core::Math
 	template<> const Vector2<float64> Vector2<float64>::DownVector(0, -1);
 	template<> const Vector2<float64> Vector2<float64>::LeftVector(-1, 0);
 	template<> const Vector2<float64> Vector2<float64>::RightVector(1, 0);
+
+	///////////////////// ---------------------------------------
+	// Vector3 statics // ---------------------------------------
+	///////////////////// ---------------------------------------
+
+	template<> const Vector3<float32> Vector3<float32>::ZeroVector(0);
+	template<> const Vector3<float32> Vector3<float32>::UpVector(0, 1, 0);
+	template<> const Vector3<float32> Vector3<float32>::DownVector(0, -1, 0);
+	template<> const Vector3<float32> Vector3<float32>::ForwardVector(0, 0, 1);
+	template<> const Vector3<float32> Vector3<float32>::BackwardVector(0, 0, -1);
+	template<> const Vector3<float32> Vector3<float32>::RightVector(-1, 0, 0);
+	template<> const Vector3<float32> Vector3<float32>::LeftVector(1, 0, 0);
+
+	template<> const Vector3<float64> Vector3<float64>::ZeroVector(0);
+	template<> const Vector3<float64> Vector3<float64>::UpVector(0, 1, 0);
+	template<> const Vector3<float64> Vector3<float64>::DownVector(0, -1, 0);
+	template<> const Vector3<float64> Vector3<float64>::ForwardVector(0, 0, 1);
+	template<> const Vector3<float64> Vector3<float64>::BackwardVector(0, 0, -1);
+	template<> const Vector3<float64> Vector3<float64>::RightVector(-1, 0, 0);
+	template<> const Vector3<float64> Vector3<float64>::LeftVector(1, 0, 0);
 
 	///////////////////// ---------------------------------------
 	// Vector4 statics // ---------------------------------------

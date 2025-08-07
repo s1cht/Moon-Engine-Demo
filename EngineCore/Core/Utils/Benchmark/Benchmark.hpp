@@ -46,7 +46,7 @@ inline void Benchmarker<T>::Stop()
 	auto duration = end - start;
 	auto a3 = reinterpret_cast<const ansichar*>(m_BenchmarkName);
 
-	PE_TRACE("Benchmark {} ended! Last: {} {}", a3, duration, m_Unit);
+	ME_TRACE("Benchmark {} ended! Last: {} {}", a3, duration, m_Unit);
 }
 
 #define Benchmark(unit, name) Benchmarker<BNCHM_SEC(unit)>(#unit, name);
@@ -78,13 +78,13 @@ private:
 
         if (m_IterCount > 1)
         {
-            PE_BENCHMARK_LOG(TEXT("Scope {} with {} iterations, lasted: {:.3f} {}. Average per iteration: {:.5f} {}"), m_BenchmarkName, m_IterCount, 
+            ME_BENCHMARK_LOG(TEXT("Scope {} with {} iterations, lasted: {:.3f} {}. Average per iteration: {:.5f} {}"), m_BenchmarkName, m_IterCount, 
                 durationNs, m_Unit, 
                 oneIteration, m_Unit);
         }
         else
         {
-            PE_BENCHMARK_LOG(TEXT("Scope {}, lasted: {:.3f} {}"), m_BenchmarkName, durationNs, m_Unit);
+            ME_BENCHMARK_LOG(TEXT("Scope {}, lasted: {:.3f} {}"), m_BenchmarkName, durationNs, m_Unit);
         }
     }
 

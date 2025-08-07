@@ -9,7 +9,7 @@
 #include "Core/Math/Matrix3x3.hpp"
 #include "Core/Math/Matrix4x4.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	inline float64 Lerp(float64 a, float64 b, float64 d);
 	inline float32 Lerp(float32 a, float32 b, float32 d);

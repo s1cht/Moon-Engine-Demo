@@ -1,7 +1,7 @@
 #pragma once
 
-#define ENGINE_NAME "Pawn Engine"
-#define ENGINE_NAMEW L"Pawn Engine"
+#define ENGINE_NAME "Moon Engine"
+#define ENGINE_NAMEW L"Moon Engine"
 
 // v1.v2.v3
 #define ENGINE_VER_MAJOR 1
@@ -9,3 +9,5 @@
 #define ENGINE_VER_PATCH 0
 
 #define ENGINE_VERSION ENGINE_VER_MAJOR, ENGINE_VER_MINOR, ENGINE_VER_PATCH
+
+#define PE_SHADER_DEBUG

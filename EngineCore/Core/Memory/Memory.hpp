@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace Pawn::Core::Memory
+namespace ME::Core::Memory
 {
 	template<class T>
 	using Reference = std::shared_ptr<T>;

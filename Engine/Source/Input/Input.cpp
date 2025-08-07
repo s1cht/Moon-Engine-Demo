@@ -1,8 +1,8 @@
 #include "Input.h"
 
-namespace Pawn::Input
+namespace ME::Input
 {
-	Pawn::Core::Containers::String InputController::ConvertKeycodeToString(uint8 keycode)
+	ME::Core::Containers::String InputController::ConvertKeycodeToString(uint8 keycode)
 	{
 		return m_Chars[keycode];
 	}
@@ -48,12 +48,12 @@ namespace Pawn::Input
 		}
 	}
 
-	inline Pawn::Core::Math::Vector2D32 InputController::GetMousePosition()
+	inline ME::Core::Math::Vector2D32 InputController::GetMousePosition()
 	{
 		return Get().GetMouse().GetPosition();
 	}
 
-	inline Pawn::Core::Math::Vector2D32 InputController::GetMouseDelta()
+	inline ME::Core::Math::Vector2D32 InputController::GetMouseDelta()
 	{
 		return Get().GetMouse().GetMouseDelta();
 	}

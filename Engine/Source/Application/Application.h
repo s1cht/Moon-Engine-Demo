@@ -10,22 +10,22 @@
 #include "Renderer/ImGui/ImGuiLayer.h"
 #include "Events/WindowEvents.h"
 
-namespace Pawn 
+namespace ME 
 {
-	struct PAWN_API ApplicationProperties
+	struct MOON_API ApplicationProperties
 	{
 		int32 VersionMajor; 
 		int32 VersionMinor;
 		int32 VersionPatch;
-		Pawn::Core::Containers::String ApplicationName;
+		ME::Core::Containers::String ApplicationName;
 
-		ApplicationProperties(int32 verMajor = 1, int32 verMinor = 0, int32 verPatch = 0, Pawn::Core::Containers::String appName = TEXT("Application"))
+		ApplicationProperties(int32 verMajor = 1, int32 verMinor = 0, int32 verPatch = 0, ME::Core::Containers::String appName = TEXT("Application"))
 			: VersionMajor(verMajor), VersionMinor(verMinor), VersionPatch(verPatch), ApplicationName(appName) {}
 	};
 
 	typedef ApplicationProperties ApplicationData;
 
-	class PAWN_API Application
+	class MOON_API Application
 	{
 	public:
 		Application(ApplicationProperties props = ApplicationProperties());
@@ -48,6 +48,7 @@ namespace Pawn
 
 	public:
 		static Application& Get() { return *s_Instance; }
+		static void RequestShutdown() { s_ShutdownRequested = true; }
 
 	private:
 		bool m_Runs;
@@ -58,11 +59,13 @@ namespace Pawn
 		ApplicationData m_AppData;
 
 	private:
-		bool OnClosedEvent(Pawn::Events::WindowClosedEvent& event);
-		bool OnWindowSizeEvent(Pawn::Events::WindowResizedEvent& event);
 
 	private:
-		Pawn::Core::Memory::Scope<Window> m_Window;
+		bool OnClosedEvent(ME::Events::WindowClosedEvent& event);
+		bool OnWindowSizeEvent(ME::Events::WindowResizedEvent& event);
+
+	private:
+		ME::Core::Memory::Scope<Window> m_Window;
 		Render::Imgui::ImGuiLayer* m_ImGuiLayer;
 
 	private:
@@ -71,8 +74,9 @@ namespace Pawn
 
 	private:
 		static Application* s_Instance;
-
-	};
+		static bool s_ShutdownRequested;
+	}
+	;
 	// Must be defined in client
 	Application* CreateApplication();
 	

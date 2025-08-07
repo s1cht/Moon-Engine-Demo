@@ -8,9 +8,9 @@
 #include "Core/Containers/String/StringView.hpp"
 #include "Renderer/Base/Texture.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	class PAWN_API VulkanTexture2D : public Texture2D
+	class MOON_API VulkanTexture2D : public Texture2D
 	{
 	public:
 		VulkanTexture2D(Texture2DSpecification& specification);
@@ -29,11 +29,13 @@ namespace Pawn::Render
 		void* GetRawData() override;
 		SIZE_T GetRawDataSize() override;
 
-		inline Pawn::Core::Containers::StringView GetTexturePath() override { return m_Path; }
-		inline Pawn::Core::Containers::AnsiStringView GetDebugName() override { return m_Specification.DebugName;  }
+		void Shutdown() override;
 
-		inline Pawn::Render::Texture2DSpecification& GetSpecification() override { return m_Specification; }
-		inline Pawn::Core::Math::Resolution2D<uint32> GetResolution() const override { return m_Specification.Resolution; };
+		inline ME::Core::Containers::StringView GetTexturePath() override { return m_Path; }
+		inline ME::Core::Containers::AnsiStringView GetDebugName() override { return m_Specification.DebugName;  }
+
+		inline ME::Render::Texture2DSpecification& GetSpecification() override { return m_Specification; }
+		inline ME::Core::Math::Resolution2D<uint32> GetResolution() const override { return m_Specification.Resolution; };
 
 	public:
 		inline VkImage GetImage() { return m_Image; }
@@ -52,7 +54,7 @@ namespace Pawn::Render
 		VkFormat m_ImageFormat;
 
 	private:
-		Pawn::Core::Containers::String m_Path;
+		ME::Core::Containers::String m_Path;
 		Texture2DSpecification m_Specification;
 
 	};

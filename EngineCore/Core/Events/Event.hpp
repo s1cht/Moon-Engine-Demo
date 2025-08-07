@@ -29,7 +29,7 @@ enum EventCategory
     EventCategory_Mouse             = BIT(4),
 };
 
-namespace Pawn::Core
+namespace ME::Core
 {
     class CORE_API IEvent
     {
@@ -37,7 +37,7 @@ namespace Pawn::Core
         virtual EventType GetEventType() const = 0;
         virtual EVENT_CATEGORY GetEventCategory() const = 0;
         virtual const uchar* GetName() const  = 0;
-        virtual Pawn::Core::Containers::String GetString() { return GetName(); }
+        virtual ME::Core::Containers::String GetString() { return GetName(); }
     
         inline bool IsInCategory(EventCategory category)
         {

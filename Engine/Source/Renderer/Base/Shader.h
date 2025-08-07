@@ -2,72 +2,67 @@
 
 #include <Core.hpp>
 
-namespace Pawn::Render
+#include "RenderObject.hpp"
+
+namespace ME::Render
 {
-	class PAWN_API Shader
+	enum class ShaderType : SIZE_T
+	{
+		None = 0,
+		Float, Float2, Float3, Float4,
+		Int, Int2, Int3, Int4,
+		Uint, Uint2, Uint3, Uint4,
+		Bool
+	};
+
+	enum class ShaderFormat : uint8
+	{
+		None = 0,
+		SPIRV, DXIL, Metal
+	};
+
+	struct CompiledShader
+	{
+		void* Bytecode;
+		SIZE_T Size;
+		ShaderFormat Format;
+	};
+
+	class MOON_API Shader : public RenderObject
 	{
 	public:
 		enum class Type
 		{
 			None = 0,
 			Vertex, Pixel, Compute, Geometry, Hull, Domain
-		};
-
-		struct CompiledShader
-		{
-			void* ShaderPtr;
-			SIZE_T ShaderSize;
-		};
+		};;
 
 	public:
-		virtual ~Shader() {};
+		virtual ~Shader() = default;
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
-
-		virtual Shader::Type GetShaderType() const = 0;
+		virtual inline ME::Render::CompiledShader GetCompiledShader() = 0;
+		virtual constexpr Shader::Type GetShaderType() const = 0;
 
 	public:
-		static Shader* CreateShader(const uchar* fileName, Shader::Type type, bool compiled);
+		static ME::Core::Memory::Reference<Shader> Create(const ME::Render::CompiledShader& compiledShader, Shader::Type shaderType);
 
 	public:
-		static Shader* CreateCompiledShader(const uchar* fileName, Shader::Type type);
-		static Shader* CreateAndCompileShader(const uchar* fileName, Shader::Type type);
-
-	// Compiled
-	public:
-		static Shader* CreateCompiledDirectX11Shader(const uchar* fileName, Shader::Type type);
-
-	// Read then compile
-	public:
-		static Shader* CreateAndCompileDirectX11Shader(const uchar* fileName, Shader::Type type);
-
-	public:
-		static void SetShaderSourceExtension(const uchar* extension)
-		{
-			s_ShaderSourceExtension = extension;
-		}
-
-		static const uchar* GetShaderSourceExtension()
-		{
-			return s_ShaderSourceExtension;
-		}
-
-	public:
-		static void SetCompiledShaderExtension(const uchar* extension)
-		{
-			s_CompiledShaderExtension = extension;
-		}
-
-		static const uchar* GetCompiledShaderExtension()
-		{
-			return s_CompiledShaderExtension;
-		}
-
-	private:
-		static const uchar* s_ShaderSourceExtension;
-		static const uchar* s_CompiledShaderExtension;
+		static ME::Core::Memory::Reference<Shader> CreateVulkanShader(const ME::Render::CompiledShader& compiledShader, Shader::Type shaderType);
 
 	};
+
+	extern MOON_API SIZE_T SizeOfShaderType(ME::Render::ShaderType type);
+	extern MOON_API uint32 GetTypeAPISpecificShaderType(ME::Render::ShaderType type);
+
+	/*
+API-specific conversion function
+*/
+MOON_API uint32 ConvertShaderTypeVulkan(ShaderType type);
+
+#ifdef PLATFORM_WINDOWS
+	//extern MOON_API uint32 ConvertShaderTypeDirectX12(ShaderType type);
+#else
+	//extern MOON_API uint32 ConvertShaderTypeDirectX12(ShaderType type) { ME_ASSERT(false, TEXT("DirectX12 conversion available only on Windows!")); return 0; }
+#endif
 }
 

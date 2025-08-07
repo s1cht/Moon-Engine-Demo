@@ -5,7 +5,7 @@
 #include <Core.hpp>
 #include <Core/Events/Event.hpp>
 
-namespace Pawn::Events
+namespace ME::Events
 {
     class KeyEvent : public Core::Event
     {
@@ -32,7 +32,7 @@ namespace Pawn::Events
 
     public:
         EVENT_CLASS_TYPE(KeyInputStarted)
-            EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, "keycode") + PE_NAMED_VARIABLE_TOSTRING(int8, m_repeatCount, "repeatCount"));
+            EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, "keycode") + ME_NAMED_VARIABLE_TOSTRING(int8, m_repeatCount, "repeatCount"));
 
     public:
         inline int8 GetRepeatCount() const { return m_repeatCount; }
@@ -51,7 +51,7 @@ namespace Pawn::Events
 
     public:
         EVENT_CLASS_TYPE(KeyInputEnded)
-            EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, TEXT("keycode")));
+            EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, TEXT("keycode")));
 
     };
 

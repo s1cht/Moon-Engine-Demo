@@ -2,10 +2,11 @@
 
 #include <Core.hpp>
 
+#include "RenderObject.hpp"
 #include "Core/Math/Math.hpp"
 #include "Core/Misc/Rect2D.hpp"
 
-namespace Pawn::Render
+namespace ME::Render
 {
 	enum class Format : uint32
 	{
@@ -78,17 +79,19 @@ namespace Pawn::Render
 		SIZE_T DataSize;
 		Format Format;
 		ImageUsageFlags Usage;
-		Pawn::Core::Containers::AnsiString DebugName;
+		ME::Core::Containers::AnsiString DebugName;
 
+		bool IsDepth = false;
+		bool IsStencil = false;
 		bool bOwnsImage = false;
 	};
 
 	struct Texture2DSpecification : TextureSpecification
 	{
-		Pawn::Core::Math::Resolution2D<uint32> Resolution;
+		ME::Core::Math::Resolution2D<uint32> Resolution;
 	};
 
-	class PAWN_API Texture
+	class MOON_API Texture : public RenderObject
 	{
 	public:
 		virtual ~Texture() = default;
@@ -103,22 +106,23 @@ namespace Pawn::Render
 		virtual void* GetRawData() = 0;
 		virtual SIZE_T GetRawDataSize() = 0;
 
-		virtual Pawn::Core::Containers::StringView GetTexturePath() = 0;
-		virtual Pawn::Core::Containers::AnsiStringView GetDebugName() = 0;
+		virtual ME::Core::Containers::StringView GetTexturePath() = 0;
+		virtual ME::Core::Containers::AnsiStringView GetDebugName() = 0;
+
 	};
 
-	class PAWN_API Texture2D : public Texture
+	class MOON_API Texture2D : public Texture
 	{
 	public:
-		virtual Pawn::Render::Texture2DSpecification& GetSpecification() = 0;
+		virtual ME::Render::Texture2DSpecification& GetSpecification() = 0;
 
-		virtual Pawn::Core::Math::Resolution2D<uint32> GetResolution() const = 0;
+		virtual ME::Core::Math::Resolution2D<uint32> GetResolution() const = 0;
 
 	public:
-		static Texture2D* Create(Texture2DSpecification& specification);
+		static ME::Core::Memory::Reference<Texture2D> Create(Texture2DSpecification& specification);
 
 	private:
-		static Texture2D* CreateVulkanTexture(Texture2DSpecification& specification);
+		static ME::Core::Memory::Reference<Texture2D> CreateVulkanTexture(Texture2DSpecification& specification);
 
 	};
 }

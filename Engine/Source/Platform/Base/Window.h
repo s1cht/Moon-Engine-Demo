@@ -8,33 +8,33 @@
 
 // Base class for Window
 
-namespace Pawn 
+namespace ME 
 {
-	struct PAWN_API WindowProperties
+	struct MOON_API WindowProperties
 	{	
 	public:
-		Pawn::Core::Containers::String WindowTitle;
-		Pawn::Core::Math::Vector2D32 WindowSize;
+		ME::Core::Containers::String WindowTitle;
+		ME::Core::Math::Vector2D32 WindowSize;
 
-		WindowProperties(Pawn::Core::Containers::String title = TEXT("Pawn Engine"),
-			Pawn::Core::Math::Vector2D32 size = Pawn::Core::Math::Vector2D32(1280.f, 960.f)
+		WindowProperties(ME::Core::Containers::String title = TEXT("Moon Engine"),
+			ME::Core::Math::Vector2D32 size = ME::Core::Math::Vector2D32(1280.f, 960.f)
 		) : WindowTitle(title), WindowSize(size) {};
 	};
 
-	class PAWN_API Window
+	class MOON_API Window
 	{
 	public:
-		using EventCallbackFunc = std::function<void(Pawn::Core::Event&)>;
+		using EventCallbackFunc = std::function<void(ME::Core::Event&)>;
 
 	protected:
-		struct PAWN_API WindowData : WindowProperties
+		struct MOON_API WindowData : WindowProperties
 		{
 			bool Focused;
 			bool EventCallbackIsSetUp;
 
 			EventCallbackFunc EventCallback;
 
-			WindowData(const EventCallbackFunc& callback, Pawn::Input::InputController* inputHandler, const WindowProperties& props)
+			WindowData(const EventCallbackFunc& callback, ME::Input::InputController* inputHandler, const WindowProperties& props)
 				: EventCallback(callback), WindowProperties(props), Focused(false), EventCallbackIsSetUp(true) {
 			}
 			WindowData(const WindowProperties& props)
@@ -53,7 +53,7 @@ namespace Pawn
 		virtual float32 GetWidth() const = 0;
 		virtual float32 GetHeight() const = 0;
 		virtual bool GetFocused() const { return m_Data.Focused; }
-		virtual const Pawn::Core::Containers::String& GetWindowName() const { return m_Data.WindowTitle; }
+		virtual const ME::Core::Containers::String& GetWindowName() const { return m_Data.WindowTitle; }
 
 	public:
 		virtual void OnUpdate(float64 deltaTime) = 0;

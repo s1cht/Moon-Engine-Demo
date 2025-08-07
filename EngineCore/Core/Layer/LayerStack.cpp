@@ -1,7 +1,7 @@
 #include "LayerStack.hpp"
 #include "Core/Containers/Algorithm.hpp"
 
-namespace Pawn::Core
+namespace ME::Core
 {
 	LayerStack::LayerStack()
 	{
@@ -30,7 +30,7 @@ namespace Pawn::Core
 
 	void LayerStack::PopLayer(Layer* layer)
 	{
-		auto it = Pawn::Core::Algorithm::Find(m_Layers.Begin(), m_Layers.End(), layer);
+		auto it = ME::Core::Algorithm::Find(m_Layers.Begin(), m_Layers.End(), layer);
 		if (it != m_Layers.End())
 		{
 			m_Layers.Erase(it);
@@ -40,7 +40,7 @@ namespace Pawn::Core
 
 	void LayerStack::PopOverlay(Layer* overlay)
 	{
-		auto it = Pawn::Core::Algorithm::Find(m_Layers.Begin(), m_Layers.End(), overlay);
+		auto it = ME::Core::Algorithm::Find(m_Layers.Begin(), m_Layers.End(), overlay);
 		if (it != m_Layers.End())
 			m_Layers.Erase(it);
 	}

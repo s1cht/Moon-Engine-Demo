@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 
-namespace Pawn::Core::Algorithm
+namespace ME::Core::Algorithm
 {
 	template<typename Iterator, typename T>
 	Iterator Find(Iterator first, Iterator last, const T& value)

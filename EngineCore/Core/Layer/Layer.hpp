@@ -6,12 +6,12 @@
 
 struct ImGuiContext;
 
-namespace Pawn::Core
+namespace ME::Core
 {
 	class CORE_API Layer
 	{
 	public:
-		Layer(const Pawn::Core::Containers::String& name = TEXT("Layer"));
+		Layer(const ME::Core::Containers::String& name = TEXT("Layer"));
 		virtual ~Layer();
 
 		virtual void OnAttach() {}
@@ -19,12 +19,12 @@ namespace Pawn::Core
 		virtual void OnUpdate(float64 deltaTime) {}
 		virtual void OnRender(float64 deltaTime) {}
 		virtual void OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext) {}
-		virtual void OnEvent(Pawn::Core::Event& event) {}
+		virtual void OnEvent(ME::Core::Event& event) {}
 
-		inline const Pawn::Core::Containers::String& GetName() const { return m_DebugName; }
+		inline const ME::Core::Containers::String& GetName() const { return m_DebugName; }
 
 	protected:
-		Pawn::Core::Containers::String m_DebugName;
+		ME::Core::Containers::String m_DebugName;
 
 	};
 

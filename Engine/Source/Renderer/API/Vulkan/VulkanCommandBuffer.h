@@ -5,15 +5,16 @@
 #include <vulkan/vulkan.hpp>
 #include "Renderer/Base/CommandBuffer.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	class PAWN_API VulkanCommandBuffer : public CommandBuffer
+	class MOON_API VulkanCommandBuffer : public CommandBuffer
 	{
 	public:
 		VulkanCommandBuffer();
 		~VulkanCommandBuffer() override;
 
 	public:
+		void Shutdown() override;
 		void Record() override;
 		void Finish() override;
 		void Reset() override;

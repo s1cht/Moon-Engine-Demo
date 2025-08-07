@@ -5,18 +5,22 @@
 #include "VulkanMacros.hpp"
 #include <limits>
 #include <algorithm>
+#include <complex>
 
 #include "VulkanFunctions.h"
+#include "Renderer/RenderResourcesTracker.hpp"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	SwapChain* SwapChain::CreateVulkanSwapChain(int32& result)
+	ME::Core::Memory::Reference<SwapChain> SwapChain::CreateVulkanSwapChain(int32& result)
 	{
-		return new VulkanSwapChain(result);
+		auto object = ME::Core::Memory::Reference<SwapChain>(new VulkanSwapChain(result));
+		RenderResourcesTracker::Get().AddItem(object);
+		return object;
 	}
 
 	VulkanSwapChain::VulkanSwapChain(int32& result)
-		: m_SwapChain(nullptr)
+		: m_SwapChain(nullptr), m_VSYNCEnabled(false), m_CurrentFrame(0)
 	{
 		result = Init();
 	}
@@ -28,42 +32,63 @@ namespace Pawn::Render
 
 	void VulkanSwapChain::Shutdown()
 	{
-		VulkanRenderer* renderer = static_cast<VulkanRenderer*>(RenderCommand::Get());
-
+		for (auto image : m_Images)
+		{
+			delete image;
+			image = nullptr;
+		}
 		m_Images.Clear();
 		if (m_SwapChain != nullptr)
 		{
-			vkDestroySwapchainKHR(renderer->GetDevice(), m_SwapChain, nullptr);
+			vkDestroySwapchainKHR(Render::RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), m_SwapChain, nullptr);
 			m_SwapChain = nullptr;
 		}
 	}
 
-	void VulkanSwapChain::Present() {}
+	void VulkanSwapChain::Present(VkQueue queue, VulkanFrameInfo& info)
+	{
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = &info.RenderFinished;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &m_SwapChain;
+		presentInfo.pImageIndices = &m_NextImageIndex;
+
+		vkQueuePresentKHR(queue, &presentInfo);
+
+		m_CurrentFrame = (m_NextImageIndex + 1) % m_Images.GetSize();
+	}
+
+	void VulkanSwapChain::NewFrame(VulkanFrameInfo& info)
+	{
+		vkAcquireNextImageKHR(RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), m_SwapChain, UINT64_MAX, info.ImageAvailable, nullptr, &m_NextImageIndex);
+	}
 
 	void VulkanSwapChain::Resize(uint32 x, uint32 y)
 	{
 		int32 result;
-		VulkanRenderer* renderer = static_cast<VulkanRenderer*>(RenderCommand::Get());
-		vkDeviceWaitIdle(renderer->GetDevice());
+		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+		vkDeviceWaitIdle(render->GetDevice());
 		VkSwapchainKHR old = m_SwapChain;
 		m_SwapChain = nullptr;
 
 		m_Images.Clear();
 
-		result = CreateSwapChain(renderer, old);
-		if (PE_VK_FAILED(result))
+		result = CreateSwapChain(render, old);
+		if (ME_VK_FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("Vulkan swap chain: recreation failed! Error: {0}"), result);
+			ME_ASSERT(false, TEXT("Vulkan swap chain: recreation failed! Error: {0}"), result);
 			Shutdown();
 			return;
 		}
 
 		m_ImageFormat = m_Format.format;
 
-		result = CreateImages(renderer);
-		if (PE_VK_FAILED(result))
+		result = CreateImages(render);
+		if (ME_VK_FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("Vulkan swap chain: Image recreation failed! Error: {0}"), result);
+			ME_ASSERT(false, TEXT("Vulkan swap chain: Image recreation failed! Error: {0}"), result);
 			Shutdown();
 			return;
 		}
@@ -82,7 +107,7 @@ namespace Pawn::Render
 	int32 VulkanSwapChain::CreateSwapChain(VulkanRenderer* renderer, VkSwapchainKHR oldSwapChain)
 	{
 		uint32 imageCount;
-		Pawn::Core::Containers::Array<uint32> queueFamilies;
+		ME::Core::Containers::Array<uint32> queueFamilies;
 
 		imageCount = m_Capabilities.minImageCount + 1;
 		queueFamilies = { (uint32)renderer->GetGraphicsQueueFamily(), (uint32)renderer->GetPresentQueueFamily() };
@@ -93,7 +118,7 @@ namespace Pawn::Render
 		createInfo.minImageCount = imageCount;
 		createInfo.imageFormat = m_Format.format;
 		createInfo.imageColorSpace = m_Format.colorSpace;
-		createInfo.imageExtent = m_Extent;
+		createInfo.imageExtent = { m_Extent.x, m_Extent.y };
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		createInfo.imageSharingMode = renderer->GetGraphicsQueueFamily() == renderer->GetPresentQueueFamily() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
@@ -105,7 +130,7 @@ namespace Pawn::Render
 		createInfo.clipped = VK_TRUE;
 		createInfo.oldSwapchain = oldSwapChain;
 
-		return PE_VK_RETURN_V(vkCreateSwapchainKHR(renderer->GetDevice(), &createInfo, nullptr, &m_SwapChain));
+		return ME_VK_RETURN_V(vkCreateSwapchainKHR(renderer->GetDevice(), &createInfo, nullptr, &m_SwapChain));
 	}
 
 	int32 VulkanSwapChain::CreateImages(VulkanRenderer* renderer)
@@ -115,10 +140,12 @@ namespace Pawn::Render
 		specs.bOwnsImage = true;
 		specs.Data = nullptr;
 		specs.DataSize = -1;
-		specs.Format = Pawn::Render::ConvertFormatEngine(m_ImageFormat);
-		specs.Usage = ImageUsageFlags::None;
-		specs.Resolution.x = m_Extent.width;
-		specs.Resolution.y = m_Extent.height;
+		specs.Format = ME::Render::ConvertFormatEngine(m_ImageFormat);
+		specs.Usage = ImageUsageFlags::ColorAttachment;
+		specs.IsDepth = false;
+		specs.IsStencil = false;
+		specs.Resolution.x = m_Extent.x;
+		specs.Resolution.y = m_Extent.y;
 
 		uint32 count = 0;
 		vkGetSwapchainImagesKHR(renderer->GetDevice(), m_SwapChain, &count, nullptr);
@@ -128,7 +155,7 @@ namespace Pawn::Render
 
 		for (uint32 i = 0; i < count; i++)
 		{
-			specs.DebugName = "SwapChain image" + Pawn::Core::Containers::ToAnsiString(1);
+			specs.DebugName = "SwapChain image" + ME::Core::Containers::ToAnsiString(1);
 
 			m_Images.EmplaceBack(new VulkanTexture2D(swapChainImages[i], specs));
 		}
@@ -137,8 +164,8 @@ namespace Pawn::Render
 	}
 
 	bool VulkanSwapChain::SetDetails(VkPhysicalDevice device, VkSurfaceKHR surface,
-		Pawn::Core::Containers::Array<VkSurfaceFormatKHR>& formats,
-		Pawn::Core::Containers::Array<VkPresentModeKHR>& presentModes)
+		ME::Core::Containers::Array<VkSurfaceFormatKHR>& formats,
+		ME::Core::Containers::Array<VkPresentModeKHR>& presentModes)
 	{
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &m_Capabilities);
 
@@ -163,7 +190,7 @@ namespace Pawn::Render
 		return presentModes.Empty() && formats.Empty();
 	}
 
-	void VulkanSwapChain::SelectFormat(Pawn::Core::Containers::Array<VkSurfaceFormatKHR>& formats)
+	void VulkanSwapChain::SelectFormat(ME::Core::Containers::Array<VkSurfaceFormatKHR>& formats)
 	{
 		for (const auto& availableFormat : formats) 
 			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) 
@@ -172,11 +199,11 @@ namespace Pawn::Render
 		m_Format = formats[0];
 	}
 
-	void VulkanSwapChain::SelectPresentMode(Pawn::Core::Containers::Array<VkPresentModeKHR>& presentModes)
+	void VulkanSwapChain::SelectPresentMode(ME::Core::Containers::Array<VkPresentModeKHR>& presentModes)
 	{
 		for (const auto& availablePresentMode : presentModes)
 		{
-			if (m_VSYNCEnabled)
+			if (!m_VSYNCEnabled)
 			{
 				if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
 				{
@@ -186,7 +213,7 @@ namespace Pawn::Render
 			}
 			else
 			{
-				if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+				if (availablePresentMode == VK_PRESENT_MODE_FIFO_KHR)
 				{
 					m_PresentMode = availablePresentMode;
 					return;
@@ -198,12 +225,12 @@ namespace Pawn::Render
 
 	void VulkanSwapChain::SelectSwapExtent()
 	{
-		Pawn::Application& app = Pawn::Application::Get();
-		Pawn::Window* window = app.GetWindow();
+		ME::Application& app = ME::Application::Get();
+		ME::Window* window = app.GetWindow();
 
 		if (m_Capabilities.currentExtent.width != UINT32_MAX)
 		{
-			m_Extent = m_Capabilities.currentExtent;
+			m_Extent = { m_Capabilities.currentExtent.width, m_Capabilities.currentExtent.height };
 		}
 		else 
 		{
@@ -211,10 +238,10 @@ namespace Pawn::Render
 			width = (uint32)window->GetWidth();
 			height = (uint32)window->GetHeight();
 
-			VkExtent2D actualExtent = { width, height };
-
-			actualExtent.width = std::clamp(actualExtent.width, m_Capabilities.minImageExtent.width, m_Capabilities.maxImageExtent.width);
-			actualExtent.height = std::clamp(actualExtent.height, m_Capabilities.minImageExtent.height, m_Capabilities.maxImageExtent.height);
+			Core::Math::Resolution2D<uint32> actualExtent = { width, height };
+				
+			actualExtent.x = std::clamp(actualExtent.x, m_Capabilities.minImageExtent.width, m_Capabilities.maxImageExtent.width);
+			actualExtent.y = std::clamp(actualExtent.y, m_Capabilities.minImageExtent.height, m_Capabilities.maxImageExtent.height);
 
 			m_Extent = actualExtent;
 		}
@@ -223,37 +250,37 @@ namespace Pawn::Render
 	int32 VulkanSwapChain::Init()
 	{
 		int32 result;
-		VulkanRenderer* renderer = static_cast<VulkanRenderer*>(RenderCommand::Get());
-		Pawn::Core::Containers::Array<VkSurfaceFormatKHR> formats;
-		Pawn::Core::Containers::Array<VkPresentModeKHR> presentModes;
+		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+		ME::Core::Containers::Array<VkSurfaceFormatKHR> formats;
+		ME::Core::Containers::Array<VkPresentModeKHR> presentModes;
 
-		result = uint32(SetDetails(renderer->GetPhysicalDevice(), renderer->GetSurface(), formats, presentModes));
-		if (PE_VK_FAILED(result))
+		result = uint32(SetDetails(render->GetPhysicalDevice(), render->GetSurface(), formats, presentModes));
+		if (ME_VK_FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("Vulkan swap chain: Present modes or formats are empty! Error: {0}"), result);
-			return PE_VK_RETURN_V(VulkanErrors::PresentModesOrFormatsEmpty);
+			ME_ASSERT(false, TEXT("Vulkan swap chain: Present modes or formats are empty! Error: {0}"), result);
+			return ME_VK_RETURN_V(VulkanErrors::PresentModesOrFormatsEmpty);
 		}
 
 		SelectFormat(formats);
 		SelectPresentMode(presentModes);
 		SelectSwapExtent();
 
-		result = CreateSwapChain(renderer, nullptr);
-		if (PE_VK_FAILED(result))
+		result = CreateSwapChain(render, nullptr);
+		if (ME_VK_FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("Vulkan swap chain: creation failed! Error: {0}"), result);
+			ME_ASSERT(false, TEXT("Vulkan swap chain: creation failed! Error: {0}"), result);
 			Shutdown();
-			return PE_VK_RETURN_V(result);
+			return ME_VK_RETURN_V(result);
 		}
 
 		m_ImageFormat = m_Format.format;
 
-		result = CreateImages(renderer);
-		if (PE_VK_FAILED(result))
+		result = CreateImages(render);
+		if (ME_VK_FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("Vulkan swap chain: Image recreation failed! Error: {0}"), result);
+			ME_ASSERT(false, TEXT("Vulkan swap chain: Image recreation failed! Error: {0}"), result);
 			Shutdown();
-			return PE_VK_RETURN_V(result);
+			return ME_VK_RETURN_V(result);
 
 		}
 

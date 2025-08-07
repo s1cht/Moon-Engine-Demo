@@ -1,6 +1,6 @@
 #include "Mouse.h"
 
-namespace Pawn::Input::Devices
+namespace ME::Input::Devices
 {
 	Mouse::Mouse()
 	{
@@ -74,7 +74,7 @@ namespace Pawn::Input::Devices
 	{
 		if (sideButton >= PE_MAX_MOUSE_SIDEBTN_COUNT)
 		{
-			PE_ERROR(TEXT("Unknown side button caught!")); 
+			ME_ERROR(TEXT("Unknown side button caught!")); 
 			return;
 		}
 

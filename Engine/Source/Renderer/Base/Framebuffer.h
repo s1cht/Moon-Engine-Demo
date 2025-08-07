@@ -3,27 +3,28 @@
 #include <Core.hpp>
 #include "Renderer/Base/RenderPass.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
 	class RenderPass;
 
 	struct FramebufferSpecification
 	{
-		RenderPass* RenderPass;
-		Pawn::Core::Math::Resolution2D<uint32> Resolution;
-		Pawn::Core::Containers::Array<Texture*> Attachments;
+		Core::Memory::Reference<Render::RenderPass> RenderPass;
+		ME::Core::Math::Resolution2D<uint32> Resolution;
+		ME::Core::Containers::Array<Texture2D*> Attachments;
 		uint32 Layers;
 	};
 
-	class PAWN_API Framebuffer
+	class MOON_API Framebuffer : public RenderObject
 	{
 	public:
 		virtual ~Framebuffer() = default;
 
+		virtual inline const FramebufferSpecification& GetSpecification() const = 0;
+
 	public:
-		static Framebuffer* Create(FramebufferSpecification& specification);
-		static Framebuffer* CreateDirectX11Framebuffer(uint32 x, uint32 y);
-		static Framebuffer* CreateVulkanFramebuffer(FramebufferSpecification& specification);
+		static ME::Core::Memory::Reference<Render::Framebuffer> Create(FramebufferSpecification& specification);
+		static ME::Core::Memory::Reference<Render::Framebuffer> CreateVulkanFramebuffer(FramebufferSpecification& specification);
 
 	};
 }

@@ -13,38 +13,45 @@
 #include <Core/Platform/Base/IO.hpp>
 #include <Core/Misc/Time.hpp>
 
-namespace Pawn {
+#include "Assets/ShaderManager.hpp"
+#include "Renderer/RenderResourcesTracker.hpp"
+#include "Utility/AssetLoader.h"
+
+namespace ME {
 
 	using namespace std::chrono_literals;
 
 	Application* Application::s_Instance;
+	bool Application::s_ShutdownRequested;
 
 	Application::Application(ApplicationProperties props)
 		: m_WindowUpdateX(0), m_WindowUpdateY(0), m_AppData(props)
 	{	
-		PE_ASSERT(!s_Instance, TEXT("Application is already created!"));
+		ME_ASSERT(!s_Instance, TEXT("Application is already created!"));
 		s_Instance = this;
+		s_ShutdownRequested = false;
 
 		Input::InputController::Get().SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		Pawn::WindowProperties windowProps{};
+		ME::WindowProperties windowProps{};
 		windowProps.WindowTitle = m_AppData.ApplicationName;
-		windowProps.WindowSize = Pawn::Core::Math::Vector2D32(1920.f, 1050.f);
+		windowProps.WindowSize = ME::Core::Math::Vector2D32(1920.f, 1050.f);
 
-		m_Window = Pawn::Core::Memory::Scope<Window>(Window::Create(windowProps));
+		m_Window = ME::Core::Memory::Scope<Window>(Window::Create(windowProps));
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		Render::Renderer::SetRenderAPI(Pawn::Render::RendererAPI::API::Vulkan);
+		Render::Renderer::SetRenderAPI(ME::Render::RendererAPI::API::Vulkan);
 		Render::Renderer::Init();
+		Assets::ShaderManager::Get();
 
 		//m_ImGuiLayer = new Render::Imgui::ImGuiLayer();
 		//PushOverlay(m_ImGuiLayer);
 
-		Pawn::Core::Containers::String str = Pawn::Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
+		ME::Core::Containers::String str = ME::Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
 
-		Pawn::Core::IO::DirectoryStorage::StoreDirectory(Pawn::Core::IO::DirectoryStorage::Directory(TEXT("Assets"), (str + TEXT("assets\\"))));
-		Pawn::Core::IO::DirectoryStorage::StoreDirectory(Pawn::Core::IO::DirectoryStorage::Directory(TEXT("Shaders"), (str + TEXT("assets\\Shaders\\Source\\"))));
-		Pawn::Core::IO::DirectoryStorage::StoreDirectory(Pawn::Core::IO::DirectoryStorage::Directory(TEXT("CompiledShaders"), (str + TEXT("assets\\Shaders\\Compiled\\"))));
+		ME::Core::IO::DirectoryStorage::StoreDirectory(ME::Core::IO::DirectoryStorage::Directory(TEXT("Assets"), (str + TEXT("assets\\"))));
+		ME::Core::IO::DirectoryStorage::StoreDirectory(ME::Core::IO::DirectoryStorage::Directory(TEXT("Shaders"), (str + TEXT("assets\\Shaders\\Source\\"))));
+		ME::Core::IO::DirectoryStorage::StoreDirectory(ME::Core::IO::DirectoryStorage::Directory(TEXT("CompiledShaders"), (str + TEXT("assets\\Shaders\\Compiled\\"))));
 
 		m_Runs = true;
 	}
@@ -52,14 +59,17 @@ namespace Pawn {
 	Application::~Application()
 	{
 		//m_ImGuiLayer->Shutdown();
+		ME::Assets::ShaderManager::Get().Shutdown();
+		Render::RenderResourcesTracker::Get().ShutdownAll();
 		Render::Renderer::Shutdown();
+		s_ShutdownRequested = false;
 	}
 
 	void Application::Run()
 	{
-		while (m_Runs)
+		while (m_Runs && !s_ShutdownRequested)
 		{
-			float64 delta = Pawn::Core::Clock::Time::Update().AsMilliseconds();
+			float64 delta = ME::Core::Clock::Time::Update().AsMilliseconds();
 			
 			m_Window->OnUpdate(delta);
 
@@ -68,7 +78,7 @@ namespace Pawn {
 			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
 			{
 				(*layer)->OnUpdate(delta);
-			}
+ 			}
 
 			//Render::Renderer::EndScene();
 			
@@ -89,25 +99,30 @@ namespace Pawn {
 
 			//Render::RenderCommand::Present();
 		}
+
+		if (s_ShutdownRequested)
+		{
+			this->~Application();
+		}
 	}
 
-	void Application::PushLayer(Pawn::Core::Layer* layer)
+	void Application::PushLayer(ME::Core::Layer* layer)
 	{
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
 	}
 
-	void Application::PushOverlay(Pawn::Core::Layer* overlay)
+	void Application::PushOverlay(ME::Core::Layer* overlay)
 	{
 		m_LayerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
 
-	void Application::OnEvent(Pawn::Core::Event& event)
+	void Application::OnEvent(ME::Core::Event& event)
 	{
-		Pawn::Core::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Pawn::Events::WindowResizedEvent>(BIND_EVENT_FN(Application::OnWindowSizeEvent));
-		dispatcher.Dispatch<Pawn::Events::WindowClosedEvent>(BIND_EVENT_FN(Application::OnClosedEvent));
+		ME::Core::EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<ME::Events::WindowResizedEvent>(BIND_EVENT_FN(Application::OnWindowSizeEvent));
+		dispatcher.Dispatch<ME::Events::WindowClosedEvent>(BIND_EVENT_FN(Application::OnClosedEvent));
 
 		for (auto it = m_LayerStack.End(); it != m_LayerStack.Begin();)
 		{
@@ -118,14 +133,14 @@ namespace Pawn {
 
 	}
 
-	bool Application::OnClosedEvent(Pawn::Events::WindowClosedEvent& event)
+	bool Application::OnClosedEvent(ME::Events::WindowClosedEvent& event)
 	{
 		m_Runs = false;
 
 		return false;
 	}
 
-	bool Application::OnWindowSizeEvent(Pawn::Events::WindowResizedEvent& event)
+	bool Application::OnWindowSizeEvent(ME::Events::WindowResizedEvent& event)
 	{
 		m_WindowUpdateX = (int32)event.GetSizeX();
 		m_WindowUpdateY = (int32)event.GetSizeY();

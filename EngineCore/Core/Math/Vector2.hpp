@@ -4,7 +4,7 @@
 #include "Core/Math/MathMacros.hpp"
 #include "Core/Utils/Logging/Logger.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	template<typename T>
 	struct Vector2
@@ -164,7 +164,7 @@ namespace Pawn::Core::Math
 	template<typename T>
 	inline Vector2<T> Vector2<T>::operator/(const Vector2& b) const
 	{
-		if (b == Vector2::ZeroVector) PE_ASSERT(false, TEXT("Multiplication by zero"));
+		if (b == Vector2::ZeroVector) ME_ASSERT(false, TEXT("Multiplication by zero"));
 		return Vector2<T>(
 			b.x != 0 ? x / b.x : 0,
 			b.y != 0 ? y / b.y : 0

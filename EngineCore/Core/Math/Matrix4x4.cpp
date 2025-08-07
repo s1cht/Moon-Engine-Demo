@@ -1,7 +1,7 @@
 #include "Matrix4x4.hpp"
 #include "Core/Math/Quaternion.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	inline PMatrix4x4::PMatrix4x4()
 		: a11(1.0f), a12(0.0f), a13(0.0f), a14(0.0f),

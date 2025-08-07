@@ -2,7 +2,7 @@
 #include "Core.hpp"
 #include "Core/Misc/Time.hpp"
 
-namespace Pawn::Core::Clock
+namespace ME::Core::Clock
 {
 	class CORE_API WindowsTimeSource : public TimeSource
 	{

@@ -3,7 +3,7 @@
 #include "Core/Utils/Logging/Logger.hpp"
 #include "Core/Containers/String/StringShared.hpp"
 
-namespace Pawn::Core::Containers
+namespace ME::Core::Containers
 {
 	template<typename type, class allocator>
 	class PString;
@@ -45,7 +45,7 @@ namespace Pawn::Core::Containers
 
 		RefType operator[](SIZE_T index) const
 		{
-			PE_CORE_ASSERT(index < m_Size, "Index out of range in StringView!");
+			ME_CORE_ASSERT(index < m_Size, "Index out of range in StringView!");
 			return m_Data[index];
 		}
 
@@ -68,7 +68,7 @@ namespace Pawn::Core::Containers
 
 		PStringView Substring(SIZE_T start, SIZE_T length = 0) const
 		{
-			PE_CORE_ASSERT(start <= m_Size, "Start index out of range!");
+			ME_CORE_ASSERT(start <= m_Size, "Start index out of range!");
 			SIZE_T remaining = m_Size - start;
 			SIZE_T newSize = (length > remaining) ? remaining : length;
 			return PStringView(m_Data + start, newSize);

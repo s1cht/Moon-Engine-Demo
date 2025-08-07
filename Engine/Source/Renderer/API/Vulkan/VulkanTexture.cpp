@@ -4,12 +4,15 @@
 #include "VulkanMacros.hpp"
 #include "VulkanRenderer.h"
 #include "Renderer/RenderCommand.h"
+#include "Renderer/RenderResourcesTracker.hpp"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	Texture2D* Texture2D::CreateVulkanTexture(Texture2DSpecification& specification)
+	ME::Core::Memory::Reference<Texture2D> Texture2D::CreateVulkanTexture(Texture2DSpecification& specification)
 	{
-		return new VulkanTexture2D(specification);
+		auto object = ME::Core::Memory::Reference<Texture2D>(new VulkanTexture2D(specification));
+		RenderResourcesTracker::Get().AddItem(object);
+		return object;
 	}
 
 	VulkanTexture2D::VulkanTexture2D(Texture2DSpecification& specification) : m_Specification(specification)
@@ -24,19 +27,7 @@ namespace Pawn::Render
 
 	VulkanTexture2D::~VulkanTexture2D()
 	{
-		VulkanRenderer* render = static_cast<VulkanRenderer*>(RenderCommand::Get());
-
-		if (m_ImageView != nullptr)
-		{
-			vkDestroyImageView(render->GetDevice(), m_ImageView, nullptr);
-			m_ImageView = nullptr;
-		}
-
-		if (m_Image != nullptr && m_Specification.bOwnsImage == false)
-		{
-			vkDestroyImage(render->GetDevice(), m_Image, nullptr);
-			m_Image = nullptr;
-		}
+		Shutdown();
 	}
 
 	void VulkanTexture2D::Bind()
@@ -69,9 +60,26 @@ namespace Pawn::Render
 		return 0;
 	}
 
+	void VulkanTexture2D::Shutdown()
+	{
+		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+
+		if (m_ImageView != nullptr)
+		{
+			vkDestroyImageView(render->GetDevice(), m_ImageView, nullptr);
+			m_ImageView = nullptr;
+		}
+
+		if (m_Image != nullptr && m_Specification.bOwnsImage == false)
+		{
+			vkDestroyImage(render->GetDevice(), m_Image, nullptr);
+			m_Image = nullptr;
+		}
+	}
+
 	void VulkanTexture2D::Init()
 	{
-		VkResult result;
+		//VkResult result;
 
 	}
 	
@@ -80,25 +88,25 @@ namespace Pawn::Render
 		VkResult result;
 
 		m_Image = image;
-		m_ImageFormat = Pawn::Render::ConvertFormatVulkan(m_Specification.Format);
+		m_ImageFormat = ME::Render::ConvertFormatVulkan(m_Specification.Format);
 
 		result = CreateImageView();
-		if (PE_VK_FAILED(result))
+		if (ME_VK_FAILED(result))
 		{
-			PE_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image view!: Error: {0}"), (uint32)result);
+			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image view!: Error: {0}"), (uint32)result);
 			return;
 		}
 	}
 
 	VkResult VulkanTexture2D::CreateImage()
 	{
-		VulkanRenderer* render = static_cast<VulkanRenderer*>(RenderCommand::Get());
+		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
 		uint32 graphicsQueue = static_cast<uint32_t>(render->GetGraphicsQueueFamily());
 
 		VkImageCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		createInfo.imageType = VK_IMAGE_TYPE_2D;
-		createInfo.format = Pawn::Render::ConvertFormatVulkan(m_Specification.Format);
+		createInfo.format = ME::Render::ConvertFormatVulkan(m_Specification.Format);
 		createInfo.extent.width = m_Specification.Resolution.x;
 		createInfo.extent.height = m_Specification.Resolution.y;
 		createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -116,8 +124,7 @@ namespace Pawn::Render
 
 	VkResult VulkanTexture2D::CreateImageView()
 	{
-		VkResult result;
-		VulkanRenderer* render = static_cast<VulkanRenderer*>(RenderCommand::Get());
+		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
 
 		VkImageViewCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -128,11 +135,19 @@ namespace Pawn::Render
 		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		createInfo.subresourceRange.baseMipLevel = 0;
 		createInfo.subresourceRange.levelCount = 1;
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (m_Specification.IsStencil || m_Specification.IsDepth)
+		{
+			createInfo.subresourceRange.aspectMask = 0;
+			if (m_Specification.IsStencil)
+				createInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			if (m_Specification.IsDepth)
+				createInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+		}
 
 		return vkCreateImageView(render->GetDevice(), &createInfo, nullptr, &m_ImageView);
 	}

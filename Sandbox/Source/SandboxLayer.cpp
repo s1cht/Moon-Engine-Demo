@@ -9,9 +9,12 @@
 #include <Renderer/ImGui/ImGuiReferences.h>
 #include <Renderer/Camera/PerpectiveCamera.h>
 
+#include <Utility/ShaderCompiler.hpp>
 #include <Assets/AssetManager.h>
 
-using namespace Pawn;
+#include "Assets/ShaderManager.hpp"
+
+using namespace ME;
 
 void SandboxLayer::OnAttach()
 {
@@ -20,14 +23,35 @@ void SandboxLayer::OnAttach()
 //	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/torch.obj")), true);
 	if (!result)
 	{
-		PE_ERROR(TEXT("Failed to load asset!"));
+		ME_ERROR(TEXT("Failed to load asset!"));
 	}
 
 	//result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Meshes/flashlight.obj")), true);
 	if (!result)
 	{
-		PE_ERROR(TEXT("Failed to load asset!"));
+		ME_ERROR(TEXT("Failed to load asset!"));
 	}
+
+	Utility::ShaderCompiler& compiler = Utility::ShaderCompiler::Get();
+	compiler.InitCompiler();
+
+	ME::Assets::ShaderManager::Get().LoadCompiler();
+	ME::Assets::ShaderManager::Get().SetShaderSourcePath(ME::Core::IO::DirectoryStorage::GetDirectory(TEXT("Shaders")));
+	ME::Assets::ShaderManager::Get().SetCompiledShaderPath(ME::Core::IO::DirectoryStorage::GetDirectory(TEXT("CompiledShaders")));
+
+	//m_Layout = Render::VertexBufferLayout(Render::InputClassification::PerVertex, {
+	//{ Render::ShaderType::Float3, "POSITION", 0, 0 },
+	//{ Render::ShaderType::Float2, "TCOORD", 1, 0 },
+	//{ Render::ShaderType::Float3, "NORMALPOS", 2, 0 }
+	//	});
+
+	m_Layout = Render::VertexBufferLayout(Render::InputClassification::PerVertex, {});
+
+	Assets::ShaderGroupPaths mainShaders = {};
+	mainShaders.Vertex = TEXT("vs.hlsl");
+	mainShaders.Pixel = TEXT("ps.hlsl");
+
+	ME::Assets::ShaderManager::Get().LoadShadersFromFiles(TEXT("Main"), mainShaders);
 
 	m_Flashlight.Reserve(4);
 	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Button")));
@@ -35,12 +59,10 @@ void SandboxLayer::OnAttach()
 	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Glass")));
 	m_Flashlight.EmplaceBack(Assets::AssetManager::Get().GetMesh(TEXT("Ring")));
 
+	ME::Core::Containers::Array<Render::Texture2D*> swapChainTextures = Render::RenderCommand::Get()->GetSwapChain()->GetImages();
+	ME::Core::Containers::Array<Render::AttachmentSpecification> attachments;
 
-	Render::CommandBuffer* buffer = Render::CommandBuffer::CreateCommandBuffer();
-
-	Pawn::Core::Containers::Array<Render::Texture2D*> swapChainTextures = Render::RenderCommand::Get()->GetSwapChain()->GetImages();
-
-	auto imageSpec = swapChainTextures[0]->GetSpecification();
+	auto imageSpec =  swapChainTextures[0]->GetSpecification();
 	Render::AttachmentSpecification attachmentSpecs = {};
 	attachmentSpecs.IsStencil = false;
 	attachmentSpecs.IsDepth = false;
@@ -49,6 +71,8 @@ void SandboxLayer::OnAttach()
 	attachmentSpecs.StoreOp = Render::StoreOperation::Store;
 	attachmentSpecs.InitialLayout = Render::ImageLayout::Undefined;
 	attachmentSpecs.FinalLayout = Render::ImageLayout::Present;
+
+	attachments.EmplaceBack(attachmentSpecs);
 
 	Render::SubpassSpecification subpass = {};
 	subpass.ColorAttachmentRefs = { 0 };
@@ -62,31 +86,77 @@ void SandboxLayer::OnAttach()
 	subpassDependency.PipelineStageFlagsDst = Render::PipelineStageFlags::ColorAttachmentOutput | Render::PipelineStageFlags::EarlyFragmentTests;
 
 	Render::RenderPassSpecification mainRPSpecs = {};
-	mainRPSpecs.AttachmentSpecs = { attachmentSpecs };
+	mainRPSpecs.AttachmentSpecs = attachments;
 	mainRPSpecs.SubpassSpecs = { subpass };
 	mainRPSpecs.SubpassDependencies = { subpassDependency };
 	mainRPSpecs.DebugName = "Main render pass";
 
-	Render::RenderPass* mainRenderPass = Render::RenderPass::Create(mainRPSpecs);
+	m_MainRenderPass = Render::RenderPass::Create(mainRPSpecs);
 
-	Pawn::Core::Containers::Array<Render::Framebuffer*> swapChainFramebuffers;
 	for (auto image : swapChainTextures)
 	{
 		Render::FramebufferSpecification framebufferSpecification = {};
 		framebufferSpecification.Attachments = { image };
 		framebufferSpecification.Layers = 1;
-		framebufferSpecification.RenderPass = mainRenderPass;
+		framebufferSpecification.RenderPass = m_MainRenderPass;
 		framebufferSpecification.Resolution.x = image->GetResolution().x;
 		framebufferSpecification.Resolution.y = image->GetResolution().y;
 
-		swapChainFramebuffers.EmplaceBack(Render::Framebuffer::Create(framebufferSpecification));
+		m_WindowFramebuffers.EmplaceBack(Render::Framebuffer::Create(framebufferSpecification));
 	}
 
-	PE_INFO(TEXT("Hello world!"));
+	
+	Render::InputAssesemblySpecification iaSpec = {};
+	iaSpec.Topology = Render::PrimitiveTopology::TriangleList;
+	iaSpec.PrimitiveRestart = false;
+
+	Render::RasterizationSpecification rasterSpec = {};
+	rasterSpec.DiscardEnabled = false;
+	rasterSpec.FrontCounterClockwise = false;
+	rasterSpec.DepthBiasEnabled = false;
+	rasterSpec.DepthClampEnabled = true;
+	rasterSpec.DepthBiasConstantFactor = 1.f;
+	rasterSpec.DepthBiasClamp = 0.f;
+	rasterSpec.DepthBiasSlopeFactor = 0.f;
+	rasterSpec.LineWidth = 1.0f;
+	rasterSpec.Cull = Render::RasterizationCull::None;
+	rasterSpec.Fill = Render::RasterizationFill::Fill;
+
+	Render::MultisamplingSpecification multisamplingSpec = {};
+	multisamplingSpec.Samples = Render::SampleCount::Count1;
+	multisamplingSpec.EnableSampleShading = false;
+	multisamplingSpec.AlphaToCoverage = true;
+
+	Render::DepthStencilSpecification dsSpec = {};
+	dsSpec.DepthEnabled = false;
+	dsSpec.StencilEnabled = false;
+	dsSpec.MaxDepthBounds = 1.0f;
+	dsSpec.MinDepthBounds = 0.f;
+	dsSpec.DepthFunction = Render::DepthComparison::LessEqual;
+
+	Render::ColorBlendingSpecification cbSpec = {};
+	cbSpec.Attachments = { {false, true  } };
+	cbSpec.BlendConstants = { 1.f, 1.f, 1.f, 1.f };
+	cbSpec.LogicOperation = Render::LogicOperation::None;
+
+	Render::PipelineSpecification mainPipelineSpec = {};
+	mainPipelineSpec.Type = Render::PipelineType::Graphics;
+	mainPipelineSpec.RenderPass = m_MainRenderPass;
+	mainPipelineSpec.Subpass = 0;
+	mainPipelineSpec.Shaders = ME::Assets::ShaderManager::Get().GetShaderGroup(TEXT("Main"));
+	mainPipelineSpec.BufferLayout = m_Layout;
+	mainPipelineSpec.InputAssembly = iaSpec;
+	mainPipelineSpec.Rasterization = rasterSpec;
+	mainPipelineSpec.Multisampling = multisamplingSpec;
+	mainPipelineSpec.DepthStencil = dsSpec;
+	mainPipelineSpec.ColorBlending = cbSpec;
+ 	mainPipelineSpec.BasePipeline = nullptr;
+
+	m_Primary = Render::Pipeline::Create(mainPipelineSpec);
 
 	/*
 
-	Render::BufferLayout layout = {
+	Render::VertexBufferLayout layout = {
 		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
 		{ Render::ShaderType::Float2, "TCOORD", 0, 0 },
 		{ Render::ShaderType::Float3, "NORMALPOS", 0, 0 }
@@ -100,8 +170,8 @@ void SandboxLayer::OnAttach()
 	Render::Shader::SetShaderSourceExtension(TEXT(".hlsl"));
 	Render::Shader::SetCompiledShaderExtension(TEXT(".cso"));
 
-	m_VertexShader = Core::Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("vs_primary"), Render::Shader::Type::Vertex, false));
-	m_PixelShader = Core::Memory::Reference<Render::Shader>(Render::Shader::CreateShader(TEXT("ps_primary"), Render::Shader::Type::Pixel, false));
+	m_VertexShader = Core::Memory::Reference<Render::Shader>(Render::Shader::Create(TEXT("vs_primary"), Render::Shader::Type::Vertex, false));
+	m_PixelShader = Core::Memory::Reference<Render::Shader>(Render::Shader::Create(TEXT("ps_primary"), Render::Shader::Type::Pixel, false));
 
 	const float32 points[8][7] = 
 	{
@@ -145,7 +215,6 @@ void SandboxLayer::OnAttach()
 	m_Primary->SetVertexShader(m_VertexShader);
 	m_Primary->SetPixelShader(m_PixelShader);
 	m_Primary->SetDepthStencilState(true, true, Render::DepthComparison::LessEqual);
-	m_Primary->SetRasterizerState(Render::RasterizerCull::Back, Render::RasterizerFill::Fill, true, false, true, false, 0, 0.f, false, 0);
 
 	m_Primary->SetBlendState(false, Render::BlendMask::All);
 	m_Primary->SetInputLayout(layout, Pawn::Render::InputClassification::PerVertex, 0);
@@ -167,112 +236,136 @@ void SandboxLayer::OnAttach()
 
 void SandboxLayer::OnUpdate(float64 deltaTime)
 {
-	/*
+	//auto camPos = m_Camera->GetPosition();
+	//static float32 yaw = 0.f;
+	//static float32 pitch = 0.f;
+	//static const float32 cameraSpeed = 0.001f;
+	//static const float32 cameraSens = 0.001f;
+	//static bool update = false;
 
-	Render::BufferLayout layout = {
-		{ Render::ShaderType::Float3, "POSITION", 0, 0 },
-		{ Render::ShaderType::Float2, "TCOORD", 0, 0 },
-		{ Render::ShaderType::Float3, "NORMALPOS", 0, 0 }
-	};
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_W))
+	//{
+	//	camPos += Core::Math::Vector3D::ForwardVector * ((float64)cameraSpeed * deltaTime);
+	//	update = true;
+	//}
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_S))
+	//{
+	//	camPos += Core::Math::Vector3D::BackwardVector * ((float64)cameraSpeed * deltaTime);
+	//	update = true;
+	//}
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_A))
+	//{
+	//	camPos += Core::Math::Vector3D::LeftVector * ((float64)cameraSpeed * deltaTime);
+	//	update = true;
+	//}
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_D))
+	//{
+	//	camPos += Core::Math::Vector3D::RightVector * ((float64)cameraSpeed * deltaTime);
+	//	update = true;
+	//}
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_E))
+	//{
+	//	camPos += Core::Math::Vector3D::UpVector * ((float64)cameraSpeed * deltaTime);
+	//	update = true;
+	//}
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_Q))
+	//{
+	//	camPos += Core::Math::Vector3D::DownVector * ((float64)cameraSpeed * deltaTime);
+	//	update = true;
+	//}
 
-	auto camPos = m_Camera->GetPosition();
-	static float32 yaw = 0.f;
-	static float32 pitch = 0.f;
-	static const float32 cameraSpeed = 0.001f;
-	static const float32 cameraSens = 0.001f;
-	static bool update = false;
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_UP))
+	//{
+	//	yaw += cameraSens * deltaTime;
+	//	update = true;
+	//}
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_DOWN))
+	//{
+	//	yaw -= cameraSens * deltaTime;
+	//	update = true;
+	//}
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_LEFT))
+	//{
+	//	pitch += cameraSens * deltaTime;
+	//	update = true;
+	//}
+	//if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_RIGHT))
+	//{
+	//	pitch -= cameraSens * deltaTime;
+	//	update = true;
+	//}
 
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_W))
-	{
-		camPos += Core::Math::Vector3D::ForwardVector() * ((float64)cameraSpeed * deltaTime);
-		update = true;
-	}
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_S))
-	{
-		camPos += Core::Math::Vector3D::BackwardVector() * ((float64)cameraSpeed * deltaTime);
-		update = true;
-	}
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_A))
-	{
-		camPos += Core::Math::Vector3D::LeftVector() * ((float64)cameraSpeed * deltaTime);
-		update = true;
-	}
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_D))
-	{
-		camPos += Core::Math::Vector3D::RightVector() * ((float64)cameraSpeed * deltaTime);
-		update = true;
-	}
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_E))
-	{
-		camPos += Core::Math::Vector3D::UpVector() * ((float64)cameraSpeed * deltaTime);
-		update = true;
-	}
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_Q))
-	{
-		camPos += Core::Math::Vector3D::DownVector() * ((float64)cameraSpeed * deltaTime);
-		update = true;
-	}
+	//if (update)
+	//{
+	//	m_Camera->SetRotation(yaw, pitch, yaw);
+	//	m_Camera->SetPosition(camPos);
+	//	update = false;
+	//}
 
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_UP))
-	{
-		yaw += cameraSens * deltaTime;
-		update = true;
-	}
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_DOWN))
-	{
-		yaw -= cameraSens * deltaTime;
-		update = true;
-	}
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_LEFT))
-	{
-		pitch += cameraSens * deltaTime;
-		update = true;
-	}
-	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_RIGHT))
-	{
-		pitch -= cameraSens * deltaTime;
-		update = true;
-	}
+	//m_Camera->Update();
 
-	if (update)
-	{
-		m_Camera->SetRotation(yaw, pitch, yaw);
-		m_Camera->SetPosition(camPos);
-		update = false;
-	}
+	//Core::Math::Matrix4x4 mat = m_Camera->GetProjViewMatrix().Transpose();
 
-	m_Camera->Update();
+	ME::Core::Memory::Reference<ME::Render::CommandBuffer> currentCommandBuffer = Render::RenderCommand::GetAvailableCommandBuffer();
+	currentCommandBuffer->Reset();
 
-	Core::Math::Matrix4x4 mat = m_Camera->GetProjViewMatrix().Transpose();
+	Render::ClearValue clrVal = {};
+	clrVal.ColorClearValue = Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f);
 
-	Render::Renderer::BeginScene(m_Camera);
-	D3DPERF_BeginEvent(0xffffffff, TEXT("Flashlight render"));
-	m_CameraBuffer->SetData(const_cast<void*>(static_cast<const void*>(&mat)), sizeof(Core::Math::Matrix4x4));
-	m_SceneBuffer->SetData(static_cast<void*>(&m_WorldMatrix), sizeof(Core::Math::Matrix4x4));
-	m_LightBuffer->SetData(static_cast<void*>(&m_Light), sizeof(Light));
-	m_Primary->SetPrimitiveTopology(Pawn::Render::PrimitiveTopology::TriangleList, 0);
-	m_Primary->BindInput();
+	Render::RenderPassBeginInfo beginInfo = {};
+	beginInfo.RenderPass = m_MainRenderPass;
+	beginInfo.Framebuffer = m_WindowFramebuffers[Render::RenderCommand::GetFrameIndex()];
+	beginInfo.ClearValues = { clrVal, clrVal };
+	beginInfo.RenderArea = {};
+	beginInfo.RenderArea.Offset = { 0,0 };
+	beginInfo.RenderArea.Extent = Render::RenderCommand::Get()->GetSwapChain()->GetExtent();
 
-	m_CameraBuffer->Bind(0, Render::Shader::Type::Vertex);
-	m_SceneBuffer->Bind(1, Render::Shader::Type::Vertex);
-	m_LightBuffer->Bind(0, Render::Shader::Type::Pixel);
-	m_Primary->Bind();
-	Render::RenderCommand::BindBackBuffer();
+	currentCommandBuffer->Record();
+
+	Render::RenderCommand::BeginRenderPass(currentCommandBuffer, beginInfo);
+	//D3DPERF_BeginEvent(0xffffffff, TEXT("Flashlight render"));
+	//m_CameraBuffer->SetData(const_cast<void*>(static_cast<const void*>(&mat)), sizeof(Core::Math::Matrix4x4));
+	//m_SceneBuffer->SetData(static_cast<void*>(&m_WorldMatrix), sizeof(Core::Math::Matrix4x4));
+	//m_LightBuffer->SetData(static_cast<void*>(&m_Light), sizeof(Light));
+
+	//m_CameraBuffer->Bind(0, Render::Shader::Type::Vertex);
+	//m_SceneBuffer->Bind(1, Render::Shader::Type::Vertex);
+	//m_LightBuffer->Bind(0, Render::Shader::Type::Pixel);
+
+
+	static Core::Math::Rect2D scissor = {};
+	scissor.Extent = Render::RenderCommand::Get()->GetSwapChain()->GetExtent();
+	scissor.Offset.x = 0;
+	scissor.Offset.y = 0;
+
+	m_Primary->SetViewports(currentCommandBuffer, { {0,0,1920, 1050, 0, 1} });
+	m_Primary->SetScissors(currentCommandBuffer, { scissor });
+
+	m_Primary->Bind(currentCommandBuffer);
+
+	Render::RenderCommand::Draw(currentCommandBuffer, 3, 1);
 
 	for (const auto& mesh : m_Flashlight)
 	{
-		mesh->GetVertexBuffer()->Bind(layout);
-		mesh->GetIndexBuffer()->Bind();
-		Render::Renderer::Submit(mesh->GetIndexBuffer()->GetCount(), 0);
+		//mesh->GetVertexBuffer()->Bind(m_Layout);
+		//mesh->GetIndexBuffer()->Bind();
+		//Render::Renderer::Submit(mesh->GetIndexBuffer()->GetCount(), 0);
 	}
 
-	D3DPERF_EndEvent();
-	*/
+	Render::RenderCommand::EndRenderPass(currentCommandBuffer);
+
+	currentCommandBuffer->Finish();
+	Render::RenderCommand::NewFrame();
+	Render::RenderCommand::Submit(currentCommandBuffer);
+
+	Render::RenderCommand::Present();
+
+	//D3DPERF_EndEvent();
 }
 
 void SandboxLayer::OnEvent(Core::Event& event)
 {
-	Pawn::Core::EventDispatcher dispathcher(event);
+	ME::Core::EventDispatcher dispathcher(event);
 	dispathcher.Dispatch<Events::WindowResizedEvent>(BIND_EVENT_FN(SandboxLayer::SetViewportSize));
 
 	//m_Primary->SetViewport(m_WindowWidth, m_WindowHeight);
@@ -337,7 +430,7 @@ void SandboxLayer::OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext)
 	ImGui::End();
 
 	static bool lightUpdate = false;
-
+		
 	if (ImGui::Begin("Light settings", &settsVisible))
 	{
 		if (ImGui::DragFloat4("Color", m_Light.Color.XYZW, 0.01f, 0.f, 1.f))
@@ -353,7 +446,7 @@ void SandboxLayer::OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext)
 	ImGui::End();
 }
 
-bool SandboxLayer::SetViewportSize(Pawn::Events::WindowResizedEvent& event)
+bool SandboxLayer::SetViewportSize(ME::Events::WindowResizedEvent& event)
 {
 	m_WindowWidth = (uint32)event.GetSizeX();
 	m_WindowHeight = (uint32)event.GetSizeY();

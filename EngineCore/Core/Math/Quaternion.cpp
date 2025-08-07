@@ -1,23 +1,23 @@
 #include "Quaternion.hpp"
 #include "Matrix4x4.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	const PQuaternion PQuaternion::Identity = PQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
 
 	PQuaternion PQuaternion::FromRadians(float32 _x, float32 _y, float32 _z)
 	{
-		PQuaternion xRes(_x, Vector3<float32>::RightVector());
-		PQuaternion yRes(_y, Vector3<float32>::UpVector());
-		PQuaternion zRes(_z, Vector3<float32>::ForwardVector());
+		PQuaternion xRes(_x, Vector3<float32>::RightVector);
+		PQuaternion yRes(_y, Vector3<float32>::UpVector);
+		PQuaternion zRes(_z, Vector3<float32>::ForwardVector);
 		return (zRes * yRes * xRes).Normalized();
 	}
 
 	PQuaternion PQuaternion::FromRadians(const Vector3<float32>& radians)
 	{
-		PQuaternion xRes(radians.x, Vector3<float32>::RightVector());
-		PQuaternion yRes(radians.y, Vector3<float32>::UpVector());
-		PQuaternion zRes(radians.z, Vector3<float32>::ForwardVector());
+		PQuaternion xRes(radians.x, Vector3<float32>::RightVector);
+		PQuaternion yRes(radians.y, Vector3<float32>::UpVector);
+		PQuaternion zRes(radians.z, Vector3<float32>::ForwardVector);
 		return (zRes * yRes * xRes).Normalized();
 	}
 

@@ -32,7 +32,7 @@ project "EngineCore"
 	defines 
 	{
 		"SPDLOG_BUILD_SHARED",
-		"PAWN_CORE_LIBRARY_BUILD", 
+		"MOON_CORE_LIBRARY_BUILD", 
 		"_WINDLL",
 	}
 
@@ -64,16 +64,16 @@ project "EngineCore"
 		compileas "C++"
 
 	filter "configurations:Debug"
-		defines "PE_DEBUG"
+		defines "ME_DEBUG"
 		symbols "on"
 		runtime "Debug"
 
 	filter "configurations:Release"
-		defines "PE_RELEASE"
+		defines "ME_RELEASE"
 		optimize "on"
 		runtime "Release"
 
 	filter "configurations:Distribute"
-		defines "PE_DIST"
+		defines "ME_DIST"
 		optimize "on"
 		runtime "Release"

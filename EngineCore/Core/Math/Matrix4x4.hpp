@@ -4,7 +4,7 @@
 #include "Core/Math/Vector2.hpp"
 #include "Core/Math/Vector3.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	struct PMatrix3x3;
 

@@ -4,7 +4,7 @@
 #include "Core/Math/MathMacros.hpp"
 #include "Core/Math/Vector2.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	template<typename T>
 	struct Vector2;
@@ -24,19 +24,19 @@ namespace Pawn::Core::Math
 		};
 
 	public:
-		CORE_API inline static const Vector3<T> ZeroVector() { static const Vector3<T> vec = Vector3<T>(0); return vec; }
+		CORE_API static const Vector3<T> ZeroVector;
 
-		CORE_API inline static const Vector3<T> UpVector() { static const Vector3<T> vec = Vector3<T>(0, 1, 0); return vec; }
+		CORE_API static const Vector3<T> UpVector;
 
-		CORE_API inline static const Vector3<T> DownVector() { static const Vector3<T> vec = Vector3<T>(0, -1, 0); return vec; }
+		CORE_API static const Vector3<T> DownVector;
 
-		CORE_API inline static const Vector3<T> ForwardVector() { static const Vector3<T> vec = Vector3<T>(0, 0, 1); return vec; }
+		CORE_API static const Vector3<T> ForwardVector;
 
-		CORE_API inline static const Vector3<T> BackwardVector() { static const Vector3<T> vec = Vector3<T>(0, 0, -1); return vec; }
+		CORE_API static const Vector3<T> BackwardVector;
 
-		CORE_API inline static const Vector3<T> RightVector() { static const Vector3<T> vec = Vector3<T>(-1, 0, 0); return vec; }
+		CORE_API static const Vector3<T> RightVector;
 
-		CORE_API inline static const Vector3<T> LeftVector() { static const Vector3<T> vec = Vector3<T>(1, 0, 0); return vec; }
+		CORE_API static const Vector3<T> LeftVector;
 
 	public:
 		inline Vector3();

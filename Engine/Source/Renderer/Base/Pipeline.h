@@ -3,13 +3,16 @@
 #include <Core.hpp>
 #include <Core/Memory/Memory.hpp>
 #include <Core/Containers/Array.hpp>
+#include <Core/Math/Math.hpp>
 
-#include "Renderer/Base/Buffer.h"
-#include "Renderer/Base/Shader.h"
+#include "Assets/ShaderManager.hpp"
+#include "Core/Misc/Rect2D.hpp"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	class Shader;
+	class Pipeline;
+	class CommandBuffer;
+	class RenderPass;
 
 	enum class PipelineBindPoint : uint8
 	{
@@ -21,50 +24,50 @@ namespace Pawn::Render
 	enum class PipelineStageFlags : uint32
 	{
 		None = 0,
-		TopOfPipe								= BIT(0),
-		BottomOfPipe							= BIT(1),
-		DrawIndirect							= BIT(2),
-		VertexInput								= BIT(3),
-		VertexShader							= BIT(4),
-		TesselationEvaluationShader				= BIT(5),
-		TesselationControlShader				= BIT(6),
-		GeometryShader							= BIT(7),
-		FragmentShader							= BIT(8),
-		EarlyFragmentTests						= BIT(9),
-		LateFragmentTests						= BIT(10),
-		ColorAttachmentOutput					= BIT(11),
-		ComputeShader							= BIT(12),
-		Transfer								= BIT(13),
-		AllGraphics								= BIT(14),
-		AllCommands								= BIT(15),
-		RayTracing								= BIT(16),
-		AccelerationStructure					= BIT(17),
-		ConditionalRendering					= BIT(18),
+		TopOfPipe = BIT(0),
+		BottomOfPipe = BIT(1),
+		DrawIndirect = BIT(2),
+		VertexInput = BIT(3),
+		VertexShader = BIT(4),
+		TesselationEvaluationShader = BIT(5),
+		TesselationControlShader = BIT(6),
+		GeometryShader = BIT(7),
+		FragmentShader = BIT(8),
+		EarlyFragmentTests = BIT(9),
+		LateFragmentTests = BIT(10),
+		ColorAttachmentOutput = BIT(11),
+		ComputeShader = BIT(12),
+		Transfer = BIT(13),
+		AllGraphics = BIT(14),
+		AllCommands = BIT(15),
+		RayTracing = BIT(16),
+		AccelerationStructure = BIT(17),
+		ConditionalRendering = BIT(18),
 	};
 
 	enum class AccessFlags : uint32
 	{
 		None = 0,
-		IndirectCommandRead						= BIT(0),
-		IndexRead								= BIT(1),
-		VertexAttributeRead						= BIT(2),
-		UniformRead								= BIT(3),
-		InputAttachmentRead						= BIT(4),
-		ShaderRead								= BIT(5),
-		ShaderWrite								= BIT(6),
-		ColorAttachmentRead						= BIT(7),
-		ColorAttachmentWrite					= BIT(8),
-		DepthStencilRead						= BIT(9),
-		DepthStencilWrite						= BIT(10),
-		TransferRead							= BIT(11),
-		TransferWrite							= BIT(12),
-		HostRead								= BIT(13),
-		HostWrite								= BIT(14),
-		MemoryRead								= BIT(15),
-		MemoryWrite								= BIT(16),
+		IndirectCommandRead = BIT(0),
+		IndexRead = BIT(1),
+		VertexAttributeRead = BIT(2),
+		UniformRead = BIT(3),
+		InputAttachmentRead = BIT(4),
+		ShaderRead = BIT(5),
+		ShaderWrite = BIT(6),
+		ColorAttachmentRead = BIT(7),
+		ColorAttachmentWrite = BIT(8),
+		DepthStencilRead = BIT(9),
+		DepthStencilWrite = BIT(10),
+		TransferRead = BIT(11),
+		TransferWrite = BIT(12),
+		HostRead = BIT(13),
+		HostWrite = BIT(14),
+		MemoryRead = BIT(15),
+		MemoryWrite = BIT(16),
 	};
 
-	enum class PrimitiveTopology
+	enum class PrimitiveTopology : uint8
 	{
 		None = 0,
 		PointList,
@@ -76,101 +79,239 @@ namespace Pawn::Render
 		PatchList
 	};
 
-	enum class RasterizerFill
+	enum class RasterizationFill : uint8
 	{
 		Fill = 0,
-		Wireframe = 1,
+		Wireframe,
+		Point
 	};
 
-	enum class RasterizerCull
+	enum class RasterizationCull : uint8
 	{
 		None = 0,
-		Back = 1,
-		Front = 2,
+		Back,
+		Front,
+		FrontAndBack,
 	};
 
-	enum class BlendMask
+	enum class SampleCount : uint8
+	{
+		None = 0,
+		Count1, Count2, Count4, Count8,
+		Count16, Count32, Count64
+	};
+
+	enum class BlendMask : uint8
 	{
 		All = 0,
-		Red = 1, Green = 2, Blue = 3, Alpha = 4,
+		Red, Green, Blue, Alpha,
 	};
 
-	enum class DepthComparison
+	enum class DepthComparison : uint8
 	{
 		None = 0,
-		Less = 1, Greater = 2,
-		LessEqual = 3, GreaterEqual = 4,
-		NotEqual = 5, Equal = 6,
-		Always = 7
+		Less, Greater,
+		LessEqual, GreaterEqual,
+		NotEqual, Equal,
+		Always, Never
 	};
 
-	enum class InputClassification
+	enum class LogicOperation : uint8
+	{
+		None = 0,
+		Clear, Copy, Set, CopyInverted,
+		And, AndReverse, AndInverted, Nand,
+		Xor, Or, Nor, OrReverse, OrInverted,
+		Equivalent, Invert
+	};
+
+	enum class InputClassification : uint8
 	{
 		None = 0,
 		PerVertex, PerInstance
 	};
 
-	class PAWN_API Pipeline
+	enum class PipelineType : uint8
+	{
+		None = 0,
+		Graphics, Compute
+	};
+
+	struct VertexBufferElement
+	{
+		ShaderType Type;
+		Core::Containers::AnsiString Name;
+		SIZE_T Size;
+		SIZE_T Offset;
+		uint32 SemanticIndex;
+		uint32 InputSlot;
+
+		VertexBufferElement(ShaderType type, Core::Containers::AnsiString name, uint32 semanticIndex, uint32 inputSlot)
+			: Type(type), Name(name), Size(SizeOfShaderType(type)), Offset(0), SemanticIndex(semanticIndex), InputSlot(inputSlot)
+		{
+		}
+	};
+
+	class VertexBufferLayout
 	{
 	public:
-		virtual ~Pipeline() {};
+		VertexBufferLayout()
+			: m_InputClassification(InputClassification::None), m_Elements({}), m_Stride(0)
+		{
+		}
 
-		/*virtual void SetInputLayout(BufferLayout& layout, InputClassification inputSlotClass, uint32 instanceDataStepRate) = 0;
+		VertexBufferLayout(InputClassification inputClassification, std::initializer_list<VertexBufferElement> elements)
+			: m_InputClassification(inputClassification), m_Elements(elements), m_Stride(0)
+		{
+			CalculateOffsetAndStride();
+		}
 
-		virtual void SetPrimitiveTopology(PrimitiveTopology topology, uint8 patchListPointCount) = 0;
-
-		virtual void SetDepthStencilState(bool depthEnabled, bool stencilEnable, DepthComparison depthFunc) = 0;
-
-		virtual void SetBlendState(bool enableBlend, BlendMask mask) = 0;
-
-		virtual void SetViewport(uint32 x, uint32 y) = 0;
-
-		virtual void SetRasterizerState(RasterizerCull cull, RasterizerFill fill, 
-			bool frontCounterClockwise, bool scissorEnabled, bool depthClipEnabled,
-			bool slopeScaledDepthBias, int32 depthBias, float32 depthBiasClamp,
-			bool multisampleEnabled, int32 sampleCount ) = 0;
-		
-
-		virtual void SetVertexShader(Pawn::Core::Memory::Reference<Shader> vertexShader) = 0;
-		virtual void SetPixelShader(Pawn::Core::Memory::Reference<Shader> pixelShader) = 0;
-		virtual void SetComputeShader(Pawn::Core::Memory::Reference<Shader> computeShader) = 0;
-		virtual void SetGeometryShader(Pawn::Core::Memory::Reference<Shader> geometryShader) = 0;
-		virtual void SetHullShader(Pawn::Core::Memory::Reference<Shader> hullShader) = 0;
-		virtual void SetDomainShader(Pawn::Core::Memory::Reference<Shader> domainShader) = 0;
-		*/
-
-		virtual void BindInput() = 0;
-		virtual void Bind() = 0;
-		virtual void BindUniforms(Pawn::Core::Containers::Array<Uniform*>& uniforms, Shader::Type stage) = 0;
+		VertexBufferLayout(const VertexBufferLayout& other)
+			: m_Elements(other.m_Elements), m_Stride(other.m_Stride)
+		{
+		}
 
 	public:
-		static Pipeline* Create();
+		inline const Core::Containers::Array<VertexBufferElement>& GetElements() const { return m_Elements; }
+		inline const uint32 GetStride() const { return m_Stride; }
+		inline const InputClassification GetInputClassification() const { return m_InputClassification; }
 
 	private:
-		static Pipeline* CreateDirectX11Pipeline();
-		static Pipeline* CreateDirectX12Pipeline();
-		static Pipeline* CreateVulkanPipeline();
-		//...
+		void CalculateOffsetAndStride()
+		{
+			uint32 offset = 0;
+
+			for (auto& element : m_Elements)
+			{
+				element.Offset = offset;
+				offset += (uint32)element.Size;
+				m_Stride += (uint32)element.Size;
+			}
+		}
+
+	private:
+		Core::Containers::Array<VertexBufferElement> m_Elements;
+		uint32 m_Stride;
+		InputClassification m_InputClassification;
 
 	};
 
-	inline constexpr PAWN_API PipelineStageFlags operator|(Pawn::Render::PipelineStageFlags a, Pawn::Render::PipelineStageFlags b)
+	struct InputAssesemblySpecification
+	{
+		PrimitiveTopology Topology;
+		bool PrimitiveRestart;
+	};
+
+	struct RasterizationSpecification
+	{
+		bool DiscardEnabled;
+		bool FrontCounterClockwise;
+		bool DepthBiasEnabled;
+		bool DepthClampEnabled;
+		float32 DepthBiasConstantFactor;
+		float32 DepthBiasClamp;
+		float32 DepthBiasSlopeFactor;
+		float32 LineWidth;
+		RasterizationCull Cull;
+		RasterizationFill Fill;
+	};
+
+	struct MultisamplingSpecification
+	{
+		bool EnableSampleShading;
+		bool AlphaToOne;
+		bool AlphaToCoverage;
+		float32 MinSampleShading;
+		SampleCount Samples;
+	};
+
+	struct DepthStencilSpecification
+	{
+		bool DepthEnabled;
+		bool StencilEnabled;
+		float32 MinDepthBounds;
+		float32 MaxDepthBounds;
+		DepthComparison DepthFunction;
+	};
+
+	struct BlendAttachmentSpecification
+	{
+		bool EnableBlend;
+		bool EnableAlphaMask;
+		
+	};
+
+	struct ColorBlendingSpecification
+	{
+		ME::Core::Containers::Array<BlendAttachmentSpecification> Attachments;
+		ME::Core::Math::Vector4D32 BlendConstants;
+		LogicOperation LogicOperation;
+	};
+
+	struct PipelineSpecification
+	{
+		PipelineType Type;
+		ME::Core::Memory::Reference<RenderPass> RenderPass;
+		uint32 Subpass;
+		Assets::ShaderManager::ShaderGroup Shaders;
+		ME::Core::Memory::Reference<ME::Render::Shader> ComputeShader;
+		VertexBufferLayout BufferLayout;
+		InputAssesemblySpecification InputAssembly;
+		uint32 PatchControlPoints;
+		RasterizationSpecification Rasterization;
+		MultisamplingSpecification Multisampling;
+		DepthStencilSpecification DepthStencil;
+		ColorBlendingSpecification ColorBlending;
+		ME::Core::Memory::Reference<Pipeline> BasePipeline;
+	};
+
+	struct ViewportSpecification
+	{
+		int32 X;
+		int32 Y;
+		uint32 Width;
+		uint32 Height;
+		int32 MinDepth;
+		int32 MaxDepth;
+	};
+
+	class MOON_API Pipeline : public RenderObject
+	{
+	public:
+		virtual ~Pipeline() = default;
+
+		virtual void SetViewports(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Containers::Array<ME::Render::ViewportSpecification> specifications) = 0;
+		virtual void SetScissors(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Containers::Array<ME::Core::Math::Rect2D> scissors) = 0;
+
+		virtual void Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) = 0;
+
+		virtual inline const PipelineSpecification& GetSpecification() const = 0;
+
+	public:
+		static ME::Core::Memory::Reference<Pipeline> Create(const PipelineSpecification& specification);
+
+	private:
+		static ME::Core::Memory::Reference<Pipeline> CreateVulkanPipeline(const PipelineSpecification& specification);
+
+	};
+
+	inline constexpr MOON_API PipelineStageFlags operator|(ME::Render::PipelineStageFlags a, ME::Render::PipelineStageFlags b)
 	{
 		return static_cast<PipelineStageFlags>((uint32)a | (uint32)b);
 	}
 
-	inline constexpr PAWN_API AccessFlags operator|(Pawn::Render::AccessFlags a, Pawn::Render::AccessFlags b)
+	inline constexpr MOON_API AccessFlags operator|(ME::Render::AccessFlags a, ME::Render::AccessFlags b)
 	{
 		return static_cast<AccessFlags>((uint32)a | (uint32)b);
 	}
 
-	inline constexpr PAWN_API PipelineStageFlags operator|=(Pawn::Render::PipelineStageFlags& a, Pawn::Render::PipelineStageFlags b)
+	inline constexpr MOON_API PipelineStageFlags operator|=(ME::Render::PipelineStageFlags& a, ME::Render::PipelineStageFlags b)
 	{
 		a = a | b;
 		return a;
 	}
 
-	inline constexpr PAWN_API AccessFlags operator|=(Pawn::Render::AccessFlags& a, Pawn::Render::AccessFlags b)
+	inline constexpr MOON_API AccessFlags operator|=(ME::Render::AccessFlags& a, ME::Render::AccessFlags b)
 	{
 		a = a | b;
 		return a;

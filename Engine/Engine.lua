@@ -14,9 +14,10 @@ project "Engine"
 	files 
 	{
 		"Source/**.h",
+		"Source/**.hpp",
 		"Source/**.cpp",
 		"Source/**.cppm",
-		"PawnEngine.h",
+		"MoonEngine.hpp",
 	}
 
 	includedirs 
@@ -35,7 +36,7 @@ project "Engine"
 	defines 
 	{
 		"SPDLOG_BUILD_SHARED",
-		"PAWN_LIBRARY_BUILD", 
+		"MOON_LIBRARY_BUILD", 
 		"_WINDLL",
 	}
 
@@ -43,12 +44,15 @@ project "Engine"
 	{
 		"EngineCore",
 		"ImGui",
-		--"DXC",
+		"dxcompiler",
+		"SPIRV-Tools-shared",
 	}
 
 	libdirs
 	{
 		"%{wks.location}/bin/" .. outputdir .. "/EngineCore",
+		"%{wks.location}/bin/" .. outputdir .. "/DXC",
+		"%{wks.location}/bin/" .. outputdir .. "/SPIRV-Tools",
 	}
 
 	libdirs
@@ -96,16 +100,16 @@ project "Engine"
 		}
 
 	filter "configurations:Debug"
-		defines "PE_DEBUG"
+		defines "ME_DEBUG"
 		symbols "on"
 		runtime "Debug"
 
 	filter "configurations:Release"
-		defines "PE_RELEASE"
+		defines "ME_RELEASE"
 		optimize "on"
 		runtime "Release"
 
 	filter "configurations:Distribute"
-		defines "PE_DIST"
+		defines "ME_DIST"
 		optimize "on"
 		runtime "Release"

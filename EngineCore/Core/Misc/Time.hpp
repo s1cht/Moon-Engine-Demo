@@ -4,7 +4,7 @@
 #include "Core/Utils/Logging/Logger.hpp"
 #include "Core/Memory/Memory.hpp"
 
-namespace Pawn::Core::Clock
+namespace ME::Core::Clock
 {
 	class CORE_API TimeSource
 	{
@@ -62,18 +62,18 @@ namespace Pawn::Core::Clock
 		Timepoint(uint64 ticks, TimeSource* source)
 			: Tick(ticks), Source(source)
 		{
-			PE_ASSERT(ticks <= TickConstants::Max && ticks >= TickConstants::Min, TEXT("Tick limit exceed!"));
+			ME_ASSERT(ticks <= TickConstants::Max && ticks >= TickConstants::Min, TEXT("Tick limit exceed!"));
 		}
 
 		StructurizedTime GetTime() const
 		{
-			PE_ASSERT(Source, TEXT("TimeSource not set!"));
+			ME_ASSERT(Source, TEXT("TimeSource not set!"));
 			return ConvertTickToTime(Tick, Source->GetFrequency());
 		}
 
 		static Timepoint Now(TimeSource* source)
 		{
-			PE_ASSERT(source, TEXT("TimeSource not set!"));
+			ME_ASSERT(source, TEXT("TimeSource not set!"));
 			return Timepoint(source->GetTicks(), source);
 		}
 
@@ -98,60 +98,60 @@ namespace Pawn::Core::Clock
 		Timestep(const Timepoint& start, const Timepoint& end)
 			: m_Ticks(end.Tick - start.Tick), m_Source(end.Source)
 		{
-			PE_ASSERT(end.Source == start.Source, TEXT("Timepoints must use the same TimeSource!"));
-			PE_ASSERT(end.Tick >= start.Tick, TEXT("End time must be greater than or equal to start time!"));
+			ME_ASSERT(end.Source == start.Source, TEXT("Timepoints must use the same TimeSource!"));
+			ME_ASSERT(end.Tick >= start.Tick, TEXT("End time must be greater than or equal to start time!"));
 		}
 
 	public:
 		float64 AsNanoseconds() const
 		{
-			PE_ASSERT(m_Source, TEXT("TimeSource not set!"));
+			ME_ASSERT(m_Source, TEXT("TimeSource not set!"));
 			return (static_cast<float64>(m_Ticks) / m_Source->GetFrequency()) * 1e9;
 		}
 		float64 AsMicroseconds() const
 		{
-			PE_ASSERT(m_Source, TEXT("TimeSource not set!"));
+			ME_ASSERT(m_Source, TEXT("TimeSource not set!"));
 			return (static_cast<float64>(m_Ticks) / m_Source->GetFrequency()) * 1e6;
 		}
 		float64 AsMilliseconds() const
 		{
-			PE_ASSERT(m_Source, TEXT("TimeSource not set!"));
+			ME_ASSERT(m_Source, TEXT("TimeSource not set!"));
 			return (static_cast<float64>(m_Ticks) / m_Source->GetFrequency()) * 1e3;
 		}
 		float64 AsSeconds() const
 		{
-			PE_ASSERT(m_Source, TEXT("TimeSource not set!"));
+			ME_ASSERT(m_Source, TEXT("TimeSource not set!"));
 			return static_cast<float64>(m_Ticks) / m_Source->GetFrequency();
 		}
 
 		uint64 GetTicks() const { return m_Ticks; }
 		StructurizedTime GetStructurizedTime() const
 		{
-			PE_ASSERT(m_Source, TEXT("TimeSource not set!"));
+			ME_ASSERT(m_Source, TEXT("TimeSource not set!"));
 			return ConvertTickToTime(m_Ticks, m_Source->GetFrequency());
 		}
 
 		Timestep operator+(const Timestep& other) const
 		{
-			PE_ASSERT(m_Source == other.m_Source, TEXT("Timesteps must use the same TimeSource!"));
+			ME_ASSERT(m_Source == other.m_Source, TEXT("Timesteps must use the same TimeSource!"));
 			return Timestep(m_Ticks + other.m_Ticks, m_Source);
 		}
 		Timestep operator-(const Timestep& other) const
 		{
-			PE_ASSERT(m_Source == other.m_Source, TEXT("Timesteps must use the same TimeSource!"));
-			PE_ASSERT(m_Ticks >= other.m_Ticks, TEXT("Timestep subtraction would result in negative value!"));
+			ME_ASSERT(m_Source == other.m_Source, TEXT("Timesteps must use the same TimeSource!"));
+			ME_ASSERT(m_Ticks >= other.m_Ticks, TEXT("Timestep subtraction would result in negative value!"));
 			return Timestep(m_Ticks - other.m_Ticks, m_Source);
 		}
 		Timestep& operator+=(const Timestep& other)
 		{
-			PE_ASSERT(m_Source == other.m_Source, TEXT("Timesteps must use the same TimeSource!"));
+			ME_ASSERT(m_Source == other.m_Source, TEXT("Timesteps must use the same TimeSource!"));
 			m_Ticks += other.m_Ticks;
 			return *this;
 		}
 		Timestep& operator-=(const Timestep& other)
 		{
-			PE_ASSERT(m_Source == other.m_Source, TEXT("Timesteps must use the same TimeSource!"));
-			PE_ASSERT(m_Ticks >= other.m_Ticks, TEXT("Timestep subtraction would result in negative value!"));
+			ME_ASSERT(m_Source == other.m_Source, TEXT("Timesteps must use the same TimeSource!"));
+			ME_ASSERT(m_Ticks >= other.m_Ticks, TEXT("Timestep subtraction would result in negative value!"));
 			m_Ticks -= other.m_Ticks;
 			return *this;
 		}

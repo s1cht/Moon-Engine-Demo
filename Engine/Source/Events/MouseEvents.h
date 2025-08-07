@@ -5,7 +5,7 @@
 #include <Core.hpp>
 #include <Core/Events/Event.hpp>
 
-namespace Pawn::Events
+namespace ME::Events
 {
     class MouseEvent : public Core::Event
     {
@@ -16,7 +16,7 @@ namespace Pawn::Events
     class MouseButtonEvent : public MouseEvent
     {
     public:
-        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(int32, m_Button, "button"));
+        EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(int32, m_Button, "button"));
 
     protected:
          MouseButtonEvent(int32 btn) : m_Button(btn) {};
@@ -41,10 +41,10 @@ namespace Pawn::Events
         inline float32 GetDeltaY() const { return m_yDelta; }
 
         EVENT_CLASS_GETSTRING(
-            PE_NAMED_VARIABLE_TOSTRING(float32, m_x, "PositionX") + 
-            PE_NAMED_VARIABLE_TOSTRING(float32, m_y, "PositionY") + 
-            PE_NAMED_VARIABLE_TOSTRING(float32, m_yDelta, "DeltaX") + 
-            PE_NAMED_VARIABLE_TOSTRING(float32, m_yDelta, "DeltaY")
+            ME_NAMED_VARIABLE_TOSTRING(float32, m_x, "PositionX") + 
+            ME_NAMED_VARIABLE_TOSTRING(float32, m_y, "PositionY") + 
+            ME_NAMED_VARIABLE_TOSTRING(float32, m_yDelta, "DeltaX") + 
+            ME_NAMED_VARIABLE_TOSTRING(float32, m_yDelta, "DeltaY")
         )
 
     private:
@@ -62,7 +62,7 @@ namespace Pawn::Events
 
     public:
         EVENT_CLASS_TYPE(MouseMoved);
-        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(float32, m_x, "pos_x") + PE_NAMED_VARIABLE_TOSTRING(float32, m_y, "pos_y"));
+        EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(float32, m_x, "pos_x") + ME_NAMED_VARIABLE_TOSTRING(float32, m_y, "pos_y"));
 
     public:
         inline float32 GetOffsetX() const { return m_x; }

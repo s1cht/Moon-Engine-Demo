@@ -4,10 +4,10 @@
 #include <Core/Layer/Layer.hpp>
 #include "ImGuiReferences.h"
 
-namespace Pawn::Render::Imgui
+namespace ME::Render::Imgui
 {
 
-	class PAWN_API ImGuiLayer : public Pawn::Core::Layer
+	class MOON_API ImGuiLayer : public ME::Core::Layer
 	{
 	public:
 		ImGuiLayer();
@@ -17,7 +17,7 @@ namespace Pawn::Render::Imgui
 		void OnAttach() override;
 		void OnDetach() override;
 
-		void OnEvent(Pawn::Core::Event& event) override;
+		void OnEvent(ME::Core::Event& event) override;
 		void OnImGuiRender(float64 deltaTime, ImGuiContext* context) override;
 
 	public:

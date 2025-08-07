@@ -5,7 +5,7 @@
 #include "Core/Math/Vector2.hpp"
 #include "Core/Math/Vector3.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	template<typename T>
 	struct Vector2;

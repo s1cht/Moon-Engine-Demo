@@ -1,14 +1,14 @@
 #include "RenderCommand.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	RendererAPI* RenderCommand::s_Renderer;
+	ME::Core::Memory::Reference<RendererAPI> RenderCommand::s_Renderer;
 
 	bool RenderCommand::Init()
 	{
 		s_Renderer = RendererAPI::Create();
 
-		if (!s_Renderer)
+		if (s_Renderer == nullptr)
 			return false;
 
 		s_Renderer->PostInit();

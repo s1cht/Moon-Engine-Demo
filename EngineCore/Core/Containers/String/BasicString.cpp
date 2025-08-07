@@ -1,6 +1,6 @@
 #include "BasicString.hpp"
 
-namespace Pawn::Core::Containers
+namespace ME::Core::Containers
 {
     AnsiString ToAnsiString(int8 value)
     {

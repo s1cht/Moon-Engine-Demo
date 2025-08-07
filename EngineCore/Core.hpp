@@ -9,7 +9,7 @@
 	#include "Core/Platform/Windows/MSVCErrors.hpp"
 #endif
 
-#define PAWN_API
+#define MOON_API
 #define CORE_API
 
 #if defined(PLATFORM_WINDOWS)
@@ -17,15 +17,15 @@
 #	define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #
 #	undef CORE_API
-#	undef PAWN_API
+#	undef MOON_API
 #
-#	ifdef PAWN_LIBRARY_BUILD
-#		define PAWN_API DLLEXPORT
+#	ifdef MOON_LIBRARY_BUILD
+#		define MOON_API DLLEXPORT
 #	else	
-#		define PAWN_API DLLIMPORT
+#		define MOON_API DLLIMPORT
 #	endif 
 #
-#	ifdef PAWN_CORE_LIBRARY_BUILD
+#	ifdef MOON_CORE_LIBRARY_BUILD
 #		define CORE_API DLLEXPORT
 #	else	
 #		define CORE_API DLLIMPORT
@@ -38,5 +38,5 @@
 #	//Do nothing this moment
 #
 #else#
-#	error "Pawn Engine currently supports only Windows!"
+#	error "Moon Engine currently supports only Windows!"
 #endif

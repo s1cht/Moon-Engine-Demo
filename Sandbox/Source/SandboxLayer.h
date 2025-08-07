@@ -8,14 +8,17 @@
 #include <Events/WindowEvents.h>
 #include <Assets/Mesh.h>
 
+#include "Renderer/Base/CommandBuffer.h"
+#include "Renderer/Base/Framebuffer.h"
+
 struct Light
 {
-	Pawn::Core::Math::Vector4D32 Color;
-	Pawn::Core::Math::Vector3D32 Direction;
+	ME::Core::Math::Vector4D32 Color;
+	ME::Core::Math::Vector3D32 Direction;
 	float32 Padding;
 };
 
-class SandboxLayer : public Pawn::Core::Layer
+class SandboxLayer : public ME::Core::Layer
 {
 public:
 	SandboxLayer()
@@ -27,31 +30,33 @@ public:
 	void OnUpdate(float64 deltaTime) override;
 	void OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext) override;
 
-	void OnEvent(Pawn::Core::Event & event) override;
+	void OnEvent(ME::Core::Event & event) override;
 
 private:
-	bool SetViewportSize(Pawn::Events::WindowResizedEvent& event);
+	bool SetViewportSize(ME::Events::WindowResizedEvent& event);
 
 private:
-	Pawn::Core::Memory::Reference<Pawn::Render::BufferLayout> m_Layout;
-	Pawn::Core::Memory::Reference<Pawn::Render::Pipeline> m_Primary;
-	Pawn::Core::Memory::Reference<Pawn::Render::Shader> m_VertexShader;
-	Pawn::Core::Memory::Reference<Pawn::Render::Shader> m_PixelShader;
-	Pawn::Core::Memory::Reference<Pawn::Render::Uniform> m_CameraBuffer;
-	Pawn::Core::Memory::Reference<Pawn::Render::Uniform> m_SceneBuffer;
-	Pawn::Core::Memory::Reference<Pawn::Render::Uniform> m_LightBuffer;
-	Pawn::Core::Memory::Reference<Pawn::Render::IndexBuffer> m_IndexBuffer;
-	Pawn::Core::Memory::Reference<Pawn::Render::VertexBuffer> m_VertexBuffer;
+	ME::Core::Memory::Reference<ME::Render::RenderPass> m_MainRenderPass;
+	ME::Core::Memory::Reference<ME::Render::Pipeline> m_Primary;
+	ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Render::Framebuffer>> m_WindowFramebuffers;
+	ME::Render::VertexBufferLayout m_Layout;
 
-	Pawn::Core::Math::Matrix4x4 m_WorldMatrix;
+
+	ME::Core::Memory::Reference<ME::Render::Uniform> m_CameraBuffer;
+	ME::Core::Memory::Reference<ME::Render::Uniform> m_SceneBuffer;
+	ME::Core::Memory::Reference<ME::Render::Uniform> m_LightBuffer;
+	ME::Core::Memory::Reference<ME::Render::IndexBuffer> m_IndexBuffer;
+	ME::Core::Memory::Reference<ME::Render::VertexBuffer> m_VertexBuffer;
+
+	ME::Core::Math::Matrix4x4 m_WorldMatrix;
 	Light m_Light;
 
 private:
-	Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Pawn::Assets::Mesh>> m_Flashlight;
+	ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>> m_Flashlight;
 
 
 private:
-	Pawn::Core::Memory::Reference<Pawn::Render::Camera::Camera> m_Camera;
+	ME::Core::Memory::Reference<ME::Render::Camera::Camera> m_Camera;
 
 private:
 	uint32 m_WindowWidth;

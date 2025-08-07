@@ -19,7 +19,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace Pawn::Render
+namespace ME::Render
 {
 	enum class VulkanErrors : int32
 	{
@@ -33,7 +33,7 @@ namespace Pawn::Render
 		PresentModesOrFormatsEmpty
 	};
 
-	class PAWN_API VulkanRenderer : public RendererAPI
+	class MOON_API VulkanRenderer : public RendererAPI
 	{
 	public:
 		VulkanRenderer();
@@ -42,15 +42,20 @@ namespace Pawn::Render
 	public:
 		void PostInit() override;
 
+		void Submit(ME::Core::Memory::Reference<Render::CommandBuffer> buffer) override;
+		void NewFrame() override;
 		void Present() override;
-		void Clear(Pawn::Core::Math::Vector4D32 color) override;
-		void DrawIndexed(uint32 indexCount, uint32 index) override;
+		void Clear(ME::Core::Math::Vector4D32 color) override;
+		void Draw(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 vertexCount, uint32 instanceCount) override;
+		void DrawIndexed(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 indexCount, uint32 index) override;
 		void Shutdown() override;
 
 		void OnWindowEvent(int32 x, int32 y) override;
 
-		void BindBackBuffer() override;
-		void UnbindBackBuffer() override;
+		void BeginRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Render::RenderPassBeginInfo& info) override;
+		void EndRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) override;
+
+		ME::Core::Memory::Reference<ME::Render::CommandBuffer> GetAvailableCommandBuffer() override;
 
 		inline SwapChain* GetSwapChain() override { return m_SwapChain; };
 
@@ -84,6 +89,7 @@ namespace Pawn::Render
 
 	private:
 		void DestroyValidationLayer();
+		void DestroySynchronizationObjects();
 
 	private:
 		void UpdatePhysicalDevices();
@@ -92,12 +98,16 @@ namespace Pawn::Render
 		bool CheckExtensionSupport(uint32& unsupportedExtension) const;
 		bool CheckDeviceLayerSupport(uint32& unsupportedLayer) const;
 		bool CheckDeviceExtensionSupport(uint32& unsupportedExtension) const;
-		void CheckPhysicalDevices();
+		inline bool CheckPhysicalDeviceFeatures(VkPhysicalDeviceFeatures features) const;
+		inline bool CheckPhysicalDeviceProperties(VkPhysicalDeviceProperties properties) const;
+		inline void CheckPhysicalDevices();
 		void PickBestPhysicalDevice();
 		int32 CalculatePhysicalDevicePower(VkPhysicalDevice device);
 		int32 PickQueueFamily();
 		inline bool DeviceSuitable(VkPhysicalDevice device) const;
 
+	private:
+		void CreateFrameInfoObjects();
 
 	private:
 		VkInstance m_Instance;
@@ -116,19 +126,20 @@ namespace Pawn::Render
 
 	private:
 		VulkanSwapChain* m_SwapChain;
+		ME::Core::Containers::Array<VulkanFrameInfo> m_FrameInfos;
 
 	private:
 		VkDebugUtilsMessengerEXT m_ValidationLayer;
 
 	private:
-		Pawn::Core::Containers::Array<VkPhysicalDevice> m_PhysicalDevices;
+		ME::Core::Containers::Array<VkPhysicalDevice> m_PhysicalDevices;
 
 	private:
-		Pawn::Core::Containers::Array<const ansichar*> m_Layers;
-		Pawn::Core::Containers::Array<const ansichar*> m_Extensions;
+		ME::Core::Containers::Array<const ansichar*> m_Layers;
+		ME::Core::Containers::Array<const ansichar*> m_Extensions;
 
-		Pawn::Core::Containers::Array<const ansichar*> m_DeviceLayers;
-		Pawn::Core::Containers::Array<const ansichar*> m_DeviceExtensions;
+		ME::Core::Containers::Array<const ansichar*> m_DeviceLayers;
+		ME::Core::Containers::Array<const ansichar*> m_DeviceExtensions;
 
 	};
 }

@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 
-namespace Pawn::Core::Containers
+namespace ME::Core::Containers
 {
 	template<typename T>
 	SIZE_T GetStringSize(const T* str)

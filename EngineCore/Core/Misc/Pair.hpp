@@ -1,7 +1,7 @@
 #pragma once
 #include <type_traits>
 
-namespace Pawn::Core::Misc
+namespace ME::Core::Misc
 {
 	template <typename ValueType1, typename ValueType2>
 	struct Pair

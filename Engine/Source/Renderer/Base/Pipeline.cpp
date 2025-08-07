@@ -2,30 +2,25 @@
 
 #include "Renderer/Renderer.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-    Pipeline* Pipeline::Create()
+    ME::Core::Memory::Reference<Pipeline> Pipeline::Create(const PipelineSpecification& specification)
     {
         RendererAPI::API renderAPI = Renderer::GetRenderAPI();
 
         switch (renderAPI)
         {
-        case Pawn::Render::RendererAPI::API::None:
-        case Pawn::Render::RendererAPI::API::Metal:
-        case Pawn::Render::RendererAPI::API::DirectX12:
+        case ME::Render::RendererAPI::API::None:
+        case ME::Render::RendererAPI::API::Metal:
+        case ME::Render::RendererAPI::API::DirectX12:
         {
-            PE_ASSERT(false, TEXT("Framebuffer: Requested creation with unsupported API! {0}"), (int32)renderAPI);
+            ME_ASSERT(false, TEXT("Pipeline: Requested creation with unsupported API! {0}"), (int32)renderAPI);
             return nullptr;
             break;
         }
-        case Pawn::Render::RendererAPI::API::Vulkan:
+        case ME::Render::RendererAPI::API::Vulkan:
         {
-            //return CreateVulkanPipeline();
-            break;
-        }
-        case Pawn::Render::RendererAPI::API::DirectX11:
-        {
-            //return CreateDirectX11Pipeline();
+            return CreateVulkanPipeline(specification);
             break;
         }
         }

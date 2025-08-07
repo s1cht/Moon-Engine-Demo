@@ -5,7 +5,7 @@
 
 #include <Core/Misc/Time.hpp>
 
-namespace Pawn::Render::Imgui
+namespace ME::Render::Imgui
 {
 	ImGuiLayer::ImGuiLayer()
 		: Layer(TEXT("ImGuiLayer"))
@@ -21,7 +21,7 @@ namespace Pawn::Render::Imgui
 		RendererAPI::API renderAPI = Renderer::GetRenderAPI();
 		if (renderAPI == RendererAPI::API::None)
 		{
-			PE_INFO(TEXT("Disabling ImGui layer, because RenderAPI is ::None"));
+			ME_INFO(TEXT("Disabling ImGui layer, because RenderAPI is ::None"));
 			m_Disabled = true;
 			return;
 		}
@@ -46,21 +46,11 @@ namespace Pawn::Render::Imgui
 
 		switch (renderAPI)
 		{
-			case RendererAPI::API::Vulkan: PE_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
+			case RendererAPI::API::Vulkan: ME_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
 #ifdef PLATFORM_WINDOWS
-			case RendererAPI::API::DirectX11:
-			{
-				Win32Window& window = *static_cast<Win32Window*>(Application::Get().GetWindow());
-				DirectX11Renderer& renderer = *static_cast<DirectX11Renderer*>(RenderCommand::Get());
-
-				ImGui_ImplWin32_Init(window.GetWindowHandle());
-				ImGui_ImplDX11_Init(renderer.GetDevice(), renderer.GetDeviceContext());
-
-				break;
-			};
-			case RendererAPI::API::DirectX12: PE_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+			case RendererAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
 #elif PLATFORM_MAC
-			case RendererAPI::API::Metal: PE_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+			case RendererAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
 #endif
 		}
 	}
@@ -73,7 +63,7 @@ namespace Pawn::Render::Imgui
 		Shutdown();
 	}
 
-	void ImGuiLayer::OnEvent(Pawn::Core::Event& event)
+	void ImGuiLayer::OnEvent(ME::Core::Event& event)
 	{
 		if (m_EnabledEvents)
 		{
@@ -96,8 +86,8 @@ namespace Pawn::Render::Imgui
 		if (ImGui::Begin("DeltaTime", &visible))
 		{
 			ImGui::Text("%.5f", deltaTime);
-			ImGui::Text("A FPS: %d", Pawn::Core::Clock::Time::GetAverageFPS());
-			ImGui::Text("I FPS: %d", Pawn::Core::Clock::Time::GetInstantFPS());
+			ImGui::Text("A FPS: %d", ME::Core::Clock::Time::GetAverageFPS());
+			ImGui::Text("I FPS: %d", ME::Core::Clock::Time::GetInstantFPS());
 		}
 		ImGui::End();
 	}
@@ -113,16 +103,11 @@ namespace Pawn::Render::Imgui
 
 		switch (renderAPI)
 		{
-		case RendererAPI::API::Vulkan: PE_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
+		case RendererAPI::API::Vulkan: ME_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
 #ifdef PLATFORM_WINDOWS
-		case RendererAPI::API::DirectX11:
-		{
-			ImGui_ImplDX11_NewFrame();
-			break;
-		};
-		case RendererAPI::API::DirectX12: PE_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+		case RendererAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
 #elif PLATFORM_MAC
-		case RendererAPI::API::Metal: PE_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+		case RendererAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
 #endif
 		}
 
@@ -139,9 +124,6 @@ namespace Pawn::Render::Imgui
 
 		ImGui::SetCurrentContext(m_ImGuiContext);
 		ImGui::Render();
-#ifdef PLATFORM_WINDOWS
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-#endif 
 	}
 
 	void ImGuiLayer::Shutdown()
@@ -155,16 +137,11 @@ namespace Pawn::Render::Imgui
 
 		switch (renderAPI)
 		{
-		case RendererAPI::API::Vulkan: PE_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
+		case RendererAPI::API::Vulkan: ME_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
 #ifdef PLATFORM_WINDOWS
-		case RendererAPI::API::DirectX11:
-		{
-			ImGui_ImplDX11_Shutdown();
-			break;
-		};
-		case RendererAPI::API::DirectX12: PE_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+		case RendererAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
 #elif PLATFORM_MAC
-		case RendererAPI::API::Metal: PE_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+		case RendererAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
 #endif
 		}
 

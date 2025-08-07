@@ -3,9 +3,9 @@
 #include <Core.hpp>
 #include "Platform/Base/Window.h"
 
-namespace Pawn 
+namespace ME 
 {
-	class PAWN_API Win32Window : public Window
+	class MOON_API Win32Window : public Window
 	{
 	public:
 		Win32Window(const WindowProperties& properties);

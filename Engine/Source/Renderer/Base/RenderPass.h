@@ -9,13 +9,13 @@
 #include "Core/Math/Math.hpp"
 #include "Core/Misc/Rect2D.hpp"
 
-namespace Pawn::Render
+namespace ME::Render
 {
 	class CommandBuffer;
 	class Framebuffer;
 }
 
-namespace Pawn::Render
+namespace ME::Render
 {
 	enum class StoreOperation : uint8
 	{
@@ -31,26 +31,26 @@ namespace Pawn::Render
 		Load, Clear,
 	};
 
-	struct PAWN_API AttachmentSpecification
+	struct MOON_API AttachmentSpecification
 	{
-		Pawn::Render::Format AttachmentFormat;
-		Pawn::Render::StoreOperation StoreOp;
-		Pawn::Render::LoadOperation LoadOp;
-		Pawn::Render::ImageLayout InitialLayout;
-		Pawn::Render::ImageLayout FinalLayout;
+		ME::Render::Format AttachmentFormat;
+		ME::Render::StoreOperation StoreOp;
+		ME::Render::LoadOperation LoadOp;
+		ME::Render::ImageLayout InitialLayout;
+		ME::Render::ImageLayout FinalLayout;
 		bool IsDepth;
 		bool IsStencil;
 	};
 
-	struct PAWN_API SubpassSpecification
+	struct MOON_API SubpassSpecification
 	{
-		Pawn::Render::PipelineBindPoint PipelineBindPoint;
-		Pawn::Core::Containers::Array<uint64> InputAttachmentRefs;
-		Pawn::Core::Containers::Array<uint64> ColorAttachmentRefs;
+		ME::Render::PipelineBindPoint PipelineBindPoint;
+		ME::Core::Containers::Array<uint64> InputAttachmentRefs;
+		ME::Core::Containers::Array<uint64> ColorAttachmentRefs;
 		uint64 DepthStencilAttachmentRef;
 	};
 
-	struct PAWN_API SubpassDependency
+	struct MOON_API SubpassDependency
 	{
 		uint32 SubpassSrc;
 		uint32 SubpassDst;
@@ -60,45 +60,48 @@ namespace Pawn::Render
 		AccessFlags AccessFlagsDst;
 	};
 
-	struct PAWN_API RenderPassSpecification
+	struct MOON_API RenderPassSpecification
 	{
-		Pawn::Core::Containers::Array<AttachmentSpecification> AttachmentSpecs;
-		Pawn::Core::Containers::Array<SubpassSpecification> SubpassSpecs;
-		Pawn::Core::Containers::Array<SubpassDependency> SubpassDependencies;
-		Pawn::Core::Containers::AnsiString DebugName;
+		ME::Core::Containers::Array<AttachmentSpecification> AttachmentSpecs;
+		ME::Core::Containers::Array<SubpassSpecification> SubpassSpecs;
+		ME::Core::Containers::Array<SubpassDependency> SubpassDependencies;
+		ME::Core::Containers::AnsiString DebugName;
 	};
 
-	union ClearValue
+	struct DepthStencilClearValue
 	{
-		Pawn::Core::Math::Vector4D32 ColorClearValue;
-		struct
-		{
-			float32 Depth;
-			uint32 Stencil;
-		} DepthClearValue;
+		float32 Depth;
+		uint32 Stencil;
+	};
+
+	struct ClearValue
+	{
+		ME::Core::Math::Vector4D32 ColorClearValue;
+		DepthStencilClearValue DepthClearValue;
+		bool UsingDepth = false;
 	};
 
 	struct RenderPassBeginInfo
 	{
-		Framebuffer* Framebuffer;
-		Pawn::Core::Math::Rect2D RenderArea;
-		Pawn::Core::Containers::Array<Pawn::Render::ClearValue> ClearValues;
+		ME::Core::Memory::Reference<Framebuffer> Framebuffer;
+		ME::Core::Memory::Reference<Render::RenderPass> RenderPass;
+		ME::Core::Math::Rect2D RenderArea;
+		ME::Core::Containers::Array<ME::Render::ClearValue> ClearValues;
 	};
 
-	class PAWN_API RenderPass
+	class MOON_API RenderPass : public RenderObject
 	{
 	public:
 		virtual ~RenderPass() = default;
 
-		virtual void Begin(Pawn::Render::CommandBuffer* buffer, RenderPassBeginInfo& beginInfo) = 0;
-		virtual void End(Pawn::Render::CommandBuffer* buffer) = 0;
+		virtual void Begin(ME::Render::CommandBuffer* buffer, RenderPassBeginInfo& beginInfo) = 0;
+		virtual void End(ME::Render::CommandBuffer* buffer) = 0;
 
 	public:
-		static RenderPass* Create(RenderPassSpecification& specification);
+		static Core::Memory::Reference<Render::RenderPass> Create(RenderPassSpecification& specification);
 
 	private:
-		static RenderPass* CreateDirectX11RenderPass(RenderPassSpecification& specification);
-		static RenderPass* CreateVulkanRenderPass(RenderPassSpecification& specification);
+		static Core::Memory::Reference<Render::RenderPass> CreateVulkanRenderPass(RenderPassSpecification& specification);
 		
 	};
 

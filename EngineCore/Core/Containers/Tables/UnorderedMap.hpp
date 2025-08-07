@@ -5,7 +5,7 @@
 #include "Core/Memory/Hasher.hpp"
 #include "Core/Memory/Allocator.hpp"
 
-namespace Pawn::Core::Containers
+namespace ME::Core::Containers
 {
 	template<typename KeyType, typename ValueType>
 	struct Node
@@ -97,7 +97,7 @@ namespace Pawn::Core::Containers
 		using NodeType = Node<KeyType, ValueType>;
 
 	public:
-		using ReturnType = Pawn::Core::Misc::Pair<KeyType, ValueType>;
+		using ReturnType = ME::Core::Misc::Pair<KeyType, ValueType>;
 
 		using HasherType = _hasher;
 

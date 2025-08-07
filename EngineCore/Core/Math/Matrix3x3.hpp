@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	struct PQuaternion;
 

@@ -1,6 +1,6 @@
 #include "IO.hpp"
 
-namespace Pawn::Core::IO
+namespace ME::Core::IO
 {
 	bool DirectoryStorage::StoreDirectory(Directory dir)
 	{

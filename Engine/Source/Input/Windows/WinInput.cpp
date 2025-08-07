@@ -2,7 +2,7 @@
 #include <Core.hpp>
 #include "Input/Input.h"
 
-namespace Pawn::Input
+namespace ME::Input
 {
 #ifdef PLATFORM_WINDOWS
 	Keycode InputController::ConvertPlatformKeycode(WORD keycode)

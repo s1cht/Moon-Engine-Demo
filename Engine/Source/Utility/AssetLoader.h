@@ -17,13 +17,13 @@
 #include <Core/Utils/Logging/Logger.hpp>
 #include <type_traits>
 
-namespace Pawn::Assets
+namespace ME::Assets
 {
 	struct Vertex;
 	class Mesh;
 }
 
-namespace Pawn::Utility
+namespace ME::Utility
 {
 	enum class AssetFileFormats
 	{
@@ -35,7 +35,7 @@ namespace Pawn::Utility
 
 	struct AssetLoadResult
 	{
-		Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> Meshes;
+		ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Mesh>> Meshes;
 
 		// For future
 		//Array<Memory::Scope<Assets::Material>> Materials;
@@ -43,10 +43,10 @@ namespace Pawn::Utility
 	};
 
 
-	class PAWN_API AssetLoader
+	class MOON_API AssetLoader
 	{
 	public:
-		static AssetLoadResult Load(const Pawn::Core::Containers::String& filePath, bool centered = false, AssetFileFormats format = AssetFileFormats::OBJ);
+		static AssetLoadResult Load(const ME::Core::Containers::String& filePath, bool centered = false, AssetFileFormats format = AssetFileFormats::OBJ);
 
 	private:
 		static AssetLoadResult LoadOBJ(const uchar* filePath, bool centered);

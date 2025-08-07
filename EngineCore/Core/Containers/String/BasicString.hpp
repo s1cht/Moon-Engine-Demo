@@ -10,7 +10,7 @@
 
 #define STR_RESIZE_MULTIPLYER 2
 
-namespace Pawn::Core::Containers
+namespace ME::Core::Containers
 {
 	template<typename type>
 	class PStringView;
@@ -121,7 +121,7 @@ namespace Pawn::Core::Containers
 
 	};
 
-	template<typename type, class allocator = Pawn::Core::Memory::Allocator<type>>
+	template<typename type, class allocator = ME::Core::Memory::Allocator<type>>
 	class PString
 	{
 	public:
@@ -317,13 +317,13 @@ namespace Pawn::Core::Containers
 
 		ReturnType& operator[](const SIZE_T index) noexcept
 		{
-			PE_CORE_ASSERT(index < m_Size, "Index in array is out of range!");
+			ME_CORE_ASSERT(index < m_Size, "Index in array is out of range!");
 			return m_Data[index];
 		}
 
 		const ReturnType& operator[](const SIZE_T index) const noexcept
 		{
-			PE_CORE_ASSERT(index < m_Size, "Index in array is out of range!");
+			ME_CORE_ASSERT(index < m_Size, "Index in array is out of range!");
 			return m_Data[index];
 		}
 
@@ -365,7 +365,7 @@ namespace Pawn::Core::Containers
 
 		PString Substring(SIZE_T start, SIZE_T length = 0) const
 		{
-			PE_CORE_ASSERT(start <= m_Size, "Start index out of range!");
+			ME_CORE_ASSERT(start <= m_Size, "Start index out of range!");
 			SIZE_T remaining = m_Size - start;
 			SIZE_T newSize = (length > remaining) ? remaining : length;
 			return PString(m_Data + start, newSize);
@@ -492,7 +492,7 @@ namespace Pawn::Core::Containers
 
 		void Assign(const DataType*& ptr, SIZE_T size)
 		{
-			PE_ASSERT(ptr != nullptr, TEXT("Assigning nullptr to string!"));
+			ME_ASSERT(ptr != nullptr, TEXT("Assigning nullptr to string!"));
 			if (size + 1 > m_Capacity)
 				Allocate(size + 1);
 
@@ -629,7 +629,7 @@ namespace Pawn::Core::Containers
 				}
 				else
 				{
-					PE_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					ME_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
 					return m_Size;
 				}
 			}
@@ -683,7 +683,7 @@ namespace Pawn::Core::Containers
 				}
 				else
 				{
-					PE_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					ME_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
 					return m_Size;
 				}
 			}
@@ -731,7 +731,7 @@ namespace Pawn::Core::Containers
 				}
 				else
 				{
-					PE_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					ME_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
 					return m_Size;
 				}
 			}
@@ -785,7 +785,7 @@ namespace Pawn::Core::Containers
 				}
 				else
 				{
-					PE_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					ME_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
 					return m_Size;
 				}
 			}
@@ -801,10 +801,10 @@ namespace Pawn::Core::Containers
 
 	};
 
-	typedef PString<ansichar, Pawn::Core::Memory::Allocator<ansichar>> AnsiString;
-	typedef PString<wchar, Pawn::Core::Memory::Allocator<wchar>> WideString;
+	typedef PString<ansichar, ME::Core::Memory::Allocator<ansichar>> AnsiString;
+	typedef PString<wchar, ME::Core::Memory::Allocator<wchar>> WideString;
 
-	using String = PString<uchar, Pawn::Core::Memory::Allocator<uchar>>;
+	using String = PString<uchar, ME::Core::Memory::Allocator<uchar>>;
 
 	// AnsiString conversion functions
 

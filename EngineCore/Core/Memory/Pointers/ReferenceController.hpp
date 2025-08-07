@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <memory>
 
-namespace Pawn::Memory::Pointer
+namespace ME::Memory::Pointer
 {
 	enum class PtrMode
 	{

@@ -5,7 +5,7 @@
 
 #define ARR_RESIZE_MULTIPLYER 2
 
-namespace Pawn::Core::Containers
+namespace ME::Core::Containers
 {
 	template<typename _Array>
 	class ArrayIterator
@@ -183,17 +183,17 @@ namespace Pawn::Core::Containers
 		}
 
 	public:
-		PE_NODISCARD inline SIZE_T GetSize() const
+		ME_NODISCARD inline SIZE_T GetSize() const
 		{
 			return m_Size;
 		}
 
-		PE_NODISCARD inline SIZE_T GetCapacity() const
+		ME_NODISCARD inline SIZE_T GetCapacity() const
 		{
 			return m_Capacity;
 		}
 
-		PE_NODISCARD inline DataType* Data()
+		ME_NODISCARD inline DataType* Data()
 		{
 			return m_Data;
 		}
@@ -218,12 +218,12 @@ namespace Pawn::Core::Containers
 			return Iterator(m_Data + m_Size);
 		}
 
-		PE_NODISCARD inline DataType& Front() 
+		ME_NODISCARD inline DataType& Front() 
 		{
 			return *(m_Data);
 		}
 
-		PE_NODISCARD inline DataType& Back() 
+		ME_NODISCARD inline DataType& Back() 
 		{
 			return *(m_Data + m_Size - 1);
 		}
@@ -256,13 +256,13 @@ namespace Pawn::Core::Containers
 
 		ReturnType& operator[](const SIZE_T index) noexcept
 		{
-			PE_CORE_ASSERT(index < m_Capacity, "Index in array is out of range!");
+			ME_CORE_ASSERT(index < m_Capacity, "Index in array is out of range!");
 			return m_Data[index];
 		}
 
 		const ReturnType& operator[](const SIZE_T index) const noexcept
 		{
-			PE_CORE_ASSERT(index < m_Capacity, "Index in array is out of range!");
+			ME_CORE_ASSERT(index < m_Capacity, "Index in array is out of range!");
 			return m_Data[index];
 		}
 
@@ -289,7 +289,7 @@ namespace Pawn::Core::Containers
 		}
 
 	public:
-		PE_NODISCARD inline bool Empty()
+		ME_NODISCARD inline bool Empty()
 		{
 			return m_Size <= 0;
 		}

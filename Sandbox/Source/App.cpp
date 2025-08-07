@@ -1,13 +1,13 @@
-#include <PawnEngine.h>
+#include <MoonEngine.hpp>
 #include "SandboxLayer.h"
 
-static Pawn::ApplicationProperties AppProps;
+static ME::ApplicationProperties AppProps;
 
-class App : public Pawn::Application
+class App : public ME::Application
 {
 public:
 	App()
-		: Pawn::Application(AppProps)
+		: ME::Application(AppProps)
 	{
 		PushLayer(new SandboxLayer());
 	};
@@ -15,7 +15,7 @@ public:
 
 };
 
-Pawn::Application* Pawn::CreateApplication()
+ME::Application* ME::CreateApplication()
 {
 	AppProps = {};
 

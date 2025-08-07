@@ -4,7 +4,7 @@
 #include "Core/Platform/Base/IO.hpp"
 #include "Core/Containers/String/String.hpp"
 
-namespace Pawn::Core::IO
+namespace ME::Core::IO
 {
 	class CORE_API WindowsFile : public File
 	{

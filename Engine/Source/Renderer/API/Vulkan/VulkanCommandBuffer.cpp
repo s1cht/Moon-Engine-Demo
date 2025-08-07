@@ -2,14 +2,17 @@
 #include <Core.hpp>
 
 #include "Renderer/RenderCommand.h"
+#include "Renderer/RenderResourcesTracker.hpp"
 #include "Renderer/API/Vulkan/VulkanMacros.hpp"
 #include "Renderer/API/Vulkan/VulkanRenderer.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	CommandBuffer* CommandBuffer::CreateVulkanCommandBuffer()
+	ME::Core::Memory::Reference<Render::CommandBuffer> CommandBuffer::CreateVulkanCommandBuffer()
 	{
-		return new VulkanCommandBuffer();
+		auto object = ME::Core::Memory::Reference<Render::CommandBuffer>(new VulkanCommandBuffer());
+		RenderResourcesTracker::Get().AddItem(object);
+		return object;
 	}
 
 	VulkanCommandBuffer::VulkanCommandBuffer()
@@ -19,6 +22,11 @@ namespace Pawn::Render
 
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
+	}
+
+	void VulkanCommandBuffer::Shutdown()
+	{
+		m_Buffer = nullptr;
 	}
 
 	void VulkanCommandBuffer::Record()
@@ -44,7 +52,7 @@ namespace Pawn::Render
 	void VulkanCommandBuffer::Init()
 	{
 		VkResult result;
-		VulkanRenderer* render = static_cast<VulkanRenderer*>(RenderCommand::Get());
+		VulkanRenderer* render = RenderCommand::Get()->As<VulkanRenderer>();
 
 		VkCommandBufferAllocateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -53,8 +61,8 @@ namespace Pawn::Render
 		info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
 		result = vkAllocateCommandBuffers(render->GetDevice(), &info, &m_Buffer);
-		if (PE_VK_FAILED(result))
-			PE_ASSERT(false, TEXT("Vulkan command buffer allocation failed! Error: {0}"), (int32)result);
+		if (ME_VK_FAILED(result))
+			ME_ASSERT(false, TEXT("Vulkan command buffer allocation failed! Error: {0}"), (int32)result);
 
 		return;
 	}

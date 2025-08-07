@@ -5,9 +5,9 @@
 #include "Base/Buffer.h"
 #include "Camera/Camera.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	class PAWN_API Renderer
+	class MOON_API Renderer
 	{
 	public:
 		//static void 
@@ -16,7 +16,7 @@ namespace Pawn::Render
 		static void Shutdown();
 
 	public:
-		static void BeginScene(Pawn::Core::Memory::Reference<Pawn::Render::Camera::Camera> camera);
+		static void BeginScene(ME::Core::Memory::Reference<ME::Render::Camera::Camera> camera);
 		static void EndScene();
 
 		static void Submit(uint32 indexCount, uint32 index);

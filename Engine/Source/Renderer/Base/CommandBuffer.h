@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include <Core.hpp>
+#include "RenderObject.hpp"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	class PAWN_API CommandBuffer
+	class MOON_API CommandBuffer : public RenderObject
 	{
 	public:
 		virtual ~CommandBuffer() {};
@@ -14,11 +15,10 @@ namespace Pawn::Render
 		virtual void Reset() = 0;
 
 	public:
-		static CommandBuffer* CreateCommandBuffer();
+		static ME::Core::Memory::Reference<Render::CommandBuffer> CreateCommandBuffer();
 
 	private:
-		static CommandBuffer* CreateVulkanCommandBuffer();
-		//static CommandBuffer* CreateDirectX11CommandBuffer();
+		static ME::Core::Memory::Reference<Render::CommandBuffer> CreateVulkanCommandBuffer();
 
 	};
 }

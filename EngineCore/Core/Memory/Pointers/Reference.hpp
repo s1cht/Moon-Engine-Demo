@@ -4,7 +4,7 @@
 
 #include "ReferenceController.h"
 
-namespace Pawn::Memory
+namespace ME::Memory
 {
 	template <class T, Pointer::PtrMode Mode = Pointer::PtrMode::SingleThreaded>
 	class Reference

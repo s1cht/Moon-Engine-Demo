@@ -43,10 +43,12 @@
 			"%{wks.location}/bin/" .. outputdir .. "/Engine",
 		}
 
-		postbuildcommands
+		prebuildcommands
 		{
+			("{MKDIR} %{wks.location}/bin/" .. outputdir .. "/Sandbox"),
 			("{COPYDIR} %{wks.location}/bin/" .. outputdir .. "/EngineCore/EngineCore.dll %{wks.location}/bin/" .. outputdir .. "/Sandbox/"),
-			("{COPYDIR} %{wks.location}/bin/" .. outputdir .. "/Engine/Engine.dll %{wks.location}/bin/" .. outputdir .. "/Sandbox/")
+			("{COPYDIR} %{wks.location}/bin/" .. outputdir .. "/Engine/Engine.dll %{wks.location}/bin/" .. outputdir .. "/Sandbox/"),
+			("{COPYDIR} %{wks.location}/bin/" .. outputdir .. "/DXC/dxcompiler.dll %{wks.location}/bin/" .. outputdir .. "/Sandbox/"),
 		}
 
 		filter "system:windows"
@@ -68,13 +70,18 @@
 			compileas "C++"
 
 		filter "configurations:Debug"
-			defines "PE_DEBUG"
+			defines "ME_DEBUG"
 			symbols "On"
+			prebuildcommands
+			{
+				("{COPYDIR} %{wks.location}/bin/" .. outputdir .. "/DXC/dxcompiler.pdb %{wks.location}/bin/" .. outputdir .. "/Sandbox/"),
+				("{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/DXC/*.pdb %{wks.location}/bin/" .. outputdir .. "/Sandbox/"),
+			}
 
 		filter "configurations:Release"
-			defines "PE_RELEASE"
+			defines "ME_RELEASE"
 			optimize "On"
 
 		filter "configurations:Distribute"
-			defines "PE_DIST"
+			defines "ME_DIST"
 			optimize "On"

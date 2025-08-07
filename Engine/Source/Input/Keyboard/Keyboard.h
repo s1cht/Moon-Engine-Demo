@@ -9,9 +9,9 @@
 #define CHECK_KEY_VALUE(x)	if (x > PE_MAX_KEYCODE_COUNT)\
 								return false;
 
-namespace Pawn::Input::Devices
+namespace ME::Input::Devices
 {
-	class PAWN_API Keyboard
+	class MOON_API Keyboard
 	{
 	public:
 		EVENT_CALLBACK_FUNCTION;

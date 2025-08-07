@@ -3,23 +3,28 @@
 #include "VulkanRenderer.h"
 #include "Renderer/Base/Framebuffer.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	class PAWN_API VulkanFramebuffer : public Framebuffer
+	class MOON_API VulkanFramebuffer : public Framebuffer
 	{
 	public:
 		VulkanFramebuffer(FramebufferSpecification& specification);
 		~VulkanFramebuffer() override;
 
 	public:
+		void Shutdown() override;
+
+	public:
 		inline VkFramebuffer GetFramebuffer() { return m_Buffer; }
+		inline const FramebufferSpecification& GetSpecification() const override { return m_Specification; }
 
 	private:
-		void Init(FramebufferSpecification& specification);
+		void Init();
 
 	private:
 		VkFramebuffer m_Buffer;
 
+		FramebufferSpecification m_Specification;
 	};
 
 }
