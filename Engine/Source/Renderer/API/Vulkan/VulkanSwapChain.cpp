@@ -1,13 +1,13 @@
 #include "VulkanSwapChain.h"
-#include "Application/Application.h"
-#include "Renderer/RenderCommand.h"
-#include "VulkanRenderer.h"
-#include "VulkanMacros.hpp"
-#include <limits>
 #include <algorithm>
 #include <complex>
+#include <limits>
 
+#include "Application/Application.h"
+#include "VulkanRenderAPI.h"
 #include "VulkanFunctions.h"
+#include "VulkanTexture.h"
+#include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
@@ -20,7 +20,7 @@ namespace ME::Render
 	}
 
 	VulkanSwapChain::VulkanSwapChain(int32& result)
-		: m_SwapChain(nullptr), m_VSYNCEnabled(false), m_CurrentFrame(0)
+		: m_SwapChain(nullptr), m_VSYNCEnabled(false), m_CurrentFrame(0), m_UpdateRequired(false), m_Images({})
 	{
 		result = Init();
 	}
@@ -34,19 +34,20 @@ namespace ME::Render
 	{
 		for (auto image : m_Images)
 		{
-			delete image;
+			image->Shutdown();
 			image = nullptr;
 		}
 		m_Images.Clear();
 		if (m_SwapChain != nullptr)
 		{
-			vkDestroySwapchainKHR(Render::RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), m_SwapChain, nullptr);
+			vkDestroySwapchainKHR(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), m_SwapChain, nullptr);
 			m_SwapChain = nullptr;
 		}
 	}
 
 	void VulkanSwapChain::Present(VkQueue queue, VulkanFrameInfo& info)
 	{
+		VkResult result;
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
@@ -55,35 +56,68 @@ namespace ME::Render
 		presentInfo.pSwapchains = &m_SwapChain;
 		presentInfo.pImageIndices = &m_NextImageIndex;
 
-		vkQueuePresentKHR(queue, &presentInfo);
-
+		result = vkQueuePresentKHR(queue, &presentInfo);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		{
+			ME::Application& app = ME::Application::Get();
+			uint32 width = static_cast<uint32>(app.GetWindow()->GetWidth());
+			uint32 height = static_cast<uint32>(app.GetWindow()->GetHeight());
+			Render::RenderCommand::Get()->Resize(width, height);
+			m_UpdateRequired = true;
+		}
+		else if (ME_VK_FAILED(result))
+		{
+			ME_ASSERT(false, TEXT("Failed to present! Error: {}"), static_cast<int32>(result));
+		}
 		m_CurrentFrame = (m_NextImageIndex + 1) % m_Images.GetSize();
 	}
 
 	void VulkanSwapChain::NewFrame(VulkanFrameInfo& info)
 	{
-		vkAcquireNextImageKHR(RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), m_SwapChain, UINT64_MAX, info.ImageAvailable, nullptr, &m_NextImageIndex);
+		VkResult result = vkAcquireNextImageKHR(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), m_SwapChain, UINT64_MAX, info.ImageAvailable, nullptr, &m_NextImageIndex);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		{
+			ME::Application& app = ME::Application::Get();
+			uint32 width = static_cast<uint32>(app.GetWindow()->GetWidth());
+			uint32 height = static_cast<uint32>(app.GetWindow()->GetHeight());
+			Render::RenderCommand::Get()->Resize(width, height);
+			m_UpdateRequired = true;
+		}
+		else if (ME_VK_FAILED(result))
+			ME_ASSERT(TEXT("Failed to start new frame! Error: {}"), static_cast<int32>(result));
 	}
 
 	void VulkanSwapChain::Resize(uint32 x, uint32 y)
 	{
+		if (x == 0 || y == 0)
+		{
+			m_UpdateRequired = true;
+			return;
+		}
+
 		int32 result;
-		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+		VkSwapchainKHR oldSwapChain;
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		vkDeviceWaitIdle(render->GetDevice());
-		VkSwapchainKHR old = m_SwapChain;
+
+		UpdateSwapExtent(x, y);
+
+		oldSwapChain = m_SwapChain;
 		m_SwapChain = nullptr;
 
+		for (auto image : m_Images)
+		{
+			image->Shutdown();
+		}
 		m_Images.Clear();
 
-		result = CreateSwapChain(render, old);
+		result = CreateSwapChain(render, oldSwapChain);
 		if (ME_VK_FAILED(result))
 		{
 			ME_ASSERT(false, TEXT("Vulkan swap chain: recreation failed! Error: {0}"), result);
 			Shutdown();
 			return;
 		}
-
-		m_ImageFormat = m_Format.format;
 
 		result = CreateImages(render);
 		if (ME_VK_FAILED(result))
@@ -93,6 +127,12 @@ namespace ME::Render
 			return;
 		}
 
+		if (oldSwapChain != nullptr)
+		{
+			vkDestroySwapchainKHR(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), oldSwapChain, nullptr);
+		}
+
+		oldSwapChain = nullptr;
 	}
 
 	void VulkanSwapChain::SetFullscreen(bool fullscreen)
@@ -104,12 +144,12 @@ namespace ME::Render
 		m_VSYNCEnabled = enabled;
 	}
 
-	int32 VulkanSwapChain::CreateSwapChain(VulkanRenderer* renderer, VkSwapchainKHR oldSwapChain)
+	int32 VulkanSwapChain::CreateSwapChain(VulkanRenderAPI* renderer, VkSwapchainKHR oldSwapChain)
 	{
 		uint32 imageCount;
 		ME::Core::Containers::Array<uint32> queueFamilies;
 
-		imageCount = m_Capabilities.minImageCount + 1;
+		imageCount = m_Capabilities.minImageCount;
 		queueFamilies = { (uint32)renderer->GetGraphicsQueueFamily(), (uint32)renderer->GetPresentQueueFamily() };
 
 		VkSwapchainCreateInfoKHR createInfo{};
@@ -128,12 +168,13 @@ namespace ME::Render
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		createInfo.presentMode = m_PresentMode;
 		createInfo.clipped = VK_TRUE;
+		
 		createInfo.oldSwapchain = oldSwapChain;
 
 		return ME_VK_RETURN_V(vkCreateSwapchainKHR(renderer->GetDevice(), &createInfo, nullptr, &m_SwapChain));
 	}
 
-	int32 VulkanSwapChain::CreateImages(VulkanRenderer* renderer)
+	int32 VulkanSwapChain::CreateImages(VulkanRenderAPI* renderer)
 	{
 		Core::Containers::Array<VkImage> swapChainImages;
 		Texture2DSpecification specs = {};
@@ -155,9 +196,8 @@ namespace ME::Render
 
 		for (uint32 i = 0; i < count; i++)
 		{
-			specs.DebugName = "SwapChain image" + ME::Core::Containers::ToAnsiString(1);
-
-			m_Images.EmplaceBack(new VulkanTexture2D(swapChainImages[i], specs));
+			specs.DebugName = "SwapChain image" + ME::Core::Containers::ToAnsiString(i);
+			m_Images.PushBack(ME::Core::Memory::Reference<Texture2D>(new VulkanTexture2D(swapChainImages[i], specs)));
 		}
 
 		return 0;
@@ -232,7 +272,7 @@ namespace ME::Render
 		{
 			m_Extent = { m_Capabilities.currentExtent.width, m_Capabilities.currentExtent.height };
 		}
-		else 
+		else
 		{
 			uint32 width, height;
 			width = (uint32)window->GetWidth();
@@ -247,10 +287,26 @@ namespace ME::Render
 		}
 	}
 
+	void VulkanSwapChain::UpdateSwapExtent(uint32 x, uint32 y)
+	{
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
+
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(render->GetPhysicalDevice(), render->GetSurface(), &m_Capabilities);
+
+		if (m_Capabilities.currentExtent.width != UINT32_MAX) {
+			m_Extent = { m_Capabilities.currentExtent.width, m_Capabilities.currentExtent.height };
+		}
+		else {
+			m_Extent = { x, y };
+			m_Extent.x = std::clamp(m_Extent.x, m_Capabilities.minImageExtent.width, m_Capabilities.maxImageExtent.width);
+			m_Extent.y = std::clamp(m_Extent.y, m_Capabilities.minImageExtent.height, m_Capabilities.maxImageExtent.height);
+		}
+	}
+
 	int32 VulkanSwapChain::Init()
 	{
 		int32 result;
-		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		ME::Core::Containers::Array<VkSurfaceFormatKHR> formats;
 		ME::Core::Containers::Array<VkPresentModeKHR> presentModes;
 

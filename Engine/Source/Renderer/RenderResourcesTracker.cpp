@@ -1,4 +1,5 @@
 ﻿#include "RenderResourcesTracker.hpp"
+#include "RenderCommand.h"
 
 namespace ME::Render
 {

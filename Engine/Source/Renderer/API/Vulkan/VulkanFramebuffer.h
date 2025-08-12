@@ -1,6 +1,8 @@
 ﻿#pragma once
 
-#include "VulkanRenderer.h"
+#include <Core.hpp>
+
+#include "Vulkan.hpp"
 #include "Renderer/Base/Framebuffer.h"
 
 namespace ME::Render
@@ -8,7 +10,7 @@ namespace ME::Render
 	class MOON_API VulkanFramebuffer : public Framebuffer
 	{
 	public:
-		VulkanFramebuffer(FramebufferSpecification& specification);
+		VulkanFramebuffer(const FramebufferSpecification& specification);
 		~VulkanFramebuffer() override;
 
 	public:

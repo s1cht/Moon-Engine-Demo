@@ -11,7 +11,7 @@ namespace ME::Render
 	{
 		Core::Memory::Reference<Render::RenderPass> RenderPass;
 		ME::Core::Math::Resolution2D<uint32> Resolution;
-		ME::Core::Containers::Array<Texture2D*> Attachments;
+		ME::Core::Containers::Array<ME::Core::Memory::Reference<Render::Texture2D>> Attachments;
 		uint32 Layers;
 	};
 

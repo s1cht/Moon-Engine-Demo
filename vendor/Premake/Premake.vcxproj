@@ -104,6 +104,7 @@
     <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\1.1\spirv.lua" />
     <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\1.2\spirv.lua" />
     <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\unified1\spirv.lua" />
+    <None Include="..\VulkanMemoryAllocator\premake5.lua" />
     <None Include="..\premake-core\binmodules\example\premake5.lua" />
     <None Include="..\premake-core\binmodules\luasocket\etc\b64.lua" />
     <None Include="..\premake-core\binmodules\luasocket\etc\check-links.lua" />

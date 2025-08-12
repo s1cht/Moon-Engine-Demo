@@ -30,18 +30,35 @@ namespace ME::Core::Math
 		float32 cr = std::cos(roll * 0.5f);
 		float32 sr = std::sin(roll * 0.5f);
 
-		PQuaternion result(
-			cr * cp * cy + sr * sp * sy,
-			sr * cp * cy - cr * sp * sy,
-			cr * sp * cy + sr * cp * sy,
-			cr * cp * sy - sr * sp * cy
-		);
-		return result.Normalized();
+		PQuaternion q;
+		q.w = cy * cp * cr + sy * sp * sr;
+		q.x = cy * sp * cr + sy * cp * sr;
+		q.y = sy * cp * cr - cy * sp * sr;
+		q.z = cy * cp * sr - sy * sp * cr;
+
+		return q.Normalized();
 	}
 
-	PQuaternion PQuaternion::FromEulerAngles(const Vector3<float32>& angles)
+	inline PQuaternion PQuaternion::FromEulerAnglesXYZ(const Vector3<float32>& angles)
 	{
-		return FromEulerAngles(angles.z, angles.y, angles.x);
+		return FromEulerAngles(angles.x, angles.y, angles.z);
+	}
+
+	inline PQuaternion PQuaternion::FromEulerAnglesYXZ(const Vector3<float32>& angles)
+	{
+		return FromEulerAngles(angles.y, angles.x, angles.z);
+	}
+
+	PQuaternion PQuaternion::FromAxisAngle(const Vector3<float32>& axis, float32 angle)
+	{
+		float32 halfAngle = angle * 0.5f;
+		float32 s = sinf(halfAngle);
+		return PQuaternion(
+			cosf(halfAngle),
+			axis.X * s,
+			axis.Y * s,
+			axis.Z * s
+		);
 	}
 
 	PMatrix4x4 PQuaternion::ToMatrix() const

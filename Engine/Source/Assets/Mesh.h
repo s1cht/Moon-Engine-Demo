@@ -26,31 +26,55 @@ namespace ME::Assets
 		~Mesh();
 
 	public:
-		ME::Core::Memory::Reference<Render::VertexBuffer> GetVertexBuffer();
-		ME::Core::Memory::Reference<Render::IndexBuffer> GetIndexBuffer();
-		ME::Core::Containers::Array<Vertex>& GetVertices();
-		ME::Core::Containers::Array<int32>& GetIndices();
+		ME::Core::Memory::Reference<Render::VertexBuffer> GetVertexBuffer() const
+		{
+			return m_VertexBuffer;
+		}
+
+		ME::Core::Memory::Reference<Render::IndexBuffer> GetIndexBuffer() const
+		{
+			return m_IndexBuffer;
+		}
+
+		ME::Core::Containers::Array<Vertex>& GetVertices()
+		{
+			return m_Vertices;
+		}
+
+		ME::Core::Containers::Array<int32>& GetIndices()
+		{
+			return m_Indices;
+		}
+
 		const ME::Core::Containers::StringView GetGroupName() const
 		{
 			return m_GroupName.ToStringView();
 		}
 
+		bool IsValid() const { return m_Valid; }
+
 	public:
-		void SetVertexes(const ME::Core::Containers::Array<Vertex>& vertexes);
-		void SetIndexes(const ME::Core::Containers::Array<int32>& indexes);
+		void SetVertices(const ME::Core::Containers::Array<Vertex>& vertexes);
+		void SetIndices(const ME::Core::Containers::Array<int32>& indexes);
 		void SetGroupName(ME::Core::Containers::String groupName);
 
-		void SetVertexes(ME::Core::Containers::Array<Vertex>&& vertexes);
-		void SetIndexes(ME::Core::Containers::Array<int32>&& indexes);
+		void SetVertices(ME::Core::Containers::Array<Vertex>&& vertexes);
+		void SetIndices(ME::Core::Containers::Array<int32>&& indexes);
 		void SetGroupName(ME::Core::Containers::String&& groupName);
 
+	public:
+		void Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer);
+		void Unbind() const;
 		void CreateBuffers();
+		void UpdateBuffers(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer);
 
 	private:
+		bool m_Valid;
+
 		ME::Core::Containers::String m_GroupName;
 
-		ME::Core::Containers::Array<Vertex> m_Vertexes;
-		ME::Core::Containers::Array<int32> m_Indexes;
+		ME::Core::Containers::Array<Vertex> m_Vertices;
+		ME::Core::Containers::Array<int32> m_Indices;
 
 		ME::Core::Memory::Reference<Render::VertexBuffer> m_VertexBuffer;
 		ME::Core::Memory::Reference<Render::IndexBuffer> m_IndexBuffer;

@@ -10,6 +10,8 @@ namespace ME::Render
 	class MOON_API RenderObject
 	{
 	public:
+		virtual ~RenderObject() = default;
+
 		template<typename T>
 		ME_NODISCARD inline constexpr T* As() noexcept
 		{

@@ -1,58 +1,64 @@
 ﻿#include "VulkanShader.h"
 
-#include "VulkanMacros.hpp"
-#include "VulkanRenderer.h"
+#include "VulkanResourceHandler.h"
+#include "VulkanRenderAPI.h"
+#include "VulkanFunctions.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<Shader> Shader::CreateVulkanShader(const ME::Render::CompiledShader& compiledShader, Shader::Type shaderType)
+	ME::Core::Memory::Reference<Shader> Shader::CreateVulkanShader(const ShaderSpecification& specification)
 	{
-		auto object = ME::Core::Memory::Reference<Render::Shader>(new VulkanShader(compiledShader, shaderType));
+		auto object = ME::Core::Memory::MakeReference<Render::VulkanShader>(specification);
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
-	VulkanShader::VulkanShader(const ME::Render::CompiledShader& compiledShader, Shader::Type shaderType)
+	VulkanShader::VulkanShader(const ShaderSpecification& specification)
+		: m_Shader(nullptr), m_Specification(specification)
 	{
-		Init(compiledShader, shaderType);
+		Init();
 	}
 
 	VulkanShader::~VulkanShader()
 	{
-		Shutdown();
+		VulkanShader::Shutdown();
 	}
 
 	void VulkanShader::Shutdown()
 	{
 		if (m_Shader != nullptr)
 		{
-			vkDestroyShaderModule(ME::Render::RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), m_Shader, nullptr);
+			vkDestroyShaderModule(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), m_Shader, nullptr);
 			m_Shader = nullptr;
 		}
-		if (m_CompiledShader.Bytecode != nullptr)
+		if (m_Specification.CompiledShader.Bytecode != nullptr)
 		{
-			::operator delete(m_CompiledShader.Bytecode, m_CompiledShader.Size);
-			m_CompiledShader.Bytecode = nullptr;
-			m_CompiledShader.Size = 0;
+			::operator delete(m_Specification.CompiledShader.Bytecode, m_Specification.CompiledShader.Size);
+			m_Specification.CompiledShader.Bytecode = nullptr;
+			m_Specification.CompiledShader.Size = 0;
 		}
 	}
 
-	void VulkanShader::Init(const ME::Render::CompiledShader& compiledShader, Shader::Type shaderType)
+	void VulkanShader::Init()
 	{
-		VkResult result;
-		m_CompiledShader = compiledShader;
-		m_Type = shaderType;
-
 		VkShaderModuleCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.codeSize = m_CompiledShader.Size;
-		createInfo.pCode = static_cast<uint32*>(m_CompiledShader.Bytecode);
+		createInfo.codeSize = m_Specification.CompiledShader.Size;
+		createInfo.pCode = static_cast<uint32*>(m_Specification.CompiledShader.Bytecode);
 
-		result = vkCreateShaderModule(Render::RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), &createInfo, nullptr, &m_Shader);
+		VkResult result = vkCreateShaderModule(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_Shader);
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(TEXT("Vulkan shader: failed to create shader! Error: {0}"), (uint32)result);
+			ME_ASSERT(TEXT("Vulkan shader: failed to create shader! Error: {0}"), static_cast<uint32>(result));
+
+		CreateDescriptorSetLayout();
+	}
+
+	void VulkanShader::CreateDescriptorSetLayout()
+	{
+		for (uint32 i = 0; i < m_Specification.Layouts.GetSize(); i++)
+			m_Layouts.EmplaceBack(RenderCommand::Get()->As<VulkanRenderAPI>()->GetVulkanResourceHandler()->CreateLayout(m_Specification.Layouts[i]));
 	}
 
 	uint32 ConvertShaderTypeVulkan(ShaderType type)
@@ -72,7 +78,7 @@ namespace ME::Render
 			case ME::Render::ShaderType::Uint2: return VK_FORMAT_R32G32_UINT;
 			case ME::Render::ShaderType::Uint3: return VK_FORMAT_R32G32B32_UINT;
 			case ME::Render::ShaderType::Uint4: return VK_FORMAT_R32G32B32A32_UINT;
-			case ME::Render::ShaderType::None:
+			default:
 			{
 				ME_ASSERT(false, TEXT("Vulkan: ShaderTypeConversion: Shader type None can't be	converted!"));
 				return VK_FORMAT_UNDEFINED;

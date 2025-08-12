@@ -2,12 +2,12 @@
 
 #include <Core.hpp>
 
+#include "Vulkan.hpp"
 #include "Renderer/Base/Pipeline.h"
-#include "VulkanRenderer.h"
 
 namespace ME::Render
 {
-	class MOON_API VulkanPipeline : public Pipeline
+	class MOON_API VulkanPipeline final : public Pipeline
 	{
 	public:
 		VulkanPipeline(const PipelineSpecification& specification);
@@ -24,7 +24,9 @@ namespace ME::Render
 		inline const PipelineSpecification& GetSpecification() const override { return m_Specification; };
 
 	public:
-		inline VkPipeline GetPipeline() { return m_Pipeline; }
+		inline VkPipeline GetPipeline() const { return m_Pipeline; }
+		inline VkPipelineLayout GetPipelineLayout() const { return m_PipelineLayout; }
+		inline VkPipelineBindPoint GetPipelineBindPoint() const { return m_PipelineBindPoint; }
 
 	private:
 		void Init();
@@ -38,6 +40,9 @@ namespace ME::Render
 		VkPipeline m_Pipeline;
 		VkPipelineLayout m_PipelineLayout;
 		VkPipelineBindPoint m_PipelineBindPoint;
+
+	private:
+
 		PipelineSpecification m_Specification;
 
 	};

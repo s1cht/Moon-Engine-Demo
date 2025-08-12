@@ -36,7 +36,7 @@ namespace ME::Input
 	public:
 		inline static bool IsMouseLeftButtonPressed();
 		inline static bool IsMouseMiddleButtonPressed();
-		inline static bool IsMouseRightButtonPressed();
+		inline static bool IsMouseRightButtonDown();
 
 		inline static ME::Core::Math::Vector2D32 GetMousePosition();
 		inline static ME::Core::Math::Vector2D32 GetMouseDelta();

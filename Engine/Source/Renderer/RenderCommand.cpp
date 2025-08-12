@@ -2,11 +2,11 @@
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<RendererAPI> RenderCommand::s_Renderer;
+	ME::Core::Memory::Reference<RenderAPI> RenderCommand::s_Renderer;
 
 	bool RenderCommand::Init()
 	{
-		s_Renderer = RendererAPI::Create();
+		s_Renderer = RenderAPI::Create();
 
 		if (s_Renderer == nullptr)
 			return false;

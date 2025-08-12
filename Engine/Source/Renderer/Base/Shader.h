@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core.hpp>
+#include <Core/Containers/Array.hpp>
 
 #include "RenderObject.hpp"
 
@@ -21,6 +22,17 @@ namespace ME::Render
 		SPIRV, DXIL, Metal
 	};
 
+	enum class ShaderStage : uint32
+	{
+		None = 0,
+		Vertex = BIT(0),
+		Hull = BIT(1),
+		Domain = BIT(2),
+		Geometry = BIT(3),
+		Pixel = BIT(4),
+		Compute = BIT(5),
+	};
+
 	struct CompiledShader
 	{
 		void* Bytecode;
@@ -28,31 +40,90 @@ namespace ME::Render
 		ShaderFormat Format;
 	};
 
+	enum class ResourceType : uint8
+	{
+		None = 0,
+		Uniform, StorageBuffer,
+		Texture1D, Texture2D, Texture3D,
+		Sampler,
+	};
+
+	struct ResourceBinding
+	{
+		ME::Render::ResourceType Type;
+		ME::Render::ShaderStage Stage;
+		uint32 MaxSize = 1;
+
+		inline bool operator==(const ResourceBinding& binding) const
+		{
+			return this->MaxSize == binding.MaxSize && this->Stage == binding.Stage && this->Type == binding.Type;
+		}
+	};
+
+	class ResourceLayout : public ME::Core::Containers::Array<ME::Render::ResourceBinding>
+	{
+	public:
+		bool operator==(const ResourceLayout& layout) const
+		{
+			if (layout.GetSize() != this->GetSize()) return false;
+			for (SIZE_T i = 0; i < layout.GetSize(); i++)
+				if (this->operator[](i) != layout[i]) break;
+			return true;
+		}
+	};
+
+	class MOON_API ResourceLayoutPack : public ME::Core::Containers::Array<ME::Render::ResourceLayout>
+	{
+	public:
+		bool operator==(const ResourceLayoutPack& pack) const
+		{
+			if (pack.GetSize() != this->GetSize()) return false;
+			for (SIZE_T i = 0; i < pack.GetSize(); i++)
+				if (this->operator[](i) != pack[i]) break;
+			return true;
+		}
+	};
+
+	struct ShaderSpecification
+	{
+		ME::Render::CompiledShader CompiledShader;
+		ME::Render::ShaderStage Stage;
+		ME::Render::ResourceLayoutPack Layouts;
+	};
+
 	class MOON_API Shader : public RenderObject
 	{
 	public:
-		enum class Type
-		{
-			None = 0,
-			Vertex, Pixel, Compute, Geometry, Hull, Domain
-		};;
-
-	public:
 		virtual ~Shader() = default;
 
-		virtual inline ME::Render::CompiledShader GetCompiledShader() = 0;
-		virtual constexpr Shader::Type GetShaderType() const = 0;
+		virtual const ME::Render::ShaderSpecification& GetSpecification() const = 0;
 
 	public:
-		static ME::Core::Memory::Reference<Shader> Create(const ME::Render::CompiledShader& compiledShader, Shader::Type shaderType);
+		static ME::Core::Memory::Reference<Shader> Create(const ShaderSpecification& specification);
 
 	public:
-		static ME::Core::Memory::Reference<Shader> CreateVulkanShader(const ME::Render::CompiledShader& compiledShader, Shader::Type shaderType);
+		static ME::Core::Memory::Reference<Shader> CreateVulkanShader(const ShaderSpecification& specification);
 
 	};
 
 	extern MOON_API SIZE_T SizeOfShaderType(ME::Render::ShaderType type);
 	extern MOON_API uint32 GetTypeAPISpecificShaderType(ME::Render::ShaderType type);
+
+	inline constexpr MOON_API ShaderStage operator|(ME::Render::ShaderStage a, ME::Render::ShaderStage b)
+	{
+		return static_cast<ShaderStage>(static_cast<uint32>(a) | static_cast<uint32>(b));
+	}
+
+	inline constexpr MOON_API ShaderStage operator|=(ME::Render::ShaderStage& a, ME::Render::ShaderStage b)
+	{
+		a = a | b;
+		return a;
+	}
+
+	inline constexpr ShaderStage operator&(ShaderStage a, ShaderStage b)
+	{
+		return static_cast<ShaderStage>(static_cast<uint32>(a) & static_cast<uint32>(b));
+	}
 
 	/*
 API-specific conversion function

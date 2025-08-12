@@ -53,9 +53,13 @@ namespace ME::Assets
 
 	ME::Core::Memory::Reference<ME::Assets::Mesh> AssetManager::GetMesh(const ME::Core::Containers::String& meshName)
 	{
-		for (auto mesh = m_Meshes.Begin(); mesh != m_Meshes.End(); ++mesh)
-			if ((*mesh)->GetGroupName() == meshName)
-				return (*mesh);
+		for (const auto& mesh : m_Meshes)
+		{
+			if (mesh->GetGroupName() == meshName)
+			{
+				return mesh;
+			}
+		}
 		return nullptr;
 	}
 

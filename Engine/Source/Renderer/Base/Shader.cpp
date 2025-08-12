@@ -3,21 +3,19 @@
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<Shader> Shader::Create(const ME::Render::CompiledShader& compiledShader, Shader::Type shaderType)
+	ME::Core::Memory::Reference<Shader> Shader::Create(const ShaderSpecification& specification)
 	{
-		RendererAPI::API render = Renderer::GetRenderAPI();
+		RenderAPI::API render = Renderer::GetRenderAPI();
 
 		switch (render)
 		{
-			case ME::Render::RendererAPI::API::None:
-			case ME::Render::RendererAPI::API::DirectX12:
-			case ME::Render::RendererAPI::API::Metal:
-			{
-				ME_ASSERT(false, TEXT("Create Shader: Unsupported renderer!"));
-				return nullptr;
-			}
-			case ME::Render::RendererAPI::API::Vulkan:
-				return CreateVulkanShader(compiledShader, shaderType);
+			case ME::Render::RenderAPI::API::Vulkan:
+				return CreateVulkanShader(specification);
+            default:
+            {
+                ME_ASSERT(false, TEXT("Create Shader: Unsupported renderer!"));
+                return nullptr;
+            }
 		}
 	}
 
@@ -71,18 +69,18 @@ namespace ME::Render
 
     uint32 ME::Render::GetTypeAPISpecificShaderType(ME::Render::ShaderType type)
     {
-        RendererAPI::API render = Renderer::GetRenderAPI();
+        RenderAPI::API render = Renderer::GetRenderAPI();
 
         switch (render)
         {
-        case ME::Render::RendererAPI::API::None:
-        case ME::Render::RendererAPI::API::DirectX12:
-        case ME::Render::RendererAPI::API::Metal:
+        case ME::Render::RenderAPI::API::None:
+        case ME::Render::RenderAPI::API::DirectX12:
+        case ME::Render::RenderAPI::API::Metal:
         {
             ME_ASSERT(false, TEXT("GetTypeAPISpecificShaderType: Unsupported renderer!"));
             break;
         }
-        case ME::Render::RendererAPI::API::Vulkan:
+        case ME::Render::RenderAPI::API::Vulkan:
 	    {
             return ConvertShaderTypeVulkan(type);
 	    }

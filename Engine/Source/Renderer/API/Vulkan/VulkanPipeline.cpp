@@ -1,8 +1,9 @@
 ﻿#include "VulkanPipeline.h"
-#include "VulkanCommandBuffer.h"
-#include "VulkanFramebuffer.h"
+
+#include "VulkanRenderAPI.h"
 #include "VulkanFunctions.h"
-#include "VulkanMacros.hpp"
+#include "VulkanCommandBuffer.h"
+#include "VulkanResourceHandler.h"
 #include "VulkanRenderPass.h"
 #include "VulkanShader.h"
 #include "Renderer/RenderCommand.h"
@@ -30,7 +31,7 @@ namespace ME::Render
 
 	void VulkanPipeline::Shutdown()
 	{
-		auto render = RenderCommand::Get()->As<VulkanRenderer>();
+		auto render = RenderCommand::Get()->As<VulkanRenderAPI>();
 
 		if (m_Pipeline != nullptr)
 		{
@@ -51,12 +52,12 @@ namespace ME::Render
 		for (const auto& spec : specifications)
 		{
 			VkViewport viewport = {};
-			viewport.x = spec.X;
-			viewport.y = spec.Y;
-			viewport.height = spec.Height;
-			viewport.width = spec.Width;
-			viewport.minDepth = spec.MinDepth;
-			viewport.maxDepth = spec.MaxDepth;
+			viewport.x = static_cast<float32>(spec.X);
+			viewport.y = static_cast<float32>(spec.Y);
+			viewport.height = static_cast<float32>(spec.Height);
+			viewport.width = static_cast<float32>(spec.Width);
+			viewport.minDepth = static_cast<float32>(spec.MinDepth);
+			viewport.maxDepth = static_cast<float32>(spec.MaxDepth);
 
 			viewports.EmplaceBack(viewport);
 		}
@@ -152,21 +153,25 @@ namespace ME::Render
 
 	void VulkanPipeline::CreatePipelineLayout()
 	{
-		VkResult result;
+		ME::Core::Containers::Array<VkDescriptorSetLayout> layouts;
+		if (m_Specification.Type == PipelineType::Compute)
+			layouts = RenderCommand::Get()->As<VulkanRenderAPI>()->GetVulkanResourceHandler()->GetDescriptorSetLayouts(m_Specification.ComputeShader->As<VulkanShader>()->GetDescriptorSetLayouts());
+		else
+			layouts = RenderCommand::Get()->As<VulkanRenderAPI>()->GetVulkanResourceHandler()->GetDescriptorSetLayouts(m_Specification.Shaders.Pixel->As<VulkanShader>()->GetDescriptorSetLayouts());
+
 		VkPipelineLayoutCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		createInfo.setLayoutCount = 0;
-		createInfo.pSetLayouts = nullptr;
+		createInfo.setLayoutCount = layouts.Empty() ? 1 : static_cast<uint32>(layouts.GetSize());
+		createInfo.pSetLayouts = layouts.Data();
 		createInfo.pushConstantRangeCount = 0;
 		createInfo.pPushConstantRanges = nullptr;
 
-		result = vkCreatePipelineLayout(ME::Render::RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), &createInfo, nullptr, &m_PipelineLayout);
+		VkResult result = vkCreatePipelineLayout(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_PipelineLayout);
 		if (ME_VK_FAILED(result))
 		{
 			ME_CORE_ASSERT(false, TEXT("Vulkan: pipeline layout creation failed! Error: {0}"), static_cast<int32>(result));
 		}
 	}
-
 
 	void VulkanPipeline::CreateComputePipeline()
 	{
@@ -184,7 +189,7 @@ namespace ME::Render
 		createInfo.layout = m_PipelineLayout;
 		createInfo.stage = shaderCreateInfo;
 
-		result = vkCreateComputePipelines(ME::Render::RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), nullptr, 1, &createInfo, nullptr, &m_Pipeline);
+		result = vkCreateComputePipelines(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), nullptr, 1, &createInfo, nullptr, &m_Pipeline);
 		if (ME_VK_FAILED(result))
 		{
 			ME_CORE_ASSERT(false, TEXT("Vulkan: pipeline creation failed! Error: {0}"), static_cast<int32>(result));
@@ -297,7 +302,6 @@ namespace ME::Render
 			cbsAttachments[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | (m_Specification.ColorBlending.Attachments[i].EnableAlphaMask ? VK_COLOR_COMPONENT_A_BIT : 0);
 		}
 
-
 		VkPipelineColorBlendStateCreateInfo cbsCreateInfo = {};
 		cbsCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		cbsCreateInfo.attachmentCount = static_cast<uint32>(cbsAttachments.GetSize());
@@ -339,7 +343,7 @@ namespace ME::Render
 		createInfo.basePipelineIndex = -1;
 		createInfo.layout = m_PipelineLayout;
 
-		result = vkCreateGraphicsPipelines(ME::Render::RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), nullptr, 1, &createInfo, nullptr, &m_Pipeline);
+		result = vkCreateGraphicsPipelines(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), nullptr, 1, &createInfo, nullptr, &m_Pipeline);
 
 		if (ME_VK_FAILED(result))
 		{

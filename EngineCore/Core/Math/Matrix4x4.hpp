@@ -70,6 +70,9 @@ namespace ME::Core::Math
 
 		PMatrix4x4 Transpose() const;
 
+		Vector3<float32> Transform(const Vector3<float32>& axis) const;
+		Vector3<float32> TransformNormal(const Vector3<float32>& axis) const;
+
 	public:
 		static PMatrix4x4 FromQuaternion(const PQuaternion& q);
 
@@ -82,6 +85,7 @@ namespace ME::Core::Math
 		static PMatrix4x4 Orthographic(float32 left, float32 right, float32 bottom, float32 top, float32 _near, float32 _far);
 
 		static PMatrix4x4 LookAt(const Vector3<float32>& eye, const Vector3<float32>& target, const Vector3<float32>& up);
+
 	};
 
 	PMatrix4x4 operator*(const float32& scalar, const PMatrix4x4& mat);

@@ -1,8 +1,7 @@
 ﻿#include "VulkanTexture.h"
 
+#include "VulkanRenderAPI.h"
 #include "VulkanFunctions.h"
-#include "VulkanMacros.hpp"
-#include "VulkanRenderer.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -62,7 +61,7 @@ namespace ME::Render
 
 	void VulkanTexture2D::Shutdown()
 	{
-		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 
 		if (m_ImageView != nullptr)
 		{
@@ -100,7 +99,7 @@ namespace ME::Render
 
 	VkResult VulkanTexture2D::CreateImage()
 	{
-		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		uint32 graphicsQueue = static_cast<uint32_t>(render->GetGraphicsQueueFamily());
 
 		VkImageCreateInfo createInfo = {};
@@ -124,9 +123,9 @@ namespace ME::Render
 
 	VkResult VulkanTexture2D::CreateImageView()
 	{
-		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 
-		VkImageViewCreateInfo createInfo{};
+		VkImageViewCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = m_Image;
 		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;

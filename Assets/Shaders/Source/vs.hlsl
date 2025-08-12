@@ -1,11 +1,23 @@
-float4 VSMain(uint vertexID : SV_VertexID) : SV_POSITION
+struct VSInput
 {
-    const float4 Poses[3] =
-    {
-        float4(0.f, 0.5f, 1.f, 1.f),
-        float4(0.5f, -0.5f, 1.f, 1.f),
-        float4(-0.5f, -0.5f, 1.f, 1.f)
-    };
+    float3 position : POSITION0;
+    float2 texCoord : TCOORD0;
+    float3 normal : NORMALPOS0;
+};
+
+struct PSInput
+{
+    float4 position : SV_POSITION;
+    float2 texCoord : TCOORD0;
+    float3 normal : NORMALPOS0;
+};
     
-    return Poses[vertexID];
+PSInput VSMain(VSInput input)
+{
+    PSInput output;
+    output.position = float4(input.position, 1.f);
+    output.texCoord = input.texCoord;
+    output.normal = input.normal;
+
+    return output;
 }

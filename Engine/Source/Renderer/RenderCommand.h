@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core.hpp>
-#include "Base/RendererAPI.h"
+#include "Base/RenderAPI.h"
 #include "Base/SwapChain.h"
 #include "Base/Framebuffer.h"
 #include "Base/CommandBuffer.h"
@@ -23,6 +23,21 @@ namespace ME::Render
 		static void Shutdown();
 
 	public:
+		inline static ME::Core::Memory::Reference<ME::Render::ResourceHandler> GetResourceHandler()
+		{
+			return s_Renderer->GetResourceHandler();
+		}
+
+		inline static void CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass)
+		{
+			s_Renderer->CreateFramebuffers(renderPass);
+		}
+
+		inline static ME::Core::Memory::Reference<ME::Render::Framebuffer> GetAvailableFramebuffer()
+		{
+			return s_Renderer->GetAvailableFramebuffer();
+		}
+
 		inline static void NewFrame()
 		{
 			s_Renderer->NewFrame();
@@ -57,6 +72,26 @@ namespace ME::Render
 			s_Renderer->OnWindowEvent(x, y);
 		}
 
+		inline static void WriteResource(ME::Core::Memory::Reference<ME::Render::Uniform> buffer)
+		{
+			s_Renderer->WriteResource(buffer);
+		}
+
+		inline static void WriteResource(ME::Core::Memory::Reference<ME::Render::StorageBuffer> buffer)
+		{
+			s_Renderer->WriteResource(buffer);
+		}
+
+		inline static void BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, ME::Core::Memory::Reference<ME::Render::Uniform> buffer)
+		{
+			s_Renderer->BindResourceSet(commandBuffer, pipeline, buffer);
+		}
+
+		inline static void BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, ME::Core::Memory::Reference<ME::Render::StorageBuffer> buffer)
+		{
+			s_Renderer->BindResourceSet(commandBuffer, pipeline, buffer);
+		}
+
 		inline static int32 GetFrameIndex()
 		{
 			return s_Renderer->GetSwapChain()->GetFrameIndex();
@@ -67,17 +102,25 @@ namespace ME::Render
 			return s_Renderer->GetAvailableCommandBuffer();
 		}
 
+		inline static bool UpdateRequired()
+		{
+			return s_Renderer->GetSwapChain()->UpdateRequired();
+		}
+
+		inline static void Updated()
+		{
+			s_Renderer->GetSwapChain()->Updated();
+		}
+
 		CmdBufFucntion(BeginRenderPass, ME::Render::RenderPassBeginInfo& info)
 		CmdBufFunctionImpl(BeginRenderPass, info)
 
 		CmdBuffFunctionNA(EndRenderPass)
 
-		static ME::Core::Memory::Reference<RendererAPI> Get() { return s_Renderer; }
+		static ME::Core::Memory::Reference<RenderAPI> Get() { return s_Renderer; }
 
 	private:
-		static ME::Core::Memory::Reference<RendererAPI> s_Renderer;
-		static SwapChain* s_SwapChain;
-		static Framebuffer* s_Framebuffer;
+		static ME::Core::Memory::Reference<RenderAPI> s_Renderer;
 
 	};
 

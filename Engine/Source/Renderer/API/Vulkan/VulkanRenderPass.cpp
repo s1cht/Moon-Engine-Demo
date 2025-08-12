@@ -1,8 +1,8 @@
 ﻿#include "VulkanRenderPass.h"
 
-#include "VulkanCommandBuffer.h"
+#include "VulkanRenderAPI.h"
 #include "VulkanFunctions.h"
-#include "VulkanMacros.hpp"
+#include "VulkanCommandBuffer.h"
 #include "VulkanFramebuffer.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
@@ -30,7 +30,7 @@ namespace ME::Render
 	{
 		if (m_Pass != nullptr)
 		{
-			vkDestroyRenderPass(Render::RenderCommand::Get()->As<VulkanRenderer>()->GetDevice(), m_Pass, nullptr);
+			vkDestroyRenderPass(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), m_Pass, nullptr);
 			m_Pass = nullptr;
 		}
 	}
@@ -61,7 +61,7 @@ namespace ME::Render
 	void VulkanRenderPass::Init(RenderPassSpecification& specification)
 	{
 		VkResult result;
-		VulkanRenderer* render = Render::RenderCommand::Get()->As<VulkanRenderer>();
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 
 		ME::Core::Containers::Array<VkAttachmentDescription> attachmentDescriptions;
 		ME::Core::Containers::Array<VkAttachmentReference> globalAttachmentReferences;
@@ -76,7 +76,7 @@ namespace ME::Render
 			desc.stencilLoadOp = attachment.IsStencil ? VK_ATTACHMENT_LOAD_OP_DONT_CARE : ME::Render::ConvertAttachmentLoadOperationVulkan(attachment.LoadOp);
 			desc.storeOp = attachment.IsStencil ? VK_ATTACHMENT_STORE_OP_DONT_CARE : ME::Render::ConvertAttachmentStoreOperationVulkan(attachment.StoreOp);
 			desc.stencilStoreOp = attachment.IsStencil ? VK_ATTACHMENT_STORE_OP_DONT_CARE : ME::Render::ConvertAttachmentStoreOperationVulkan(attachment.StoreOp);
-			desc.samples = VK_SAMPLE_COUNT_1_BIT;
+			desc.samples = ConvertSampleCountVulkan(attachment.SampleCount);
 			desc.flags = 0;
 
 			attachmentDescriptions.EmplaceBack(desc);

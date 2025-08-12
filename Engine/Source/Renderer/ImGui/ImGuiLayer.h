@@ -6,7 +6,6 @@
 
 namespace ME::Render::Imgui
 {
-
 	class MOON_API ImGuiLayer : public ME::Core::Layer
 	{
 	public:
@@ -32,9 +31,14 @@ namespace ME::Render::Imgui
 
 	private:
 		ImGuiContext* m_ImGuiContext;
+
+	private:
+		ME::Core::Memory::Reference<ME::Render::RenderPass> m_RenderPass;
+		ME::Core::Memory::Reference<ME::Render::ResourceHandler> m_ResourceHandler;
+
+	private:
 		bool m_Disabled = false;
 		bool m_EnabledEvents = true;
-
 	};
 
 }

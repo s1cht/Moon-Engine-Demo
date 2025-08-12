@@ -100,7 +100,7 @@ namespace ME
 		ME_CORE_ASSERT(m_Window, "Window creation failed! Error: {}", GetLastError());
 
 		bool result = SetPropW(m_Window, L"WndData", &m_Data);
-		ME_CORE_ASSERT(result && GetLastError(), "Window user pointer assign failed! Error: {}", GetLastError());
+		ME_CORE_ASSERT(result, "Window user pointer assign failed! Error: {}", GetLastError());
 		
 		ShowWindow(m_Window, 1);
 	}
@@ -256,6 +256,37 @@ namespace ME
 				Input::InputController::Get().GetMouse().SetMousePosition((float32)GET_X_LPARAM(lParam), (float32)GET_Y_LPARAM(lParam));
 				break;
 			}
+			case WM_LBUTTONUP:
+			{
+				Input::InputController::Get().GetMouse().SetLeftButtonPressed(false);
+				break;
+			}
+			case WM_LBUTTONDOWN:
+			{
+				Input::InputController::Get().GetMouse().SetLeftButtonPressed(true);
+				break;
+			}
+			case WM_RBUTTONUP:
+			{
+				Input::InputController::Get().GetMouse().SetRightButtonPressed(false);
+				break;
+			}
+			case WM_RBUTTONDOWN:
+			{
+				Input::InputController::Get().GetMouse().SetRightButtonPressed(true);
+				break;
+			}
+			case WM_MBUTTONUP:
+			{
+				Input::InputController::Get().GetMouse().SetMiddleButtonPressed(false);
+				break;
+			}
+			case WM_MBUTTONDOWN:
+			{
+				Input::InputController::Get().GetMouse().SetMiddleButtonPressed(true);
+				break;
+			}
+
 
 			//case WM_INPUT:
 			//{

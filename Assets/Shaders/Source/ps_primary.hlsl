@@ -1,4 +1,4 @@
-cbuffer LightBuffer
+cbuffer LightBuffer : register(b0, space1)
 {
     float4 diffuseColor;
     float3 lightDirection;
@@ -19,9 +19,12 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
     float4 color;
 
     lightDir = -lightDirection;
-    lightIntensity = saturate(dot(input.normal, lightDir));
+    
+    //float3 N = normalize(input.normal);
+    //float3 L = normalize(-lightDirection);
+    //lightIntensity = saturate(dot(N, L));
 
-    color = saturate(diffuseColor * lightIntensity);
+    color = saturate(diffuseColor * 1.f);
 
     return color;
 }

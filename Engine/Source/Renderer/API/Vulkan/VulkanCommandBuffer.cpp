@@ -1,10 +1,8 @@
 ﻿#include "VulkanCommandBuffer.h"
-#include <Core.hpp>
 
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
-#include "Renderer/API/Vulkan/VulkanMacros.hpp"
-#include "Renderer/API/Vulkan/VulkanRenderer.h"
+#include "Renderer/API/Vulkan/VulkanRenderAPI.h"
 
 namespace ME::Render
 {
@@ -52,7 +50,7 @@ namespace ME::Render
 	void VulkanCommandBuffer::Init()
 	{
 		VkResult result;
-		VulkanRenderer* render = RenderCommand::Get()->As<VulkanRenderer>();
+		VulkanRenderAPI* render = RenderCommand::Get()->As<VulkanRenderAPI>();
 
 		VkCommandBufferAllocateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

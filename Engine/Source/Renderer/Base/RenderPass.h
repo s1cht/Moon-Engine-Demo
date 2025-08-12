@@ -38,6 +38,7 @@ namespace ME::Render
 		ME::Render::LoadOperation LoadOp;
 		ME::Render::ImageLayout InitialLayout;
 		ME::Render::ImageLayout FinalLayout;
+		ME::Render::SampleCount SampleCount;
 		bool IsDepth;
 		bool IsStencil;
 	};

@@ -59,6 +59,7 @@ namespace ME::Core::Math
 		Vector3<T> operator+(const Vector3& b) const;
 
 		Vector3<T> operator-(const Vector3& b) const;
+		Vector3<T> operator-() const;
 
 		Vector3<T> operator*(const Vector3& b) const;
 
@@ -166,6 +167,12 @@ namespace ME::Core::Math
 	inline Vector3<T> Vector3<T>::operator-(const Vector3& b) const
 	{
 		return Vector3<T>(x - b.x, y - b.y, z - b.z);
+	}
+
+	template<typename T>
+	inline Vector3<T> Vector3<T>::operator-() const
+	{
+		return Vector3<T>(-x, -y, -z);
 	}
 
 	template<typename T>
@@ -315,7 +322,7 @@ namespace ME::Core::Math
 	template<typename T>
 	inline Vector3<T> Vector3<T>::Cross(const Vector3& other) const
 	{
-		return Vector3<T>(
+		return Vector3(
 			y * other.z - z * other.y,
 			z * other.x - x * other.z,
 			x * other.y - y * other.x

@@ -26,13 +26,19 @@
 
 namespace ME::Assets
 {
-	struct ShaderGroupPaths
+	struct ShaderPaths
 	{
 		ME::Core::Containers::String Vertex;
 		ME::Core::Containers::String Hull;
 		ME::Core::Containers::String Domain;
 		ME::Core::Containers::String Geometry;
 		ME::Core::Containers::String Pixel;
+	};
+
+	struct ShaderGroupSpecification
+	{
+		ShaderPaths Paths;
+		Render::ResourceLayoutPack Layout;
 	};
 
 	class MOON_API ShaderManager
@@ -60,8 +66,8 @@ namespace ME::Assets
 		void Shutdown();
 
 	public:
-		bool LoadShadersFromFiles(const uchar* shaderGroupName, ShaderGroupPaths& shaderGroupPath);
-		bool LoadComputeFile(const uchar* name, const ME::Core::Containers::String& shaderPath);
+		bool LoadShadersFromFiles(const uchar* shaderGroupName, const ShaderGroupSpecification& specification);
+		bool LoadComputeFile(const uchar* name, const ME::Core::Containers::String& shaderPath, const Render::ResourceLayoutPack& resourceLayout);
 
 		static bool LoadCompiler() { return Utility::ShaderCompiler::Get().InitCompiler(); }
 		static void UnloadCompiler() { Utility::ShaderCompiler::Get().ShutdownCompiler(); }
@@ -79,9 +85,9 @@ namespace ME::Assets
 		inline ME::Core::Containers::StringView GetShadersSourcePath() const { return m_ShaderSourcePath; }
 
 	private:
-		ME::Core::Memory::Reference<ME::Render::Shader> LoadShader(const ME::Core::Containers::WideStringView& shaderName, const ME::Render::Shader::Type& shaderType);
-		ME::Core::Memory::Reference<ME::Render::Shader> LoadCompiledShader(const ME::Core::Containers::WideStringView& shaderName, const ME::Render::Shader::Type& shaderType) const;
-		ME::Core::Memory::Reference<ME::Render::Shader> CompileShader(const ME::Core::Containers::WideStringView& shaderName, const ME::Render::Shader::Type& shaderType) const;
+		ME::Core::Memory::Reference<ME::Render::Shader> LoadShader(const ME::Core::Containers::WideStringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const;
+		ME::Core::Memory::Reference<ME::Render::Shader> LoadCompiledShader(const ME::Core::Containers::WideStringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const;
+		ME::Core::Memory::Reference<ME::Render::Shader> CompileShader(const ME::Core::Containers::WideStringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const;
 
 	private:
 		ME::Core::Containers::UnorderedMap<const uchar*, ShaderGroup> m_GraphicsShaders;

@@ -8,8 +8,11 @@
 #include <Events/WindowEvents.h>
 #include <Assets/Mesh.h>
 
+#include "Events/KeyEvents.h"
+#include "Events/MouseEvents.h"
 #include "Renderer/Base/CommandBuffer.h"
 #include "Renderer/Base/Framebuffer.h"
+#include "Renderer/Base/RingBuffer.h"
 
 struct Light
 {
@@ -33,18 +36,22 @@ public:
 	void OnEvent(ME::Core::Event & event) override;
 
 private:
-	bool SetViewportSize(ME::Events::WindowResizedEvent& event);
+	bool UpdateRender(ME::Events::WindowResizedEvent& event);
+	bool OnMouseMovedEvent(ME::Events::MouseMovedEvent& event);
+
+	//bool OnKeyInputStartedEvent(ME::Events::KeyInputStartedEvent& event);
+	bool OnKeyInputStartedEvent(float32 deltaTime);
 
 private:
 	ME::Core::Memory::Reference<ME::Render::RenderPass> m_MainRenderPass;
 	ME::Core::Memory::Reference<ME::Render::Pipeline> m_Primary;
-	ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Render::Framebuffer>> m_WindowFramebuffers;
 	ME::Render::VertexBufferLayout m_Layout;
 
 
-	ME::Core::Memory::Reference<ME::Render::Uniform> m_CameraBuffer;
-	ME::Core::Memory::Reference<ME::Render::Uniform> m_SceneBuffer;
-	ME::Core::Memory::Reference<ME::Render::Uniform> m_LightBuffer;
+	ME::Core::Memory::Reference<ME::Render::RUniform> m_CameraBuffer;
+	ME::Core::Memory::Reference<ME::Render::RUniform> m_ObjectBuffer;
+	ME::Core::Memory::Reference<ME::Render::RUniform> m_SceneBuffer;
+	ME::Core::Memory::Reference<ME::Render::RUniform> m_LightBuffer;
 	ME::Core::Memory::Reference<ME::Render::IndexBuffer> m_IndexBuffer;
 	ME::Core::Memory::Reference<ME::Render::VertexBuffer> m_VertexBuffer;
 
@@ -61,5 +68,12 @@ private:
 private:
 	uint32 m_WindowWidth;
 	uint32 m_WindowHeight;
+
+private:
+	float32 m_MouseSensitivity = 0.12f;
+	float32 m_CameraSpeed = 0.005f;
+
+	bool m_CameraBufferUpdateRequired = false;
+	bool m_UpdateQueued = false;
 
 };

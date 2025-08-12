@@ -12,7 +12,7 @@
 
 #include "EngineDefines.h"
 #include "Renderer/RenderCommand.h"
-#include "Renderer/Base/RendererAPI.h"
+#include "Renderer/Base/RenderAPI.h"
 
 namespace ME::Assets
 {
@@ -34,45 +34,40 @@ namespace ME::Assets
 	}
 
 
-	bool ShaderManager::LoadShadersFromFiles(const uchar* shaderGroupName, ShaderGroupPaths& shaderGroupPath)
+	bool ShaderManager::LoadShadersFromFiles(const uchar* shaderGroupName, const ShaderGroupSpecification& specification)
 	{
 		if (!Utility::ShaderCompiler::Get().CompilerWorks())
 			return false;
 
 		ME::Core::Containers::WideString path;
-		ShaderGroup shaders = { nullptr, nullptr, nullptr, nullptr, nullptr };
+		ShaderGroup shaders = {.Vertex = nullptr, .Hull = nullptr, .Domain = nullptr, .Geometry = nullptr,
+			.Pixel = nullptr };
 
 		// Vertex shader
-
-		path = ME::Core::Containers::StringToWideString(shaderGroupPath.Vertex);
-		shaders.Vertex = LoadShader(path, ME::Render::Shader::Type::Vertex);
-
+		path = ME::Core::Containers::StringToWideString(specification.Paths.Vertex);
+		shaders.Vertex = LoadShader(path, specification.Layout, ME::Render::ShaderStage::Vertex);
 		if (shaders.Vertex == nullptr)
 			return false;
 
 		// Hull shader
-
-		path = ME::Core::Containers::StringToWideString(shaderGroupPath.Hull);
+		path = ME::Core::Containers::StringToWideString(specification.Paths.Hull);
 		if (!path.Empty())
-			shaders.Hull = LoadShader(path, ME::Render::Shader::Type::Hull);
+			shaders.Hull = LoadShader(path, specification.Layout, ME::Render::ShaderStage::Hull);
 
 		// Domain shader
-
-		path = ME::Core::Containers::StringToWideString(shaderGroupPath.Domain);
+		path = ME::Core::Containers::StringToWideString(specification.Paths.Domain);
 		if (!path.Empty())
-			shaders.Domain = LoadShader(path, ME::Render::Shader::Type::Domain);
+			shaders.Domain = LoadShader(path, specification.Layout, ME::Render::ShaderStage::Domain);
 
 		// Geometry shader
-
-		path = ME::Core::Containers::StringToWideString(shaderGroupPath.Geometry);
+		path = ME::Core::Containers::StringToWideString(specification.Paths.Geometry);
 		if (!path.Empty())
-			shaders.Geometry = LoadShader(path, ME::Render::Shader::Type::Geometry);
+			shaders.Geometry = LoadShader(path, specification.Layout, ME::Render::ShaderStage::Geometry);
 
 		// Pixel shader
-
-		path = ME::Core::Containers::StringToWideString(shaderGroupPath.Pixel);
+		path = ME::Core::Containers::StringToWideString(specification.Paths.Pixel);
 		if (!path.Empty())
-			shaders.Pixel = LoadShader(path, ME::Render::Shader::Type::Pixel);
+			shaders.Pixel = LoadShader(path, specification.Layout, ME::Render::ShaderStage::Pixel);
 
 		if (shaders.Pixel == nullptr)
 			return false;
@@ -82,16 +77,14 @@ namespace ME::Assets
 		return true;
 	}
 
-	bool ShaderManager::LoadComputeFile(const uchar* name, const ME::Core::Containers::String& shaderPath)
+	bool ShaderManager::LoadComputeFile(const uchar* name, const ME::Core::Containers::String& shaderPath, const Render::ResourceLayoutPack& resourceLayout)
 	{
 		if (!Utility::ShaderCompiler::Get().CompilerWorks())
 			return false;
 
-		ME::Core::Containers::WideString path;
-		ME::Core::Memory::Reference<ME::Render::Shader> shader;
-
-		path = ME::Core::Containers::StringToWideString(shaderPath);
-		shader = LoadShader(path, ME::Render::Shader::Type::Compute);
+		ME::Core::Containers::WideString path = ME::Core::Containers::StringToWideString(shaderPath);
+		ME::Core::Memory::Reference<ME::Render::Shader> shader = LoadShader(
+			path, resourceLayout, ME::Render::ShaderStage::Compute);
 		if (shader == nullptr)
 			return false;
 
@@ -100,38 +93,42 @@ namespace ME::Assets
 		return true;
 	}
 
-	ME::Core::Memory::Reference<ME::Render::Shader> ShaderManager::LoadShader(const ME::Core::Containers::WideStringView& shaderName, const ME::Render::Shader::Type& shaderType)
+	ME::Core::Memory::Reference<ME::Render::Shader> ShaderManager::LoadShader(const ME::Core::Containers::WideStringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const
 	{
-		bool result;
-
-		result = ME::Core::IO::PFileExists((ME::Core::Containers::WideStringToString(m_CompiledShaderPath + L"/" + shaderName)).GetString());
+		bool result = ME::Core::IO::PFileExists(
+			(ME::Core::Containers::WideStringToString(m_CompiledShaderPath + L"/" + shaderName)).GetString());
 
 		if (result)
-			return LoadCompiledShader(shaderName, shaderType);
+			return LoadCompiledShader(shaderName, layouts, shaderStage);
 
-		return CompileShader(shaderName, shaderType);
+		return CompileShader(shaderName, layouts, shaderStage);
 	}
 
-	ME::Core::Memory::Reference<ME::Render::Shader> ShaderManager::LoadCompiledShader(const ME::Core::Containers::WideStringView& shaderName, const ME::Render::Shader::Type& shaderType) const
+	ME::Core::Memory::Reference<ME::Render::Shader> ShaderManager::LoadCompiledShader(const ME::Core::Containers::WideStringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const
 	{
-		bool result;
 		Render::CompiledShader compiledShader{ nullptr, 0 };
-		Core::Memory::Reference<Core::IO::File> shaderFile;
 
-		shaderFile = Core::IO::POpenFile(Core::Containers::WideStringToString(m_CompiledShaderPath + L"/" + shaderName + ME_COMPILED_SHADER_EXT).GetString());
+		Core::Memory::Reference<Core::IO::File> shaderFile = Core::IO::POpenFile(
+			Core::Containers::WideStringToString(m_CompiledShaderPath + L"/" + shaderName + ME_COMPILED_SHADER_EXT).
+			GetString());
 
 		if (!shaderFile->IsOpen())
-			return CompileShader(shaderName, shaderType);			
+			return CompileShader(shaderName, layouts, shaderStage);
 
-		result = shaderFile->ReadBinary(compiledShader.Bytecode, compiledShader.Size);
+		bool result = shaderFile->ReadBinary(compiledShader.Bytecode, compiledShader.Size);
 		if (!result)
-			return CompileShader(shaderName, shaderType);			
+			return CompileShader(shaderName, layouts, shaderStage);
 
-		return ME::Render::Shader::Create(compiledShader, shaderType);
+		Render::ShaderSpecification specification = {};
+		specification.CompiledShader = compiledShader;
+		specification.Stage = shaderStage;
+		specification.Layouts = layouts;
+
+		return ME::Render::Shader::Create(specification);
 	}
 
 
-	ME::Core::Memory::Reference<ME::Render::Shader> ShaderManager::CompileShader(const ME::Core::Containers::WideStringView& shaderName, const ME::Render::Shader::Type& shaderType) const
+	ME::Core::Memory::Reference<ME::Render::Shader> ShaderManager::CompileShader(const ME::Core::Containers::WideStringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const
 	{
 		Utility::CompilationResult result;
 		Utility::ShaderCompilationSpecification specs = {};
@@ -144,59 +141,60 @@ namespace ME::Assets
 
 		switch (ME::Render::RenderCommand::Get()->GetRendererAPI())
 		{
-			case Render::RendererAPI::API::Vulkan:
+			case Render::RenderAPI::API::Vulkan:
 			{
 				specs.Format = Render::ShaderFormat::SPIRV;
 				break;
 
 			}
-			case Render::RendererAPI::API::Metal:
+			case Render::RenderAPI::API::Metal:
 			{
 				specs.Format = Render::ShaderFormat::Metal;
 				break;
 			}
-			case Render::RendererAPI::API::DirectX12:
+			case Render::RenderAPI::API::DirectX12:
 			{
 				specs.Format = Render::ShaderFormat::DXIL;
 				break;
 			}
+			default: ;
 		}
 
-		switch (shaderType)
+		switch (shaderStage)
 		{
-			case Render::Shader::Type::Vertex:
+			case Render::ShaderStage::Vertex:
 			{
 				specs.EntryPoint = PE_SHADER_VERTEX_ENTRY_POINT_W;
 				break;
 			}
-			case Render::Shader::Type::Hull:
+			case Render::ShaderStage::Hull:
 			{
 				specs.EntryPoint = PE_SHADER_HULL_ENTRY_POINT_W;
 				break;
 			}
-			case Render::Shader::Type::Domain:
+			case Render::ShaderStage::Domain:
 			{
 				specs.EntryPoint = PE_SHADER_DOMAIN_ENTRY_POINT_W;
 				break;
 			}
-			case Render::Shader::Type::Geometry:
+			case Render::ShaderStage::Geometry:
 			{
 				specs.EntryPoint = PE_SHADER_GEOMETRY_ENTRY_POINT_W;
 				break;
 			}
-			case Render::Shader::Type::Pixel:
+			case Render::ShaderStage::Pixel:
 			{
 				specs.EntryPoint = PE_SHADER_PIXEL_ENTRY_POINT_W;
 				break;
 			}
-			case Render::Shader::Type::Compute:
+			case Render::ShaderStage::Compute:
 			{
 				specs.EntryPoint = PE_SHADER_COMPUTE_ENTRY_POINT_W;
 				break;
 			}
-			case Render::Shader::Type::None:
+			case Render::ShaderStage::None:
 			{
-				ME_ERROR(TEXT("No default entry point available for Shader::Type::None!"));
+				ME_ERROR(TEXT("No default entry point available for ShaderStage::None!"));
 				break;
 			}
 		}
@@ -208,7 +206,7 @@ namespace ME::Assets
 			specs.Optimization = Utility::ShaderOptimizationParameter::Level3;
 #		endif
 
-		specs.ShaderType = shaderType;
+		specs.ShaderType = shaderStage;
 
 		result = Utility::ShaderCompiler::Get().Compile(specs);
 		if (result.Result != Utility::ShaderCompilationError::Success)
@@ -217,6 +215,11 @@ namespace ME::Assets
 			return nullptr;
 		}
 
-		return ME::Render::Shader::Create(result.Shader, shaderType);
+		Render::ShaderSpecification specification = {};
+		specification.CompiledShader = result.Shader;
+		specification.Stage = shaderStage;
+		specification.Layouts = layouts;
+
+		return ME::Render::Shader::Create(specification);
 	}
 }

@@ -6,19 +6,19 @@ namespace ME::Render
 {
     Core::Memory::Reference<Render::RenderPass> RenderPass::Create(RenderPassSpecification& specification)
 	{
-        RendererAPI::API renderAPI = Renderer::GetRenderAPI();
+        RenderAPI::API renderAPI = Renderer::GetRenderAPI();
 
         switch (renderAPI)
         {
-            case ME::Render::RendererAPI::API::None:
-            case ME::Render::RendererAPI::API::Metal:
-            case ME::Render::RendererAPI::API::DirectX12:
+            case ME::Render::RenderAPI::API::None:
+            case ME::Render::RenderAPI::API::Metal:
+            case ME::Render::RenderAPI::API::DirectX12:
             {
                 ME_ASSERT(false, TEXT("Render pass: Requested creation with unsupported API! {0}"), (int32)renderAPI);
                 return nullptr;
                 break;
             }
-            case ME::Render::RendererAPI::API::Vulkan:
+            case ME::Render::RenderAPI::API::Vulkan:
             {
                 return CreateVulkanRenderPass(specification);
                 break;

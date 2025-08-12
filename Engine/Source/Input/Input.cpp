@@ -35,7 +35,7 @@ namespace ME::Input
 		return Get().GetMouse().IsMiddleButtonPressed();
 	}
 
-	inline bool InputController::IsMouseRightButtonPressed()
+	inline bool InputController::IsMouseRightButtonDown()
 	{
 		return Get().GetMouse().IsRightButtonPressed();
 	}

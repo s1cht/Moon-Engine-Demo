@@ -549,6 +549,46 @@ namespace ME::Render
 		}
 	}
 
+	constexpr VkDescriptorType ConvertResourceTypeVulkan(ME::Render::ResourceType type)
+	{
+		switch (type)
+		{
+		case ResourceType::None:
+			return VK_DESCRIPTOR_TYPE_MAX_ENUM;
+		case ResourceType::Uniform:
+			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		case ResourceType::StorageBuffer:
+			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		case ResourceType::Texture1D:
+			return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		case ResourceType::Texture2D:
+			return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		case ResourceType::Texture3D:
+			return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		case ResourceType::Sampler:
+			return VK_DESCRIPTOR_TYPE_SAMPLER;
+		}
+	}
+
+	constexpr VkShaderStageFlags ConvertShaderStageVulkan(ME::Render::ShaderStage stage)
+	{
+		VkShaderStageFlags flags = 0;
+		if (static_cast<int32>(stage & ShaderStage::Compute) != 0)
+			flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+		if (static_cast<int32>(stage & ShaderStage::Vertex) != 0)
+			flags |= VK_SHADER_STAGE_VERTEX_BIT;
+		if (static_cast<int32>(stage & ShaderStage::Hull) != 0)
+			flags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+		if (static_cast<int32>(stage & ShaderStage::Domain) != 0)
+			flags |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+		if (static_cast<int32>(stage & ShaderStage::Geometry) != 0)
+			flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
+		if (static_cast<int32>(stage & ShaderStage::Pixel) != 0)
+			flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+
+		return flags;
+	}
+
 	constexpr ME::Render::ImageLayout ConvertImageLayoutEngine(VkImageLayout layout)
 	{
 		return ImageLayout::Undefined;

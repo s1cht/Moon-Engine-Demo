@@ -20,12 +20,12 @@ namespace ME::Render
 	{
 	}
 
-	void Renderer::SetRenderAPI(RendererAPI::API api)
+	void Renderer::SetRenderAPI(RenderAPI::API api)
 	{
-		RendererAPI::SetRendererAPI(api);
+		RenderAPI::SetRendererAPI(api);
 	}
-	inline RendererAPI::API Renderer::GetRenderAPI()
+	inline RenderAPI::API Renderer::GetRenderAPI()
 	{
-		return RendererAPI::GetRendererAPI();
+		return RenderAPI::GetRendererAPI();
 	}
 }

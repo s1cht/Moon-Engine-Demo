@@ -136,6 +136,8 @@ namespace ME::Core::Containers
 
 		Array(const Array& other)
 		{
+			if (this != &other)
+			{
 			m_Allocator = other.m_Allocator;
 			m_Size = other.m_Size;
 			m_Capacity = other.m_Capacity;
@@ -144,7 +146,8 @@ namespace ME::Core::Containers
 			Allocate(m_Capacity);
 
 			for (SIZE_T i = 0; i < m_Size; i++)
-				m_Data[i] = other.m_Data[i];
+				m_Allocator.Construct(&m_Data[i], other.m_Data[i]);
+			}
 		}
 
 		Array(const std::initializer_list<DataType>& other)
@@ -375,8 +378,7 @@ namespace ME::Core::Containers
 		void PPushBackRVal(DataType&& value)
 		{
 			CheckAndAllocate();
-
-			m_Data[m_Size] = std::move(value);
+			m_Allocator.Construct(&m_Data[m_Size], std::move(value));
 			m_Size++;
 		}
 

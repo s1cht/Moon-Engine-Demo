@@ -31,6 +31,7 @@ project "Engine"
 		includeDirs.EngineCore,
 		includeDirs.xxHash,
 		includeDirs.DXC,
+		includeDirs.VMA,
 	}
 
 	defines 
@@ -42,6 +43,7 @@ project "Engine"
 
 	links
 	{
+		"VMA",
 		"EngineCore",
 		"ImGui",
 		"dxcompiler",

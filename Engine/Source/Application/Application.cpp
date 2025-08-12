@@ -40,7 +40,7 @@ namespace ME {
 		m_Window = ME::Core::Memory::Scope<Window>(Window::Create(windowProps));
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		Render::Renderer::SetRenderAPI(ME::Render::RendererAPI::API::Vulkan);
+		Render::Renderer::SetRenderAPI(ME::Render::RenderAPI::API::Vulkan);
 		Render::Renderer::Init();
 		Assets::ShaderManager::Get();
 
@@ -70,18 +70,19 @@ namespace ME {
 		while (m_Runs && !s_ShutdownRequested)
 		{
 			float64 delta = ME::Core::Clock::Time::Update().AsMilliseconds();
-			
 			m_Window->OnUpdate(delta);
 
-			//Render::RenderCommand::Clear(Pawn::Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f));
+			if (m_WindowUpdateX != 0 && m_WindowUpdateY != 0)
+			{
+				Render::RenderCommand::OnWindowUpdate(m_WindowUpdateX, m_WindowUpdateY);
+				m_WindowUpdateX = m_WindowUpdateY = 0;
+			}
 
-			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); layer++)
+			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); ++layer)
 			{
 				(*layer)->OnUpdate(delta);
  			}
 
-			//Render::Renderer::EndScene();
-			
 			//m_ImGuiLayer->BeginRender();
 
 			//for (auto layer : m_LayerStack)
@@ -90,12 +91,6 @@ namespace ME {
 			//m_ImGuiLayer->EndRender();
 
 			//m_ImGuiLayer->PostRender();
-
-			if (m_WindowUpdateX != 0 && m_WindowUpdateY != 0)
-			{
-				Render::RenderCommand::OnWindowUpdate(m_WindowUpdateX, m_WindowUpdateY);
-				m_WindowUpdateX = m_WindowUpdateY = 0;
-			}
 
 			//Render::RenderCommand::Present();
 		}

@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include <Core.hpp>
-#include <vulkan/vulkan.hpp>
 
+#include "Vulkan.hpp"
 #include "Renderer/Base/Pipeline.h"
 #include "Renderer/Base/RenderPass.h"
 #include "Renderer/Base/Texture.h"
@@ -22,6 +22,8 @@ namespace ME::Render
 	constexpr MOON_API VkSampleCountFlagBits ConvertSampleCountVulkan(ME::Render::SampleCount sampleCount);
 	constexpr MOON_API VkCompareOp ConvertDepthComparisonVulkan(ME::Render::DepthComparison function);
 	constexpr MOON_API VkLogicOp ConvertLogicOperationVulkan(ME::Render::LogicOperation operation);
+	constexpr MOON_API VkDescriptorType ConvertResourceTypeVulkan(ME::Render::ResourceType type);
+	constexpr MOON_API VkShaderStageFlags ConvertShaderStageVulkan(ME::Render::ShaderStage stage);
 
 	constexpr MOON_API ME::Render::Format ConvertFormatEngine(VkFormat format);
 	constexpr MOON_API ME::Render::ImageLayout ConvertImageLayoutEngine(VkImageLayout layout);

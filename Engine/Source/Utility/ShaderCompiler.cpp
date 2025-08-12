@@ -118,6 +118,8 @@ namespace ME::Utility
 		arguments.EmplaceBack(SC_ARG("Fo"));
 		arguments.EmplaceBack(specification.OutputPath.GetData());
 
+		arguments.EmplaceBack(SC_ARG("Zpr"));
+
 		if (specification.Format == Render::ShaderFormat::SPIRV)
 		{
 			arguments.EmplaceBack(SC_ARG("spirv"));
@@ -226,20 +228,20 @@ namespace ME::Utility
 		}
 	}
 
-	ME::Core::Containers::WideStringView ShaderCompiler::SelectTargetProfile(ME::Render::Shader::Type type) const
+	ME::Core::Containers::WideStringView ShaderCompiler::SelectTargetProfile(ME::Render::ShaderStage type) const
 	{
 		switch (type)
 		{
-			case ME::Render::Shader::Type::Pixel: return CONCAT_TARGET_PROFILE(L"ps", SHADER_MODEL);
-			case ME::Render::Shader::Type::Vertex: return CONCAT_TARGET_PROFILE(L"vs", SHADER_MODEL);
-			case ME::Render::Shader::Type::Geometry: return CONCAT_TARGET_PROFILE(L"gs", SHADER_MODEL);
-			case ME::Render::Shader::Type::Hull: return CONCAT_TARGET_PROFILE(L"hs", SHADER_MODEL);
-			case ME::Render::Shader::Type::Domain: return CONCAT_TARGET_PROFILE(L"ds", SHADER_MODEL);
-			case ME::Render::Shader::Type::Compute: return CONCAT_TARGET_PROFILE(L"cs", SHADER_MODEL);
-			//case Pawn::Render::Shader::Type::Vertex: return CONCAT_TARGET_PROFILE(L"lib", SHADER_MODEL);
-			//case Pawn::Render::Shader::Type::Vertex: return CONCAT_TARGET_PROFILE(L"ms", SHADER_MODEL);
-			//case Pawn::Render::Shader::Type::Vertex: return CONCAT_TARGET_PROFILE(L"as", SHADER_MODEL);
-			case ME::Render::Shader::Type::None: ME_ASSERT(false, TEXT("Shader compiler: can't select target profile for None!")); return L"";
+			case ME::Render::ShaderStage::Pixel: return CONCAT_TARGET_PROFILE(L"ps", SHADER_MODEL);
+			case ME::Render::ShaderStage::Vertex: return CONCAT_TARGET_PROFILE(L"vs", SHADER_MODEL);
+			case ME::Render::ShaderStage::Geometry: return CONCAT_TARGET_PROFILE(L"gs", SHADER_MODEL);
+			case ME::Render::ShaderStage::Hull: return CONCAT_TARGET_PROFILE(L"hs", SHADER_MODEL);
+			case ME::Render::ShaderStage::Domain: return CONCAT_TARGET_PROFILE(L"ds", SHADER_MODEL);
+			case ME::Render::ShaderStage::Compute: return CONCAT_TARGET_PROFILE(L"cs", SHADER_MODEL);
+			//case Pawn::Render::ShaderStage::Vertex: return CONCAT_TARGET_PROFILE(L"lib", SHADER_MODEL);
+			//case Pawn::Render::ShaderStage::Vertex: return CONCAT_TARGET_PROFILE(L"ms", SHADER_MODEL);
+			//case Pawn::Render::ShaderStage::Vertex: return CONCAT_TARGET_PROFILE(L"as", SHADER_MODEL);
+			case ME::Render::ShaderStage::None: ME_ASSERT(false, TEXT("Shader compiler: can't select target profile for None!")); return L"";
 		}
 	}
 

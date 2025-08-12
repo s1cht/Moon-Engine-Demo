@@ -34,7 +34,7 @@ namespace ME::Utility
 		ME::Render::ShaderFormat Format;
 
 		// Shader type
-		ME::Render::Shader::Type ShaderType;
+		ME::Render::ShaderStage ShaderType;
 
 		// Output path (optional, if global output path is set up)
 		ME::Core::Containers::WideStringView OutputPath;
@@ -111,7 +111,7 @@ namespace ME::Utility
 		inline bool CompilerWorks() const { return m_CompilerWorks; }
 
 	private:
-		ME::Core::Containers::WideStringView SelectTargetProfile(ME::Render::Shader::Type type) const;
+		ME::Core::Containers::WideStringView SelectTargetProfile(ME::Render::ShaderStage type) const;
 		ME::Core::Containers::WideStringView SelectOptimization(ME::Utility::ShaderOptimizationParameter parameter) const;
 
 	private:

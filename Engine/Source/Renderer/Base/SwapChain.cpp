@@ -7,21 +7,19 @@ namespace ME::Render
 {
 	ME::Core::Memory::Reference<SwapChain> SwapChain::Create(int32& result, Window* window)
 	{
-		RendererAPI::API renderApi = Renderer::GetRenderAPI();
+		RenderAPI::API renderApi = Renderer::GetRenderAPI();
 
 		switch (renderApi)
 		{
-			case ME::Render::RendererAPI::API::None:
-			case ME::Render::RendererAPI::API::DirectX12:
-			case ME::Render::RendererAPI::API::Metal:
-			{
-				ME_ASSERT(false, TEXT("SwapChain: Unsupported render API! {0}"), (int32)renderApi);
-				return nullptr;
-				break;
-			}
-			case ME::Render::RendererAPI::API::Vulkan:
+			case ME::Render::RenderAPI::API::Vulkan:
 			{
 				return CreateVulkanSwapChain(result);
+				break;
+			}
+			default:
+			{
+				ME_ASSERT(false, TEXT("SwapChain: Unsupported render API! {0}"), static_cast<int32>(renderApi));
+				return nullptr;
 				break;
 			}
 		}

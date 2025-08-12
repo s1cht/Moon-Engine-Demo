@@ -226,23 +226,43 @@ namespace ME::Core::Math
 		);
 	}
 
+	Vector3<float32> PMatrix4x4::Transform(const Vector3<float32>& axis) const
+	{
+		float32 w = a14 * axis.x + a24 * axis.y + a34 * axis.z + a44;
+		return Vector3(
+			(a11 * axis.x + a12 * axis.y + a13 * axis.z + a14) / w,
+			(a21 * axis.x + a22 * axis.y + a23 * axis.z + a24) / w,
+			(a31 * axis.x + a32 * axis.y + a33 * axis.z + a34) / w
+		);
+	}
+
+	Vector3<float32> PMatrix4x4::TransformNormal(const Vector3<float32>& axis) const
+	{
+		return Vector3(
+			(a11 * axis.x + a21 * axis.y + a31 * axis.z),
+			(a12 * axis.x + a22 * axis.y + a32 * axis.z),
+			(a13 * axis.x + a23 * axis.y + a33 * axis.z)
+		);
+	}
+
+
 	PMatrix4x4 PMatrix4x4::FromQuaternion(const PQuaternion& q)
 	{
-		float32 xx = (float32)(q.x * q.x);
-		float32 yy = (float32)(q.y * q.y);
-		float32 zz = (float32)(q.z * q.z);
-		float32 xy = (float32)(q.x * q.y);
-		float32 xz = (float32)(q.x * q.z);
-		float32 yz = (float32)(q.y * q.z);
-		float32 wx = (float32)(q.w * q.x);
-		float32 wy = (float32)(q.w * q.y);
-		float32 wz = (float32)(q.w * q.z);
+		float32 xx = q.x * q.x;
+		float32 yy = q.y * q.y;
+		float32 zz = q.z * q.z;
+		float32 xy = q.x * q.y;
+		float32 xz = q.x * q.z;
+		float32 yz = q.y * q.z;
+		float32 wx = q.w * q.x;
+		float32 wy = q.w * q.y;
+		float32 wz = q.w * q.z;
 
 		return PMatrix4x4(
-			1.0f - 2.0f * (yy + zz), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
-			2.0f * (xy + wz), 1.0f - 2.0f * (xx + zz), 2.0f * (yz - wx), 0.0f,
-			2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (xx + yy), 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
+			1.0f - 2.0f * (yy + zz),	2.0f * (xy - wz),			2.0f * (xz + wy),			0.0f,
+			2.0f * (xy + wz),			1.0f - 2.0f * (xx + zz),	2.0f * (yz - wx),			0.0f,
+			2.0f * (xz - wy),			2.0f * (yz + wx),			1.0f - 2.0f * (xx + yy),	0.0f,
+			0.0f,						0.0f,						0.0f,						1.0f
 		);
 	}
 
@@ -274,8 +294,8 @@ namespace ME::Core::Math
 		return PMatrix4x4(
 			1.0f / (aspect * tanHalfFov), 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f / tanHalfFov, 0.0f, 0.0f,
-			0.0f, 0.0f, -((_far + _near) / zRange), -2.0f * _far * _near / zRange,
-			0.0f, 0.0f, -1.0f, 0.0f
+			0.0f, 0.0f, _far / zRange, -_far * _near / zRange,
+			0.0f, 0.0f, 1.0f, 0.0f
 		);
 	}
 
@@ -296,10 +316,10 @@ namespace ME::Core::Math
 		Vector3<float32> yAxis = zAxis.Cross(xAxis);
 
 		return PMatrix4x4(
-			xAxis.X, xAxis.Y, xAxis.Z, -xAxis.Dot(eye),
-			yAxis.X, yAxis.Y, yAxis.Z, -yAxis.Dot(eye),
-			-zAxis.X, -zAxis.Y, -zAxis.Z, zAxis.Dot(eye),
-			0.0f, 0.0f, 0.0f, 1.0f
+			xAxis.X, yAxis.X, zAxis.X, 0,
+			xAxis.Y, yAxis.Y, zAxis.Y, 0,
+			xAxis.Z, yAxis.Z, zAxis.Z, 0,
+			-xAxis.Dot(eye), -yAxis.Dot(eye), -zAxis.Dot(eye), 1
 		);
 	}
 
