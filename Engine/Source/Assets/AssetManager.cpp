@@ -1,6 +1,8 @@
 #include "AssetManager.h"
 #include <Core/Containers/Algorithm.hpp>
 
+#include "Image.h"
+
 namespace ME::Assets
 {
 	AssetManager::AssetManager()
@@ -19,14 +21,22 @@ namespace ME::Assets
 		fileFormat = GetExtension(path);
 		assetLoadResult = ME::Utility::AssetLoader::Load(path, centered, fileFormat);
 
-		if (assetLoadResult.Meshes.GetSize() == 0)
-			return false;
-
-		for (auto mesh = assetLoadResult.Meshes.Begin(); mesh != assetLoadResult.Meshes.End(); ++mesh)
+		if (assetLoadResult.Meshes.GetSize() > 0)
 		{
-			(*mesh)->CreateBuffers();
-			m_Meshes.EmplaceBack(std::move((*mesh)));
+			for (auto mesh = assetLoadResult.Meshes.Begin(); mesh != assetLoadResult.Meshes.End(); ++mesh)
+			{
+				(*mesh)->CreateBuffers();
+				m_Meshes.EmplaceBack(std::move((*mesh)));
+			}
 		}
+		if (assetLoadResult.Images.GetSize() > 0)
+		{
+			for (auto image = assetLoadResult.Images.Begin(); image != assetLoadResult.Images.End(); ++image)
+			{
+				m_Images.EmplaceBack(std::move((*image)));
+			}
+		}
+
 
 		return true;
 	}
@@ -47,6 +57,8 @@ namespace ME::Assets
 
 		if (result == TEXT(".obj"))
 			return ME::Utility::AssetFileFormats::OBJ;
+		else if (result == TEXT(".tga"))
+			return ME::Utility::AssetFileFormats::TRG;
 		else
 			return ME::Utility::AssetFileFormats::None;
 	}
@@ -63,4 +75,15 @@ namespace ME::Assets
 		return nullptr;
 	}
 
+	ME::Core::Memory::Reference<Assets::Image> AssetManager::GetImage(const ME::Core::Containers::String& imageName)
+	{
+		for (const auto& image : m_Images)
+		{
+			if (image->GetName() == imageName)
+			{
+				return image;
+			}
+		}
+		return nullptr;
+	}
 }

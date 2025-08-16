@@ -28,6 +28,7 @@
 			includeDirs.ImGui,
 			includeDirs.xxHash,
 			includeDirs.DXC,
+			includeDirs.VMA,
 			VULKAN_SDK .."/Include",
 		}
 

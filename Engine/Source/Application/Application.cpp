@@ -44,8 +44,8 @@ namespace ME {
 		Render::Renderer::Init();
 		Assets::ShaderManager::Get();
 
-		//m_ImGuiLayer = new Render::Imgui::ImGuiLayer();
-		//PushOverlay(m_ImGuiLayer);
+		m_ImGuiLayer = new Render::Imgui::ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 
 		ME::Core::Containers::String str = ME::Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
 
@@ -58,7 +58,7 @@ namespace ME {
 
 	Application::~Application()
 	{
-		//m_ImGuiLayer->Shutdown();
+		m_ImGuiLayer->Shutdown();
 		ME::Assets::ShaderManager::Get().Shutdown();
 		Render::RenderResourcesTracker::Get().ShutdownAll();
 		Render::Renderer::Shutdown();
@@ -83,16 +83,26 @@ namespace ME {
 				(*layer)->OnUpdate(delta);
  			}
 
-			//m_ImGuiLayer->BeginRender();
+			Render::RenderCommand::NewFrame();
+			Render::RenderCommand::GetAvailableCommandBuffer()->Reset();
 
-			//for (auto layer : m_LayerStack)
-			//	layer->OnImGuiRender(delta, m_ImGuiLayer->GetContext());
+			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); ++layer)
+			{
+				(*layer)->OnRender();
+			}
 
-			//m_ImGuiLayer->EndRender();
+			m_ImGuiLayer->BeginRender();
 
-			//m_ImGuiLayer->PostRender();
+			for (auto layer : m_LayerStack)
+				layer->OnImGuiRender(delta, m_ImGuiLayer->GetContext());
 
-			//Render::RenderCommand::Present();
+			m_ImGuiLayer->EndRender(Render::RenderCommand::GetAvailableCommandBuffer());
+			m_ImGuiLayer->PostRender();
+
+			Render::RenderCommand::GetAvailableCommandBuffer()->Finish();
+			Render::RenderCommand::Submit(Render::RenderCommand::GetAvailableCommandBuffer());
+
+			Render::RenderCommand::Present();
 		}
 
 		if (s_ShutdownRequested)

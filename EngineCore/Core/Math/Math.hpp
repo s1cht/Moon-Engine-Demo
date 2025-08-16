@@ -11,8 +11,7 @@
 
 namespace ME::Core::Math
 {
-	inline float64 Lerp(float64 a, float64 b, float64 d);
-	inline float32 Lerp(float32 a, float32 b, float32 d);
+	constexpr const float64 P_PI = PI;
 
 	// Vector2
 	typedef Vector2<float32> Vector2D32;
@@ -32,4 +31,14 @@ namespace ME::Core::Math
 	typedef PMatrix3x3 Matrix3x3;
 	typedef PMatrix4x4 Matrix4x4;
 	typedef PQuaternion Quaternion;
+
+	inline float64 Lerp(float64 a, float64 b, float64 d);
+	inline float32 Lerp(float32 a, float32 b, float32 d);
 }
+
+ME_FMT_FORMATTER(ME::Core::Math::Vector2D32, "{}, {}", ME_FMT_FORMATTER_VALUE(x), ME_FMT_FORMATTER_VALUE(y));
+ME_FMT_FORMATTER(ME::Core::Math::Vector2D64, "{}, {}", ME_FMT_FORMATTER_VALUE(x), ME_FMT_FORMATTER_VALUE(y));
+ME_FMT_FORMATTER(ME::Core::Math::Vector3D32, "{}, {}, {}", ME_FMT_FORMATTER_VALUE(x), ME_FMT_FORMATTER_VALUE(y), ME_FMT_FORMATTER_VALUE(z));
+ME_FMT_FORMATTER(ME::Core::Math::Vector3D64, "{}, {}, {}", ME_FMT_FORMATTER_VALUE(x), ME_FMT_FORMATTER_VALUE(y), ME_FMT_FORMATTER_VALUE(z));
+ME_FMT_FORMATTER(ME::Core::Math::Vector4D32, "{}, {}, {}, {}", ME_FMT_FORMATTER_VALUE(x), ME_FMT_FORMATTER_VALUE(y), ME_FMT_FORMATTER_VALUE(z), ME_FMT_FORMATTER_VALUE(w));
+ME_FMT_FORMATTER(ME::Core::Math::Vector4D64, "{}, {}, {}, {}", ME_FMT_FORMATTER_VALUE(x), ME_FMT_FORMATTER_VALUE(y), ME_FMT_FORMATTER_VALUE(z), ME_FMT_FORMATTER_VALUE(w));

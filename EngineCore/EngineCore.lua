@@ -43,6 +43,10 @@ project "EngineCore"
 
 	filter "system:windows"
 		systemversion "latest"
+		links
+		{
+			"shlwapi.lib",
+		}
 
 	filter "system:linux"
 		toolset "clang"

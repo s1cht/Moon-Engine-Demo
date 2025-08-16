@@ -5,12 +5,17 @@
 #include "VulkanPipeline.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanRenderAPI.h"
+#include "VulkanTexture.h"
 #include "VulkanUniform.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/Base/Buffer.h"
 
 namespace ME::Render
 {
+	ME::Core::Memory::Reference<ResourceHandler> ResourceHandler::CreateVulkan(uint32 bufferCount)
+	{
+		return ME::Core::Memory::MakeReference<VulkanResourceHandler>(bufferCount);
+	}
 
 	VulkanResourceHandler::VulkanResourceHandler(uint32 bufferCount)
 		: m_DescriptorPool(nullptr), m_BufferCount(bufferCount)
@@ -63,12 +68,64 @@ namespace ME::Render
 		VkDescriptorSet descSet = nullptr;
 		CreateDescriptorSet(layout, &descSet);
 		m_Sets.EmplaceBack(descSet);
-		return m_Sets.GetSize() - 1;
+		return static_cast<uint32>(m_Sets.GetSize() - 1);
 	}
 
 	uint32 VulkanResourceHandler::CreateResourceSet(const ME::Render::ResourceLayout& layout)
 	{
 		return CreateResourceSet(GetResourceLayoutIndex(layout));
+	}
+
+	uint32 VulkanResourceHandler::GetResourceSet(uint32 layout)
+	{
+		return 0;
+	}
+
+	uint32 VulkanResourceHandler::GetResourceSet(const ME::Render::ResourceLayout& layout)
+	{
+		return 0;
+	}
+
+	uint32 VulkanResourceHandler::GetTextureSet(uint32 layout)
+	{
+		if (layout == ~0u)
+		{
+			ME_ASSERT(layout != ~0u, TEXT("Can't find layout!"));
+			return ~0u;
+		}
+
+		uint32 set = FindUnusedTextureSet();
+
+		if (set != ~0u)
+			return set;
+
+		VulkanTextureSet texSet = {};
+		texSet.References = 1;
+		texSet.Set = nullptr;
+
+		CreateDescriptorSet(layout, &texSet.Set);
+		m_TextureSets.EmplaceBack(texSet);
+		return static_cast<uint32>(m_TextureSets.GetSize() - 1);
+	}
+
+	uint32 VulkanResourceHandler::GetTextureSet(const ME::Render::ResourceLayout& layout)
+	{
+		return GetTextureSet(GetResourceLayoutIndex(layout));
+	}
+
+	bool VulkanResourceHandler::IncrementTextureSetReference(uint32 set)
+	{
+		if (set >= m_TextureSets.GetSize()) return false;
+		m_TextureSets[set].References++;
+		return true;
+	}
+
+	void VulkanResourceHandler::DecrementTextureSetReference(uint32 set)
+	{
+		if (set >= m_TextureSets.GetSize()) return;
+		if (m_TextureSets[set].References <= 0)
+			return;
+		m_TextureSets[set].References--;
 	}
 
 	uint32 VulkanResourceHandler::GetResourceLayoutIndex(const ME::Render::ResourceLayout& layout)
@@ -87,7 +144,7 @@ namespace ME::Render
 
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()];
+		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
 		writeDesc.dstBinding = buffer->GetSpecification().Binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		writeDesc.dstArrayElement = 0;
@@ -110,7 +167,7 @@ namespace ME::Render
 
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()];
+		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
 		writeDesc.dstBinding = buffer->GetSpecification().Binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		writeDesc.dstArrayElement = 0;
@@ -123,9 +180,113 @@ namespace ME::Render
 		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), 1, &writeDesc, 0, nullptr);
 	}
 
+	void VulkanResourceHandler::QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture1D> texture)
+	{
+		if (m_WritingTextures == false)
+		{
+			m_CurrentTextureSet = texture->GetSet();
+			m_WritingTextures = true;
+		}
+		else
+		{
+			if (texture->GetSet() != m_CurrentTextureSet) return;
+		}
+
+		VkDescriptorImageInfo image = {};
+		image.imageView = texture->As<VulkanTexture2D>()->GetImageView();
+		image.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+
+		VkDescriptorImageInfo sampler = {};
+		sampler.sampler = texture->As<VulkanTexture2D>()->GetSampler();
+
+		m_QueuedImages.EmplaceBack(image);
+		m_QueuedSamplers.EmplaceBack(sampler);
+	}
+
+	void VulkanResourceHandler::QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture2D> texture)
+	{
+		if (m_WritingTextures == false)
+		{
+			if (texture->GetSet() != m_CurrentTextureSet) return;
+		}
+		else
+		{
+			m_CurrentTextureSet = texture->GetSet();
+			m_WritingTextures = true;
+		}
+
+		VkDescriptorImageInfo image = {};
+		image.imageView = texture->As<VulkanTexture2D>()->GetImageView();
+		image.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+
+		VkDescriptorImageInfo sampler = {};
+		sampler.sampler = texture->As<VulkanTexture2D>()->GetSampler();
+
+		m_QueuedImages.EmplaceBack(image);
+		m_QueuedSamplers.EmplaceBack(sampler);
+	}
+
+	void VulkanResourceHandler::QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture3D> texture)
+	{
+		if (m_WritingTextures == false)
+		{
+			if (texture->GetSet() != m_CurrentTextureSet) return;
+		}
+		else
+		{
+			m_CurrentTextureSet = texture->GetSet();
+			m_WritingTextures = true;
+		}
+
+		VkDescriptorImageInfo image = {};
+		image.imageView = texture->As<VulkanTexture2D>()->GetImageView();
+		image.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+
+		VkDescriptorImageInfo sampler = {};
+		sampler.sampler = texture->As<VulkanTexture2D>()->GetSampler();
+
+		m_QueuedImages.EmplaceBack(image);
+		m_QueuedSamplers.EmplaceBack(sampler);
+	}
+
+	void VulkanResourceHandler::WriteTexture()
+	{
+		VkWriteDescriptorSet descs[2] = {};
+
+		descs[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descs[0].dstSet = m_TextureSets[m_CurrentTextureSet].Set;
+		descs[0].dstBinding = 0;
+		descs[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		descs[0].dstArrayElement = 0;
+		descs[0].descriptorCount = static_cast<uint32>(m_QueuedImages.GetSize());
+		descs[0].pBufferInfo = nullptr;
+		descs[0].pImageInfo = m_QueuedImages.Data();
+		descs[0].pTexelBufferView = nullptr;
+		descs[0].pNext = nullptr;
+
+		descs[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descs[1].dstSet = m_TextureSets[m_CurrentTextureSet].Set;
+		descs[1].dstBinding = 0;
+		descs[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+		descs[1].dstArrayElement = 0;
+		descs[1].descriptorCount = static_cast<uint32>(m_QueuedSamplers.GetSize());
+		descs[1].pBufferInfo = nullptr;
+		descs[1].pImageInfo = m_QueuedSamplers.Data();
+		descs[1].pTexelBufferView = nullptr;
+		descs[1].pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), 2, descs, 0, nullptr);
+	}
+
 	void VulkanResourceHandler::BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, uint32 set, uint32 setIndex)
 	{
-		vkCmdBindDescriptorSets(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), pipeline->As<VulkanPipeline>()->GetPipelineBindPoint(), pipeline->As<VulkanPipeline>()->GetPipelineLayout(), set, 1, &m_Sets[setIndex], 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), pipeline->As<VulkanPipeline>()->GetPipelineBindPoint(), pipeline->As<VulkanPipeline>()->GetPipelineLayout(), set, 1, &m_Sets[setIndex].Set, 0, nullptr);
+	}
+
+	void VulkanResourceHandler::BindTextureSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		ME::Core::Memory::Reference<Render::Pipeline> pipeline, uint32 set, uint32 setIndex)
+	{
+		vkCmdBindDescriptorSets(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), pipeline->As<VulkanPipeline>()->GetPipelineBindPoint(), pipeline->As<VulkanPipeline>()->GetPipelineLayout(), set, 1, &m_TextureSets[setIndex].Set, 0, nullptr);
 	}
 
 	ME::Core::Containers::Array<VkDescriptorSetLayout> VulkanResourceHandler::GetDescriptorSetLayouts(ME::Core::Containers::Array<uint32> layouts) const
@@ -254,4 +415,14 @@ namespace ME::Render
 			if (m_Layouts[i].Layout == layout) return static_cast<uint32>(i);
 		return -1;
 	}
+
+	uint32 VulkanResourceHandler::FindUnusedTextureSet() const
+	{
+		for (uint32 i = 0; i < static_cast<int32>(m_TextureSets.GetSize()); i++)
+		{
+			if (m_TextureSets[i].References <= 0) return i;
+		}
+		return ~0u;
+	}
+
 }

@@ -77,6 +77,7 @@ namespace ME::Input::Devices
 		void SetMiddleButtonPressed(bool pressed);
 		void SetMousePosition(float32 x, float32 y);
 		void SetSideButtonPressed(uint8 sideButton, bool pressed);
+		void SetCursorPosition(float32 x, float32 y);
 
 	private:
 		void Init();

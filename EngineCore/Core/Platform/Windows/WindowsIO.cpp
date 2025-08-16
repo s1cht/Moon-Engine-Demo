@@ -1,4 +1,8 @@
 #include "WindowsIO.hpp"
+#include <psapi.h>
+#include <Shlwapi.h>
+#include <tchar.h>
+#include <strsafe.h>
 
 #include "Core.hpp"
 
@@ -92,11 +96,18 @@ namespace ME::Core::IO
 			return false;
 		}
 
-		m_FileInfo.Size =  static_cast<size_t>(info.nFileSizeLow) | (static_cast<size_t>(info.nFileSizeHigh) << 32);
+		SIZE_T len = wcslen(path) + 1;
+		wchar* name = new wchar[len];
+		wcscpy_s(name, len, path);
+		PathStripPathW(name);
+		m_FileInfo.Name = name;
+		m_FileInfo.Size =  static_cast<SIZE_T>(info.nFileSizeLow) | (static_cast<SIZE_T>(info.nFileSizeHigh) << 32);
 		m_FileInfo.CreationTime.Tick = ME_FILETIME_TO_TIMEPOINT(info.ftCreationTime);
 		m_FileInfo.LastAccessTime.Tick = ME_FILETIME_TO_TIMEPOINT(info.ftLastAccessTime);
 		m_FileInfo.LastWriteTime.Tick = ME_FILETIME_TO_TIMEPOINT(info.ftLastWriteTime);
-		m_FileInfo.Attributes = (uint32)info.dwFileAttributes;
+		m_FileInfo.Attributes = static_cast<uint32>(info.dwFileAttributes);
+
+		delete[] name;
 
 		m_Opened = true;
 
@@ -365,6 +376,25 @@ namespace ME::Core::IO
 
 		delete[] buffer;
 		return result;
+	}
+
+	ME::Core::Containers::WideString WindowsFile::GetFileName()
+	{
+		HANDLE hFileMap = CreateFileMapping(m_File,
+			NULL,
+			PAGE_READONLY,
+			0,
+			1,
+			NULL);
+
+		if (!hFileMap)
+		{
+			return L"";
+		}
+
+		wchar pszFilename[MAX_PATH + 1];
+
+		return pszFilename;
 	}
 
 	void WindowsFile::Flush()

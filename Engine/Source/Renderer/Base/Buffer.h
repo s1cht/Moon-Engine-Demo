@@ -55,6 +55,7 @@ namespace ME::Render
 		virtual void Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer) = 0;
 		virtual void Unbind() = 0;
 		 
+		virtual void SetData(void* data, SIZE_T size) = 0;
 		virtual void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size) = 0;
 
 	};
@@ -74,7 +75,7 @@ namespace ME::Render
 	public:
 		virtual uint32 GetCount() const = 0;
 
-		virtual void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, int32* indices, SIZE_T indexCount) = 0;
+		virtual void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, uint32* indices, SIZE_T indexCount) = 0;
 
 	public:
 		static ME::Core::Memory::Reference<ME::Render::IndexBuffer> Create(const IndexBufferSpecification& specification);

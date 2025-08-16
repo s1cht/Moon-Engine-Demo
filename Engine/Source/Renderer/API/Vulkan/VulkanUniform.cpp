@@ -26,9 +26,11 @@ namespace ME::Render
 		Shutdown();
 	}
 
-	void VulkanUniform::SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size)
+	void VulkanUniform::SetData(void* data, SIZE_T size)
 	{
 		ME_ASSERT(size == m_Specification.Size, TEXT("Trying to set data with different size in vertex buffer \"{0}\"!"));
+
+		ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer = RenderCommand::Get()->GetSingleUseCommandBuffer();
 
 		switch (m_Specification.MemoryType)
 		{
@@ -42,6 +44,27 @@ namespace ME::Render
 				SetDataRAM(commandBuffer, data, size);
 				break;
 			}
+		}
+
+		RenderCommand::Get()->SubmitAndFreeSingleUseCommandBuffer(commandBuffer);
+	}
+
+	void VulkanUniform::SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size)
+	{
+		ME_ASSERT(size == m_Specification.Size, TEXT("Trying to set data with different size in vertex buffer \"{0}\"!"));
+
+		switch (m_Specification.MemoryType)
+		{
+		case MemoryType::VRAM:
+		{
+			SetDataVRAM(commandBuffer, data, size);
+			break;
+		}
+		case MemoryType::RAM:
+		{
+			SetDataRAM(commandBuffer, data, size);
+			break;
+		}
 		}
 	}
 

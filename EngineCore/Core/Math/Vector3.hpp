@@ -15,7 +15,6 @@ namespace ME::Core::Math
 		static_assert(std::is_floating_point_v<T>, "T must be a number with floating point!");
 
 	public:
-
 		union
 		{
 			struct { T x, y, z; };
@@ -24,93 +23,74 @@ namespace ME::Core::Math
 		};
 
 	public:
-		CORE_API static const Vector3<T> ZeroVector;
-
-		CORE_API static const Vector3<T> UpVector;
-
-		CORE_API static const Vector3<T> DownVector;
-
-		CORE_API static const Vector3<T> ForwardVector;
-
-		CORE_API static const Vector3<T> BackwardVector;
-
-		CORE_API static const Vector3<T> RightVector;
-
-		CORE_API static const Vector3<T> LeftVector;
+		CORE_API static const Vector3 ZeroVector;
+		CORE_API static const Vector3 UpVector;
+		CORE_API static const Vector3 DownVector;
+		CORE_API static const Vector3 ForwardVector;
+		CORE_API static const Vector3 BackwardVector;
+		CORE_API static const Vector3 RightVector;
+		CORE_API static const Vector3 LeftVector;
 
 	public:
 		inline Vector3();
-
-		inline Vector3(T scalar);
-
+		explicit Vector3(T scalar);
 		inline Vector3(T _x, T _y, T _z);
-
 		inline Vector3(const Vector2<T>& vec, T _z);
-
 		inline Vector3(const Vector3& otherVec);
-
 		inline Vector3(Vector3&& otherVec) noexcept;
 
 	public:
-		Vector3<T>& operator=(const Vector3& b);
+		Vector3& operator=(const Vector3& b);
 
 		bool operator==(const Vector3& b) const;
 
-		Vector3<T> operator+(const Vector3& b) const;
+		Vector3 operator-() const;
 
-		Vector3<T> operator-(const Vector3& b) const;
-		Vector3<T> operator-() const;
-
-		Vector3<T> operator*(const Vector3& b) const;
-
-		template<typename U>
-		Vector3<T> operator*(U scalar) const;
-
-		Vector3<T> operator/(const Vector3& b) const;
+		Vector3 operator+(const Vector3& b) const;
+		Vector3 operator-(const Vector3& b) const;
+		Vector3 operator*(const Vector3& b) const;
+		Vector3 operator/(const Vector3& b) const;
 
 		template<typename U>
-		Vector3<T> operator/(U scalar) const;
+		Vector3 operator*(U scalar) const;
 
-		Vector3<T>& operator+=(const Vector3& b);
-
-		Vector3<T>& operator-=(const Vector3& b);
-
-		Vector3<T>& operator*=(const Vector3& b);
 
 		template<typename U>
-		Vector3<T>& operator*=(U scalar);
+		Vector3 operator/(U scalar) const;
 
-		Vector3<T>& operator/=(const Vector3& b);
+		Vector3& operator+=(const Vector3& b);
+		Vector3& operator-=(const Vector3& b);
+		Vector3& operator*=(const Vector3& b);
+		Vector3& operator/=(const Vector3& b);
 
 		template<typename U>
-		Vector3<T>& operator/=(U scalar);
+		Vector3& operator*=(U scalar);
+		template<typename U>
+		Vector3& operator/=(U scalar);
 
 		template<typename U>
 		operator Vector3<U>() const;
 
 	public:
+		Vector3& Normalize();
+		Vector3 Normalized() const;
 
-		Vector3<T>& Normalize();
-
-		Vector3<T> Normalized() const;
-
-		Vector3<T> Lerp(const Vector3& vec, float32 t) const;
+		Vector3 Lerp(const Vector3& vec, float32 t) const;
 
 		float64 GetAngleBetweenVectors(const Vector3& other) const;
-
 		float64 GetAngleBetweenVectorsInDegrees(const Vector3& other) const;
 
 		T Dot(const Vector3& other) const;
-
-		Vector3<T> Cross(const Vector3& other) const;
+		Vector3 Cross(const Vector3& other) const;
 
 		T Length() const;
-
 		T LengthSquared() const;
 
-		Vector3<T> Project(const Vector3& other) const;
+		Vector3 Project(const Vector3& other) const;
+		Vector3 Reflect(const Vector3& normal) const;
 
-		Vector3<T> Reflect(const Vector3& normal) const;
+		Vector3& Abs();
+		Vector3 AsAbs() const;
 
 	};
 
@@ -354,6 +334,21 @@ namespace ME::Core::Math
 	inline Vector3<T> Vector3<T>::Reflect(const Vector3& normal) const
 	{
 		return *this - normal * (2 * Dot(normal));
+	}
+
+	template <typename T>
+	Vector3<T>& Vector3<T>::Abs()
+	{
+		x = fabs(x);
+		y = fabs(y);
+		z = fabs(z);
+		return *this;
+	}
+
+	template <typename T>
+	Vector3<T> Vector3<T>::AsAbs() const
+	{
+		return Vector3(abs(x), abs(y),abs(z));
 	}
 
 	template<typename T, typename U>

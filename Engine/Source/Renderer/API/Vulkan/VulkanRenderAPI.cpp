@@ -263,6 +263,37 @@ namespace ME::Render
         return m_FrameInfos[m_SwapChain->GetFrameIndex()].CommandBuffer;
     }
 
+    ME::Core::Memory::Reference<ME::Render::CommandBuffer> VulkanRenderAPI::GetSingleUseCommandBuffer()
+    {
+        ME::Core::Memory::Reference<ME::Render::CommandBuffer> cmdBuffer = Render::CommandBuffer::CreateCommandBuffer();
+        cmdBuffer->Record();
+        return cmdBuffer;
+    }
+
+    void VulkanRenderAPI::SubmitAndFreeSingleUseCommandBuffer(
+	    ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer)
+    {
+        buffer->Finish();
+        VkCommandBuffer buf = buffer->As<VulkanCommandBuffer>()->GetBuffer();
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &buf;
+
+        VkFence fence = nullptr;
+        VkFenceCreateInfo fenceCreateInfo = {};
+        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+        vkCreateFence(m_Device, &fenceCreateInfo, nullptr, &fence);
+
+		vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, fence);
+
+    	vkWaitForFences(m_Device, 1, &fence, false, UINT64_MAX);
+    	buffer->Shutdown();
+        vkDestroyFence(m_Device, fence, nullptr);
+    }
+
     ME::Core::Memory::Reference<ME::Render::Framebuffer> VulkanRenderAPI::GetAvailableFramebuffer() const
     {
         uint32 currentFrame = m_SwapChain->GetFrameIndex();
@@ -536,6 +567,8 @@ namespace ME::Render
         descFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
         descFeatures.descriptorBindingUpdateUnusedWhilePending = true;
         descFeatures.descriptorBindingPartiallyBound = true;
+        descFeatures.runtimeDescriptorArray = true;
+        descFeatures.pNext = nullptr;
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

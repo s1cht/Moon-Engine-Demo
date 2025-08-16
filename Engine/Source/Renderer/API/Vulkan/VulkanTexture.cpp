@@ -1,5 +1,6 @@
 ﻿#include "VulkanTexture.h"
 
+#include "VulkanCommandBuffer.h"
 #include "VulkanRenderAPI.h"
 #include "VulkanFunctions.h"
 #include "Renderer/RenderCommand.h"
@@ -7,19 +8,21 @@
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<Texture2D> Texture2D::CreateVulkanTexture(Texture2DSpecification& specification)
+	ME::Core::Memory::Reference<Texture2D> Texture2D::CreateVulkanTexture(const Texture2DSpecification& specification)
 	{
 		auto object = ME::Core::Memory::Reference<Texture2D>(new VulkanTexture2D(specification));
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
-	VulkanTexture2D::VulkanTexture2D(Texture2DSpecification& specification) : m_Specification(specification)
+	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification)
+		: m_Specification(specification)
 	{
 		Init();
 	}
 
-	VulkanTexture2D::VulkanTexture2D(VkImage image, Texture2DSpecification& specification) : m_Specification(specification)
+	VulkanTexture2D::VulkanTexture2D(VkImage image, const Texture2DSpecification& specification)
+		: m_Specification(specification)
 	{
 		Init(image);
 	}
@@ -29,40 +32,35 @@ namespace ME::Render
 		Shutdown();
 	}
 
-	void VulkanTexture2D::Bind()
+	void VulkanTexture2D::LoadTexture(uint32 set)
 	{
-		
+		if (m_Loaded) return;
+		if (!RenderCommand::GetResourceHandler()->IncrementTextureSetReference(set))
+		{
+			ME_RENDER_WARN("Can't load texture \"{}\"", m_Specification.DebugName.GetString());
+		}
+		m_Set = set;
+		m_Loaded = true;
 	}
 
-	void VulkanTexture2D::Unbind()
+	void VulkanTexture2D::UnloadTexture()
 	{
-		
-	}
-
-	bool VulkanTexture2D::IsLoaded() const
-	{
-		return false;
+		if (!m_Loaded) return;
+		RenderCommand::GetResourceHandler()->DecrementTextureSetReference(m_Set);
+		m_Set = ~0u;
+		m_Loaded = false;
 	}
 
 	void VulkanTexture2D::SetData(void* data, SIZE_T size)
 	{
-	}
-
-	void* VulkanTexture2D::GetRawData()
-	{
-		return nullptr;
-
-	}
-
-	SIZE_T VulkanTexture2D::GetRawDataSize()
-	{
-		return 0;
+		UpdateImage(data, size);
 	}
 
 	void VulkanTexture2D::Shutdown()
 	{
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 
+		UnloadTexture();
 		if (m_ImageView != nullptr)
 		{
 			vkDestroyImageView(render->GetDevice(), m_ImageView, nullptr);
@@ -71,15 +69,37 @@ namespace ME::Render
 
 		if (m_Image != nullptr && m_Specification.bOwnsImage == false)
 		{
-			vkDestroyImage(render->GetDevice(), m_Image, nullptr);
-			m_Image = nullptr;
+			vmaDestroyImage(render->GetAllocator(), m_Image, m_Allocation);
+			m_Image = VK_NULL_HANDLE;
+			m_Allocation = VK_NULL_HANDLE;
 		}
 	}
 
 	void VulkanTexture2D::Init()
 	{
-		//VkResult result;
+		m_ImageFormat = ME::Render::ConvertFormatVulkan(m_Specification.Format);
 
+		VkResult result = CreateImage();
+		if (ME_VK_FAILED(result))
+		{
+			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image!: Error: {0}"), static_cast<uint32>(result));
+			Shutdown();
+			return;
+		}
+
+		result = UpdateImage(m_Specification.Data, m_Specification.DataSize);
+		if (ME_VK_FAILED(result))
+		{
+			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to update image data!: Error: {0}"), static_cast<uint32>(result));
+			return;
+		}
+
+		result = CreateImageView();
+		if (ME_VK_FAILED(result))
+		{
+			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image view!: Error: {0}"), static_cast<uint32>(result));
+			return;
+		}
 	}
 	
 	void VulkanTexture2D::Init(VkImage image)
@@ -92,7 +112,7 @@ namespace ME::Render
 		result = CreateImageView();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image view!: Error: {0}"), (uint32)result);
+			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image view!: Error: {0}"), static_cast<uint32>(result));
 			return;
 		}
 	}
@@ -100,7 +120,6 @@ namespace ME::Render
 	VkResult VulkanTexture2D::CreateImage()
 	{
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
-		uint32 graphicsQueue = static_cast<uint32_t>(render->GetGraphicsQueueFamily());
 
 		VkImageCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -108,47 +127,139 @@ namespace ME::Render
 		createInfo.format = ME::Render::ConvertFormatVulkan(m_Specification.Format);
 		createInfo.extent.width = m_Specification.Resolution.x;
 		createInfo.extent.height = m_Specification.Resolution.y;
+		createInfo.extent.depth = 1;
 		createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		createInfo.mipLevels = 1;
-		createInfo.queueFamilyIndexCount = 1;
-		createInfo.pQueueFamilyIndices = &graphicsQueue;
+		createInfo.mipLevels = m_Specification.MipLevels;
+		createInfo.queueFamilyIndexCount = 0;
+		createInfo.pQueueFamilyIndices = nullptr;
 		createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		createInfo.samples = ME::Render::ConvertSampleCountVulkan(m_Specification.SampleCount);
 		createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	//	createInfo.usage = Pawn::Render::ConvertImageUsageFlagsVulkan(m_Specification.Usage);
+		createInfo.usage = (ME::Render::ConvertImageUsageFlagsVulkan(m_Specification.Usage) & VK_IMAGE_USAGE_TRANSFER_DST_BIT) ? ME::Render::ConvertImageUsageFlagsVulkan(m_Specification.Usage) : ME::Render::ConvertImageUsageFlagsVulkan(m_Specification.Usage) | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		createInfo.arrayLayers = 1;
 
-		return vkCreateImage(render->GetDevice(), &createInfo, nullptr, &m_Image);
+		VmaAllocationCreateInfo allocCreateInfo = {};
+		allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+		return vmaCreateImage(render->GetAllocator(), &createInfo, &allocCreateInfo, &m_Image, &m_Allocation, nullptr);
 	}
 
 	VkResult VulkanTexture2D::CreateImageView()
 	{
-		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
-
 		VkImageViewCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = m_Image;
-		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		createInfo.format = m_ImageFormat;
 		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.subresourceRange.baseMipLevel = 0;
-		createInfo.subresourceRange.levelCount = 1;
 		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.layerCount = 1;
+		createInfo.subresourceRange.levelCount = m_Specification.MipLevels;
+		createInfo.subresourceRange.layerCount = m_Specification.CubeMapCount > 0 ? 6 * m_Specification.CubeMapCount : 1;
+		createInfo.viewType = m_Specification.CubeMapCount > 0 ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
 		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		if (m_Specification.IsStencil || m_Specification.IsDepth)
-		{
-			createInfo.subresourceRange.aspectMask = 0;
-			if (m_Specification.IsStencil)
-				createInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-			if (m_Specification.IsDepth)
-				createInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-		}
+		if (m_Specification.IsDepth)  createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (m_Specification.IsStencil) createInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-		return vkCreateImageView(render->GetDevice(), &createInfo, nullptr, &m_ImageView);
+		return vkCreateImageView(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_ImageView);
 	}
 
+	VkResult VulkanTexture2D::CreateSampler()
+	{
+		VkSamplerCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		createInfo.minFilter = ConvertSamplerFilterVulkan(m_Specification.MinFilter);
+		createInfo.magFilter = ConvertSamplerFilterVulkan(m_Specification.MagFilter);
+		createInfo.anisotropyEnable = m_Specification.EnableAnisotropy;
+		createInfo.maxAnisotropy = m_Specification.MaxAnisotropy;
+		createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		createInfo.minLod = 0;
+		createInfo.maxLod = m_Specification.MaxLOD;
+		createInfo.mipmapMode = m_Specification.MaxLOD > 0 ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		createInfo.mipLodBias = 0;
+		
+		return vkCreateSampler(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_Sampler);
+	}
+
+	VkResult VulkanTexture2D::UpdateImage( void* data, SIZE_T size)
+	{
+		ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer = RenderCommand::Get()->GetSingleUseCommandBuffer();
+
+		VkBuffer stagingBuffer = nullptr;
+		VmaAllocation stagingAllocation = nullptr;
+		void* mappedData = nullptr;
+
+		VkBufferCreateInfo stagingBufferCreateInfo = {};
+		stagingBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		stagingBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		stagingBufferCreateInfo.size = static_cast<uint64>(m_Specification.DataSize);
+		stagingBufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		stagingBufferCreateInfo.queueFamilyIndexCount = 0;
+		stagingBufferCreateInfo.pQueueFamilyIndices = nullptr;
+
+		VmaAllocationCreateInfo allocCreateInfo = {};
+		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		allocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = m_Specification.CubeMapCount > 0 ? 6 * m_Specification.CubeMapCount : 1;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (m_Specification.IsDepth)  region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (m_Specification.IsStencil) region.imageSubresource.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = 
+		{
+			m_Specification.Resolution.x,
+			m_Specification.Resolution.y,
+			1
+		};
+
+		VkResult result = vmaCreateBuffer(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), &stagingBufferCreateInfo, &allocCreateInfo, &stagingBuffer, &stagingAllocation, nullptr);
+		if (ME_VK_FAILED(result))
+			return result;
+
+		result = vmaMapMemory(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), stagingAllocation, &mappedData);
+		if (ME_VK_FAILED(result))
+			return result;
+
+		memcpy(mappedData, data, size);
+
+		vmaUnmapMemory(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), stagingAllocation);
+
+		vkCmdCopyBufferToImage(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), stagingBuffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+		VkImageMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.image = m_Image;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier.newLayout = ConvertImageLayoutVulkan(m_Specification.Layout);
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		barrier.subresourceRange.layerCount = m_Specification.CubeMapCount > 0 ? 6 * m_Specification.CubeMapCount : 1;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (m_Specification.IsDepth)  barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (m_Specification.IsStencil) barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		RenderCommand::Get()->SubmitAndFreeSingleUseCommandBuffer(commandBuffer);
+
+		vmaDestroyBuffer(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), stagingBuffer, stagingAllocation);
+
+		return VK_SUCCESS;
+	}
 }

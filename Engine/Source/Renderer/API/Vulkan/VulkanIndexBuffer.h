@@ -18,8 +18,8 @@ namespace ME::Render
 		void Unbind() override;
 
 		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size) override;
-		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, int32* indices, SIZE_T indexCount) override;
-
+		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, uint32* indices, SIZE_T indexCount) override;
+		
 		uint32 GetCount() const override { return m_IndexCount; }
 
 		void Shutdown() override;
@@ -28,6 +28,9 @@ namespace ME::Render
 		void Init(const IndexBufferSpecification& specification);
 		VkResult CreateBuffer();
 		VkResult CreateStagingBuffer();
+
+	public:
+		void SetData(void* data, SIZE_T size) override;
 
 	private:
 		VkBuffer m_Buffer;

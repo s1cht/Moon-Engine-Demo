@@ -10,6 +10,8 @@
 #include <Core/Containers/Array.hpp>
 #include <Core/Containers/String/String.hpp>
 
+#include "Renderer/Base/Texture.h"
+
 namespace ME::Assets
 {
 	class MOON_API AssetManager
@@ -22,6 +24,7 @@ namespace ME::Assets
 	public:
 		bool LoadAsset(const ME::Core::Containers::String& path, bool centered = false);
 		ME::Core::Memory::Reference<Assets::Mesh> GetMesh(const ME::Core::Containers::String& meshName);
+		ME::Core::Memory::Reference<Assets::Image> GetImage(const ME::Core::Containers::String& imageName);
 
 	public:
 		static AssetManager& Get()
@@ -36,6 +39,7 @@ namespace ME::Assets
 
 	private:
 		ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
+		ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Image>> m_Images;
 		//Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
 		//Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
 

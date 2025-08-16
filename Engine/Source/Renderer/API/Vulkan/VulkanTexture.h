@@ -12,21 +12,19 @@ namespace ME::Render
 	class MOON_API VulkanTexture2D : public Texture2D
 	{
 	public:
-		VulkanTexture2D(Texture2DSpecification& specification);
-		VulkanTexture2D(VkImage image, Texture2DSpecification& specification);
+		VulkanTexture2D(const Texture2DSpecification& specification);
+		VulkanTexture2D(VkImage image, const Texture2DSpecification& specification);
 
 		~VulkanTexture2D() override;
 
 	public:
-		void Bind() override;
-		void Unbind() override;
+		bool Loaded() const override { return m_Loaded; }
+		uint32 GetSet() const override { return m_Set; }
 
-		bool IsLoaded() const override;
+		void LoadTexture(uint32 set) override;
+		void UnloadTexture() override;
 
 		void SetData(void* data, SIZE_T size) override;
-
-		void* GetRawData() override;
-		SIZE_T GetRawDataSize() override;
 
 		void Shutdown() override;
 
@@ -39,6 +37,7 @@ namespace ME::Render
 	public:
 		inline VkImage GetImage() { return m_Image; }
 		inline VkImageView GetImageView() { return m_ImageView; }
+		inline VkSampler GetSampler() { return m_Sampler; }
 
 	private:
 		void Init();
@@ -46,11 +45,20 @@ namespace ME::Render
 
 		VkResult CreateImage();
 		VkResult CreateImageView();
+		VkResult CreateSampler();
+		VkResult UpdateImage(void* data, SIZE_T size);
 
 	private:
 		VkImage m_Image;
 		VkImageView m_ImageView;
+		VkSampler m_Sampler;
+		VmaAllocation m_Allocation;
+
 		VkFormat m_ImageFormat;
+
+	private:
+		uint32 m_Set;
+		bool m_Loaded;
 
 	private:
 		ME::Core::Containers::String m_Path;

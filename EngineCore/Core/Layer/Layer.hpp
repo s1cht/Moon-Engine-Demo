@@ -4,6 +4,11 @@
 #include "Core/Events/Event.hpp"
 #include "Core/Containers/String/String.hpp"
 
+namespace ME::Render
+{
+	class CommandBuffer;
+}
+
 struct ImGuiContext;
 
 namespace ME::Core
@@ -17,7 +22,7 @@ namespace ME::Core
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate(float64 deltaTime) {}
-		virtual void OnRender(float64 deltaTime) {}
+		virtual void OnRender() {}
 		virtual void OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext) {}
 		virtual void OnEvent(ME::Core::Event& event) {}
 

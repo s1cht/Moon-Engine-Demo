@@ -20,25 +20,17 @@ namespace ME::Core::Math
 		};
 
 	public:
-		CORE_API static const Vector2<T> ZeroVector;
-
-		CORE_API static const Vector2<T> UpVector;
-
-		CORE_API static const Vector2<T> DownVector;
-
-		CORE_API static const Vector2<T> LeftVector;
-
-		CORE_API static const Vector2<T> RightVector;
+		CORE_API static const Vector2 ZeroVector;
+		CORE_API static const Vector2 UpVector;
+		CORE_API static const Vector2 DownVector;
+		CORE_API static const Vector2 LeftVector;
+		CORE_API static const Vector2 RightVector;
 
 	public:
 		inline Vector2();
-
-		inline Vector2(T scalar);
-
+		explicit Vector2(T scalar);
 		inline Vector2(T _x, T _y);
-
 		inline Vector2(const Vector2& otherVec);
-
 		inline Vector2(Vector2&& otherVec) noexcept;
 
 	public:
@@ -46,55 +38,48 @@ namespace ME::Core::Math
 
 		bool operator==(const Vector2& b) const;
 
-		Vector2<T> operator+(const Vector2& b) const;
+		Vector2 operator-() const;
 
-		Vector2<T> operator-(const Vector2& b) const;
-
-		Vector2<T> operator*(const Vector2& b) const;
-
-		template<typename U>
-		Vector2<T> operator*(U scalar) const;
-
-		Vector2<T> operator/(const Vector2& b) const;
+		Vector2 operator+(const Vector2& b) const;
+		Vector2 operator-(const Vector2& b) const;
+		Vector2 operator*(const Vector2& b) const;
+		Vector2 operator/(const Vector2& b) const;
 
 		template<typename U>
-		Vector2<T> operator/(U scalar) const;
+		Vector2 operator*(U scalar) const;
+		template<typename U>
+		Vector2 operator/(U scalar) const;
 
-		Vector2<T>& operator+=(const Vector2& b);
-
-		Vector2<T>& operator-=(const Vector2& b);
-
-		Vector2<T>& operator*=(const Vector2& b);
+		Vector2& operator+=(const Vector2& b);
+		Vector2& operator-=(const Vector2& b);
+		Vector2& operator*=(const Vector2& b);
+		Vector2& operator/=(const Vector2& b);
 
 		template<typename U>
-		Vector2<T>& operator*=(U scalar);
-
-		Vector2<T>& operator/=(const Vector2& b);
-
+		Vector2& operator*=(U scalar);
 		template<typename U>
-		Vector2<T>& operator/=(U scalar);
+		Vector2& operator/=(U scalar);
 
 	public:
+		Vector2& Normalize();
+		Vector2 Normalized() const;
 
-		Vector2<T> Normalize() const;
-
-		Vector2<T> Lerp(const Vector2& vec, float32 t) const;
+		Vector2 Lerp(const Vector2& vec, float32 t) const;
 
 		float64 GetAngleBetweenVectors(const Vector2& other) const;
-
 		float64 GetAngleBetweenVectorsInDegrees(const Vector2& other) const;
 
 		T Dot(const Vector2& other) const;
-
 		T Cross(const Vector2& other) const;
 
 		T Length() const;
-
 		T LengthSquared() const;
 
-		Vector2<T> Project(const Vector2& other) const;
+		Vector2 Project(const Vector2& other) const;
+		Vector2 Reflect(const Vector2& normal) const;
 
-		Vector2<T> Reflect(const Vector2& normal) const;
+		Vector2& Abs();
+		Vector2 AsAbs() const;
 
 	};
 
@@ -134,6 +119,12 @@ namespace ME::Core::Math
 		{
 			return x == b.x && y == b.y;
 		}
+	}
+
+	template <typename T>
+	inline Vector2<T> Vector2<T>::operator-() const
+	{
+		return Vector2(-x, -y);
 	}
 
 	template<typename T>
@@ -231,12 +222,26 @@ namespace ME::Core::Math
 	}
 
 	template<typename T>
-	inline Vector2<T> Vector2<T>::Normalize() const
+	inline Vector2<T>& Vector2<T>::Normalize()
 	{
 		T len = Length();
-		if (len == 0) return Vector2<T>(0);
-		return *this / len;
+		if (len > 0.0)
+		{
+			x /= len;
+			y /= len;
+		}
+		return *this;
 	}
+
+	template<typename T>
+	inline Vector2<T> Vector2<T>::Normalized() const
+	{
+		T len = Length();
+		if (len > 0.0)
+			return Vector2<T>(x / len, y / len);
+		return *this;
+	}
+
 
 	template<typename T>
 	inline Vector2<T> Vector2<T>::Lerp(const Vector2& vec, float32 t) const
@@ -296,6 +301,20 @@ namespace ME::Core::Math
 	inline Vector2<T> Vector2<T>::Reflect(const Vector2& normal) const
 	{
 		return *this - normal * (2 * Dot(normal));
+	}
+
+	template <typename T>
+	Vector2<T>& Vector2<T>::Abs()
+	{
+		x = fabs(x);
+		y = fabs(y);
+		return *this;
+	}
+
+	template <typename T>
+	Vector2<T> Vector2<T>::AsAbs() const
+	{
+		return Vector2(fabs(x), fabs(y));
 	}
 
 	template<typename T, typename U>

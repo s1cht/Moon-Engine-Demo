@@ -24,8 +24,6 @@ namespace ME::Render
 		};
 
 	public:
-		virtual void PostInit() = 0;
-
 		virtual void NewFrame() = 0;
 		virtual void BeginRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Render::RenderPassBeginInfo& info) = 0;
 		virtual void EndRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) = 0;
@@ -49,6 +47,10 @@ namespace ME::Render
 		virtual ME::Core::Memory::Reference<ME::Render::Framebuffer> GetAvailableFramebuffer() const = 0;
 		virtual ME::Core::Memory::Reference<ME::Render::CommandBuffer> GetAvailableCommandBuffer() = 0;
 
+		virtual ME::Core::Memory::Reference<ME::Render::CommandBuffer> GetSingleUseCommandBuffer() = 0;
+		virtual void SubmitAndFreeSingleUseCommandBuffer(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) = 0;
+
+		virtual void PostInit() = 0;
 		virtual void Resize(uint32 x, uint32 y) = 0;
 		virtual void OnWindowEvent(int32 x, int32 y) = 0;
 		virtual void CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass) = 0;

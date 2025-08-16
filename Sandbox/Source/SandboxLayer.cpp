@@ -12,6 +12,7 @@
 #include <Utility/ShaderCompiler.hpp>
 #include <Assets/AssetManager.h>
 
+#include "Assets/Image.h"
 #include "Assets/ShaderManager.hpp"
 
 using namespace ME;
@@ -38,6 +39,12 @@ void SandboxLayer::OnAttach()
 		ME_ERROR(TEXT("Failed to load asset!"));
 	}
 
+	result = Assets::AssetManager::Load(Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::Containers::String(TEXT("assets/Images/stone01.tga")), false);
+	if (!result)
+	{
+		ME_ERROR(TEXT("Failed to load asset!"));
+	}
+
 	Utility::ShaderCompiler& compiler = Utility::ShaderCompiler::Get();
 	compiler.InitCompiler();
 
@@ -55,22 +62,56 @@ void SandboxLayer::OnAttach()
 	mainShaders.Vertex = TEXT("vs_primary.hlsl");
 	mainShaders.Pixel = TEXT("ps_primary.hlsl");
 
+	ME::Core::Memory::Reference<Assets::Image> image = ME::Assets::AssetManager::Get().GetImage(TEXT("stone01.tga"));
+
+	Render::Texture2DSpecification stoneTexSpecs = {};
+	stoneTexSpecs.Resolution = image->GetResolution();
+	stoneTexSpecs.CubeMapCount = 0;
+	stoneTexSpecs.Data = image->GetImage().Data();
+	stoneTexSpecs.DataSize = image->GetImage().GetSize();
+	stoneTexSpecs.DebugName = "Stone01";
+	stoneTexSpecs.Format = Render::Format::RGBA8_SINT;
+	stoneTexSpecs.IsDepth = false;
+	stoneTexSpecs.IsStencil = false;
+	stoneTexSpecs.SampleCount = Render::SampleCount::Count1;
+	stoneTexSpecs.MipLevels = 1;
+	stoneTexSpecs.Layout = Render::ImageLayout::ShaderReadOnly;
+	stoneTexSpecs.bOwnsImage = true;
+	stoneTexSpecs.Usage = Render::ImageUsageFlags::Sampled;
+
+	m_StoneTexture = Render::Texture2D::Create(stoneTexSpecs);
+
 	Render::ResourceLayout layoutS1;
-	layoutS1.EmplaceBack(
-		Render::ResourceType::Uniform,
-		Render::ShaderStage::Vertex,
-		1);
-
-	layoutS1.EmplaceBack(
-		Render::ResourceType::Uniform,
-		Render::ShaderStage::Vertex,
-		1);
-
 	Render::ResourceLayout layoutS2;
+	Render::ResourceLayout layoutS3;
+
+	// Set 0 Binding 0
+	layoutS1.EmplaceBack(
+		Render::ResourceType::Uniform,
+		Render::ShaderStage::Vertex,
+		1);
+	// Set 0 Binding 1
+	layoutS1.EmplaceBack(
+		Render::ResourceType::Uniform,
+		Render::ShaderStage::Vertex,
+		1);
+
+	// Set 1 Binding 0
 	layoutS2.EmplaceBack(
 		Render::ResourceType::Uniform,
 		Render::ShaderStage::Pixel,
 		1);
+
+	// Set 2 Binding 0
+	layoutS3.EmplaceBack(
+		Render::ResourceType::Texture2D,
+		Render::ShaderStage::Pixel,
+		10);
+	// Set 2 Binding 1
+	layoutS3.EmplaceBack(
+		Render::ResourceType::Sampler,
+		Render::ShaderStage::Pixel,
+		10);
 
 	Render::ResourceLayoutPack layoutPack;
 	layoutPack.EmplaceBack(layoutS1);
@@ -99,7 +140,7 @@ void SandboxLayer::OnAttach()
 	attachmentSpecs.AttachmentFormat = imageSpec.Format;
 	attachmentSpecs.LoadOp = Render::LoadOperation::Clear;
 	attachmentSpecs.StoreOp = Render::StoreOperation::Store;
-	attachmentSpecs.InitialLayout = Render::ImageLayout::Undefined;
+	attachmentSpecs.InitialLayout = Render::ImageLayout::Present;
 	attachmentSpecs.FinalLayout = Render::ImageLayout::Present;
 	attachmentSpecs.SampleCount = Render::SampleCount::Count1;
 
@@ -132,20 +173,22 @@ void SandboxLayer::OnAttach()
 
 	Render::RasterizationSpecification rasterSpec = {};
 	rasterSpec.DiscardEnabled = false;
-	rasterSpec.FrontCounterClockwise = true;
+	rasterSpec.FrontCounterClockwise = false;
 	rasterSpec.DepthBiasEnabled = false;
-	rasterSpec.DepthClampEnabled = true;
+	rasterSpec.DepthClampEnabled = false;
 	rasterSpec.DepthBiasConstantFactor = 1.0f;
-	rasterSpec.DepthBiasClamp = 0.f;
-	rasterSpec.DepthBiasSlopeFactor = 0.f;
+	rasterSpec.DepthBiasClamp = 1.f;
+	rasterSpec.DepthBiasSlopeFactor = 1.f;
 	rasterSpec.LineWidth = 1.0f;
 	rasterSpec.Cull = Render::RasterizationCull::Back;
 	rasterSpec.Fill = Render::RasterizationFill::Fill;
 
 	Render::MultisamplingSpecification multisamplingSpec = {};
 	multisamplingSpec.Samples = Render::SampleCount::Count1;
-	multisamplingSpec.EnableSampleShading = true;
-	multisamplingSpec.AlphaToCoverage = true;
+	multisamplingSpec.EnableSampleShading = false;
+	multisamplingSpec.AlphaToOne = false;
+	multisamplingSpec.MinSampleShading = 1;
+	multisamplingSpec.AlphaToCoverage = false;
 
 	Render::DepthStencilSpecification dsSpec = {};
 	dsSpec.DepthEnabled = true;
@@ -155,38 +198,27 @@ void SandboxLayer::OnAttach()
 	dsSpec.DepthFunction = Render::DepthComparison::LessEqual;
 
 	Render::ColorBlendingSpecification cbSpec = {};
-	cbSpec.Attachments = { {false, false  } };
-	cbSpec.BlendConstants = { 1.f, 1.f, 1.f, 1.f };
+	cbSpec.Attachments = { { false, false  } };
+	cbSpec.BlendConstants = { 0.f, 0.f, 0.f, 0.f };
 	cbSpec.LogicOperation = Render::LogicOperation::None;
 
-	Render::PipelineSpecification mainPipelineSpec = {};
-	mainPipelineSpec.Type = Render::PipelineType::Graphics;
-	mainPipelineSpec.RenderPass = m_MainRenderPass;
-	mainPipelineSpec.Subpass = 0;
-	mainPipelineSpec.Shaders = ME::Assets::ShaderManager::Get().GetShaderGroup(TEXT("Main"));
-	mainPipelineSpec.BufferLayout = m_Layout;
-	mainPipelineSpec.InputAssembly = iaSpec;
-	mainPipelineSpec.Rasterization = rasterSpec;
-	mainPipelineSpec.Multisampling = multisamplingSpec;
-	mainPipelineSpec.DepthStencil = dsSpec;
-	mainPipelineSpec.ColorBlending = cbSpec;
-	mainPipelineSpec.BasePipeline = nullptr;
+	Render::PipelineSpecification mainGraphicsSpecs = {};
+	mainGraphicsSpecs.Type = Render::PipelineType::Graphics;
+	mainGraphicsSpecs.RenderPass = m_MainRenderPass;
+	mainGraphicsSpecs.Subpass = 0;
+	mainGraphicsSpecs.Shaders = ME::Assets::ShaderManager::Get().GetShaderGroup(TEXT("Main"));
+	mainGraphicsSpecs.BufferLayout = m_Layout;
+	mainGraphicsSpecs.InputAssembly = iaSpec;
+	mainGraphicsSpecs.Rasterization = rasterSpec;
+	mainGraphicsSpecs.Multisampling = multisamplingSpec;
+	mainGraphicsSpecs.DepthStencil = dsSpec;
+	mainGraphicsSpecs.ColorBlending = cbSpec;
+	mainGraphicsSpecs.BasePipeline = nullptr;
 
-	m_Primary = Render::Pipeline::Create(mainPipelineSpec);
+	m_MainGraphicsPipeline = Render::Pipeline::Create(mainGraphicsSpecs);
 
 	m_WindowHeight = Application::Get().GetWindow()->GetHeight();
 	m_WindowWidth = Application::Get().GetWindow()->GetWidth();
-
-	Render::VertexBufferSpecification vS = {};
-	vS.Size = sizeof(float32) * 24 * 8;
-	vS.DebugName = TEXT("ad");
-
-	Render::IndexBufferSpecification iS = {};
-	iS.IndexCount = 36;
-	iS.DebugName = TEXT("as");
-
-	m_VertexBuffer = Render::VertexBuffer::Create(vS);
-	m_IndexBuffer = Render::IndexBuffer::Create(iS);
 
 	Render::UniformSpecification cameraBufferSpec = {};
 	cameraBufferSpec.SetIndex = Render::RenderCommand::GetResourceHandler()->CreateResourceSet(layoutS1);
@@ -246,14 +278,15 @@ void SandboxLayer::OnUpdate(float64 deltaTime)
 {
 	OnKeyInputStartedEvent(deltaTime);
 	m_Camera->Update();
+}
 
-	Render::RenderCommand::NewFrame();
+void SandboxLayer::OnRender()
+{
 	auto camBuf = m_CameraBuffer->AcquireNextBuffer();
 	auto sceBuf = m_SceneBuffer->AcquireNextBuffer();
 	auto ligBuf = m_LightBuffer->AcquireNextBuffer();
 
 	ME::Core::Memory::Reference<ME::Render::CommandBuffer> currentCommandBuffer = Render::RenderCommand::GetAvailableCommandBuffer();
-	currentCommandBuffer->Reset();
 
 	Render::ClearValue clrVal = {};
 	clrVal.ColorClearValue = Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f);
@@ -297,13 +330,13 @@ void SandboxLayer::OnUpdate(float64 deltaTime)
 
 	Render::RenderCommand::BeginRenderPass(currentCommandBuffer, beginInfo);
 
-	m_Primary->SetViewports(currentCommandBuffer, { {0,0,m_WindowWidth, m_WindowHeight, 0, 1} });
-	m_Primary->SetScissors(currentCommandBuffer, { scissor });
-	m_Primary->Bind(currentCommandBuffer);
+	m_MainGraphicsPipeline->SetViewports(currentCommandBuffer, { {0,0,m_WindowWidth, m_WindowHeight, 0, 1} });
+	m_MainGraphicsPipeline->SetScissors(currentCommandBuffer, { scissor });
+	m_MainGraphicsPipeline->Bind(currentCommandBuffer);
 
-	Render::RenderCommand::BindResourceSet(currentCommandBuffer, m_Primary, camBuf);
-	Render::RenderCommand::BindResourceSet(currentCommandBuffer, m_Primary, sceBuf);
-	Render::RenderCommand::BindResourceSet(currentCommandBuffer, m_Primary, ligBuf);
+	Render::RenderCommand::BindResourceSet(currentCommandBuffer, m_MainGraphicsPipeline, camBuf);
+	Render::RenderCommand::BindResourceSet(currentCommandBuffer, m_MainGraphicsPipeline, sceBuf);
+	Render::RenderCommand::BindResourceSet(currentCommandBuffer, m_MainGraphicsPipeline, ligBuf);
 
 	for (const auto& mesh : m_Flashlight)
 	{
@@ -312,11 +345,6 @@ void SandboxLayer::OnUpdate(float64 deltaTime)
 	}
 
 	Render::RenderCommand::EndRenderPass(currentCommandBuffer);
-
-	currentCommandBuffer->Finish();
-	Render::RenderCommand::Submit(currentCommandBuffer);
-
-	Render::RenderCommand::Present();
 }
 
 void SandboxLayer::OnEvent(Core::Event& event)
@@ -329,28 +357,7 @@ void SandboxLayer::OnEvent(Core::Event& event)
 void SandboxLayer::OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext)
 {
 	ImGui::SetCurrentContext(dllContext);
-	static bool statsVisible = true;
 	static bool settsVisible = true;
-
-	if (ImGui::Begin("Camera stats", &statsVisible))
-	{
-		ImGui::Text("CameraPosition: %.5f, %.5f, %.5f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-		ImGui::Text("------------");
-		ImGui::Text("Camera view matrix:");
-		ImGui::Text("%.5f %.5f %.5f %.5f", m_Camera->GetViewMatrix().a11, m_Camera->GetViewMatrix().a21, m_Camera->GetViewMatrix().a31, m_Camera->GetViewMatrix().a41);
-		ImGui::Text("%.5f %.5f %.5f %.5f", m_Camera->GetViewMatrix().a12, m_Camera->GetViewMatrix().a22, m_Camera->GetViewMatrix().a32, m_Camera->GetViewMatrix().a42);
-		ImGui::Text("%.5f %.5f %.5f %.5f", m_Camera->GetViewMatrix().a13, m_Camera->GetViewMatrix().a23, m_Camera->GetViewMatrix().a33, m_Camera->GetViewMatrix().a43);
-		ImGui::Text("%.5f %.5f %.5f %.5f", m_Camera->GetViewMatrix().a14, m_Camera->GetViewMatrix().a24, m_Camera->GetViewMatrix().a34, m_Camera->GetViewMatrix().a44);
-
-		ImGui::Text("------------");
-		ImGui::Text("Camera projection matrix:");
-		ImGui::Text("%.5f %.5f %.5f %.5f", m_Camera->GetProjectionMatrix().a11, m_Camera->GetProjectionMatrix().a21, m_Camera->GetProjectionMatrix().a31, m_Camera->GetProjectionMatrix().a41);
-		ImGui::Text("%.5f %.5f %.5f %.5f", m_Camera->GetProjectionMatrix().a12, m_Camera->GetProjectionMatrix().a22, m_Camera->GetProjectionMatrix().a32, m_Camera->GetProjectionMatrix().a42);
-		ImGui::Text("%.5f %.5f %.5f %.5f", m_Camera->GetProjectionMatrix().a13, m_Camera->GetProjectionMatrix().a23, m_Camera->GetProjectionMatrix().a33, m_Camera->GetProjectionMatrix().a43);
-		ImGui::Text("%.5f %.5f %.5f %.5f", m_Camera->GetProjectionMatrix().a14, m_Camera->GetProjectionMatrix().a24, m_Camera->GetProjectionMatrix().a34, m_Camera->GetProjectionMatrix().a44);
-	}
-
-	ImGui::End();
 
 	static int32 CameraFOV = 70.f;
 	static float32 CameraNear = 0.1f;
@@ -414,10 +421,16 @@ bool SandboxLayer::OnMouseMovedEvent(ME::Events::MouseMovedEvent& event)
 	if (Input::InputController::IsMouseRightButtonDown())
 	{
 		static float32 yaw, pitch = 0.f;
-		yaw -= RAD(event.GetDeltaX() * m_MouseSensitivity);
-		pitch -= RAD(event.GetDeltaY() * m_MouseSensitivity);
-		m_Camera->SetRotation(yaw, pitch, 0.f);
+		yaw -= event.GetDeltaX() * m_MouseSensitivity;
+		pitch += event.GetDeltaY() * m_MouseSensitivity;
+
+		pitch = std::clamp(pitch, -89.f, 89.f);
+		if (yaw > 360.0f) yaw -= 360.f;
+		if (yaw < 0.0f) yaw += 360.f;
+
+		m_Camera->SetRotation(RAD(yaw), RAD(pitch), 0.f);
 		m_CameraBufferUpdateRequired = true;
+		return true;
 	}
 	return false;
 }
@@ -425,34 +438,40 @@ bool SandboxLayer::OnMouseMovedEvent(ME::Events::MouseMovedEvent& event)
 //bool OnKeyInputStartedEvent(ME::Events::KeyInputStartedEvent& event)
 bool SandboxLayer::OnKeyInputStartedEvent(float32 deltaTime)
 {
+	float32 speed = m_CameraSpeed;
+
+	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_LEFTSHIFT))
+	{
+		speed /= 2;
+	}
 	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_W))
 	{
-		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetLookVector() * static_cast<float64>(m_CameraSpeed) * deltaTime);
+		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetLookVector() * static_cast<float64>(speed) * deltaTime);
 		m_CameraBufferUpdateRequired = true;
 	}
 	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_S))
 	{
-		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetLookVector() * (static_cast<float64>(m_CameraSpeed) * deltaTime));
+		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetLookVector() * (static_cast<float64>(speed) * deltaTime));
 		m_CameraBufferUpdateRequired = true;
 	}
 	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_A))
 	{
-		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetRightVector() * (static_cast<float64>(m_CameraSpeed) * deltaTime));
+		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetRightVector() * (static_cast<float64>(speed) * deltaTime));
 		m_CameraBufferUpdateRequired = true;
 	}
 	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_D))
 	{
-		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetRightVector() * (static_cast<float64>(m_CameraSpeed) * deltaTime));
+		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetRightVector() * (static_cast<float64>(speed) * deltaTime));
 		m_CameraBufferUpdateRequired = true;
 	}
 	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_SPACE))
 	{
-		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetUpVector() * (static_cast<float64>(m_CameraSpeed) * deltaTime));
+		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetUpVector() * (static_cast<float64>(speed) * deltaTime));
 		m_CameraBufferUpdateRequired = true;
 	}
 	if (Input::InputController::IsKeyDown(Input::Keycode::PE_KEY_LEFTCONTROL))
 	{
-		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetUpVector() * (static_cast<float64>(m_CameraSpeed) * deltaTime));
+		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetUpVector() * (static_cast<float64>(speed) * deltaTime));
 		m_CameraBufferUpdateRequired = true;
 	}
 	m_CameraBufferUpdateRequired = true;

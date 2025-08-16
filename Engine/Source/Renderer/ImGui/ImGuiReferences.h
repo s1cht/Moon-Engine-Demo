@@ -1,12 +1,13 @@
 #pragma once
 
-#include <imgui.h>
-#include <backends/imgui_impl_vulkan.h>
-//#include "backends/imgui_impl_opengl3.h"
-
+#include <Core.hpp>
 #include <Core/Platform/Platform.hpp>
 
 #include "Renderer/RenderCommand.h"
+#include "Renderer/API/Vulkan/VulkanRenderAPI.h"
+
+#include <imgui.h>
+#include <backends/imgui_impl_vulkan.h>
 
 #ifdef PLATFORM_WINDOWS
 	// Window

@@ -55,7 +55,65 @@ namespace ME::Core::Math
 		return LERP(a, b, d);
 	}
 
-	constexpr const float64 P_PI = PI;
+	std::ostream& operator<<(std::ostream& os, const Vector2D32& vec)
+	{
+		return os << vec.x << ' ' << vec.y;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const Vector2D64& vec)
+	{
+		return os << vec.x << ' ' << vec.y;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const Vector3D32& vec)
+	{
+		return os << vec.x << ' ' << vec.y << ' ' << vec.z;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const Vector3D64& vec)
+	{
+		return os << vec.x << ' ' << vec.y << ' ' << vec.z;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const Vector4D32& vec)
+	{
+		return os << vec.x << ' ' << vec.y << ' ' << vec.z << ' ' << vec.w;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const Vector4D64& vec)
+	{
+		return os << vec.x << ' ' << vec.y << ' ' << vec.z << ' ' << vec.w;
+	}
+
+	std::wostream& operator<<(std::wostream& os, const Vector2D32& vec)
+	{
+		return os << vec.x << L' ' << vec.y;
+	}
+
+	std::wostream& operator<<(std::wostream& os, const Vector2D64& vec)
+	{
+		return os << vec.x << L' ' << vec.y;
+	}
+
+	std::wostream& operator<<(std::wostream& os, const Vector3D32& vec)
+	{
+		return os << vec.x << L' ' << vec.y << L' ' << vec.z;
+	}
+
+	std::wostream& operator<<(std::wostream& os, const Vector3D64& vec)
+	{
+		return os << vec.x << L' ' << vec.y << L' ' << vec.z;
+	}
+
+	std::wostream& operator<<(std::wostream& os, const Vector4D32& vec)
+	{
+		return os << vec.x << L' ' << vec.y << L' ' << vec.z << L' ' << vec.w;
+	}
+
+	std::wostream& operator<<(std::wostream& os, const Vector4D64& vec)
+	{
+		return os << vec.x << L' ' << vec.y << L' ' << vec.z << L' ' << vec.w;
+	}
 }
 
 #undef IMPL_VEC_CONSTANTS

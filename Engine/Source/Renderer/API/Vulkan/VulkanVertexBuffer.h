@@ -17,6 +17,7 @@ namespace ME::Render
 		void Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer) override;
 		void Unbind() override;
 
+		void SetData(void* data, SIZE_T size) override;
 		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size) override;
 
 		void Shutdown() override;

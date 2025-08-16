@@ -2,6 +2,7 @@
 
 #include <Core.hpp>
 
+#include "Pipeline.h"
 #include "RenderObject.hpp"
 #include "Core/Math/Math.hpp"
 #include "Core/Misc/Rect2D.hpp"
@@ -71,19 +72,46 @@ namespace ME::Render
 		VideoDecodeDst					= BIT(9),
 		VideoDecodeSrc					= BIT(10),
 		VideoDecodeDpb					= BIT(11),
+		VideoEncodeDst					= BIT(12),
+		VideoEncodeSrc					= BIT(13),
+		VideoEncodeDpb					= BIT(14),
+	};
+
+	enum class SamplerFilter : uint8
+	{
+		None = 0,
+		Nearest, Linear
 	};
 
 	struct TextureSpecification
 	{
+		// Data
 		void* Data;
 		SIZE_T DataSize;
-		Format Format;
-		ImageUsageFlags Usage;
-		ME::Core::Containers::AnsiString DebugName;
 
+		// Sampler
+		bool EnableAnisotropy;
+		uint32 MaxAnisotropy;
+		uint32 MaxLOD;
+		SamplerFilter MinFilter;
+		SamplerFilter MagFilter;
+
+		// Image
 		bool IsDepth = false;
 		bool IsStencil = false;
 		bool bOwnsImage = false;
+		uint32 MipLevels;
+		uint32 CubeMapCount;
+		ME::Render::Format Format;
+		ME::Render::ImageLayout Layout;
+		ME::Render::ImageUsageFlags Usage;
+		ME::Render::SampleCount SampleCount;
+		ME::Core::Containers::AnsiString DebugName;
+	};
+
+	struct Texture1DSpecification : TextureSpecification
+	{
+		uint32 Resolution;
 	};
 
 	struct Texture2DSpecification : TextureSpecification
@@ -91,23 +119,40 @@ namespace ME::Render
 		ME::Core::Math::Resolution2D<uint32> Resolution;
 	};
 
+	struct Texture3DSpecification : TextureSpecification
+	{
+		ME::Core::Math::Vector3D32 Resolution;
+	};
+
 	class MOON_API Texture : public RenderObject
 	{
 	public:
-		virtual ~Texture() = default;
+		virtual void LoadTexture(uint32 set) = 0;
+		virtual void UnloadTexture() = 0;
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
-
-		virtual bool IsLoaded() const = 0;
+		virtual bool Loaded() const = 0;
 
 		virtual void SetData(void* data, SIZE_T size) = 0;
 
-		virtual void* GetRawData() = 0;
-		virtual SIZE_T GetRawDataSize() = 0;
+		virtual uint32 GetSet() const = 0;
 
 		virtual ME::Core::Containers::StringView GetTexturePath() = 0;
 		virtual ME::Core::Containers::AnsiStringView GetDebugName() = 0;
+
+	};
+
+	class MOON_API Texture1D : public Texture
+	{
+	public:
+		virtual ME::Render::Texture1DSpecification& GetSpecification() = 0;
+
+		virtual ME::Core::Math::Resolution2D<uint32> GetResolution() const = 0;
+
+	public:
+		static ME::Core::Memory::Reference<Texture1D> Create(Texture1DSpecification& specification);
+
+	private:
+		static ME::Core::Memory::Reference<Texture1D> CreateVulkanTexture(Texture1DSpecification& specification);
 
 	};
 
@@ -119,10 +164,41 @@ namespace ME::Render
 		virtual ME::Core::Math::Resolution2D<uint32> GetResolution() const = 0;
 
 	public:
-		static ME::Core::Memory::Reference<Texture2D> Create(Texture2DSpecification& specification);
+		static ME::Core::Memory::Reference<Texture2D> Create(const Texture2DSpecification& specification);
 
 	private:
-		static ME::Core::Memory::Reference<Texture2D> CreateVulkanTexture(Texture2DSpecification& specification);
+		static ME::Core::Memory::Reference<Texture2D> CreateVulkanTexture(const Texture2DSpecification& specification);
 
 	};
+
+	class MOON_API Texture3D : public Texture
+	{
+	public:
+		virtual ME::Render::Texture3DSpecification& GetSpecification() = 0;
+
+		virtual ME::Core::Math::Resolution2D<uint32> GetResolution() const = 0;
+
+	public:
+		static ME::Core::Memory::Reference<Texture3D> Create(Texture3DSpecification& specification);
+
+	private:
+		static ME::Core::Memory::Reference<Texture3D> CreateVulkanTexture(Texture3DSpecification& specification);
+
+	};
+
+	inline constexpr MOON_API ImageUsageFlags operator|(ME::Render::ImageUsageFlags a, ME::Render::ImageUsageFlags b)
+	{
+		return static_cast<ImageUsageFlags>(static_cast<uint32>(a) | static_cast<uint32>(b));
+	}
+
+	inline constexpr MOON_API ImageUsageFlags operator|=(ME::Render::ImageUsageFlags& a, ME::Render::ImageUsageFlags b)
+	{
+		a = a | b;
+		return a;
+	}
+
+	inline constexpr ImageUsageFlags operator&(ImageUsageFlags a, ImageUsageFlags b)
+	{
+		return static_cast<ImageUsageFlags>(static_cast<uint32>(a) & static_cast<uint32>(b));
+	}
 }

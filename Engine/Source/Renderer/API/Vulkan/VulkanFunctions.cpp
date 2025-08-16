@@ -589,6 +589,56 @@ namespace ME::Render
 		return flags;
 	}
 
+	constexpr VkShaderStageFlags ConvertImageUsageFlagsVulkan(ME::Render::ImageUsageFlags usage)
+	{
+		VkImageUsageFlags flags = 0;
+		if (static_cast<int32>(usage & ImageUsageFlags::ColorAttachment) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::DepthStencilAttachment) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::HostTransfer) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_HOST_TRANSFER_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::InputAttachment) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::Sampled) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::Storage) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_STORAGE_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::TransferDst) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::TransferSrc) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::TransientAttachment) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+		if (static_cast<int32>(usage & ImageUsageFlags::VideoDecodeDpb) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
+		if (static_cast<int32>(usage & ImageUsageFlags::VideoDecodeDst) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+		if (static_cast<int32>(usage & ImageUsageFlags::VideoDecodeSrc) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR;
+		if (static_cast<int32>(usage & ImageUsageFlags::VideoEncodeDpb) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR;
+		if (static_cast<int32>(usage & ImageUsageFlags::VideoEncodeDst) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_VIDEO_ENCODE_DST_BIT_KHR;
+		if (static_cast<int32>(usage & ImageUsageFlags::VideoEncodeSrc) != 0)
+			flags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR;
+
+		return flags;
+	}
+
+	constexpr VkFilter ConvertSamplerFilterVulkan(ME::Render::SamplerFilter filter)
+	{
+		switch (filter)
+		{
+		case SamplerFilter::None:
+			return VK_FILTER_MAX_ENUM;
+		case SamplerFilter::Nearest:
+			return VK_FILTER_NEAREST;
+		case SamplerFilter::Linear:
+			return VK_FILTER_LINEAR;
+		}
+	}
+
 	constexpr ME::Render::ImageLayout ConvertImageLayoutEngine(VkImageLayout layout)
 	{
 		return ImageLayout::Undefined;

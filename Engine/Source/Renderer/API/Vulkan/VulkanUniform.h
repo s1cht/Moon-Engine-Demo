@@ -16,6 +16,7 @@ namespace ME::Render
 	public:
 		void Shutdown() override;
 
+		void SetData(void* data, SIZE_T size) override;
 		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size) override;
 
 		inline uint32 GetResourceSet() const override { return m_DescriptorIndex; }

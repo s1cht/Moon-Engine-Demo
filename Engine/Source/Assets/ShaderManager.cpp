@@ -115,6 +115,9 @@ namespace ME::Assets
 		if (!shaderFile->IsOpen())
 			return CompileShader(shaderName, layouts, shaderStage);
 
+		compiledShader.Size = shaderFile->GetFileSize();
+		compiledShader.Bytecode = ::operator new(compiledShader.Size);
+
 		bool result = shaderFile->ReadBinary(compiledShader.Bytecode, compiledShader.Size);
 		if (!result)
 			return CompileShader(shaderName, layouts, shaderStage);

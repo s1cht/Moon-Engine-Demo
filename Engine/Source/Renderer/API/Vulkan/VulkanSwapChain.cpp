@@ -178,13 +178,17 @@ namespace ME::Render
 	{
 		Core::Containers::Array<VkImage> swapChainImages;
 		Texture2DSpecification specs = {};
-		specs.bOwnsImage = true;
+		specs.bOwnsImage = false;
 		specs.Data = nullptr;
 		specs.DataSize = -1;
 		specs.Format = ME::Render::ConvertFormatEngine(m_ImageFormat);
 		specs.Usage = ImageUsageFlags::ColorAttachment;
 		specs.IsDepth = false;
 		specs.IsStencil = false;
+		specs.MipLevels = 1;
+		specs.SampleCount = SampleCount::Count1;
+		specs.CubeMapCount = 0;
+		specs.Layout = ImageLayout::Present;
 		specs.Resolution.x = m_Extent.x;
 		specs.Resolution.y = m_Extent.y;
 

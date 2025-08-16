@@ -31,6 +31,7 @@ public:
 	void OnAttach() override;
 
 	void OnUpdate(float64 deltaTime) override;
+	void OnRender() override;
 	void OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext) override;
 
 	void OnEvent(ME::Core::Event & event) override;
@@ -44,9 +45,10 @@ private:
 
 private:
 	ME::Core::Memory::Reference<ME::Render::RenderPass> m_MainRenderPass;
-	ME::Core::Memory::Reference<ME::Render::Pipeline> m_Primary;
+	ME::Core::Memory::Reference<ME::Render::Pipeline> m_MainGraphicsPipeline;
 	ME::Render::VertexBufferLayout m_Layout;
 
+	ME::Core::Memory::Reference<ME::Render::Texture2D> m_StoneTexture;
 
 	ME::Core::Memory::Reference<ME::Render::RUniform> m_CameraBuffer;
 	ME::Core::Memory::Reference<ME::Render::RUniform> m_ObjectBuffer;
@@ -60,6 +62,7 @@ private:
 
 private:
 	ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>> m_Flashlight;
+	ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>> m_Torch;
 
 
 private:
@@ -71,7 +74,7 @@ private:
 
 private:
 	float32 m_MouseSensitivity = 0.12f;
-	float32 m_CameraSpeed = 0.005f;
+	float32 m_CameraSpeed = 0.01f;
 
 	bool m_CameraBufferUpdateRequired = false;
 	bool m_UpdateQueued = false;

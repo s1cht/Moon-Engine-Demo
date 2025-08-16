@@ -48,6 +48,9 @@ namespace ME::Core::IO
 		FileInfo GetFileInfo() const override { return m_FileInfo; }
 
 	private:
+		ME::Core::Containers::WideString GetFileName();
+
+	private:
 		HANDLE m_File;
 		FileInfo m_FileInfo;
 		FileReadMode m_FileReadMode;

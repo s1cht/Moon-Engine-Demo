@@ -112,7 +112,7 @@ namespace ME
 
 	LRESULT Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		/*ImGuiContext* imguiContext = ImGui::GetCurrentContext();
+		ImGuiContext* imguiContext = ImGui::GetCurrentContext();
 		if (!imguiContext)
 		{
 			return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -139,7 +139,7 @@ namespace ME
 		{
 			if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 				return true;
-		}*/
+		}
 
 		WindowData* wndData = static_cast<WindowData*>(GetPropW(hwnd, L"WndData"));
 

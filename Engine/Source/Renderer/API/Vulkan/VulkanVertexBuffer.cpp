@@ -36,15 +36,19 @@ namespace ME::Render
 		//not required in Vulkan
 	}
 
+	void VulkanVertexBuffer::SetData(void* data, SIZE_T size)
+	{
+		return;
+	}
+
 	void VulkanVertexBuffer::SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size)
 	{
 		ME_ASSERT(size == m_Size, TEXT("Trying to set data with different size in vertex buffer \"{0}\"!"));
-		VkResult result;
 		void* bufferData;
 		VkBufferCopy bufferCopy;
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 
-		result = vmaMapMemory(render->GetAllocator(), m_StagingAllocation, &bufferData);
+		VkResult result = vmaMapMemory(render->GetAllocator(), m_StagingAllocation, &bufferData);
 		if (ME_VK_FAILED(result))
 		{
 			ME_ASSERT(false, TEXT("Vulkan: data mapping in vertex buffer \"{0}\" failed! Error: {1}"), m_DebugName.GetString(), static_cast<int32>(result));
@@ -70,7 +74,6 @@ namespace ME::Render
 		barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-
 
 		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 	}

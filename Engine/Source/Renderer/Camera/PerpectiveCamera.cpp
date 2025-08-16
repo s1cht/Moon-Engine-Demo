@@ -79,10 +79,6 @@ namespace ME::Render::Camera
 
 	void PerpectiveCamera::SetRotation(float32 yaw, float32 pitch, float32 roll)
 	{
-		pitch = std::clamp(pitch, -89.f, 89.f);
-		if (yaw > 360.0f) yaw -= 360.f;
-		if (yaw < 0.0f) yaw += 359.f;
-
 		ME::Core::Math::Quaternion qYaw = ME::Core::Math::Quaternion::FromAxisAngle(Core::Math::Vector3D::UpVector, yaw);
 		ME::Core::Math::Quaternion qPitch = ME::Core::Math::Quaternion::FromAxisAngle(Core::Math::Vector3D::RightVector, pitch);
 

@@ -6,14 +6,14 @@ namespace ME::Assets
 		: m_GroupName(TEXT("default")), m_Valid(false)
 	{
 		m_Vertices = ME::Core::Containers::Array<Vertex>();
-		m_Indices = ME::Core::Containers::Array<int32>();
+		m_Indices = ME::Core::Containers::Array<uint32>();
 	}
 
 	ME::Assets::Mesh::Mesh(const ME::Core::Containers::String& groupName)
 		: m_GroupName(groupName), m_Valid(false)
 	{
 		m_Vertices = ME::Core::Containers::Array<Vertex>();
-		m_Indices = ME::Core::Containers::Array<int32>();
+		m_Indices = ME::Core::Containers::Array<uint32>();
 	}
 
 	ME::Assets::Mesh::~Mesh()
@@ -30,7 +30,7 @@ namespace ME::Assets
 		}
 	}
 
-	void Mesh::SetIndices(const ME::Core::Containers::Array<int32>& indices)
+	void Mesh::SetIndices(const ME::Core::Containers::Array<uint32>& indices)
 	{
 		m_Indices = indices;
 	}
@@ -50,9 +50,9 @@ namespace ME::Assets
 		m_Vertices = ME::Core::Containers::Array<Vertex>(std::move(vertices));
 	}
 
-	void Mesh::SetIndices(ME::Core::Containers::Array<int32>&& indexes)
+	void Mesh::SetIndices(ME::Core::Containers::Array<uint32>&& indexes)
 	{
-		m_Indices = ME::Core::Containers::Array<int32>(std::move(indexes));
+		m_Indices = ME::Core::Containers::Array<uint32>(std::move(indexes));
 	}
 
 	void Mesh::SetGroupName(ME::Core::Containers::String&& groupName)

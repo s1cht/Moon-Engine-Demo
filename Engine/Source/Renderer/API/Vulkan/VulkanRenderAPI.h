@@ -59,6 +59,9 @@ namespace ME::Render
 
 		ME::Core::Memory::Reference<ME::Render::CommandBuffer> GetAvailableCommandBuffer() override;
 
+		ME::Core::Memory::Reference<ME::Render::CommandBuffer> GetSingleUseCommandBuffer() override;
+		void SubmitAndFreeSingleUseCommandBuffer(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) override;
+
 		void Resize(uint32 x, uint32 y) override;
 
 		ME::Core::Memory::Reference<ME::Render::Framebuffer> GetAvailableFramebuffer() const override;

@@ -42,7 +42,7 @@ namespace ME::Render
 		SetData(commandBuffer, static_cast<int32*>(data), size / 4);
 	}
 
-	void VulkanIndexBuffer::SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, int32* indices, SIZE_T indexCount)
+	void VulkanIndexBuffer::SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, uint32* indices, SIZE_T indexCount)
 	{
 		ME_ASSERT(indexCount == m_IndexCount, TEXT("Trying to set data with different size in index buffer \"{0}\"!"));
 		VkResult result;
@@ -57,7 +57,7 @@ namespace ME::Render
 			Shutdown();
 		}
 
-		memcpy(bufferData, indices, sizeof(int32) * m_IndexCount);
+		memcpy(bufferData, indices, sizeof(uint32) * m_IndexCount);
 
 		vmaUnmapMemory(render->GetAllocator(), m_StagingAllocation);
 
@@ -68,7 +68,7 @@ namespace ME::Render
 			Shutdown();
 		}
 
-		bufferCopy = { 0, 0, sizeof(int32) * m_IndexCount};
+		bufferCopy = { 0, 0, sizeof(uint32) * m_IndexCount};
 
 		vkCmdCopyBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), m_StagingBuffer, m_Buffer, 1, &bufferCopy);
 
@@ -145,6 +145,10 @@ namespace ME::Render
 		allocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
 
 		return vmaCreateBuffer(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), &createInfo, &allocCreateInfo, &m_StagingBuffer, &m_StagingAllocation, nullptr);
+	}
+
+	void VulkanIndexBuffer::SetData(void* data, SIZE_T size)
+	{
 	}
 }
 #include "VulkanIndexBuffer.h"

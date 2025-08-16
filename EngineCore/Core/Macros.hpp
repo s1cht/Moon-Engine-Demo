@@ -72,7 +72,32 @@
 	
 	//Benchmark logging macros
 	#define ME_BENCHMARK_LOG(...)	SPDLOG_LOGGER_INFO(ME::Core::Utils::Logger::GetBenchmarkLogger(), __VA_ARGS__)
+
 #endif
+
+#define ME_FMT_FORMATTER_VALUE(val) obj.val
+#define ME_FMT_FORMATTER(type, str, ...)														\
+namespace fmt																					\
+{																								\
+	template <> struct formatter<type, char>													\
+	{																							\
+	    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }					\
+	    template <typename FormatContext>														\
+	    auto format(const type& obj, FormatContext& ctx) const									\
+		{																						\
+	        return format_to(ctx.out(), str, __VA_ARGS__);										\
+	    }																						\
+	};																							\
+	template <> struct formatter<type, wchar_t>													\
+	{																							\
+	    constexpr auto parse(basic_format_parse_context<wchar_t>& ctx) { return ctx.begin(); }	\
+	    template <typename FormatContext>														\
+	    auto format(const type& obj, FormatContext& ctx) const									\
+		{																						\
+	        return format_to(ctx.out(), L##str, __VA_ARGS__);									\
+	    }																						\
+	};																							\
+}
 
 
 // Assertion

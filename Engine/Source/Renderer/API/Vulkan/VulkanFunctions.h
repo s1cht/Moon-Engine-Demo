@@ -24,6 +24,8 @@ namespace ME::Render
 	constexpr MOON_API VkLogicOp ConvertLogicOperationVulkan(ME::Render::LogicOperation operation);
 	constexpr MOON_API VkDescriptorType ConvertResourceTypeVulkan(ME::Render::ResourceType type);
 	constexpr MOON_API VkShaderStageFlags ConvertShaderStageVulkan(ME::Render::ShaderStage stage);
+	constexpr MOON_API VkShaderStageFlags ConvertImageUsageFlagsVulkan(ME::Render::ImageUsageFlags usage);
+	constexpr MOON_API VkFilter ConvertSamplerFilterVulkan(ME::Render::SamplerFilter filter);
 
 	constexpr MOON_API ME::Render::Format ConvertFormatEngine(VkFormat format);
 	constexpr MOON_API ME::Render::ImageLayout ConvertImageLayoutEngine(VkImageLayout layout);

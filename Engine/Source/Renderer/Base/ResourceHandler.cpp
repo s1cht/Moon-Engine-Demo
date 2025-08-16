@@ -5,7 +5,7 @@
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<ME::Render::ResourceHandler> ResourceHandler::Create()
+	ME::Core::Memory::Reference<ME::Render::ResourceHandler> ResourceHandler::Create(uint32 bufferCount)
 	{
         RenderAPI::API renderAPI = Renderer::GetRenderAPI();
 
@@ -13,7 +13,7 @@ namespace ME::Render
         {
         case ME::Render::RenderAPI::API::Vulkan:
         {
-            return CreateVulkan();
+            return CreateVulkan(bufferCount);
         }
         default:
         {
