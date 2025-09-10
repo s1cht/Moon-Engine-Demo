@@ -47,16 +47,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\..\bin\Debug-windows-x86_64\Premake\</OutDir>
-    <IntDir>..\..\bin-int\Debug-windows-x86_64\Premake\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\Debug-windows-x86_64\Premake\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\Debug-windows-x86_64\Premake\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\..\bin\Release-windows-x86_64\Premake\</OutDir>
-    <IntDir>..\..\bin-int\Release-windows-x86_64\Premake\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\Release-windows-x86_64\Premake\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\Release-windows-x86_64\Premake\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribute|x64'">
-    <OutDir>..\..\bin\Distribute-windows-x86_64\Premake\</OutDir>
-    <IntDir>..\..\bin-int\Distribute-windows-x86_64\Premake\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\Distribute-windows-x86_64\Premake\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\Distribute-windows-x86_64\Premake\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PreBuildEvent>
@@ -100,10 +100,6 @@
     <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.2\spirv.lua" />
     <None Include="..\DXC\external\SPIRV-Headers\include\spirv\unified1\spirv.lua" />
     <None Include="..\ImGui\ImGui.lua" />
-    <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\1.0\spirv.lua" />
-    <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\1.1\spirv.lua" />
-    <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\1.2\spirv.lua" />
-    <None Include="..\SPIRV-Tools\external\SPIRV-Headers\include\spirv\unified1\spirv.lua" />
     <None Include="..\VulkanMemoryAllocator\premake5.lua" />
     <None Include="..\premake-core\binmodules\example\premake5.lua" />
     <None Include="..\premake-core\binmodules\luasocket\etc\b64.lua" />

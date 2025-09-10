@@ -16,6 +16,8 @@
 [submodule "vendor/xxHash"]
 	path = vendor/xxHash
 	url = https://github.com/s1cht/xxHash
+	branch = dev
 [submodule "vendor/VulkanMemoryAllocator"]
 	path = vendor/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+	branch = master
