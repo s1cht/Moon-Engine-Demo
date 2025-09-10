@@ -20,5 +20,5 @@
 	branch = dev
 [submodule "vendor/VulkanMemoryAllocator"]
 	path = vendor/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+	url = https://github.com/s1cht/VulkanMemoryAllocator
 	branch = master
