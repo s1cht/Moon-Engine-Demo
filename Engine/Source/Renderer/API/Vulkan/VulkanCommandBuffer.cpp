@@ -1,8 +1,8 @@
-﻿#include "VulkanCommandBuffer.h"
+﻿#include "VulkanCommandBuffer.hpp"
 
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
-#include "Renderer/API/Vulkan/VulkanRenderAPI.h"
+#include "Renderer/API/Vulkan/VulkanRenderAPI.hpp"
 
 namespace ME::Render
 {
@@ -49,8 +49,7 @@ namespace ME::Render
 
 	void VulkanCommandBuffer::Init()
 	{
-		VkResult result;
-		VulkanRenderAPI* render = RenderCommand::Get()->As<VulkanRenderAPI>();
+        VulkanRenderAPI* render = RenderCommand::Get()->As<VulkanRenderAPI>();
 
 		VkCommandBufferAllocateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -58,9 +57,9 @@ namespace ME::Render
 		info.commandPool = render->GetCommandPool();
 		info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-		result = vkAllocateCommandBuffers(render->GetDevice(), &info, &m_Buffer);
+		VkResult result = vkAllocateCommandBuffers(render->GetDevice(), &info, &m_Buffer);
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(false, TEXT("Vulkan command buffer allocation failed! Error: {0}"), (int32)result);
+            ME_ASSERT(false, "Vulkan command buffer allocation failed! Error: {0}", static_cast<int32>(result));
 
 		return;
 	}

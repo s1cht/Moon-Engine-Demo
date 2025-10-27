@@ -9,7 +9,7 @@
 #include "Core/Containers/Array.hpp"
 #include "Renderer/Base/Shader.h"
 
-#define SHADER_MODEL "_6_4"
+#define SHADER_MODEL "_6_9"
 
 namespace ME::Utility
 {
@@ -28,7 +28,7 @@ namespace ME::Utility
 	struct ShaderCompilationSpecification
 	{
 		// Path to shader
-		ME::Core::Containers::WideStringView Path;
+		ME::Core::WideStringView Path;
 
 		// Bytecode format
 		ME::Render::ShaderFormat Format;
@@ -37,16 +37,16 @@ namespace ME::Utility
 		ME::Render::ShaderStage ShaderType;
 
 		// Output path (optional, if global output path is set up)
-		ME::Core::Containers::WideStringView OutputPath;
+		ME::Core::WideStringView OutputPath;
 
 		// Entry-point (optional)
-		ME::Core::Containers::WideStringView EntryPoint;
+		ME::Core::WideStringView EntryPoint;
 
 		// Specific session-only defines (optional)
-		ME::Core::Containers::Array<ME::Core::Containers::WideString> Defines;
+		ME::Core::Containers::Array<ME::Core::WideString> Defines;
 
 		// Specific session-only includes (optional)
-		ME::Core::Containers::Array<ME::Core::Containers::WideString> Includes;
+		ME::Core::Containers::Array<ME::Core::WideString> Includes;
 
 		// Compiler optimizations level (default - Level3, if debug then disabled (ShaderOptimizationParameter::Disabled))
 		ME::Utility::ShaderOptimizationParameter Optimization;
@@ -55,17 +55,17 @@ namespace ME::Utility
 	struct CompilationResult
 	{
 		ShaderCompilationError Result;
-		ME::Core::Containers::String ErrorMsg;
+		ME::Core::String ErrorMsg;
 
 		ME::Render::CompiledShader Shader;
 	};
 
 	struct DisassemblyResult
 	{
-		ME::Core::Containers::AnsiString Dissassebly;
+		ME::Core::String Dissassebly;
 	};
 
-	class MOON_API ShaderCompiler
+	class MEAPI ShaderCompiler
 	{
 		struct ComDeleter
 		{
@@ -100,19 +100,19 @@ namespace ME::Utility
 		DisassemblyResult Disassemble(ME::Render::CompiledShader& shader);
 
 	public:
-		inline void SetGlobalDefines(ME::Core::Containers::Array<ME::Core::Containers::WideString>& defines) { m_Defines = defines; }
-		inline void SetGlobalIncludePaths(ME::Core::Containers::Array<ME::Core::Containers::WideString>& paths) { m_IncludePaths = paths; };
+		inline void SetGlobalDefines(ME::Core::Containers::Array<ME::Core::WideString>& defines) { m_Defines = defines; }
+		inline void SetGlobalIncludePaths(ME::Core::Containers::Array<ME::Core::WideString>& paths) { m_IncludePaths = paths; };
 		inline void SetDebugMode(bool mode) { m_DebugInfo = true; }
 
 	public:
-		inline ME::Core::Containers::Array<ME::Core::Containers::WideString>& GetGlobalDefines() { return m_Defines; }
-		inline ME::Core::Containers::Array<ME::Core::Containers::WideString>& GetGlobalIncludePaths() { return m_IncludePaths; }
+		inline ME::Core::Containers::Array<ME::Core::WideString>& GetGlobalDefines() { return m_Defines; }
+		inline ME::Core::Containers::Array<ME::Core::WideString>& GetGlobalIncludePaths() { return m_IncludePaths; }
 		inline bool DebugEnabled() const { return m_DebugInfo; }
 		inline bool CompilerWorks() const { return m_CompilerWorks; }
 
 	private:
-		ME::Core::Containers::WideStringView SelectTargetProfile(ME::Render::ShaderStage type) const;
-		ME::Core::Containers::WideStringView SelectOptimization(ME::Utility::ShaderOptimizationParameter parameter) const;
+		ME::Core::WideStringView SelectTargetProfile(ME::Render::ShaderStage type) const;
+		ME::Core::WideStringView SelectOptimization(ME::Utility::ShaderOptimizationParameter parameter) const;
 
 	private:
 		DisassemblyResult DisassembleSPIRV(ME::Render::CompiledShader& shader);
@@ -128,8 +128,8 @@ namespace ME::Utility
 
 	private:
 		bool m_DebugInfo;
-		ME::Core::Containers::Array<ME::Core::Containers::WideString> m_Defines;
-		ME::Core::Containers::Array<ME::Core::Containers::WideString> m_IncludePaths;
+		ME::Core::Containers::Array<ME::Core::WideString> m_Defines;
+		ME::Core::Containers::Array<ME::Core::WideString> m_IncludePaths;
 
 	};
 }

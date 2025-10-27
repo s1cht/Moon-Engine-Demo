@@ -4,14 +4,14 @@
 #include "Input/Keycodes.h"
 #include "Events/KeyEvents.h"
 
-#define PE_MAX_REPEAT_COUNT 50
+#define ME_MAX_REPEAT_COUNT 50
 
-#define CHECK_KEY_VALUE(x)	if (x > PE_MAX_KEYCODE_COUNT)\
+#define CHECK_KEY_VALUE(x)	if (x > ME_MAX_KEYCODE_COUNT)\
 								return false;
 
 namespace ME::Input::Devices
 {
-	class MOON_API Keyboard
+	class MEAPI Keyboard
 	{
 	public:
 		EVENT_CALLBACK_FUNCTION;
@@ -38,8 +38,8 @@ namespace ME::Input::Devices
 		}
 
 	private:
-		bool m_KeysPressing[PE_MAX_KEYCODE_COUNT];
-		uint8 m_KeyRepeatCount[PE_MAX_KEYCODE_COUNT];
+		bool m_KeysPressing[ME_MAX_KEYCODE_COUNT];
+		uint8 m_KeyRepeatCount[ME_MAX_KEYCODE_COUNT];
 
 	private:
 		bool m_CallbackExists = false;

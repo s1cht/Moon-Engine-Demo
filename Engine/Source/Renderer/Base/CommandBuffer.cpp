@@ -1,26 +1,19 @@
 ﻿#include "CommandBuffer.h"
-#include "Renderer/Renderer.h"
+#include "Renderer/Renderer.hpp"
 
 namespace ME::Render
 {
     ME::Core::Memory::Reference<Render::CommandBuffer> CommandBuffer::CreateCommandBuffer()
 	{
-        RenderAPI::API renderAPI = Renderer::GetRenderAPI();
-
-        switch (renderAPI)
+        switch (RenderAPI::API renderAPI = Renderer::GetRenderAPI())
         {
             case ME::Render::RenderAPI::API::Vulkan:
-            {
                 return CreateVulkanCommandBuffer();
-                break;
-            }
             default:
             {
-                ME_ASSERT(false, TEXT("CommandBuffer: Requested creation with unsupported API! {0}"), (int32)renderAPI);
+                ME_ASSERT(false, "CommandBuffer: Requested creation with unsupported API! {0}", static_cast<int32>(renderAPI));
                 return nullptr;
-                break;
             }
         }
 	}
-
 }

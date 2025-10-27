@@ -17,12 +17,12 @@ namespace ME::Input::Devices
 
 		if (pressed)
 		{
-			Events::MouseButtonPressedEvent event(PE_MOUSE_LEFTBUTTON);
+			Events::MouseButtonPressedEvent event(ME_MOUSE_LEFTBUTTON);
 			m_Callback(event);
 		}
 		else
 		{
-			Events::MouseButtonReleasedEvent event(PE_MOUSE_LEFTBUTTON);
+			Events::MouseButtonReleasedEvent event(ME_MOUSE_LEFTBUTTON);
 			m_Callback(event);
 		}
 	}
@@ -33,12 +33,12 @@ namespace ME::Input::Devices
 
 		if (pressed)
 		{
-			Events::MouseButtonPressedEvent event(PE_MOUSE_RIGHTBUTTON);
+			Events::MouseButtonPressedEvent event(ME_MOUSE_RIGHTBUTTON);
 			m_Callback(event);
 		}
 		else
 		{
-			Events::MouseButtonReleasedEvent event(PE_MOUSE_RIGHTBUTTON);
+			Events::MouseButtonReleasedEvent event(ME_MOUSE_RIGHTBUTTON);
 			m_Callback(event);
 		}
 	}
@@ -49,12 +49,12 @@ namespace ME::Input::Devices
 
 		if (pressed)
 		{
-			Events::MouseButtonPressedEvent event(PE_MOUSE_MIDDLEBUTTON);
+			Events::MouseButtonPressedEvent event(ME_MOUSE_MIDDLEBUTTON);
 			m_Callback(event);
 		}
 		else
 		{
-			Events::MouseButtonReleasedEvent event(PE_MOUSE_MIDDLEBUTTON);
+			Events::MouseButtonReleasedEvent event(ME_MOUSE_MIDDLEBUTTON);
 			m_Callback(event);
 		}
 	}
@@ -72,9 +72,9 @@ namespace ME::Input::Devices
 
 	void Mouse::SetSideButtonPressed(uint8 sideButton, bool pressed)
 	{
-		if (sideButton >= PE_MAX_MOUSE_SIDEBTN_COUNT)
+		if (sideButton >= ME_MAX_MOUSE_SIDEBTN_COUNT)
 		{
-			ME_ERROR(TEXT("Unknown side button caught!")); 
+			ME_ERROR("Unknown side button caught!"); 
 			return;
 		}
 
@@ -105,7 +105,7 @@ namespace ME::Input::Devices
 
 	void Mouse::Init()
 	{
-		for (SIZE_T i = 0; i < PE_MAX_MOUSE_SIDEBTN_COUNT; i++)
+		for (SIZE_T i = 0; i < ME_MAX_MOUSE_SIDEBTN_COUNT; i++)
 		{
 			m_SideButtonDown[i] = false;
 		}

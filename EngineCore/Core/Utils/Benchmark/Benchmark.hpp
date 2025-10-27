@@ -13,7 +13,7 @@ template<typename T>
 class Benchmarker
 {
 public:
-	Benchmarker(const ansichar* unit, const uchar* benchmarkName)
+	Benchmarker(const ansichar* unit, const char8* benchmarkName)
 	{
 		m_Unit = unit;
 		m_BenchmarkName = benchmarkName;
@@ -32,7 +32,7 @@ private:
 private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
 	std::chrono::time_point<std::chrono::high_resolution_clock> m_EndTime;
-	const uchar* m_BenchmarkName;
+	const char8* m_BenchmarkName;
 	const ansichar* m_Unit;
 
 };
@@ -56,8 +56,8 @@ inline void Benchmarker<T>::Stop()
 class Benchmarker
 {
 public:
-    Benchmarker(const uchar* unit, const uchar* benchmarkName, SIZE_T iterCount)
-        : m_Unit(unit), m_BenchmarkName(benchmarkName), m_IterCount(iterCount)
+    Benchmarker(const char8* unit, const char8* benchmarkName, SIZE_T iterCount)
+        : m_BenchmarkName(benchmarkName), m_Unit(unit), m_IterCount(iterCount)
     {
         QueryPerformanceFrequency(&m_Frequency);
         QueryPerformanceCounter(&m_StartTime);
@@ -74,18 +74,14 @@ private:
     {
         int64 elapsedTicks = m_EndTime.QuadPart - m_StartTime.QuadPart;
         float64 durationNs = (elapsedTicks * 1e9) / m_Frequency.QuadPart;
-        float64 oneIteration = (m_IterCount > 0) ? durationNs / (float64)m_IterCount : 0;
+        float64 oneIteration = (m_IterCount > 0) ? durationNs / static_cast<float64>(m_IterCount) : 0;
 
         if (m_IterCount > 1)
-        {
-            ME_BENCHMARK_LOG(TEXT("Scope {} with {} iterations, lasted: {:.3f} {}. Average per iteration: {:.5f} {}"), m_BenchmarkName, m_IterCount, 
-                durationNs, m_Unit, 
-                oneIteration, m_Unit);
-        }
+            ME_BENCHMARK_LOG("Scope {} with {} iterations, lasted: {:.3f} {}. Average per iteration: {:.5f} {}", ME_LOGGER_TEXT(m_BenchmarkName), m_IterCount,
+                durationNs, ME_LOGGER_TEXT(m_Unit),
+                oneIteration, ME_LOGGER_TEXT(m_Unit));
         else
-        {
-            ME_BENCHMARK_LOG(TEXT("Scope {}, lasted: {:.3f} {}"), m_BenchmarkName, durationNs, m_Unit);
-        }
+            ME_BENCHMARK_LOG("Scope {}, lasted: {:.3f} {}", ME_LOGGER_TEXT(m_BenchmarkName), durationNs, ME_LOGGER_TEXT(m_Unit));
     }
 
 private:
@@ -93,8 +89,8 @@ private:
     LARGE_INTEGER m_EndTime{};
     LARGE_INTEGER m_Frequency{};
 
-    const uchar* m_BenchmarkName;
-    const uchar* m_Unit;
+    const char8* m_BenchmarkName;
+    const char8* m_Unit;
     SIZE_T m_IterCount;
 };
 

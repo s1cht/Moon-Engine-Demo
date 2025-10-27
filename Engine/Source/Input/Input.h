@@ -15,7 +15,7 @@
 
 namespace ME::Input
 {
-	class MOON_API InputController
+	class MEAPI InputController
 	{
 	public:
 		using EventCallbackFunc = std::function<void(ME::Core::Event&)>;
@@ -28,7 +28,7 @@ namespace ME::Input
 		};
 
 	public:
-		~InputController();
+		~InputController() = default;
 
 	public:
 		void SetEventCallback(const EventCallbackFunc& callback);
@@ -47,7 +47,7 @@ namespace ME::Input
 
 	public:
 		static ME::Input::Keycode ConvertPlatformKeycode(uint16 keycode);
-		ME::Core::Containers::String ConvertKeycodeToString(uint8 keycode);
+		ME::Core::String ConvertKeycodeToString(uint8 keycode);
 
 	public:
 		inline static ME::Input::Devices::Keyboard& GetKeyboard() { return Get().m_Keyboard; };
@@ -67,14 +67,14 @@ namespace ME::Input
 		EventCallbackFunc m_Callback;
 
 	private:
-		ME::Core::Containers::String m_Chars[PE_MAX_KEYCODE_COUNT];
+		ME::Core::String m_Chars[ME_MAX_KEYCODE_COUNT];
 
 	};
 
 }
 
 #define BEGIN_KEYCODE_CONVERTATION switch(keycode) {
-#define END_KEYCODE_CONVERTATION default: return PE_UNKNOWN; }
+#define END_KEYCODE_CONVERTATION default: return ME_UNKNOWN; }
 
 #define ADD_KEYCODE(origKey, keycode) case origKey:		\
 										{ return keycode; break;}

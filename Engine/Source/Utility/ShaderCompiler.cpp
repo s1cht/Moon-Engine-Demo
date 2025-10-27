@@ -27,15 +27,14 @@ namespace ME::Utility
 	bool ShaderCompiler::InitCompiler()
 	{
 		if (m_CompilerWorks) return true;
-		HRESULT result;
-		IDxcUtils* utils = nullptr;
+        IDxcUtils* utils = nullptr;
 		IDxcCompiler3* compiler = nullptr;
 		IDxcIncludeHandler* includeHandler = nullptr;
 
-		result = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
+		HRESULT result = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
 		if (FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Shader compiler: failed to create DXC utils! DXC error: {0}"), (uint32)result);
+            ME_ASSERT(false, "Shader compiler: failed to create DXC utils! DXC error: {0}", static_cast<uint32>(result));
 			ShutdownCompiler();
 			return false;
 		}
@@ -44,7 +43,7 @@ namespace ME::Utility
 		result = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
 		if (FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Shader compiler: failed to create DXC compiler! DXC error: {0}"), (uint32)result);
+            ME_ASSERT(false, "Shader compiler: failed to create DXC compiler! DXC error: {0}", static_cast<uint32>(result));
 			ShutdownCompiler();
 			return false;
 		}
@@ -53,7 +52,7 @@ namespace ME::Utility
 		result = m_Utils->CreateDefaultIncludeHandler(&includeHandler);
 		if (FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Shader compiler: failed to create DXC include handler! DXC error: {0}"), (uint32)result);
+            ME_ASSERT(false, "Shader compiler: failed to create DXC include handler! DXC error: {0}", static_cast<uint32>(result));
 			ShutdownCompiler();
 			return false;
 		}
@@ -69,8 +68,6 @@ namespace ME::Utility
 	void ShaderCompiler::ShutdownCompiler()
 	{
 		if (!m_CompilerWorks) return;
-		HRESULT result;
-
 		m_Utils.reset(nullptr);
 		m_IncludeHandler.reset(nullptr);
 		m_Compiler.reset(nullptr);
@@ -81,8 +78,7 @@ namespace ME::Utility
 	CompilationResult ShaderCompiler::Compile(const ShaderCompilationSpecification& specification)
 	{
 		if (!m_CompilerWorks) return CompilationResult{ ShaderCompilationError::Failed, TEXT("Compiler doesn't work"), {nullptr, 0} };
-		HRESULT result;
-		CompilationResult compResult = {};
+        CompilationResult compResult = {};
 
 		uint32 codePage;
 		DxcBuffer buffer;
@@ -93,7 +89,7 @@ namespace ME::Utility
 		ME::Core::Containers::Array<LPCWSTR> arguments = {};
 
 		codePage = DXC_CP_ACP;
-		result = m_Utils->LoadFile(specification.Path.GetData(), &codePage, &sourceBlob);
+		HRESULT result = m_Utils->LoadFile(specification.Path.String(), &codePage, &sourceBlob);
 		if (FAILED(result))
 		{
 			compResult.Result = ShaderCompilationError::Failed;
@@ -105,18 +101,26 @@ namespace ME::Utility
 
 		// DXC Compile arguments
 		// Argument format:
-		// <path_to_shader> -E <entry_point (default: "main")> -Fo <output_file> -T <target_profile> (<nothing> | -spirv | -metal) (-Zi -Qsource_in_debug_module -Qembed_debug) -fdiagnostics-format=msvc -D <value>... -I <path>...
+		// <path_to_shader> 
+		// -E <entry_point (default: "main")> 
+		// -T <target_profile> (<nothing> | -spirv | -metal) 
+		// if debug: -Zi -Qsource_in_debug_module -Qembed_debug 
+		// -Fo <output_file> 
+		// -Zpr 
+		// -fdiagnostics-format=msvc 
+		// -D <value>... 
+		// -I <path>...
 
-		arguments.EmplaceBack(specification.Path.GetData());
+		arguments.EmplaceBack(specification.Path.String());
 
 		arguments.EmplaceBack(SC_ARG("E"));
-		arguments.EmplaceBack(specification.EntryPoint.GetSize() > 0 ? specification.EntryPoint.GetData() : SC_VALUE("main"));
+		arguments.EmplaceBack(specification.EntryPoint.Size() > 0 ? specification.EntryPoint.String() : SC_VALUE("main"));
 
 		arguments.EmplaceBack(SC_ARG("T"));
-		arguments.EmplaceBack(SelectTargetProfile(specification.ShaderType).GetData());
+		arguments.EmplaceBack(SelectTargetProfile(specification.ShaderType).String());
 
 		arguments.EmplaceBack(SC_ARG("Fo"));
-		arguments.EmplaceBack(specification.OutputPath.GetData());
+		arguments.EmplaceBack(specification.OutputPath.String());
 
 		arguments.EmplaceBack(SC_ARG("Zpr"));
 
@@ -130,7 +134,7 @@ namespace ME::Utility
 		else if (specification.Format == Render::ShaderFormat::Metal)
 			arguments.EmplaceBack(SC_ARG("metal"));
 
-		arguments.EmplaceBack(SelectOptimization(specification.Optimization).GetData());
+		arguments.EmplaceBack(SelectOptimization(specification.Optimization).String());
 
 		if (m_DebugInfo)
 		{
@@ -144,32 +148,32 @@ namespace ME::Utility
 		for (const auto& define : specification.Defines)
 		{
 			arguments.EmplaceBack(SC_ARG("D"));
-			arguments.EmplaceBack(define.GetString());
+			arguments.EmplaceBack(define.String());
 		}
 
 		for (const auto& define : m_Defines)
 		{
 			arguments.EmplaceBack(SC_ARG("D"));
-			arguments.EmplaceBack(define.GetString());
+			arguments.EmplaceBack(define.String());
 		}
 
 		for (const auto& include : m_Defines)
 		{
 			arguments.EmplaceBack(SC_ARG("I"));
-			arguments.EmplaceBack(include.GetString());
+			arguments.EmplaceBack(include.String());
 		}
 
 		for (const auto& include : m_IncludePaths)
 		{
 			arguments.EmplaceBack(SC_ARG("I"));
-			arguments.EmplaceBack(include.GetString());
+			arguments.EmplaceBack(include.String());
 		}
 
 		buffer.Encoding = DXC_CP_ACP;
 		buffer.Ptr = sourceBlob->GetBufferPointer();
 		buffer.Size = sourceBlob->GetBufferSize();
 
-		result = m_Compiler->Compile(&buffer, arguments.Data(), arguments.GetSize(), m_IncludeHandler.get(), IID_PPV_ARGS(&dxcResult));
+		result = m_Compiler->Compile(&buffer, arguments.Data(), arguments.Size(), m_IncludeHandler.get(), IID_PPV_ARGS(&dxcResult));
 		if (SUCCEEDED(result))
 			dxcResult->GetStatus(&result);
 
@@ -181,7 +185,7 @@ namespace ME::Utility
 			if (SUCCEEDED(result) && errorBlob)
 			{
 				compResult.Result = ShaderCompilationError::Failed;
-				compResult.ErrorMsg = ME::Core::Containers::AnsiStringToString(Core::Containers::AnsiString(static_cast<const ansichar*>(errorBlob->GetBufferPointer())));
+				compResult.ErrorMsg = static_cast<const char8*>(errorBlob->GetBufferPointer());
 				compResult.Shader.Bytecode = nullptr;
 				compResult.Shader.Size = 0;
 				compResult.Shader.Format = Render::ShaderFormat::None;
@@ -228,7 +232,7 @@ namespace ME::Utility
 		}
 	}
 
-	ME::Core::Containers::WideStringView ShaderCompiler::SelectTargetProfile(ME::Render::ShaderStage type) const
+	ME::Core::WideStringView ShaderCompiler::SelectTargetProfile(ME::Render::ShaderStage type) const
 	{
 		switch (type)
 		{
@@ -238,14 +242,14 @@ namespace ME::Utility
 			case ME::Render::ShaderStage::Hull: return CONCAT_TARGET_PROFILE(L"hs", SHADER_MODEL);
 			case ME::Render::ShaderStage::Domain: return CONCAT_TARGET_PROFILE(L"ds", SHADER_MODEL);
 			case ME::Render::ShaderStage::Compute: return CONCAT_TARGET_PROFILE(L"cs", SHADER_MODEL);
-			//case Pawn::Render::ShaderStage::Vertex: return CONCAT_TARGET_PROFILE(L"lib", SHADER_MODEL);
-			//case Pawn::Render::ShaderStage::Vertex: return CONCAT_TARGET_PROFILE(L"ms", SHADER_MODEL);
-			//case Pawn::Render::ShaderStage::Vertex: return CONCAT_TARGET_PROFILE(L"as", SHADER_MODEL);
-			case ME::Render::ShaderStage::None: ME_ASSERT(false, TEXT("Shader compiler: can't select target profile for None!")); return L"";
+			case ME::Render::ShaderStage::Task: return CONCAT_TARGET_PROFILE(L"as", SHADER_MODEL);
+			case ME::Render::ShaderStage::Mesh: return CONCAT_TARGET_PROFILE(L"ms", SHADER_MODEL);
+			case ME::Render::ShaderStage::None: ME_ASSERT(false, "Shader compiler: can't select target profile for None!"); return TEXTW("");
 		}
+		return TEXTW("");
 	}
 
-	ME::Core::Containers::WideStringView ShaderCompiler::SelectOptimization(ME::Utility::ShaderOptimizationParameter parameter) const
+	ME::Core::WideStringView ShaderCompiler::SelectOptimization(ME::Utility::ShaderOptimizationParameter parameter) const
 	{
 		switch (parameter)
 		{
@@ -259,28 +263,26 @@ namespace ME::Utility
 
 	DisassemblyResult ShaderCompiler::DisassembleSPIRV(Render::CompiledShader& shader)
 	{
-		spv_result_t result;
-		DisassemblyResult disResult;
+        DisassemblyResult disResult;
 		spv_text disassembly;
 		spv_diagnostic diagnostics;
 
-		result = spvBinaryToText(m_SpvContext, 
-			static_cast<uint32*>(shader.Bytecode), 
-			shader.Size / 4, 
-			SPV_BINARY_TO_TEXT_OPTION_COMMENT | 
-			SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES | 
-			SPV_BINARY_TO_TEXT_OPTION_SHOW_BYTE_OFFSET | 
-			SPV_BINARY_TO_TEXT_OPTION_NESTED_INDENT, 
-			&disassembly, &diagnostics);
+		spv_result_t result = spvBinaryToText(m_SpvContext,
+                                              static_cast<uint32*>(shader.Bytecode),
+                                              shader.Size / 4,
+                                              SPV_BINARY_TO_TEXT_OPTION_COMMENT |
+                                              SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES |
+                                              SPV_BINARY_TO_TEXT_OPTION_SHOW_BYTE_OFFSET |
+                                              SPV_BINARY_TO_TEXT_OPTION_NESTED_INDENT,
+                                              &disassembly, &diagnostics);
 		if (result != SPV_SUCCESS || disassembly->length <= 0)
 		{
-			ME_ERROR(TEXT("Shader compiler: shader disassembly failed"));
+			ME_ERROR("Shader compiler: shader disassembly failed");
 			disResult.Dissassebly = "";
-
 			return disResult;
 		}
 
-		disResult.Dissassebly = ME::Core::Containers::AnsiString(disassembly->str, disassembly->length);
+		disResult.Dissassebly = ME::Core::String(disassembly->str, disassembly->length);
 
 		spvTextDestroy(disassembly);
 		spvDiagnosticDestroy(diagnostics);
@@ -304,29 +306,26 @@ namespace ME::Utility
 		if (SUCCEEDED(result))
 			dxcResult->GetStatus(&result);
 
-
 		if (FAILED(result) && dxcResult)
 		{
 			IDxcBlobEncoding* errorBlob;
 			result = dxcResult->GetErrorBuffer(&errorBlob);
 			if (SUCCEEDED(result) && errorBlob)
 			{
-				ME_ERROR(TEXT("Shader compiler: shader disassembly failed: {0}"), ME::Core::Containers::AnsiStringToString(Core::Containers::AnsiString(static_cast<const ansichar*>(errorBlob->GetBufferPointer()))));
+				ME_ERROR("Shader compiler: shader disassembly failed: {0}", static_cast<const asciichar*>(errorBlob->GetBufferPointer()));
 				disResult.Dissassebly = "";
-
 				return disResult;
 			}
 		}
 		else if (FAILED(result))
 		{
 			disResult.Dissassebly = "";
-
 			return disResult;
 		}
 
 		dxcResult->GetResult(&disassembly);
 
-		disResult.Dissassebly = ME::Core::Containers::AnsiString(static_cast<const ansichar*>(disassembly->GetBufferPointer()), disassembly->GetBufferSize());
+		disResult.Dissassebly = ME::Core::String(static_cast<const char8*>(disassembly->GetBufferPointer()), disassembly->GetBufferSize());
 
 		disassembly->Release();
 		dxcResult->Release();

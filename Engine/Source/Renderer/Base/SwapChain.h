@@ -18,7 +18,7 @@ namespace ME
 	
 	namespace Render
 	{
-		class MOON_API SwapChain : public RenderObject
+		class MEAPI SwapChain : public RenderObject
 		{
 		public:
 			virtual void Resize(uint32 x, uint32 y) = 0;
@@ -26,7 +26,9 @@ namespace ME
 			virtual void SetVSync(bool enabled) = 0;
 
 			virtual uint32 GetFrameIndex() const = 0;
+			virtual uint32 GetImageIndex() const = 0;
 			virtual uint32 GetFrameCount() const = 0;
+			virtual uint32 GetLastImageIndex() const = 0;
 
 			virtual Core::Math::Resolution2D<uint32> GetExtent() = 0;
 			virtual ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> GetImages() = 0;

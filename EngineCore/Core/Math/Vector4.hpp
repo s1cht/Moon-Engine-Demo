@@ -27,9 +27,9 @@ namespace ME::Core::Math
 		};
 
 	public:
-		CORE_API static const Vector4<T> ZeroVector;
+		COREAPI static const Vector4<T> ZeroVector;
 
-		CORE_API static const Vector4<T> OneVector;
+		COREAPI static const Vector4<T> OneVector;
 
 	public:
 		Vector4();

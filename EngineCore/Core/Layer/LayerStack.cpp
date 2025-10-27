@@ -1,5 +1,5 @@
 #include "LayerStack.hpp"
-#include "Core/Containers/Algorithm.hpp"
+#include <Core/Algorithm.hpp>
 
 namespace ME::Core
 {

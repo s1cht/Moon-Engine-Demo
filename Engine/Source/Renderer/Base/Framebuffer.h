@@ -15,11 +15,9 @@ namespace ME::Render
 		uint32 Layers;
 	};
 
-	class MOON_API Framebuffer : public RenderObject
+	class MEAPI Framebuffer : public RenderObject
 	{
 	public:
-		virtual ~Framebuffer() = default;
-
 		virtual inline const FramebufferSpecification& GetSpecification() const = 0;
 
 	public:

@@ -1,4 +1,4 @@
-﻿#include "VulkanFunctions.h"
+﻿#include "VulkanFunctions.hpp"
 
 namespace ME::Render
 {
@@ -129,10 +129,9 @@ namespace ME::Render
 		case Format::D32_SFLOAT_S8_UINT: return VK_FORMAT_D32_SFLOAT_S8_UINT;
 
 		case Format::None:
+            return VK_FORMAT_UNDEFINED;
 		default:
-		{
-
-		}
+            return VK_FORMAT_UNDEFINED;
 		}
 	}
 
@@ -140,16 +139,22 @@ namespace ME::Render
 	{
 		switch (layout)
 		{
-		case ImageLayout::Undefined: return VK_IMAGE_LAYOUT_UNDEFINED;
-		case ImageLayout::Present: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-		case ImageLayout::ColorAttachment: return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		case ImageLayout::DepthStencilAttachment: return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-		case ImageLayout::ShaderReadOnly: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		case ImageLayout::TransferSrc: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		case ImageLayout::TransferDst: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		default:
-		{
-		}
+			case ImageLayout::Undefined:
+			    return VK_IMAGE_LAYOUT_UNDEFINED;
+			case ImageLayout::Present:
+			    return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			case ImageLayout::ColorAttachment:
+			    return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			case ImageLayout::DepthStencilAttachment:
+			    return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+			case ImageLayout::ShaderReadOnly:
+			    return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			case ImageLayout::TransferSrc:
+			    return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			case ImageLayout::TransferDst:
+			    return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			default:
+			    return VK_IMAGE_LAYOUT_MAX_ENUM;
 		}
 	}
 
@@ -157,25 +162,30 @@ namespace ME::Render
 	{
 		switch (operation)
 		{
-		case LoadOperation::None: return VK_ATTACHMENT_LOAD_OP_NONE;
-		case LoadOperation::DontCare: return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		case LoadOperation::Load: return VK_ATTACHMENT_LOAD_OP_LOAD;
-		case LoadOperation::Clear: return VK_ATTACHMENT_LOAD_OP_CLEAR;
-		default:
-		{
-		}
+			case LoadOperation::None:
+			    return VK_ATTACHMENT_LOAD_OP_NONE;
+			case LoadOperation::DontCare:
+			    return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			case LoadOperation::Load:
+			    return VK_ATTACHMENT_LOAD_OP_LOAD;
+			case LoadOperation::Clear:
+			    return VK_ATTACHMENT_LOAD_OP_CLEAR;
+			default:
+			    return VK_ATTACHMENT_LOAD_OP_MAX_ENUM;
 		}
 	}
 	constexpr VkAttachmentStoreOp ConvertAttachmentStoreOperationVulkan(ME::Render::StoreOperation operation)
 	{
 		switch (operation)
 		{
-		case StoreOperation::None: return VK_ATTACHMENT_STORE_OP_NONE;
-		case StoreOperation::DontCare: return VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		case StoreOperation::Store: return VK_ATTACHMENT_STORE_OP_STORE;
-		default:
-		{
-		}
+			case StoreOperation::None:
+			    return VK_ATTACHMENT_STORE_OP_NONE;
+			case StoreOperation::DontCare:
+			    return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			case StoreOperation::Store:
+			    return VK_ATTACHMENT_STORE_OP_STORE;
+			default:
+			    return VK_ATTACHMENT_STORE_OP_MAX_ENUM;
 		}
 	}
 
@@ -183,14 +193,18 @@ namespace ME::Render
 	{
 		switch (bindPoint)
 		{
-		case PipelineBindPoint::Graphics: return VK_PIPELINE_BIND_POINT_GRAPHICS;
-		case PipelineBindPoint::Compute: return VK_PIPELINE_BIND_POINT_COMPUTE;
-		case PipelineBindPoint::RayTracing: return VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
-		case PipelineBindPoint::SubpassShading: return VK_PIPELINE_BIND_POINT_SUBPASS_SHADING_HUAWEI;
-		case PipelineBindPoint::None:
-		default:
-		{
-		}
+			case PipelineBindPoint::Graphics:
+		        return VK_PIPELINE_BIND_POINT_GRAPHICS;
+			case PipelineBindPoint::Compute:
+		        return VK_PIPELINE_BIND_POINT_COMPUTE;
+			case PipelineBindPoint::RayTracing:
+		        return VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
+			case PipelineBindPoint::SubpassShading:
+		        return VK_PIPELINE_BIND_POINT_SUBPASS_SHADING_HUAWEI;
+            case PipelineBindPoint::None:
+		        return VK_PIPELINE_BIND_POINT_MAX_ENUM;
+			default:
+		        return VK_PIPELINE_BIND_POINT_MAX_ENUM;
 		}
 	}
 
@@ -289,132 +303,129 @@ namespace ME::Render
 	{
 		switch (format)
 		{
-			// R 8-BIT
-		case VK_FORMAT_R8_UINT: return Format::R8_UINT;
-		case VK_FORMAT_R8_SINT: return Format::R8_SINT;
-		case VK_FORMAT_R8_SRGB: return Format::R8_SRGB;
-		case VK_FORMAT_R8_UNORM: return Format::R8_UNORM;
-		case VK_FORMAT_R8_SNORM: return Format::R8_SNORM;
-		case VK_FORMAT_R8_SSCALED: return Format::R8_SSCALED;
-		case VK_FORMAT_R8_USCALED: return Format::R8_USCALED;
-			// RG 8-BIT
-		case VK_FORMAT_R8G8_UINT: return Format::RG8_UINT;
-		case VK_FORMAT_R8G8_SINT: return Format::RG8_SINT;
-		case VK_FORMAT_R8G8_SRGB: return Format::RG8_SRGB;
-		case VK_FORMAT_R8G8_UNORM: return Format::RG8_UNORM;
-		case VK_FORMAT_R8G8_SNORM: return Format::RG8_SNORM;
-		case VK_FORMAT_R8G8_SSCALED: return Format::RG8_SSCALED;
-		case VK_FORMAT_R8G8_USCALED: return Format::RG8_USCALED;
-			// RGB 8-BIT
-		case VK_FORMAT_R8G8B8_UINT: return Format::RGB8_UINT;
-		case VK_FORMAT_R8G8B8_SINT: return Format::RGB8_SINT;
-		case VK_FORMAT_R8G8B8_SRGB: return Format::RGB8_SRGB;
-		case VK_FORMAT_R8G8B8_UNORM: return Format::RGB8_UNORM;
-		case VK_FORMAT_R8G8B8_SNORM: return Format::RGB8_SNORM;
-		case VK_FORMAT_R8G8B8_SSCALED: return Format::RGB8_SSCALED;
-		case VK_FORMAT_R8G8B8_USCALED: return Format::RGB8_USCALED;
-			// BGR 8-BIT
-		case VK_FORMAT_B8G8R8_UINT: return Format::BGR8_UINT;
-		case VK_FORMAT_B8G8R8_SINT: return Format::BGR8_SINT;
-		case VK_FORMAT_B8G8R8_SRGB: return Format::BGR8_SRGB;
-		case VK_FORMAT_B8G8R8_UNORM: return Format::BGR8_UNORM;
-		case VK_FORMAT_B8G8R8_SNORM: return Format::BGR8_SNORM;
-		case VK_FORMAT_B8G8R8_USCALED: return Format::BGR8_USCALED;
-		case VK_FORMAT_B8G8R8_SSCALED: return Format::BGR8_SSCALED;
-			// RGBA 8-BIT
-		case VK_FORMAT_R8G8B8A8_UINT: return Format::RGBA8_UINT;
-		case VK_FORMAT_R8G8B8A8_SINT: return Format::RGBA8_SINT;
-		case VK_FORMAT_R8G8B8A8_SRGB: return Format::RGBA8_SRGB;
-		case VK_FORMAT_R8G8B8A8_UNORM: return Format::RGBA8_UNORM;
-		case VK_FORMAT_R8G8B8A8_SNORM: return Format::RGBA8_SNORM;
-		case VK_FORMAT_R8G8B8A8_USCALED: return Format::RGBA8_USCALED;
-		case VK_FORMAT_R8G8B8A8_SSCALED: return Format::RGBA8_SSCALED;
-			// BGRA 8-BIT
-		case VK_FORMAT_B8G8R8A8_UINT: return Format::BGRA8_UINT;
-		case VK_FORMAT_B8G8R8A8_SINT: return Format::BGRA8_SINT;
-		case VK_FORMAT_B8G8R8A8_SRGB: return Format::BGRA8_SRGB;
-		case VK_FORMAT_B8G8R8A8_UNORM: return Format::BGRA8_UNORM;
-		case VK_FORMAT_B8G8R8A8_SNORM: return Format::BGRA8_SNORM;
-		case VK_FORMAT_B8G8R8A8_USCALED: return Format::BGRA8_USCALED;
-		case VK_FORMAT_B8G8R8A8_SSCALED: return Format::BGRA8_SSCALED;
+			    // R 8-BIT
+			case VK_FORMAT_R8_UINT: return Format::R8_UINT;
+			case VK_FORMAT_R8_SINT: return Format::R8_SINT;
+			case VK_FORMAT_R8_SRGB: return Format::R8_SRGB;
+			case VK_FORMAT_R8_UNORM: return Format::R8_UNORM;
+			case VK_FORMAT_R8_SNORM: return Format::R8_SNORM;
+			case VK_FORMAT_R8_SSCALED: return Format::R8_SSCALED;
+			case VK_FORMAT_R8_USCALED: return Format::R8_USCALED;
+				// RG 8-BIT
+			case VK_FORMAT_R8G8_UINT: return Format::RG8_UINT;
+			case VK_FORMAT_R8G8_SINT: return Format::RG8_SINT;
+			case VK_FORMAT_R8G8_SRGB: return Format::RG8_SRGB;
+			case VK_FORMAT_R8G8_UNORM: return Format::RG8_UNORM;
+			case VK_FORMAT_R8G8_SNORM: return Format::RG8_SNORM;
+			case VK_FORMAT_R8G8_SSCALED: return Format::RG8_SSCALED;
+			case VK_FORMAT_R8G8_USCALED: return Format::RG8_USCALED;
+				// RGB 8-BIT
+			case VK_FORMAT_R8G8B8_UINT: return Format::RGB8_UINT;
+			case VK_FORMAT_R8G8B8_SINT: return Format::RGB8_SINT;
+			case VK_FORMAT_R8G8B8_SRGB: return Format::RGB8_SRGB;
+			case VK_FORMAT_R8G8B8_UNORM: return Format::RGB8_UNORM;
+			case VK_FORMAT_R8G8B8_SNORM: return Format::RGB8_SNORM;
+			case VK_FORMAT_R8G8B8_SSCALED: return Format::RGB8_SSCALED;
+			case VK_FORMAT_R8G8B8_USCALED: return Format::RGB8_USCALED;
+				// BGR 8-BIT
+			case VK_FORMAT_B8G8R8_UINT: return Format::BGR8_UINT;
+			case VK_FORMAT_B8G8R8_SINT: return Format::BGR8_SINT;
+			case VK_FORMAT_B8G8R8_SRGB: return Format::BGR8_SRGB;
+			case VK_FORMAT_B8G8R8_UNORM: return Format::BGR8_UNORM;
+			case VK_FORMAT_B8G8R8_SNORM: return Format::BGR8_SNORM;
+			case VK_FORMAT_B8G8R8_USCALED: return Format::BGR8_USCALED;
+			case VK_FORMAT_B8G8R8_SSCALED: return Format::BGR8_SSCALED;
+				// RGBA 8-BIT
+			case VK_FORMAT_R8G8B8A8_UINT: return Format::RGBA8_UINT;
+			case VK_FORMAT_R8G8B8A8_SINT: return Format::RGBA8_SINT;
+			case VK_FORMAT_R8G8B8A8_SRGB: return Format::RGBA8_SRGB;
+			case VK_FORMAT_R8G8B8A8_UNORM: return Format::RGBA8_UNORM;
+			case VK_FORMAT_R8G8B8A8_SNORM: return Format::RGBA8_SNORM;
+			case VK_FORMAT_R8G8B8A8_USCALED: return Format::RGBA8_USCALED;
+			case VK_FORMAT_R8G8B8A8_SSCALED: return Format::RGBA8_SSCALED;
+				// BGRA 8-BIT
+			case VK_FORMAT_B8G8R8A8_UINT: return Format::BGRA8_UINT;
+			case VK_FORMAT_B8G8R8A8_SINT: return Format::BGRA8_SINT;
+			case VK_FORMAT_B8G8R8A8_SRGB: return Format::BGRA8_SRGB;
+			case VK_FORMAT_B8G8R8A8_UNORM: return Format::BGRA8_UNORM;
+			case VK_FORMAT_B8G8R8A8_SNORM: return Format::BGRA8_SNORM;
+			case VK_FORMAT_B8G8R8A8_USCALED: return Format::BGRA8_USCALED;
+			case VK_FORMAT_B8G8R8A8_SSCALED: return Format::BGRA8_SSCALED;
 
-			// R 16-BIT
-		case VK_FORMAT_R16_UINT: return Format::R16_UINT;
-		case VK_FORMAT_R16_SINT: return Format::R16_SINT;
-		case VK_FORMAT_R16_UNORM: return Format::R16_UNORM;
-		case VK_FORMAT_R16_SNORM: return Format::R16_SNORM;
-		case VK_FORMAT_R16_SFLOAT: return Format::R16_SFLOAT;
-		case VK_FORMAT_R16_USCALED: return Format::R16_USCALED;
-		case VK_FORMAT_R16_SSCALED: return Format::R16_SSCALED;
-			// RG 16-BIT
-		case VK_FORMAT_R16G16_UINT: return Format::RG16_UINT;
-		case VK_FORMAT_R16G16_SINT: return Format::RG16_SINT;
-		case VK_FORMAT_R16G16_UNORM: return Format::RG16_UNORM;
-		case VK_FORMAT_R16G16_SNORM: return Format::RG16_SNORM;
-		case VK_FORMAT_R16G16_SFLOAT: return Format::RG16_SFLOAT;
-		case VK_FORMAT_R16G16_USCALED: return Format::RG16_USCALED;
-		case VK_FORMAT_R16G16_SSCALED: return Format::RG16_SSCALED;
-			// RGB 16-BIT
-		case VK_FORMAT_R16G16B16_UINT: return Format::RGB16_UINT;
-		case VK_FORMAT_R16G16B16_SINT: return Format::RGB16_SINT;
-		case VK_FORMAT_R16G16B16_UNORM: return Format::RGB16_UNORM;
-		case VK_FORMAT_R16G16B16_SNORM: return Format::RGB16_SNORM;
-		case VK_FORMAT_R16G16B16_SFLOAT: return Format::RGB16_SFLOAT;
-		case VK_FORMAT_R16G16B16_USCALED: return Format::RGB16_USCALED;
-		case VK_FORMAT_R16G16B16_SSCALED: return Format::RGB16_SSCALED;
-			// RGBA 16-BIT
-		case VK_FORMAT_R16G16B16A16_UINT: return Format::RGBA16_UINT;
-		case VK_FORMAT_R16G16B16A16_SINT: return Format::RGBA16_SINT;
-		case VK_FORMAT_R16G16B16A16_UNORM: return Format::RGBA16_UNORM;
-		case VK_FORMAT_R16G16B16A16_SNORM: return Format::RGBA16_SNORM;
-		case VK_FORMAT_R16G16B16A16_SFLOAT: return Format::RGBA16_SFLOAT;
-		case VK_FORMAT_R16G16B16A16_USCALED: return Format::RGBA16_USCALED;
-		case VK_FORMAT_R16G16B16A16_SSCALED: return Format::RGBA16_SSCALED;
+				// R 16-BIT
+			case VK_FORMAT_R16_UINT: return Format::R16_UINT;
+			case VK_FORMAT_R16_SINT: return Format::R16_SINT;
+			case VK_FORMAT_R16_UNORM: return Format::R16_UNORM;
+			case VK_FORMAT_R16_SNORM: return Format::R16_SNORM;
+			case VK_FORMAT_R16_SFLOAT: return Format::R16_SFLOAT;
+			case VK_FORMAT_R16_USCALED: return Format::R16_USCALED;
+			case VK_FORMAT_R16_SSCALED: return Format::R16_SSCALED;
+				// RG 16-BIT
+			case VK_FORMAT_R16G16_UINT: return Format::RG16_UINT;
+			case VK_FORMAT_R16G16_SINT: return Format::RG16_SINT;
+			case VK_FORMAT_R16G16_UNORM: return Format::RG16_UNORM;
+			case VK_FORMAT_R16G16_SNORM: return Format::RG16_SNORM;
+			case VK_FORMAT_R16G16_SFLOAT: return Format::RG16_SFLOAT;
+			case VK_FORMAT_R16G16_USCALED: return Format::RG16_USCALED;
+			case VK_FORMAT_R16G16_SSCALED: return Format::RG16_SSCALED;
+				// RGB 16-BIT
+			case VK_FORMAT_R16G16B16_UINT: return Format::RGB16_UINT;
+			case VK_FORMAT_R16G16B16_SINT: return Format::RGB16_SINT;
+			case VK_FORMAT_R16G16B16_UNORM: return Format::RGB16_UNORM;
+			case VK_FORMAT_R16G16B16_SNORM: return Format::RGB16_SNORM;
+			case VK_FORMAT_R16G16B16_SFLOAT: return Format::RGB16_SFLOAT;
+			case VK_FORMAT_R16G16B16_USCALED: return Format::RGB16_USCALED;
+			case VK_FORMAT_R16G16B16_SSCALED: return Format::RGB16_SSCALED;
+				// RGBA 16-BIT
+			case VK_FORMAT_R16G16B16A16_UINT: return Format::RGBA16_UINT;
+			case VK_FORMAT_R16G16B16A16_SINT: return Format::RGBA16_SINT;
+			case VK_FORMAT_R16G16B16A16_UNORM: return Format::RGBA16_UNORM;
+			case VK_FORMAT_R16G16B16A16_SNORM: return Format::RGBA16_SNORM;
+			case VK_FORMAT_R16G16B16A16_SFLOAT: return Format::RGBA16_SFLOAT;
+			case VK_FORMAT_R16G16B16A16_USCALED: return Format::RGBA16_USCALED;
+			case VK_FORMAT_R16G16B16A16_SSCALED: return Format::RGBA16_SSCALED;
 
-			// R 32-BIT
-		case VK_FORMAT_R32_UINT: return Format::R32_UINT;
-		case VK_FORMAT_R32_SINT: return Format::R32_SINT;
-		case VK_FORMAT_R32_SFLOAT: return Format::R32_SFLOAT;
-			// RG 32-BIT
-		case VK_FORMAT_R32G32_UINT: return Format::RG32_UINT;
-		case VK_FORMAT_R32G32_SINT: return Format::RG32_SINT;
-		case VK_FORMAT_R32G32_SFLOAT: return Format::RG32_SFLOAT;
-			// RGB 32-BIT
-		case VK_FORMAT_R32G32B32_UINT: return Format::RGB32_UINT;
-		case VK_FORMAT_R32G32B32_SINT: return Format::RGB32_SINT;
-		case VK_FORMAT_R32G32B32_SFLOAT: return Format::RGB32_SFLOAT;
-			// RGBA 32-BIT
-		case VK_FORMAT_R32G32B32A32_UINT: return Format::RGBA32_UINT;
-		case VK_FORMAT_R32G32B32A32_SINT: return Format::RGBA32_SINT;
-		case VK_FORMAT_R32G32B32A32_SFLOAT: return Format::RGBA32_SFLOAT;
+				// R 32-BIT
+			case VK_FORMAT_R32_UINT: return Format::R32_UINT;
+			case VK_FORMAT_R32_SINT: return Format::R32_SINT;
+			case VK_FORMAT_R32_SFLOAT: return Format::R32_SFLOAT;
+				// RG 32-BIT
+			case VK_FORMAT_R32G32_UINT: return Format::RG32_UINT;
+			case VK_FORMAT_R32G32_SINT: return Format::RG32_SINT;
+			case VK_FORMAT_R32G32_SFLOAT: return Format::RG32_SFLOAT;
+				// RGB 32-BIT
+			case VK_FORMAT_R32G32B32_UINT: return Format::RGB32_UINT;
+			case VK_FORMAT_R32G32B32_SINT: return Format::RGB32_SINT;
+			case VK_FORMAT_R32G32B32_SFLOAT: return Format::RGB32_SFLOAT;
+				// RGBA 32-BIT
+			case VK_FORMAT_R32G32B32A32_UINT: return Format::RGBA32_UINT;
+			case VK_FORMAT_R32G32B32A32_SINT: return Format::RGBA32_SINT;
+			case VK_FORMAT_R32G32B32A32_SFLOAT: return Format::RGBA32_SFLOAT;
 
-			// R 64-BIT
-		case VK_FORMAT_R64_UINT: return Format::R64_UINT;
-		case VK_FORMAT_R64_SINT: return Format::R64_SINT;
-		case VK_FORMAT_R64_SFLOAT: return Format::R64_SFLOAT;
-			// RG 64-BIT
-		case VK_FORMAT_R64G64_UINT: return Format::RG64_UINT;
-		case VK_FORMAT_R64G64_SINT: return Format::RG64_SINT;
-		case VK_FORMAT_R64G64_SFLOAT: return Format::RG64_SFLOAT;
-			// RGB 64-BIT
-		case VK_FORMAT_R64G64B64_UINT: return Format::RGB64_UINT;
-		case VK_FORMAT_R64G64B64_SINT: return Format::RGB64_SINT;
-		case VK_FORMAT_R64G64B64_SFLOAT: return Format::RGB64_SFLOAT;
-			// RGBA 64-BIT
-		case VK_FORMAT_R64G64B64A64_UINT: return Format::RGBA64_UINT;
-		case VK_FORMAT_R64G64B64A64_SINT: return Format::RGBA64_SINT;
-		case VK_FORMAT_R64G64B64A64_SFLOAT: return Format::RGBA64_SFLOAT;
+				// R 64-BIT
+			case VK_FORMAT_R64_UINT: return Format::R64_UINT;
+			case VK_FORMAT_R64_SINT: return Format::R64_SINT;
+			case VK_FORMAT_R64_SFLOAT: return Format::R64_SFLOAT;
+				// RG 64-BIT
+			case VK_FORMAT_R64G64_UINT: return Format::RG64_UINT;
+			case VK_FORMAT_R64G64_SINT: return Format::RG64_SINT;
+			case VK_FORMAT_R64G64_SFLOAT: return Format::RG64_SFLOAT;
+				// RGB 64-BIT
+			case VK_FORMAT_R64G64B64_UINT: return Format::RGB64_UINT;
+			case VK_FORMAT_R64G64B64_SINT: return Format::RGB64_SINT;
+			case VK_FORMAT_R64G64B64_SFLOAT: return Format::RGB64_SFLOAT;
+				// RGBA 64-BIT
+			case VK_FORMAT_R64G64B64A64_UINT: return Format::RGBA64_UINT;
+			case VK_FORMAT_R64G64B64A64_SINT: return Format::RGBA64_SINT;
+			case VK_FORMAT_R64G64B64A64_SFLOAT: return Format::RGBA64_SFLOAT;
 
-		case VK_FORMAT_D16_UNORM: return Format::D16_UNORM;
-		case VK_FORMAT_D16_UNORM_S8_UINT: return Format::D16_UNORM_S8_UINT;
-		case VK_FORMAT_D24_UNORM_S8_UINT: return Format::D24_UNORM_S8_UINT;
-		case VK_FORMAT_D32_SFLOAT: return  Format::D32_SFLOAT;
-		case VK_FORMAT_D32_SFLOAT_S8_UINT: return Format::D32_SFLOAT_S8_UINT;
-		default:
-		{
-
-		}
-		}
+			case VK_FORMAT_D16_UNORM: return Format::D16_UNORM;
+			case VK_FORMAT_D16_UNORM_S8_UINT: return Format::D16_UNORM_S8_UINT;
+			case VK_FORMAT_D24_UNORM_S8_UINT: return Format::D24_UNORM_S8_UINT;
+			case VK_FORMAT_D32_SFLOAT: return  Format::D32_SFLOAT;
+			case VK_FORMAT_D32_SFLOAT_S8_UINT: return Format::D32_SFLOAT_S8_UINT;
+        }
+        return Format::None;
 	}
 
 	constexpr VkPrimitiveTopology ConvertPrimitiveTopologyVulkan(ME::Render::PrimitiveTopology topology)
@@ -422,43 +433,54 @@ namespace ME::Render
 		ME_ASSERT(topology != PrimitiveTopology::None, "Invalid PrimitiveTopology: None");
 		switch (topology)
 		{
-		case PrimitiveTopology::LineList: return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-		case PrimitiveTopology::LineStrip: return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-		case PrimitiveTopology::PatchList: return VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
-		case PrimitiveTopology::PointList: return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-		case PrimitiveTopology::TriangleFan: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
-		case PrimitiveTopology::TriangleList: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		case PrimitiveTopology::TriangleStrip: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		case PrimitiveTopology::None: return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+			case PrimitiveTopology::LineList:
+		        return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+			case PrimitiveTopology::LineStrip:
+		        return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+			case PrimitiveTopology::PatchList:
+		        return VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+			case PrimitiveTopology::PointList:
+		        return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+			case PrimitiveTopology::TriangleFan:
+		        return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+			case PrimitiveTopology::TriangleList:
+		        return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			case PrimitiveTopology::TriangleStrip:
+		        return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+			case PrimitiveTopology::None:
+		        return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
 		}
+	    return VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
 	}
 
 	constexpr VkPolygonMode ConvertRasterizerFillVulkan(ME::Render::RasterizationFill fill)
 	{
 		switch (fill)
 		{
-		case ME::Render::RasterizationFill::Fill:
-			return VK_POLYGON_MODE_FILL;
-		case ME::Render::RasterizationFill::Wireframe:
-			return VK_POLYGON_MODE_LINE;
-		case ME::Render::RasterizationFill::Point:
-			return VK_POLYGON_MODE_POINT;
+			case ME::Render::RasterizationFill::Fill:
+				return VK_POLYGON_MODE_FILL;
+			case ME::Render::RasterizationFill::Wireframe:
+				return VK_POLYGON_MODE_LINE;
+			case ME::Render::RasterizationFill::Point:
+				return VK_POLYGON_MODE_POINT;
 		}
+        return VK_POLYGON_MODE_MAX_ENUM;
 	}
 
 	constexpr VkCullModeFlagBits ConvertRasterizerCullVulkan(ME::Render::RasterizationCull cull)
 	{
 		switch (cull)
 		{
-		case ME::Render::RasterizationCull::None:
-			return VK_CULL_MODE_NONE;
-		case ME::Render::RasterizationCull::Back:
-			return VK_CULL_MODE_BACK_BIT;
-		case ME::Render::RasterizationCull::Front:
-			return VK_CULL_MODE_FRONT_BIT;
-		case ME::Render::RasterizationCull::FrontAndBack:
-			return VK_CULL_MODE_FRONT_AND_BACK;
+			case ME::Render::RasterizationCull::None:
+				return VK_CULL_MODE_NONE;
+			case ME::Render::RasterizationCull::Back:
+				return VK_CULL_MODE_BACK_BIT;
+			case ME::Render::RasterizationCull::Front:
+				return VK_CULL_MODE_FRONT_BIT;
+			case ME::Render::RasterizationCull::FrontAndBack:
+				return VK_CULL_MODE_FRONT_AND_BACK;
 		}
+	    return VK_CULL_MODE_FLAG_BITS_MAX_ENUM;
 	}
 
 	constexpr VkSampleCountFlagBits ConvertSampleCountVulkan(ME::Render::SampleCount sampleCount)
@@ -467,23 +489,24 @@ namespace ME::Render
 
 		switch (sampleCount)
 		{
-		case SampleCount::Count1:
-			return VK_SAMPLE_COUNT_1_BIT;
-		case SampleCount::Count2:
-			return VK_SAMPLE_COUNT_2_BIT;
-		case SampleCount::Count4:
-			return VK_SAMPLE_COUNT_4_BIT;
-		case SampleCount::Count8:
-			return VK_SAMPLE_COUNT_8_BIT;
-		case SampleCount::Count16:
-			return VK_SAMPLE_COUNT_16_BIT;
-		case SampleCount::Count32:
-			return VK_SAMPLE_COUNT_32_BIT;
-		case SampleCount::Count64:
-			return VK_SAMPLE_COUNT_64_BIT;
-		default:
-			return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
+			case SampleCount::Count1:
+				return VK_SAMPLE_COUNT_1_BIT;
+			case SampleCount::Count2:
+				return VK_SAMPLE_COUNT_2_BIT;
+			case SampleCount::Count4:
+				return VK_SAMPLE_COUNT_4_BIT;
+			case SampleCount::Count8:
+				return VK_SAMPLE_COUNT_8_BIT;
+			case SampleCount::Count16:
+				return VK_SAMPLE_COUNT_16_BIT;
+			case SampleCount::Count32:
+				return VK_SAMPLE_COUNT_32_BIT;
+			case SampleCount::Count64:
+				return VK_SAMPLE_COUNT_64_BIT;
+            case SampleCount::None:
+				return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
 		}
+        return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
 	}
 
 	constexpr VkCompareOp ConvertDepthComparisonVulkan(ME::Render::DepthComparison function)
@@ -491,83 +514,88 @@ namespace ME::Render
 		ME_ASSERT(function != DepthComparison::None, "Invalid DepthComparison: None");
 		switch (function)
 		{
-		case DepthComparison::Less:
-			return VK_COMPARE_OP_LESS;
-		case DepthComparison::Greater:
-			return VK_COMPARE_OP_LESS;
-		case DepthComparison::LessEqual:
-			return VK_COMPARE_OP_LESS_OR_EQUAL;
-		case DepthComparison::GreaterEqual:
-			return VK_COMPARE_OP_GREATER_OR_EQUAL;
-		case DepthComparison::NotEqual:
-			return VK_COMPARE_OP_NOT_EQUAL;
-		case DepthComparison::Equal:
-			return VK_COMPARE_OP_EQUAL;
-		case DepthComparison::Always:
-			return VK_COMPARE_OP_ALWAYS;
-		case DepthComparison::Never:
-			return VK_COMPARE_OP_NEVER;
+			case DepthComparison::Less:
+				return VK_COMPARE_OP_LESS;
+			case DepthComparison::Greater:
+				return VK_COMPARE_OP_LESS;
+			case DepthComparison::LessEqual:
+				return VK_COMPARE_OP_LESS_OR_EQUAL;
+			case DepthComparison::GreaterEqual:
+				return VK_COMPARE_OP_GREATER_OR_EQUAL;
+			case DepthComparison::NotEqual:
+				return VK_COMPARE_OP_NOT_EQUAL;
+			case DepthComparison::Equal:
+				return VK_COMPARE_OP_EQUAL;
+			case DepthComparison::Always:
+				return VK_COMPARE_OP_ALWAYS;
+			case DepthComparison::Never:
+				return VK_COMPARE_OP_NEVER;
+            case DepthComparison::None:
+				return VK_COMPARE_OP_MAX_ENUM;
 		}
+	    return VK_COMPARE_OP_MAX_ENUM;
 	}
 
 	constexpr VkLogicOp ConvertLogicOperationVulkan(ME::Render::LogicOperation operation)
 	{
 		switch (operation)
 		{
-		case LogicOperation::None:
-			return VK_LOGIC_OP_NO_OP;
-		case LogicOperation::Clear:
-			return VK_LOGIC_OP_CLEAR;
-		case LogicOperation::Copy:
-			return VK_LOGIC_OP_COPY;
-		case LogicOperation::Set:
-			return VK_LOGIC_OP_SET;
-		case LogicOperation::CopyInverted:
-			return VK_LOGIC_OP_COPY_INVERTED;
-		case LogicOperation::And:
-			return VK_LOGIC_OP_AND;
-		case LogicOperation::AndReverse:
-			return VK_LOGIC_OP_AND_REVERSE;
-		case LogicOperation::AndInverted:
-			return VK_LOGIC_OP_AND_INVERTED;
-		case LogicOperation::Nand:
-			return VK_LOGIC_OP_NAND;
-		case LogicOperation::Xor:
-			return VK_LOGIC_OP_XOR;
-		case LogicOperation::Or:
-			return VK_LOGIC_OP_OR;
-		case LogicOperation::Nor:
-			return VK_LOGIC_OP_NOR;
-		case LogicOperation::OrReverse:
-			return VK_LOGIC_OP_OR_REVERSE;
-		case LogicOperation::OrInverted:
-			return VK_LOGIC_OP_OR_INVERTED;
-		case LogicOperation::Equivalent:
-			return VK_LOGIC_OP_EQUIVALENT;
-		case LogicOperation::Invert:
-			return VK_LOGIC_OP_INVERT;
+			case LogicOperation::None:
+				return VK_LOGIC_OP_NO_OP;
+			case LogicOperation::Clear:
+				return VK_LOGIC_OP_CLEAR;
+			case LogicOperation::Copy:
+				return VK_LOGIC_OP_COPY;
+			case LogicOperation::Set:
+				return VK_LOGIC_OP_SET;
+			case LogicOperation::CopyInverted:
+				return VK_LOGIC_OP_COPY_INVERTED;
+			case LogicOperation::And:
+				return VK_LOGIC_OP_AND;
+			case LogicOperation::AndReverse:
+				return VK_LOGIC_OP_AND_REVERSE;
+			case LogicOperation::AndInverted:
+				return VK_LOGIC_OP_AND_INVERTED;
+			case LogicOperation::Nand:
+				return VK_LOGIC_OP_NAND;
+			case LogicOperation::Xor:
+				return VK_LOGIC_OP_XOR;
+			case LogicOperation::Or:
+				return VK_LOGIC_OP_OR;
+			case LogicOperation::Nor:
+				return VK_LOGIC_OP_NOR;
+			case LogicOperation::OrReverse:
+				return VK_LOGIC_OP_OR_REVERSE;
+			case LogicOperation::OrInverted:
+				return VK_LOGIC_OP_OR_INVERTED;
+			case LogicOperation::Equivalent:
+				return VK_LOGIC_OP_EQUIVALENT;
+			case LogicOperation::Invert:
+				return VK_LOGIC_OP_INVERT;
 		}
+	    return VK_LOGIC_OP_MAX_ENUM;
 	}
 
 	constexpr VkDescriptorType ConvertResourceTypeVulkan(ME::Render::ResourceType type)
 	{
 		switch (type)
 		{
-		case ResourceType::None:
-			return VK_DESCRIPTOR_TYPE_MAX_ENUM;
-		case ResourceType::Uniform:
-			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		case ResourceType::StorageBuffer:
-			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		case ResourceType::Texture1D:
-			return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		case ResourceType::Texture2D:
-			return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		case ResourceType::Texture3D:
-			return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		case ResourceType::Sampler:
-			return VK_DESCRIPTOR_TYPE_SAMPLER;
+			case ResourceType::None:
+				return VK_DESCRIPTOR_TYPE_MAX_ENUM;
+			case ResourceType::Uniform:
+				return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			case ResourceType::StorageBuffer:
+				return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			case ResourceType::Texture1D:
+				return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			case ResourceType::Texture2D:
+				return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			case ResourceType::Texture3D:
+				return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			case ResourceType::Sampler:
+				return VK_DESCRIPTOR_TYPE_SAMPLER;
 		}
+	    return VK_DESCRIPTOR_TYPE_MAX_ENUM;
 	}
 
 	constexpr VkShaderStageFlags ConvertShaderStageVulkan(ME::Render::ShaderStage stage)
@@ -630,13 +658,14 @@ namespace ME::Render
 	{
 		switch (filter)
 		{
-		case SamplerFilter::None:
-			return VK_FILTER_MAX_ENUM;
-		case SamplerFilter::Nearest:
-			return VK_FILTER_NEAREST;
-		case SamplerFilter::Linear:
-			return VK_FILTER_LINEAR;
+			case SamplerFilter::None:
+				return VK_FILTER_MAX_ENUM;
+			case SamplerFilter::Nearest:
+				return VK_FILTER_NEAREST;
+			case SamplerFilter::Linear:
+				return VK_FILTER_LINEAR;
 		}
+	    return VK_FILTER_MAX_ENUM;
 	}
 
 	constexpr ME::Render::ImageLayout ConvertImageLayoutEngine(VkImageLayout layout)
@@ -669,20 +698,20 @@ namespace ME::Render
 		return AccessFlags::None;
 	}
 
-	const ansichar* VulkanMessageTypeToText(const VkDebugUtilsMessageTypeFlagsEXT& messageType)
+	const asciichar* VulkanMessageTypeToText(const VkDebugUtilsMessageTypeFlagsEXT& messageType)
 	{
 		switch (messageType)
 		{
-		case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
-			return "General";
-		case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
-			return "Validation";
-		case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
-			return "Performance";
-		case VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT:
-			return "Device address binding";
-		default:
-			return "Unknown";
+			case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
+				return "General";
+			case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
+				return "Validation";
+			case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
+				return "Performance";
+			case VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT:
+				return "Device address binding";
+			default:
+				return "Unknown";
 		}
 	}
 }

@@ -1,4 +1,6 @@
 #include "Matrix4x4.hpp"
+
+#include "Math.hpp"
 #include "Core/Math/Quaternion.hpp"
 
 namespace ME::Core::Math
@@ -245,8 +247,108 @@ namespace ME::Core::Math
 		);
 	}
 
+    Vector3<float32> PMatrix4x4::LookVector() const
+    {
+        return TransformNormal(Vector3<float32>::ForwardVector);
+    }
 
-	PMatrix4x4 PMatrix4x4::FromQuaternion(const PQuaternion& q)
+    Vector3<float32> PMatrix4x4::UpVector() const
+    {
+        return TransformNormal(Vector3<float32>::UpVector);
+    }
+
+    Vector3<float32> PMatrix4x4::RightVector() const
+    {
+        return TransformNormal(Vector3<float32>::RightVector);
+    }
+
+    Vector3<float32> PMatrix4x4::GetTranslation() const
+    {
+        return Vector3(a14, a24, a34);
+    }
+
+    Vector3<float32> PMatrix4x4::GetScale() const
+    {
+		Vector3 xAxis(a11, a21, a31);
+		Vector3 yAxis(a12, a22, a32);
+		Vector3 zAxis(a13, a23, a33);
+        return Vector3(xAxis.Length(), yAxis.Length(), zAxis.Length());
+    }
+
+    Vector3<float32> PMatrix4x4::GetEulerAnglesXYZ() const
+    {
+		float32 pitch, yaw, roll;
+
+		if (fabs(a31) < 0.999999f)
+		{
+			yaw = std::asin(-a31);
+			pitch = std::atan2(a32, a33);
+			roll = std::atan2(a21, a11);
+		}
+		else
+		{
+			// Gimbal lock
+			yaw = (a31 < 0 ? +PI / 2.0f : -PI / 2.0f);
+			pitch = std::atan2(-a12, a22);
+			roll = 0.0f;
+		}
+
+		return Vector3<float32>(
+			ME::Core::Math::ToDegrees(pitch),
+			ME::Core::Math::ToDegrees(yaw),
+			ME::Core::Math::ToDegrees(roll)
+		);
+    }
+
+    Vector3<float32> PMatrix4x4::GetEulerAnglesYXZ() const
+	{
+		float32 pitch, yaw, roll;
+
+		if (fabs(a32) < 0.999999f)
+		{
+			yaw = std::atan2(a13, a33);
+			pitch = std::asin(-a23);
+			roll = std::atan2(a21, a22);
+		}
+		else
+		{
+			yaw = std::atan2(-a31, a11);
+			pitch = (a32 < 0 ? +PI / 2.0f : -PI / 2.0f);
+			roll = 0.0f;
+		}
+
+		return Vector3<float32>(
+			ME::Core::Math::ToDegrees(pitch),
+			ME::Core::Math::ToDegrees(yaw),
+			ME::Core::Math::ToDegrees(roll)
+		);
+	}
+
+    Vector3<float32> PMatrix4x4::GetEulerAnglesZYX() const
+	{
+		float32 pitch, yaw, roll;
+
+		if (fabs(a31) < 0.999999f)
+		{
+			yaw = std::asin(-a31);
+			pitch = std::atan2(a32, a33);
+			roll = std::atan2(a21, a11);
+		}
+		else
+		{
+			yaw = (a31 < 0 ? +PI / 2.0f : -PI / 2.0f);
+			pitch = std::atan2(-a12, a22);
+			roll = 0.0f;
+		}
+
+		return Vector3<float32>(
+			ME::Core::Math::ToDegrees(roll),
+			ME::Core::Math::ToDegrees(pitch),
+			ME::Core::Math::ToDegrees(yaw)
+		);
+	}
+
+    PMatrix4x4 PMatrix4x4::FromQuaternion(const PQuaternion& q)
 	{
 		float32 xx = q.x * q.x;
 		float32 yy = q.y * q.y;
@@ -266,7 +368,7 @@ namespace ME::Core::Math
 		);
 	}
 
-	PMatrix4x4 PMatrix4x4::Translation(const Vector3<float32>& translation)
+	PMatrix4x4 PMatrix4x4::FromTranslation(const Vector3<float32>& translation)
 	{
 		return PMatrix4x4(
 			1.0f, 0.0f, 0.0f, translation.X,
@@ -276,7 +378,7 @@ namespace ME::Core::Math
 		);
 	}
 
-	PMatrix4x4 PMatrix4x4::Scale(const Vector3<float32>& scale)
+	PMatrix4x4 PMatrix4x4::FromScale(const Vector3<float32>& scale)
 	{
 		return PMatrix4x4(
 			scale.X, 0.0f, 0.0f, 0.0f,
@@ -286,7 +388,7 @@ namespace ME::Core::Math
 		);
 	}
 
-	PMatrix4x4 PMatrix4x4::Perspective(float32 fov, float32 aspect, float32 _near, float32 _far)
+	PMatrix4x4 PMatrix4x4::FromPerspectiveView(float32 fov, float32 aspect, float32 _near, float32 _far)
 	{
 		float32 tanHalfFov = std::tan(fov * 0.5f);
 		float32 zRange = _far - _near;
@@ -299,7 +401,7 @@ namespace ME::Core::Math
 		);
 	}
 
-	PMatrix4x4 PMatrix4x4::Orthographic(float32 left, float32 right, float32 bottom, float32 top, float32 _near, float32 _far)
+	PMatrix4x4 PMatrix4x4::FromOrthographicView(float32 left, float32 right, float32 bottom, float32 top, float32 _near, float32 _far)
 	{
 		return PMatrix4x4(
 			2.0f / (right - left), 0.0f, 0.0f, -(right + left) / (right - left),

@@ -27,7 +27,7 @@ BOOL WINAPI TerminationHandler(DWORD signal)
 	return FALSE;
 }
 
-int wmain(int32 argc, const uchar** argv)
+int wmain(int32 argc, const char8** argv)
 {
 	SetConsoleCtrlHandler(TerminationHandler, TRUE);
 
@@ -40,7 +40,7 @@ int wmain(int32 argc, const uchar** argv)
 	{
 		if (i == 0)
 		{
-			ME::Core::Containers::String programPath = argv[0];
+			ME::Core::String programPath = argv[0];
 			
 			for (auto it = programPath.end() - 1; (*it) != TEXT('\\'); --it)
 				programPath.PopBack();

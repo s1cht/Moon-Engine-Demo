@@ -5,6 +5,7 @@ namespace ME::Core::Math
 	///////////////////// ---------------------------------------
 	// Vector2 statics // ---------------------------------------
 	///////////////////// ---------------------------------------
+	
 	template<> const Vector2<float32> Vector2<float32>::ZeroVector(0);
 	template<> const Vector2<float32> Vector2<float32>::UpVector(0, 1);
 	template<> const Vector2<float32> Vector2<float32>::DownVector(0, -1);
@@ -21,7 +22,7 @@ namespace ME::Core::Math
 	// Vector3 statics // ---------------------------------------
 	///////////////////// ---------------------------------------
 
-	template<> const Vector3<float32> Vector3<float32>::ZeroVector(0);
+	template<> const Vector3<float32> Vector3<float32>::ZeroVector(0); 
 	template<> const Vector3<float32> Vector3<float32>::UpVector(0, 1, 0);
 	template<> const Vector3<float32> Vector3<float32>::DownVector(0, -1, 0);
 	template<> const Vector3<float32> Vector3<float32>::RightVector(1, 0, 0);
@@ -40,6 +41,7 @@ namespace ME::Core::Math
 	///////////////////// ---------------------------------------
 	// Vector4 statics // ---------------------------------------
 	///////////////////// ---------------------------------------
+	
 	template<> const Vector4<float32> Vector4<float32>::ZeroVector(0);
 	template<> const Vector4<float32> Vector4<float32>::OneVector(1);
 
@@ -55,7 +57,17 @@ namespace ME::Core::Math
 		return LERP(a, b, d);
 	}
 
-	std::ostream& operator<<(std::ostream& os, const Vector2D32& vec)
+    float64 ToDegrees(float64 radians)
+    {
+        return radians / (PI / 180);
+    }
+
+	float64 ToRadians(float64 degrees)
+	{
+		return RAD(degrees);
+	}
+
+    std::ostream& operator<<(std::ostream& os, const Vector2D32& vec)
 	{
 		return os << vec.x << ' ' << vec.y;
 	}

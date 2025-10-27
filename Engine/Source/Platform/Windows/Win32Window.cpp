@@ -63,43 +63,43 @@ namespace ME
 
 	void Win32Window::Init()
 	{
-		WNDCLASSEXW wc;
+		WNDCLASSEXA wc;
 
 		ZeroMemory(&wc, sizeof(wc));
 
 		wc.cbSize = sizeof(wc);
 		wc.style = CS_CLASSDC | CS_HREDRAW | CS_VREDRAW;
 		wc.lpfnWndProc = WindowProc;
-		wc.hInstance = GetModuleHandleW(NULL);
+		wc.hInstance = GetModuleHandleA(nullptr);
 
-		wc.hCursor = LoadCursorW(NULL, IDC_NO);
+		wc.hCursor = LoadCursorW(nullptr, IDC_NO);
 
-		wc.lpszClassName = PE_WND_CLASSNAME;
+		wc.lpszClassName = ME_WND_CLASSNAME;
 
-		RegisterClassExW(&wc);
+		RegisterClassExA(&wc);
 
-		RECT windowViewport = { 0, 0, (LONG)m_Data.WindowSize.X, (LONG)m_Data.WindowSize.Y };
+		RECT windowViewport = { 0, 0, static_cast<LONG>(m_Data.WindowSize.X), static_cast<LONG>(m_Data.WindowSize.Y) };
 		AdjustWindowRect(&windowViewport, WS_OVERLAPPEDWINDOW, FALSE);
 
-		m_Window = CreateWindowExW(
+		m_Window = CreateWindowExA(
 			0,													// Optional window styles.
-			PE_WND_CLASSNAME,									// Window class
-			m_Data.WindowTitle.GetString(),						// Window text
+			ME_WND_CLASSNAME,									// Window class
+			CONVERT_TEXT(m_Data.WindowTitle.String()),			// Window text
 			WS_OVERLAPPEDWINDOW,								// Window style
 																//
 			// Size and position								//
 			CW_USEDEFAULT, CW_USEDEFAULT,						//
 			windowViewport.right - windowViewport.left,			//
 			windowViewport.bottom - windowViewport.top,			//
-			NULL,												// Parent window    
-			NULL,												// Menu
+			nullptr,											// Parent window    
+			nullptr,											// Menu
 			wc.hInstance,										// 
-			NULL												// Additional application data
+			nullptr												// Additional application data
 		);
 
 		ME_CORE_ASSERT(m_Window, "Window creation failed! Error: {}", GetLastError());
 
-		bool result = SetPropW(m_Window, L"WndData", &m_Data);
+		bool result = SetPropA(m_Window, "WndData", &m_Data);
 		ME_CORE_ASSERT(result, "Window user pointer assign failed! Error: {}", GetLastError());
 		
 		ShowWindow(m_Window, 1);
@@ -126,13 +126,9 @@ namespace ME
 			for (int i = 0; i < platform_io.Viewports.Size; i++)
 			{
 				ImGuiViewport* viewport = platform_io.Viewports[i];
-				if (viewport && viewport->PlatformHandle && (HWND)viewport->PlatformHandle == hwnd)
-				{
+				if (viewport && viewport->PlatformHandle && static_cast<HWND>(viewport->PlatformHandle) == hwnd)
 					if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
-					{
 						return true;
-					}
-				}
 			}
 		}
 		else
@@ -149,7 +145,7 @@ namespace ME
 			{
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint(hwnd, &ps);
-				FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+				FillRect(hdc, &ps.rcPaint, reinterpret_cast<HBRUSH>((COLOR_WINDOW + 1)));
 				EndPaint(hwnd, &ps);
 				break;
 			}
@@ -205,7 +201,7 @@ namespace ME
 			case WM_KEYDOWN:
 			{
 				static int8 repeatCount = 0;
-				WORD key = (int16)LOWORD(wParam);
+				WORD key = static_cast<int16>(LOWORD(wParam));
 				WORD keyFlags = HIWORD(lParam);
 				WORD scanCode = LOBYTE(keyFlags);
 				bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
@@ -223,14 +219,14 @@ namespace ME
 					break;
 				}
 
-				Input::InputController::Get().GetKeyboard().SetKeyPressed((uint8)Input::InputController::ConvertPlatformKeycode(key), true);
+				Input::InputController::Get().GetKeyboard().SetKeyPressed(static_cast<uint8>(Input::InputController::ConvertPlatformKeycode(key)), true);
 
 				break;
 			}
 			case WM_SYSKEYUP:
 			case WM_KEYUP:
 			{
-				WORD key = (int16)LOWORD(wParam);
+				WORD key = static_cast<int16>(LOWORD(wParam));
 				WORD keyFlags = HIWORD(lParam);
 				WORD scanCode = LOBYTE(keyFlags);
 				bool isExtendedKey = (keyFlags & KF_EXTENDED) == KF_EXTENDED;
@@ -247,13 +243,13 @@ namespace ME
 					break;
 				}
 
-				Input::InputController::Get().GetKeyboard().SetKeyPressed((uint8)Input::InputController::ConvertPlatformKeycode(key), false);
+				Input::InputController::Get().GetKeyboard().SetKeyPressed(static_cast<uint8>(Input::InputController::ConvertPlatformKeycode(key)), false);
 
 				break;
 			}
 			case WM_MOUSEMOVE:
 			{
-				Input::InputController::Get().GetMouse().SetMousePosition((float32)GET_X_LPARAM(lParam), (float32)GET_Y_LPARAM(lParam));
+				Input::InputController::Get().GetMouse().SetMousePosition(static_cast<float32>(GET_X_LPARAM(lParam)), static_cast<float32>(GET_Y_LPARAM(lParam)));
 				break;
 			}
 			case WM_LBUTTONUP:

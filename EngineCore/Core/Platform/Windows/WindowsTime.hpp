@@ -4,7 +4,7 @@
 
 namespace ME::Core::Clock
 {
-	class CORE_API WindowsTimeSource : public TimeSource
+	class COREAPI WindowsTimeSource : public TimeSource
 	{
 	public:
 		WindowsTimeSource();

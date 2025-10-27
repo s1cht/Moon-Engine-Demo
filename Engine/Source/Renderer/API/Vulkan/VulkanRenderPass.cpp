@@ -1,9 +1,9 @@
-﻿#include "VulkanRenderPass.h"
+﻿#include "VulkanRenderPass.hpp"
 
-#include "VulkanRenderAPI.h"
-#include "VulkanFunctions.h"
-#include "VulkanCommandBuffer.h"
-#include "VulkanFramebuffer.h"
+#include "VulkanRenderAPI.hpp"
+#include "VulkanFunctions.hpp"
+#include "VulkanCommandBuffer.hpp"
+#include "VulkanFramebuffer.hpp"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -42,7 +42,7 @@ namespace ME::Render
 		VkRenderPassBeginInfo vkBeginInfo = {};
 		vkBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		vkBeginInfo.renderPass = m_Pass;
-		vkBeginInfo.clearValueCount = (uint32)beginInfo.ClearValues.GetSize();
+		vkBeginInfo.clearValueCount = (uint32)beginInfo.ClearValues.Size();
 		vkBeginInfo.pClearValues = reinterpret_cast<const VkClearValue*>(beginInfo.ClearValues.Data());
 		vkBeginInfo.framebuffer = beginInfo.Framebuffer->As<VulkanFramebuffer>()->GetFramebuffer();
 		vkBeginInfo.renderArea.offset.x = beginInfo.RenderArea.Offset.x;
@@ -50,12 +50,12 @@ namespace ME::Render
 		vkBeginInfo.renderArea.extent.height = beginInfo.RenderArea.Extent.x;
 		vkBeginInfo.renderArea.extent.width = beginInfo.RenderArea.Extent.y;
 
-		vkCmdBeginRenderPass(cmdBuf->GetBuffer(), &vkBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(cmdBuf->GetCommandBuffer(), &vkBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
 
 	void VulkanRenderPass::End(CommandBuffer* buffer)
 	{
-		vkCmdEndRenderPass(buffer->As<VulkanCommandBuffer>()->GetBuffer());
+		vkCmdEndRenderPass(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
 	}
 
 	void VulkanRenderPass::Init(RenderPassSpecification& specification)
@@ -82,7 +82,7 @@ namespace ME::Render
 			attachmentDescriptions.EmplaceBack(desc);
 
 			VkAttachmentReference ref{};
-			ref.attachment = static_cast<uint32_t>(globalAttachmentReferences.GetSize());
+			ref.attachment = static_cast<uint32_t>(globalAttachmentReferences.Size());
 			ref.layout = (attachment.IsDepth || attachment.IsStencil)
 				? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 				: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -119,9 +119,9 @@ namespace ME::Render
 
 			VkSubpassDescription subpassDesc{};
 			subpassDesc.pipelineBindPoint = ME::Render::ConvertPipelineBindPointVulkan(subpass.PipelineBindPoint);
-			subpassDesc.colorAttachmentCount = (uint32)colorAttachmentRefsList.Back().GetSize();
+			subpassDesc.colorAttachmentCount = (uint32)colorAttachmentRefsList.Back().Size();
 			subpassDesc.pColorAttachments = colorAttachmentRefsList.Back().Data();
-			subpassDesc.inputAttachmentCount = (uint32)inputAttachmentRefsList.Back().GetSize();
+			subpassDesc.inputAttachmentCount = (uint32)inputAttachmentRefsList.Back().Size();
 			subpassDesc.pInputAttachments = inputAttachmentRefsList.Back().Data();
 			subpassDesc.pDepthStencilAttachment = (subpass.DepthStencilAttachmentRef != ~0u) ? &depthStencilAttachmentRefs.Back() : nullptr;
 
@@ -145,18 +145,16 @@ namespace ME::Render
 
 		VkRenderPassCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		createInfo.attachmentCount = (uint32)attachmentDescriptions.GetSize();
+		createInfo.attachmentCount = (uint32)attachmentDescriptions.Size();
 		createInfo.pAttachments = attachmentDescriptions.Data();
-		createInfo.subpassCount = (uint32)subpassDescriptions.GetSize();
+		createInfo.subpassCount = (uint32)subpassDescriptions.Size();
 		createInfo.pSubpasses = subpassDescriptions.Data();
-		createInfo.dependencyCount = (uint32)subpassDependencies.GetSize();
+		createInfo.dependencyCount = (uint32)subpassDependencies.Size();
 		createInfo.pDependencies = subpassDependencies.Data();
 
 		result = vkCreateRenderPass(render->GetDevice(), &createInfo, nullptr, &m_Pass);
 		if (ME_VK_FAILED(result))
-		{
-			ME_ASSERT(false, TEXT("Vulkan render pass: failed to create render pass! Error {0}"), (int32)result);
-		}
+			ME_ASSERT(false, "Vulkan render pass: failed to create render pass! Error {0}", static_cast<int32>(result));
 	}
 
 

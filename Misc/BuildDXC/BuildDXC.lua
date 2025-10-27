@@ -40,6 +40,6 @@ project "BuildDXC"
 
     postbuildcommands
     {
-        ("{RMDIR} %{wks.location}/bin/" .. outputdir .. "/%{prj.name}"),
-        ("{RMDIR} %{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}"),
+        ("{RMDIR} %{wks.location}bin/" .. outputdir .. "/%{prj.name}"),
+        ("{RMDIR} %{wks.location}bin-int/" .. outputdir .. "/%{prj.name}"),
     }

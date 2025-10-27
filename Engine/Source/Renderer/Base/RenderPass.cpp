@@ -1,30 +1,19 @@
 ﻿#include "RenderPass.h"
-
-#include "Renderer/Renderer.h"
+#include "Renderer/Renderer.hpp"
 
 namespace ME::Render
 {
-    Core::Memory::Reference<Render::RenderPass> RenderPass::Create(RenderPassSpecification& specification)
+    ME::Core::Memory::Reference<Render::RenderPass> RenderPass::Create(RenderPassSpecification& specification)
 	{
-        RenderAPI::API renderAPI = Renderer::GetRenderAPI();
-
-        switch (renderAPI)
+        switch (RenderAPI::API renderAPI = Renderer::GetRenderAPI())
         {
-            case ME::Render::RenderAPI::API::None:
-            case ME::Render::RenderAPI::API::Metal:
-            case ME::Render::RenderAPI::API::DirectX12:
-            {
-                ME_ASSERT(false, TEXT("Render pass: Requested creation with unsupported API! {0}"), (int32)renderAPI);
-                return nullptr;
-                break;
-            }
             case ME::Render::RenderAPI::API::Vulkan:
-            {
                 return CreateVulkanRenderPass(specification);
-                break;
+            default:
+            {
+                ME_ASSERT(false, "Render pass: Requested creation with unsupported API! {0}", static_cast<int32>(renderAPI));
+                return nullptr;
             }
         }
-
-        return nullptr;
 	}
 }

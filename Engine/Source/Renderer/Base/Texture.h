@@ -57,7 +57,7 @@ namespace ME::Render
 		TransferSrc, TransferDst,
 	};
 
-	enum class ImageUsageFlags : uint32
+	enum class ImageUsageFlags : uint16
 	{
 		None = 0,
 		TransferSrc						= BIT(0),
@@ -85,7 +85,7 @@ namespace ME::Render
 
 	struct TextureSpecification
 	{
-		// Data
+		// String
 		void* Data;
 		SIZE_T DataSize;
 
@@ -99,14 +99,14 @@ namespace ME::Render
 		// Image
 		bool IsDepth = false;
 		bool IsStencil = false;
-		bool bOwnsImage = false;
+		bool bOwnsImage = true;
 		uint32 MipLevels;
 		uint32 CubeMapCount;
 		ME::Render::Format Format;
 		ME::Render::ImageLayout Layout;
 		ME::Render::ImageUsageFlags Usage;
 		ME::Render::SampleCount SampleCount;
-		ME::Core::Containers::AnsiString DebugName;
+		ME::Core::String DebugName;
 	};
 
 	struct Texture1DSpecification : TextureSpecification
@@ -124,7 +124,7 @@ namespace ME::Render
 		ME::Core::Math::Vector3D32 Resolution;
 	};
 
-	class MOON_API Texture : public RenderObject
+	class MEAPI Texture : public RenderObject
 	{
 	public:
 		virtual void LoadTexture(uint32 set) = 0;
@@ -136,12 +136,11 @@ namespace ME::Render
 
 		virtual uint32 GetSet() const = 0;
 
-		virtual ME::Core::Containers::StringView GetTexturePath() = 0;
-		virtual ME::Core::Containers::AnsiStringView GetDebugName() = 0;
-
+		virtual ME::Core::StringView GetTexturePath() = 0;
+		virtual ME::Core::StringView GetDebugName() = 0;
 	};
 
-	class MOON_API Texture1D : public Texture
+	class MEAPI Texture1D : public Texture
 	{
 	public:
 		virtual ME::Render::Texture1DSpecification& GetSpecification() = 0;
@@ -153,10 +152,9 @@ namespace ME::Render
 
 	private:
 		static ME::Core::Memory::Reference<Texture1D> CreateVulkanTexture(Texture1DSpecification& specification);
-
 	};
 
-	class MOON_API Texture2D : public Texture
+	class MEAPI Texture2D : public Texture
 	{
 	public:
 		virtual ME::Render::Texture2DSpecification& GetSpecification() = 0;
@@ -168,10 +166,9 @@ namespace ME::Render
 
 	private:
 		static ME::Core::Memory::Reference<Texture2D> CreateVulkanTexture(const Texture2DSpecification& specification);
-
 	};
 
-	class MOON_API Texture3D : public Texture
+	class MEAPI Texture3D : public Texture
 	{
 	public:
 		virtual ME::Render::Texture3DSpecification& GetSpecification() = 0;
@@ -183,15 +180,14 @@ namespace ME::Render
 
 	private:
 		static ME::Core::Memory::Reference<Texture3D> CreateVulkanTexture(Texture3DSpecification& specification);
-
 	};
 
-	inline constexpr MOON_API ImageUsageFlags operator|(ME::Render::ImageUsageFlags a, ME::Render::ImageUsageFlags b)
+	inline constexpr MEAPI ImageUsageFlags operator|(ME::Render::ImageUsageFlags a, ME::Render::ImageUsageFlags b)
 	{
 		return static_cast<ImageUsageFlags>(static_cast<uint32>(a) | static_cast<uint32>(b));
 	}
 
-	inline constexpr MOON_API ImageUsageFlags operator|=(ME::Render::ImageUsageFlags& a, ME::Render::ImageUsageFlags b)
+	inline constexpr MEAPI ImageUsageFlags operator|=(ME::Render::ImageUsageFlags& a, ME::Render::ImageUsageFlags b)
 	{
 		a = a | b;
 		return a;

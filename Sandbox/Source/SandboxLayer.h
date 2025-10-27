@@ -1,12 +1,12 @@
 #pragma once
 #include <Core.hpp>
 #include <Core/Layer/Layer.hpp>
-#include <Renderer/Base/Buffer.h>
+#include <Renderer/Base/Buffer.hpp>
 #include <Renderer/Base/Shader.h>
 #include <Renderer/Base/Pipeline.h>
 #include <Renderer/Camera/Camera.h>
 #include <Events/WindowEvents.h>
-#include <Assets/Mesh.h>
+#include <Renderer/Assets/Mesh.hpp>
 
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
@@ -42,31 +42,6 @@ private:
 
 	//bool OnKeyInputStartedEvent(ME::Events::KeyInputStartedEvent& event);
 	bool OnKeyInputStartedEvent(float32 deltaTime);
-
-private:
-	ME::Core::Memory::Reference<ME::Render::RenderPass> m_MainRenderPass;
-	ME::Core::Memory::Reference<ME::Render::Pipeline> m_MainGraphicsPipeline;
-	ME::Render::VertexBufferLayout m_Layout;
-
-	ME::Core::Memory::Reference<ME::Render::Texture2D> m_StoneTexture;
-
-	ME::Core::Memory::Reference<ME::Render::RUniform> m_CameraBuffer;
-	ME::Core::Memory::Reference<ME::Render::RUniform> m_ObjectBuffer;
-	ME::Core::Memory::Reference<ME::Render::RUniform> m_SceneBuffer;
-	ME::Core::Memory::Reference<ME::Render::RUniform> m_LightBuffer;
-	ME::Core::Memory::Reference<ME::Render::IndexBuffer> m_IndexBuffer;
-	ME::Core::Memory::Reference<ME::Render::VertexBuffer> m_VertexBuffer;
-
-	ME::Core::Math::Matrix4x4 m_WorldMatrix;
-	Light m_Light;
-
-private:
-	ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>> m_Flashlight;
-	ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>> m_Torch;
-
-
-private:
-	ME::Core::Memory::Reference<ME::Render::Camera::Camera> m_Camera;
 
 private:
 	uint32 m_WindowWidth;

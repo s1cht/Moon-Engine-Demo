@@ -13,10 +13,10 @@ struct ImGuiContext;
 
 namespace ME::Core
 {
-	class CORE_API Layer
+	class COREAPI Layer
 	{
 	public:
-		Layer(const ME::Core::Containers::String& name = TEXT("Layer"));
+		Layer(const ME::Core::String& name = TEXT("Layer"));
 		virtual ~Layer();
 
 		virtual void OnAttach() {}
@@ -26,10 +26,10 @@ namespace ME::Core
 		virtual void OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext) {}
 		virtual void OnEvent(ME::Core::Event& event) {}
 
-		inline const ME::Core::Containers::String& GetName() const { return m_DebugName; }
+		inline const ME::Core::String& GetName() const { return m_DebugName; }
 
 	protected:
-		ME::Core::Containers::String m_DebugName;
+		ME::Core::String m_DebugName;
 
 	};
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <type_traits>
 
@@ -34,10 +34,8 @@ struct BaseTypes
 
 				The structure of defining number with floating point types is as follows:
 
-								1. 32-bit float
-								2. 64-bit float
-
-							u/s - unsigned / signed
+								        1. 32-bit float
+								        2. 64-bit float
 	*/
 
 	typedef float						float32;		// 1.
@@ -53,22 +51,16 @@ struct BaseTypes
 									2. 16-bit character
 									3. 32-bit character
 									
-									4. ANSI character
+									4. ASCII character
 									5. Wide character
-									
-									6. Universal char
-							(This required in setup by platform)
-
 	*/
 
-	typedef uint8						char8;			// 1. (Check "CHARACTERS" reference)
+	typedef char8_t						char8;			// 1. (Check "CHARACTERS" reference)
 	typedef uint16						char16;			// 2. (Check "CHARACTERS" reference)
 	typedef uint32						char32;			// 3. (Check "CHARACTERS" reference)
 	
-	typedef char						ansichar;		// 4. (Check "CHARACTERS" reference)
+	typedef char						asciichar;		// 4. (Check "CHARACTERS" reference)
 	typedef wchar_t						wchar;			// 5. (Check "CHARACTERS" reference)
-
-	typedef wchar						uchar;			// 6. (Check "CHARACTERS" reference)
 
 	/* 
 										-INT POINTER-

@@ -7,7 +7,7 @@
 
 namespace ME::Render::Imgui
 {
-	class MOON_API ImGuiLayer : public ME::Core::Layer
+	class MEAPI ImGuiLayer : public ME::Core::Layer
 	{
 	public:
 		ImGuiLayer();

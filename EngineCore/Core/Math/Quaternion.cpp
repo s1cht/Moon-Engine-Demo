@@ -13,7 +13,13 @@ namespace ME::Core::Math
 		return (zRes * yRes * xRes).Normalized();
 	}
 
-	PQuaternion PQuaternion::FromRadians(const Vector3<float32>& radians)
+    PQuaternion PQuaternion::Slerp(const PQuaternion& q1, const PQuaternion& q2, float32 alpha)
+    {
+		float32 angle = acos(q1.Dot(q2));
+        return q1 * ((sin(1 - alpha) * angle) / sin(angle)) + q2 * (sin(alpha * angle) / sin(angle));
+    }
+
+    PQuaternion PQuaternion::FromRadians(const Vector3<float32>& radians)
 	{
 		PQuaternion xRes(radians.x, Vector3<float32>::RightVector);
 		PQuaternion yRes(radians.y, Vector3<float32>::UpVector);
@@ -23,12 +29,12 @@ namespace ME::Core::Math
 
 	PQuaternion PQuaternion::FromEulerAngles(float32 yaw, float32 pitch, float32 roll)
 	{
-		float32 cy = std::cos(yaw * 0.5f);
-		float32 sy = std::sin(yaw * 0.5f);
-		float32 cp = std::cos(pitch * 0.5f);
-		float32 sp = std::sin(pitch * 0.5f);
-		float32 cr = std::cos(roll * 0.5f);
-		float32 sr = std::sin(roll * 0.5f);
+		float32 cy = cos(yaw * 0.5f);
+		float32 sy = sin(yaw * 0.5f);
+		float32 cp = cos(pitch * 0.5f);
+		float32 sp = sin(pitch * 0.5f);
+		float32 cr = cos(roll * 0.5f);
+		float32 sr = sin(roll * 0.5f);
 
 		PQuaternion q;
 		q.w = cy * cp * cr + sy * sp * sr;
@@ -44,9 +50,19 @@ namespace ME::Core::Math
 		return FromEulerAngles(angles.x, angles.y, angles.z);
 	}
 
+	inline PQuaternion PQuaternion::FromEulerAnglesXYZ(float32 yaw, float32 pitch, float32 roll)
+	{
+		return FromEulerAngles(yaw, pitch, roll);
+	}
+
 	inline PQuaternion PQuaternion::FromEulerAnglesYXZ(const Vector3<float32>& angles)
 	{
-		return FromEulerAngles(angles.y, angles.x, angles.z);
+		return FromEulerAngles(angles.x, angles.y, angles.z);
+	}
+
+	inline PQuaternion PQuaternion::FromEulerAnglesYXZ(float32 yaw, float32 pitch, float32 roll)
+	{
+		return FromEulerAngles(pitch, yaw, roll);
 	}
 
 	PQuaternion PQuaternion::FromAxisAngle(const Vector3<float32>& axis, float32 angle)
@@ -81,7 +97,65 @@ namespace ME::Core::Math
 		);
 	}
 
-	Vector3<float32> PQuaternion::RotateVector(const Vector3<float32>& vec) const
+	Vector3<float32> PQuaternion::ToEulerAnglesXYZ() const
+	{
+		constexpr float32 EPSILON = 1e-6f;
+
+		float32 yaw, roll;
+
+		float32 sinPitch = 2.0f * (w * y - z * x);
+		sinPitch = std::clamp(sinPitch, -1.0f, 1.0f);
+		float32 pitch = asin(sinPitch);
+
+		if (fabsf(pitch - static_cast<float32>(PI) / 2) < EPSILON)
+		{
+			yaw = atan2(2.0f * (x * z + w * y), 1.0f - 2.0f * (x * x + z * z));
+			roll = 0.0f;
+			return Vector3(roll, pitch, yaw);
+		}
+		else if (fabsf(pitch + static_cast<float32>(PI) / 2) < EPSILON)
+		{
+			yaw = atan2(-2.0f * (x * z + w * y), 1.0f - 2.0f * (x * x + z * z));
+			roll = 0.0f;
+			return Vector3(roll, pitch, yaw);
+		}
+
+		yaw = atan2(2.0f * (w * z + x * y), 1.0f - 2.0f * (y * y + z * z));
+		roll = atan2(2.0f * (w * x + y * z), 1.0f - 2.0f * (x * x + y * y));
+
+		return Vector3(roll, pitch, yaw);
+	}
+
+	Vector3<float32> PQuaternion::ToEulerAnglesYXZ() const
+	{
+		constexpr float32 EPSILON = 1e-6f;
+
+		float32 yaw, roll;
+
+		float32 sinPitch = 2.0f * (w * y - z * x);
+		sinPitch = std::clamp(sinPitch, -1.0f, 1.0f);
+		float32 pitch = asin(sinPitch);
+
+		if (fabsf(pitch - static_cast<float32>(PI) / 2) < EPSILON)
+		{
+			yaw = atan2(2.0f * (x * z + w * y), 1.0f - 2.0f * (x * x + z * z));
+			roll = 0.0f;
+			return Vector3(pitch, roll, yaw);
+		}
+		else if (fabsf(pitch + static_cast<float32>(PI) / 2) < EPSILON)
+		{
+			yaw = atan2(-2.0f * (x * z + w * y), 1.0f - 2.0f * (x * x + z * z));
+			roll = 0.0f;
+			return Vector3(pitch, roll, yaw);
+		}
+
+		yaw = atan2(2.0f * (w * z + x * y), 1.0f - 2.0f * (y * y + z * z));
+		roll = atan2(2.0f * (w * x + y * z), 1.0f - 2.0f * (x * x + y * y));
+
+		return Vector3(pitch, roll, yaw);
+    }
+
+    Vector3<float32> PQuaternion::RotateVector(const Vector3<float32>& vec) const
 	{
 		PQuaternion vecQuat(0.0f, vec.x, vec.y, vec.z);
 		PQuaternion result = (*this) * vecQuat * Inverse();
@@ -134,9 +208,14 @@ namespace ME::Core::Math
 		return w * w + x * x + y * y + z * z;
 	}
 
-	float32 PQuaternion::Length() const
+    float32 PQuaternion::Dot(const PQuaternion& other) const
+    {
+        return x * other.x + y * other.y + z * other.z + w * other.w;
+    }
+
+    float32 PQuaternion::Length() const
 	{
-		return std::sqrt(LengthSquared());
+		return sqrt(LengthSquared());
 	}
 
 	PQuaternion& PQuaternion::operator*=(float32 number)
@@ -154,7 +233,83 @@ namespace ME::Core::Math
 		return *this;
 	}
 
-	PQuaternion PQuaternion::operator*(float32 number) const
+    PQuaternion PQuaternion::operator/(float32 number) const
+    {
+		PQuaternion result;
+		result.x = x / number;
+		result.y = y / number;
+		result.z = z / number;
+		result.w = w / number;
+		return result;
+    }
+
+    PQuaternion PQuaternion::operator/(const PQuaternion& other) const
+    {
+		PQuaternion result;
+		result.x = x / other.x;
+		result.y = y / other.y;
+		result.z = z / other.z;
+		result.w = w / other.w;
+		return result;
+    }
+
+    PQuaternion& PQuaternion::operator/=(float32 number)
+    {
+		x /= number;
+		y /= number;
+		z /= number;
+		w /= number;
+		return *this;
+    }
+
+    PQuaternion& PQuaternion::operator/=(const PQuaternion& other)
+    {
+		x /= other.x;
+		y /= other.y;
+		z /= other.z;
+		w /= other.w;
+		return *this;
+    }
+
+    PQuaternion PQuaternion::operator+(const PQuaternion& other) const
+    {
+		PQuaternion result;
+		result.x = x + other.x;
+		result.y = y + other.y;
+		result.z = z + other.z;
+		result.w = w + other.w;
+		return result;
+    }
+
+    PQuaternion& PQuaternion::operator+=(const PQuaternion& other)
+    {
+		x += other.x;
+		y += other.y;
+		z += other.z;
+		w += other.w;
+		return *this;
+    }
+
+    PQuaternion PQuaternion::operator-(const PQuaternion& other) const
+    {
+		PQuaternion result;
+		result.x = x - other.x;
+		result.y = y - other.y;
+		result.z = z - other.z;
+		result.w = w - other.w;
+        return result;
+    }
+
+    PQuaternion& PQuaternion::operator-=(const PQuaternion& other)
+    {
+		x -= other.x;
+		y -= other.y;
+		z -= other.z;
+		w -= other.w;
+        return *this;
+    }
+
+    PQuaternion PQuaternion::operator*(float32 number) const
 	{
 		return PQuaternion(w * number, x * number, y * number, z * number);
 	}
@@ -181,10 +336,10 @@ namespace ME::Core::Math
 	bool PQuaternion::operator==(const PQuaternion& other) const
 	{
 		float32 epsilon = 1e-6f;
-		return std::abs(w - other.w) < epsilon &&
-			std::abs(x - other.x) < epsilon &&
-			std::abs(y - other.y) < epsilon &&
-			std::abs(z - other.z) < epsilon;
+		return abs(w - other.w) < epsilon &&
+			abs(x - other.x) < epsilon &&
+			abs(y - other.y) < epsilon &&
+			abs(z - other.z) < epsilon;
 	}
 
 	PQuaternion::PQuaternion(float32 _w, float32 _x, float32 _y, float32 _z) : w(_w), x(_x), y(_y), z(_z) {}
@@ -196,14 +351,14 @@ namespace ME::Core::Math
 		if (degrees)
 			scalar = (float32)RAD(scalar);
 
-		if (!std::isfinite(scalar) || !axis.LengthSquared())
+		if (!isfinite(scalar) || !axis.LengthSquared())
 			return;
 
 		float32 halfAngle = scalar * 0.5f;
-		float32 sinHalf = std::sin(halfAngle);
+		float32 sinHalf = sin(halfAngle);
 		Vector3<float32> normAxis = axis.Normalized();
 
-		w = std::cos(halfAngle);
+		w = cos(halfAngle);
 		x = sinHalf * normAxis.x;
 		y = sinHalf * normAxis.y;
 		z = sinHalf * normAxis.z;

@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "Events/MouseEvents.h"
 #include "Events/KeyEvents.h"
-#include "Renderer/Renderer.h"
+#include "Renderer/Renderer.hpp"
 #include "Renderer/RenderCommand.h"
 
 #include <Core.hpp>
@@ -13,7 +13,8 @@
 #include <Core/Platform/Base/IO.hpp>
 #include <Core/Misc/Time.hpp>
 
-#include "Assets/ShaderManager.hpp"
+#include "Renderer/Managers/ShaderManager.hpp"
+#include "Renderer/Managers/MeshManager.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 #include "Utility/AssetLoader.h"
 
@@ -27,7 +28,7 @@ namespace ME {
 	Application::Application(ApplicationProperties props)
 		: m_WindowUpdateX(0), m_WindowUpdateY(0), m_AppData(props)
 	{	
-		ME_ASSERT(!s_Instance, TEXT("Application is already created!"));
+		ME_ASSERT(!s_Instance, "Application is already created!");
 		s_Instance = this;
 		s_ShutdownRequested = false;
 
@@ -42,12 +43,18 @@ namespace ME {
 
 		Render::Renderer::SetRenderAPI(ME::Render::RenderAPI::API::Vulkan);
 		Render::Renderer::Init();
-		Assets::ShaderManager::Get();
+		Render::Manager::ShaderManager::Get();
+
+		Render::Manager::MeshMemoryPoolInfo meshPoolInfo = {};
+		meshPoolInfo.VertexMemoryPoolSize = ME_MESH_MNG_VERT_BUFFER_SIZE;
+		meshPoolInfo.IndexMemoryPoolSize = ME_MESH_MNG_IND_BUFFER_SIZE;
+
+		Render::Manager::MeshManager::Get().Init(meshPoolInfo);
 
 		m_ImGuiLayer = new Render::Imgui::ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
 
-		ME::Core::Containers::String str = ME::Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
+		ME::Core::String str = ME::Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath"));
 
 		ME::Core::IO::DirectoryStorage::StoreDirectory(ME::Core::IO::DirectoryStorage::Directory(TEXT("Assets"), (str + TEXT("assets\\"))));
 		ME::Core::IO::DirectoryStorage::StoreDirectory(ME::Core::IO::DirectoryStorage::Directory(TEXT("Shaders"), (str + TEXT("assets\\Shaders\\Source\\"))));
@@ -59,7 +66,7 @@ namespace ME {
 	Application::~Application()
 	{
 		m_ImGuiLayer->Shutdown();
-		ME::Assets::ShaderManager::Get().Shutdown();
+		ME::Render::Manager::ShaderManager::Get().Shutdown();
 		Render::RenderResourcesTracker::Get().ShutdownAll();
 		Render::Renderer::Shutdown();
 		s_ShutdownRequested = false;
@@ -84,7 +91,9 @@ namespace ME {
  			}
 
 			Render::RenderCommand::NewFrame();
-			Render::RenderCommand::GetAvailableCommandBuffer()->Reset();
+
+            ME::Core::Memory::Reference<ME::Render::CommandBuffer> frameCmdBuffer =
+                Render::RenderCommand::GetAvailableCommandBuffer();
 
 			for (auto layer = m_LayerStack.Begin(); layer != m_LayerStack.End(); ++layer)
 			{
@@ -96,12 +105,12 @@ namespace ME {
 			for (auto layer : m_LayerStack)
 				layer->OnImGuiRender(delta, m_ImGuiLayer->GetContext());
 
-			m_ImGuiLayer->EndRender(Render::RenderCommand::GetAvailableCommandBuffer());
+			m_ImGuiLayer->EndRender(frameCmdBuffer);
 			m_ImGuiLayer->PostRender();
 
-			Render::RenderCommand::GetAvailableCommandBuffer()->Finish();
-			Render::RenderCommand::Submit(Render::RenderCommand::GetAvailableCommandBuffer());
+			Render::RenderCommand::EndFrame();
 
+			Render::RenderCommand::Submit(frameCmdBuffer);
 			Render::RenderCommand::Present();
 		}
 

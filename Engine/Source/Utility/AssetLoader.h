@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include "Assets/Mesh.h"
-
 #include <Core.hpp>
+#include <Core/Math/Math.hpp>
 #include <Core/Memory/Memory.hpp>
 #include <Core/Containers/Array.hpp>
 #include <Core/Containers/String/String.hpp>
 #include <Core/Utils/Logging/Logger.hpp>
+
 
 namespace ME::Assets
 {
@@ -57,7 +57,7 @@ namespace ME::Utility
 	};
 
 
-	class MOON_API AssetLoader
+	class MEAPI AssetLoader
 	{
 	private:
 #pragma pack(push, 1)
@@ -85,14 +85,14 @@ namespace ME::Utility
 #pragma pack(pop)
 
 	public:
-		static AssetLoadResult Load(const ME::Core::Containers::String& filePath, bool centered, AssetFileFormats format);
+		static AssetLoadResult Load(const ME::Core::String& filePath, bool centered, AssetFileFormats format);
 
 	private:
-		static AssetLoadResult LoadOBJ(const uchar* filePath, bool centered);
+		static AssetLoadResult LoadOBJ(const char8* filePath, bool centered);
 	private:
-		static AssetLoadResult LoadTGA(const uchar* filePath);
+		static AssetLoadResult LoadTGA(const char8* filePath);
 		// For future
-		//static void LoadFBX(const uchar* filePath);
+		//static void LoadFBX(const char8* filePath);
 	private:
 		static ME::Core::Math::Vector3D32 CalculateNormal(const ME::Core::Containers::Array<Assets::Vertex>& vertices);
 		static void ProjectTo2D(const ME::Core::Containers::Array<Assets::Vertex>& vertices, ME::Core::Containers::Array<ME::Core::Math::Vector2D32>& out2D);
