@@ -7,11 +7,12 @@
 
 namespace ME::Render
 {
-	class MOON_API RenderObject
+	class MEAPI RenderObject
 	{
-	public:
+	protected:
 		virtual ~RenderObject() = default;
 
+	public:
 		template<typename T>
 		ME_NODISCARD inline constexpr T* As() noexcept
 		{
@@ -28,6 +29,5 @@ namespace ME::Render
 		}
 
 		virtual void Shutdown() = 0;
-
 	};
 }

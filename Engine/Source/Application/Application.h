@@ -12,20 +12,23 @@
 
 namespace ME 
 {
-	struct MOON_API ApplicationProperties
+	struct MEAPI ApplicationProperties
 	{
 		int32 VersionMajor; 
 		int32 VersionMinor;
 		int32 VersionPatch;
-		ME::Core::Containers::String ApplicationName;
+		ME::Core::String ApplicationName;
 
-		ApplicationProperties(int32 verMajor = 1, int32 verMinor = 0, int32 verPatch = 0, ME::Core::Containers::String appName = TEXT("Application"))
+		ME::Core::Containers::Array<ME::Core::String> AssetPaths;
+		ME::Core::Containers::Array<ME::Render::Manager::ShaderGroupSpecification> ShaderPaths;
+
+		ApplicationProperties(int32 verMajor = 1, int32 verMinor = 0, int32 verPatch = 0, ME::Core::String appName = TEXT("Application"))
 			: VersionMajor(verMajor), VersionMinor(verMinor), VersionPatch(verPatch), ApplicationName(appName) {}
 	};
 
 	typedef ApplicationProperties ApplicationData;
 
-	class MOON_API Application
+	class MEAPI Application
 	{
 	public:
 		Application(ApplicationProperties props = ApplicationProperties());
@@ -57,8 +60,6 @@ namespace ME
 
 	private:
 		ApplicationData m_AppData;
-
-	private:
 
 	private:
 		bool OnClosedEvent(ME::Events::WindowClosedEvent& event);

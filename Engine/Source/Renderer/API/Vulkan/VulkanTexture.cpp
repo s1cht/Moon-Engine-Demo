@@ -1,8 +1,8 @@
-﻿#include "VulkanTexture.h"
+﻿#include "VulkanTexture.hpp"
 
-#include "VulkanCommandBuffer.h"
-#include "VulkanRenderAPI.h"
-#include "VulkanFunctions.h"
+#include "VulkanCommandBuffer.hpp"
+#include "VulkanRenderAPI.hpp"
+#include "VulkanFunctions.hpp"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -16,13 +16,13 @@ namespace ME::Render
 	}
 
 	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification)
-		: m_Specification(specification)
+		: m_Specification(specification), m_Loaded(false)
 	{
 		Init();
 	}
 
 	VulkanTexture2D::VulkanTexture2D(VkImage image, const Texture2DSpecification& specification)
-		: m_Specification(specification)
+		: m_Specification(specification), m_Loaded(false)
 	{
 		Init(image);
 	}
@@ -36,9 +36,7 @@ namespace ME::Render
 	{
 		if (m_Loaded) return;
 		if (!RenderCommand::GetResourceHandler()->IncrementTextureSetReference(set))
-		{
-			ME_RENDER_WARN("Can't load texture \"{}\"", m_Specification.DebugName.GetString());
-		}
+			ME_RENDER_WARN("Can't load texture \"{}\"", m_Specification.DebugName);
 		m_Set = set;
 		m_Loaded = true;
 	}
@@ -61,13 +59,19 @@ namespace ME::Render
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 
 		UnloadTexture();
+		if (m_Sampler != nullptr)
+		{
+			vkDestroySampler(render->GetDevice(), m_Sampler, nullptr);
+			m_Sampler = nullptr;
+        }
+
 		if (m_ImageView != nullptr)
 		{
 			vkDestroyImageView(render->GetDevice(), m_ImageView, nullptr);
 			m_ImageView = nullptr;
 		}
 
-		if (m_Image != nullptr && m_Specification.bOwnsImage == false)
+		if (m_Image != nullptr && m_Specification.bOwnsImage == true)
 		{
 			vmaDestroyImage(render->GetAllocator(), m_Image, m_Allocation);
 			m_Image = VK_NULL_HANDLE;
@@ -82,7 +86,7 @@ namespace ME::Render
 		VkResult result = CreateImage();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image!: Error: {0}"), static_cast<uint32>(result));
+			ME_ASSERT(false, "Vulkan Texture2D: failed to create image!: Error: {0}", static_cast<uint32>(result));
 			Shutdown();
 			return;
 		}
@@ -90,14 +94,21 @@ namespace ME::Render
 		result = UpdateImage(m_Specification.Data, m_Specification.DataSize);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to update image data!: Error: {0}"), static_cast<uint32>(result));
+			ME_ASSERT(false, "Vulkan Texture2D: failed to update image data!: Error: {0}", static_cast<uint32>(result));
 			return;
 		}
 
 		result = CreateImageView();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image view!: Error: {0}"), static_cast<uint32>(result));
+			ME_ASSERT(false, "Vulkan Texture2D: failed to create image view!: Error: {0}", static_cast<uint32>(result));
+			return;
+		}
+
+		result = CreateSampler();
+		if (ME_VK_FAILED(result))
+		{
+			ME_ASSERT(false, "Vulkan Texture2D: failed to create sampler!: Error: {0}", static_cast<uint32>(result));
 			return;
 		}
 	}
@@ -112,7 +123,7 @@ namespace ME::Render
 		result = CreateImageView();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan Texture2D: failed to create image view!: Error: {0}"), static_cast<uint32>(result));
+			ME_ASSERT(false, "Vulkan Texture2D: failed to create image view!: Error: {0}", static_cast<uint32>(result));
 			return;
 		}
 	}
@@ -185,8 +196,9 @@ namespace ME::Render
 		return vkCreateSampler(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_Sampler);
 	}
 
-	VkResult VulkanTexture2D::UpdateImage( void* data, SIZE_T size)
+	VkResult VulkanTexture2D::UpdateImage(void* data, SIZE_T size)
 	{
+		if (data == nullptr || size <= 0) return VK_SUCCESS;
 		ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer = RenderCommand::Get()->GetSingleUseCommandBuffer();
 
 		VkBuffer stagingBuffer = nullptr;
@@ -237,15 +249,13 @@ namespace ME::Render
 
 		vmaUnmapMemory(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), stagingAllocation);
 
-		vkCmdCopyBufferToImage(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), stagingBuffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
 		VkImageMemoryBarrier barrier = {};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.image = m_Image;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		barrier.newLayout = ConvertImageLayoutVulkan(m_Specification.Layout);
-		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.subresourceRange.baseMipLevel = 0;
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
@@ -254,7 +264,16 @@ namespace ME::Render
 		if (m_Specification.IsDepth)  barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		if (m_Specification.IsStencil) barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+	    vkCmdCopyBufferToImage(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = ConvertImageLayoutVulkan(m_Specification.Layout);
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		RenderCommand::Get()->SubmitAndFreeSingleUseCommandBuffer(commandBuffer);
 

@@ -6,7 +6,7 @@
 
 #include "Core.hpp"
 
-#define ME_FILETIME_TO_TIMEPOINT(ft) ((static_cast<uint64>(ft.dwHighDateTime) << 32) + ft.dwLowDateTime - 116444736000000000LL) / 10000000LL;
+#define ME_FILETIME_TO_TIMEPOINT(ft) ((static_cast<uint64>((ft).dwHighDateTime) << 32) + (ft).dwLowDateTime - 116444736000000000LL) / 10000000LL
 
 namespace ME::Core::IO
 {
@@ -15,28 +15,28 @@ namespace ME::Core::IO
 	{
 	}
 
-	WindowsFile::WindowsFile(const uchar* path)
+	WindowsFile::WindowsFile(const char8* path)
 		: m_FileInfo({}), m_File(nullptr), m_LastError(IOError::OK), m_Opened(false), m_EOF(false)
 	{
 		Open(path, FileReadMode::Default);
 	}
 
-	WindowsFile::WindowsFile(const uchar* path, FileReadMode mode)
+	WindowsFile::WindowsFile(const char8* path, FileReadMode mode)
 		: m_FileInfo({}), m_File(nullptr), m_LastError(IOError::OK), m_Opened(false), m_EOF(false)
 	{
 		Open(path, mode);
 	}
 
-	WindowsFile::WindowsFile(const Containers::String& path)
+	WindowsFile::WindowsFile(const String& path)
 		: m_FileInfo({}), m_File(nullptr), m_LastError(IOError::OK), m_Opened(false), m_EOF(false)
 	{
-		Open(path.GetString(), FileReadMode::Default);
+		Open(path.String(), FileReadMode::Default);
 	}
 
-	WindowsFile::WindowsFile(const Containers::String& path, FileReadMode mode)
+	WindowsFile::WindowsFile(const String& path, FileReadMode mode)
 		: m_FileInfo({}), m_File(nullptr), m_LastError(IOError::OK), m_Opened(false), m_EOF(false)
 	{
-		Open(path.GetString(), mode);
+		Open(path.String(), mode);
 	}
 
 	WindowsFile::~WindowsFile()
@@ -44,7 +44,7 @@ namespace ME::Core::IO
 		Close();
 	}
 
-	bool WindowsFile::Open(const uchar* path, FileReadMode mode)
+	bool WindowsFile::Open(const char8* path, FileReadMode mode)
 	{
 		if (m_Opened)
 		{
@@ -73,7 +73,9 @@ namespace ME::Core::IO
 			return false;
 		}
 
-		m_File = CreateFileW(path, readFlags, NULL,
+		m_FileReadMode = mode;
+
+		m_File = CreateFileW(Core::StringToWideString(path).String(), readFlags, NULL,
 			NULL,
 			canCreateNewFile ? OPEN_ALWAYS : OPEN_EXISTING,
 			readFlags == GENERIC_READ ? FILE_ATTRIBUTE_READONLY : FILE_ATTRIBUTE_NORMAL,
@@ -96,12 +98,13 @@ namespace ME::Core::IO
 			return false;
 		}
 
-		SIZE_T len = wcslen(path) + 1;
+		Core::WideString wpath = StringToWideString(path);
+		SIZE_T len = wcslen(wpath.String()) + 1;
 		wchar* name = new wchar[len];
-		wcscpy_s(name, len, path);
+		wcscpy_s(name, len, wpath.String());
 		PathStripPathW(name);
-		m_FileInfo.Name = name;
-		m_FileInfo.Size =  static_cast<SIZE_T>(info.nFileSizeLow) | (static_cast<SIZE_T>(info.nFileSizeHigh) << 32);
+		m_FileInfo.Name = WideStringToString(name);
+		m_FileInfo.Size = static_cast<SIZE_T>(info.nFileSizeLow) | (static_cast<SIZE_T>(info.nFileSizeHigh) << 32);
 		m_FileInfo.CreationTime.Tick = ME_FILETIME_TO_TIMEPOINT(info.ftCreationTime);
 		m_FileInfo.LastAccessTime.Tick = ME_FILETIME_TO_TIMEPOINT(info.ftLastAccessTime);
 		m_FileInfo.LastWriteTime.Tick = ME_FILETIME_TO_TIMEPOINT(info.ftLastWriteTime);
@@ -123,21 +126,23 @@ namespace ME::Core::IO
 			return;
 		}
 
+		Flush();
+
 		if (!CloseHandle(m_File))
 		{
-			ME_ERROR(TEXT("File failed to close! Error: {0}"), GetLastError());
+			ME_ERROR("File failed to close! Error: {0}", GetLastError());
 		}
 		m_Opened = false;
 		m_EOF = true;
 	}
 
-	bool WindowsFile::Read(Containers::String& output, StringReadMode mode)
+	bool WindowsFile::Read(String& output, StringReadMode mode)
 	{
-		uchar byte = TEXT(' ');
+		char8 byte = 0;
 		DWORD bytesRead;
-		
+		bool readingStarted = false;
+
 		output.Clear();
-		output.Resize(128);
 
 		if (!m_Opened)
 		{
@@ -148,6 +153,12 @@ namespace ME::Core::IO
 
 		while (!m_EOF)
 		{
+			if (Tell() >= GetFileSize())
+			{
+				m_EOF = true;
+				break;
+			}
+
 			if (!ReadFile(m_File, &byte, 1, &bytesRead, nullptr))
 			{
 				DWORD error = GetLastError();
@@ -163,20 +174,29 @@ namespace ME::Core::IO
 			}
 			if (mode == StringReadMode::Line && byte == '\n')
 				break;
-			else if (mode == StringReadMode::Word && byte == '\0')
-				break;
+			if (mode == StringReadMode::Word)
+			{
+				if (byte == '\n' || byte == '\r' || byte == '\0' || byte == 32)
+				{
+					if (readingStarted)
+						break;
+					else
+						continue;
+				}
+			    readingStarted = true;
+			}
 
-			output += byte;
+		    output += byte;
 		}
 	
-		return output.GetSize() > 0;
+		return !output.Empty();
 	}
 
 	bool WindowsFile::RawWrite(void* input, SIZE_T size)
 	{
 		if (m_FileReadMode == FileReadMode::Read)
 		{
-			ME_ERROR(TEXT("Trying to write into read-only file!"));
+			ME_ERROR("Trying to write into read-only file!");
 			m_LastError = IOError::FileIsReadOnly;
 			return false;
 		}
@@ -190,7 +210,7 @@ namespace ME::Core::IO
 
 		DWORD bytesWritten;
 
-		if (!WriteFile(m_File, input, (uint32)size, &bytesWritten, nullptr))
+		if (!WriteFile(m_File, input, static_cast<uint32>(size), &bytesWritten, nullptr))
 		{
 			DWORD error = GetLastError();
 			ME_ERROR("Failed to write in file! Win32 error: {0}", error);
@@ -202,11 +222,11 @@ namespace ME::Core::IO
 		return true;
 	}
 
-	bool WindowsFile::Write(const Containers::String& input)
+	bool WindowsFile::Write(const String& input)
 	{
 		if (m_FileReadMode == FileReadMode::Read)
 		{
-			ME_ERROR(TEXT("Trying to write into read-only file!"));
+			ME_ERROR("Trying to write into read-only file!");
 			m_LastError = IOError::FileIsReadOnly;
 			return false;
 		}
@@ -220,7 +240,7 @@ namespace ME::Core::IO
 
 		DWORD bytesWritten;
 
-		if (!WriteFile(m_File, input.GetString(), (uint32)input.GetSize(), &bytesWritten, nullptr))
+		if (!WriteFile(m_File, input.String(), static_cast<uint32>(input.Size()), &bytesWritten, nullptr))
 		{
 			DWORD error = GetLastError();
 			ME_ERROR("Failed to write in file! Win32 error: {0}", error);
@@ -232,11 +252,11 @@ namespace ME::Core::IO
 		return true;
 	}
 
-	bool WindowsFile::Append(const Containers::String& output)
+	bool WindowsFile::Append(const String& output)
 	{
 		if (m_FileReadMode == FileReadMode::Read)
 		{
-			ME_ERROR(TEXT("Trying to write into read-only file!"));
+			ME_ERROR("Trying to write into read-only file!");
 			m_LastError = IOError::FileIsReadOnly;
 			return false;
 		}
@@ -354,11 +374,10 @@ namespace ME::Core::IO
 		return m_FileInfo.Size;
 	}
 
-	Containers::String WindowsFile::ReadAll()
+	String WindowsFile::ReadAll()
 	{
-		Containers::String result;
-		SIZE_T size;
-		if (!m_Opened)
+		String result;
+        if (!m_Opened)
 		{
 			ME_ERROR("Reading invalid file!");
 			m_LastError = IOError::FileNotOpened;
@@ -366,10 +385,10 @@ namespace ME::Core::IO
 		}
 
 		Seek(0);
-		size = GetFileSize();
+		SIZE_T size = GetFileSize();
 		result.Resize(size);
 
-		uchar* buffer = new uchar[size];
+		char8* buffer = new char8[size];
 		if (ReadBinary(buffer, size))
 			for (SIZE_T i = 0; i < size; ++i)
 				result += buffer[i];
@@ -378,18 +397,18 @@ namespace ME::Core::IO
 		return result;
 	}
 
-	ME::Core::Containers::WideString WindowsFile::GetFileName()
+	ME::Core::WideString WindowsFile::GetFileName()
 	{
 		HANDLE hFileMap = CreateFileMapping(m_File,
-			NULL,
+			nullptr,
 			PAGE_READONLY,
 			0,
 			1,
-			NULL);
+			nullptr);
 
 		if (!hFileMap)
 		{
-			return L"";
+			return TEXTW("");
 		}
 
 		wchar pszFilename[MAX_PATH + 1];
@@ -467,107 +486,100 @@ namespace ME::Core::IO
 
 #ifdef PLATFORM_WINDOWS
 
-	Memory::Reference<File> PCreateTempFile(const uchar* name)
+	Memory::Reference<File> PCreateTempFile(const char8* name)
 	{
-		uchar tempPath[MAX_PATH];
-		uchar tempFileName[MAX_PATH];
+		wchar tempPath[MAX_PATH];
+		wchar tempFileName[MAX_PATH];
 
 		if (!GetTempPathW(MAX_PATH, tempPath))
 		{
-			ME_ERROR(TEXT("IO: Failed to get %temp% directory! Win32 error: {0}"), GetLastError());
+			ME_ERROR("IO: Failed to get %temp% directory! Win32 error: {0}", GetLastError());
 			return nullptr;
 		}
 
-		if (!GetTempFileNameW(tempPath, name, 0, tempFileName))
+		if (!GetTempFileNameW(tempPath, StringToWideString(name).String(), 0, tempFileName))
 		{
-			ME_ERROR(TEXT("IO: Failed to create Temporary file! Win32 error: {0}"), GetLastError());
+			ME_ERROR("IO: Failed to create Temporary file! Win32 error: {0}", GetLastError());
 			return nullptr;
 		}
 
-		Memory::Reference<File> file = Memory::MakeReference<WindowsFile>(reinterpret_cast<const uchar*>(tempFileName), FileReadMode::WriteAndRead);
+		Memory::Reference<File> file = Memory::MakeReference<WindowsFile>(reinterpret_cast<const char8*>(tempFileName), FileReadMode::WriteAndRead);
 		if (!file->IsOpen())
 		{
-			ME_ERROR(TEXT("IO: Failed to open temporary file! Win32 error: {0}"), (uint32)(file->GetFileLastError()));
+			ME_ERROR("IO: Failed to open temporary file! Win32 error: {0}", static_cast<uint32>(file->GetFileLastError()));
 			return nullptr;
 		}
 
 		return file;
 	}
 
-	Memory::Reference<File> POpenFile(const uchar* path)
+	Memory::Reference<File> POpenFile(const char8* path)
 	{
-		Memory::Reference<File> file;
-
-		file = Memory::MakeReference<WindowsFile>(path);
-
+        Memory::Reference<File> file = Memory::MakeReference<WindowsFile>(path);
 		if (!file->IsOpen())
 		{
-			ME_ERROR(TEXT("IO: File can't be opened! Error: {0}"), (uint32)file->GetFileLastError());
+			ME_ERROR("IO: File can't be opened! Error: {0}", static_cast<uint32>(file->GetFileLastError()));
 			return file;
 		}
-
 		return file;
 	}
 
-	Memory::Reference<File> POpenFile(const uchar* path, FileReadMode mode)
+	Memory::Reference<File> POpenFile(const char8* path, FileReadMode mode)
 	{
-		Memory::Reference<File> file;
-
-		file = Memory::MakeReference<WindowsFile>(path, mode);
+        Memory::Reference<File> file = Memory::MakeReference<WindowsFile>(path, mode);
 
 		if (!file->IsOpen())
 		{
-			ME_ERROR(TEXT("IO: File can't be opened! Error: {0}"), (uint32)file->GetFileLastError());
+			ME_ERROR("IO: File can't be opened! Error: {0}", static_cast<uint32>(file->GetFileLastError()));
 			return Memory::MakeReference<WindowsFile>();
 		}
-
 		return file;
 	}
 
-	bool PFileExists(const uchar* path)
+	bool PFileExists(const char8* path)
 	{
-		DWORD attributes = GetFileAttributesW(path);
+		DWORD attributes = GetFileAttributesW(StringToWideString(path).String());
 		if (attributes == INVALID_FILE_ATTRIBUTES)
 		{
 			DWORD error = GetLastError();
 			if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND)
 				return false;
-			ME_ERROR(TEXT("IO: Failed to check file for exitsting! Win32 error: {0}"), error);
+			ME_ERROR("IO: Failed to check file for existing! Win32 error: {0}", static_cast<uint32>(error));
 			return false;
 		}
 		return true;
 	}
 
-	bool PDeleteFile(const uchar* path)
+	bool PDeleteFile(const char8* path)
 	{
-		if (!DeleteFileW(path))
+		if (!DeleteFileW(StringToWideString(path).String()))
 		{
 			DWORD error = GetLastError();
 			if (error == ERROR_FILE_NOT_FOUND)
 				return true;
-			ME_ERROR(TEXT("IO: Failed to delete file! Win32 error: {0}"), error);
+			ME_ERROR("IO: Failed to delete file! Win32 error: {0}", static_cast<uint32>(error));
 			return false;
 		}
 		return true;
 	}
 
-	bool PRenameFile(const uchar* oldPath, const uchar* newPath)
+	bool PRenameFile(const char8* oldPath, const char8* newPath)
 	{
-		if (!MoveFileW(oldPath, newPath))
+		if (!MoveFileW(StringToWideString(oldPath).String(), StringToWideString(newPath).String()))
 		{
-			ME_ERROR(TEXT("IO: Failed to rename file: %u"), GetLastError());
+			ME_ERROR("IO: Failed to rename file: {0}", GetLastError());
 			return false;
 		}
 		return true;
 	}
 
-	bool PCreateFile(const uchar* path)
+	bool PCreateFile(const char8* path)
 	{
 		HANDLE file = CreateFileW(
-			path,
+			StringToWideString(path).String(),
 			GENERIC_WRITE,
 			0,
-			NULL,
+			nullptr,
 			CREATE_NEW,
 			FILE_ATTRIBUTE_NORMAL,
 			nullptr
@@ -575,7 +587,7 @@ namespace ME::Core::IO
 
 		if (file == INVALID_HANDLE_VALUE)
 		{
-			ME_ERROR(TEXT("IO: Failed to create new file! Win32 error: {0}"), GetLastError());
+			ME_ERROR("IO: Failed to create new file! Win32 error: {0}", GetLastError());
 			return false;
 		}
 
@@ -583,14 +595,14 @@ namespace ME::Core::IO
 		return true;
 	}
 
-	bool PCreateDirectory(const uchar* path)
+	bool PCreateDirectory(const char8* path)
 	{
-		if (!CreateDirectoryW(path, NULL))
+		if (!CreateDirectoryW(StringToWideString(path).String(), nullptr))
 		{
 			DWORD error = GetLastError();
 			if (error == ERROR_ALREADY_EXISTS)
 				return true;
-			ME_ERROR(TEXT("IO: Failed to create directory! Win32 error: {0}"), error);
+			ME_ERROR("IO: Failed to create directory! Win32 error: {0}", static_cast<uint32>(error));
 			return false;
 		}
 		return true;

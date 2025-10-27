@@ -43,7 +43,6 @@ project "Engine"
 
 	links
 	{
-		"VMA",
 		"EngineCore",
 		"ImGui",
 		"dxcompiler",

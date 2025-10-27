@@ -31,7 +31,7 @@ namespace ME::Render
 		Load, Clear,
 	};
 
-	struct MOON_API AttachmentSpecification
+	struct MEAPI AttachmentSpecification
 	{
 		ME::Render::Format AttachmentFormat;
 		ME::Render::StoreOperation StoreOp;
@@ -43,7 +43,7 @@ namespace ME::Render
 		bool IsStencil;
 	};
 
-	struct MOON_API SubpassSpecification
+	struct MEAPI SubpassSpecification
 	{
 		ME::Render::PipelineBindPoint PipelineBindPoint;
 		ME::Core::Containers::Array<uint64> InputAttachmentRefs;
@@ -51,7 +51,7 @@ namespace ME::Render
 		uint64 DepthStencilAttachmentRef;
 	};
 
-	struct MOON_API SubpassDependency
+	struct MEAPI SubpassDependency
 	{
 		uint32 SubpassSrc;
 		uint32 SubpassDst;
@@ -61,12 +61,12 @@ namespace ME::Render
 		AccessFlags AccessFlagsDst;
 	};
 
-	struct MOON_API RenderPassSpecification
+	struct MEAPI RenderPassSpecification
 	{
 		ME::Core::Containers::Array<AttachmentSpecification> AttachmentSpecs;
 		ME::Core::Containers::Array<SubpassSpecification> SubpassSpecs;
 		ME::Core::Containers::Array<SubpassDependency> SubpassDependencies;
-		ME::Core::Containers::AnsiString DebugName;
+		ME::Core::String DebugName;
 	};
 
 	struct DepthStencilClearValue
@@ -90,11 +90,9 @@ namespace ME::Render
 		ME::Core::Containers::Array<ME::Render::ClearValue> ClearValues;
 	};
 
-	class MOON_API RenderPass : public RenderObject
+	class MEAPI RenderPass : public RenderObject
 	{
 	public:
-		virtual ~RenderPass() = default;
-
 		virtual void Begin(ME::Render::CommandBuffer* buffer, RenderPassBeginInfo& beginInfo) = 0;
 		virtual void End(ME::Render::CommandBuffer* buffer) = 0;
 

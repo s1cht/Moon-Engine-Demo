@@ -23,13 +23,13 @@ namespace ME::Core::Math
 		};
 
 	public:
-		CORE_API static const Vector3 ZeroVector;
-		CORE_API static const Vector3 UpVector;
-		CORE_API static const Vector3 DownVector;
-		CORE_API static const Vector3 ForwardVector;
-		CORE_API static const Vector3 BackwardVector;
-		CORE_API static const Vector3 RightVector;
-		CORE_API static const Vector3 LeftVector;
+		COREAPI static const Vector3 ZeroVector;
+		COREAPI static const Vector3 UpVector;
+		COREAPI static const Vector3 DownVector;
+		COREAPI static const Vector3 ForwardVector;
+		COREAPI static const Vector3 BackwardVector;
+		COREAPI static const Vector3 RightVector;
+		COREAPI static const Vector3 LeftVector;
 
 	public:
 		inline Vector3();

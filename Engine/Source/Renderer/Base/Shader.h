@@ -24,13 +24,15 @@ namespace ME::Render
 
 	enum class ShaderStage : uint32
 	{
-		None = 0,
-		Vertex = BIT(0),
-		Hull = BIT(1),
-		Domain = BIT(2),
-		Geometry = BIT(3),
-		Pixel = BIT(4),
-		Compute = BIT(5),
+		None		= 0,
+		Vertex		= BIT(0),
+		Hull		= BIT(1),
+		Domain		= BIT(2),
+		Geometry	= BIT(3),
+		Pixel		= BIT(4),
+		Compute		= BIT(5),
+		Task		= BIT(6),
+		Mesh		= BIT(7),
 	};
 
 	struct CompiledShader
@@ -65,20 +67,20 @@ namespace ME::Render
 	public:
 		bool operator==(const ResourceLayout& layout) const
 		{
-			if (layout.GetSize() != this->GetSize()) return false;
-			for (SIZE_T i = 0; i < layout.GetSize(); i++)
-				if (this->operator[](i) != layout[i]) break;
+			if (layout.Size() != this->Size()) return false;
+			for (SIZE_T i = 0; i < layout.Size(); i++)
+				if (this->operator[](i) != layout[i]) return false;
 			return true;
 		}
 	};
 
-	class MOON_API ResourceLayoutPack : public ME::Core::Containers::Array<ME::Render::ResourceLayout>
+	class MEAPI ResourceLayoutPack : public ME::Core::Containers::Array<ME::Render::ResourceLayout>
 	{
 	public:
 		bool operator==(const ResourceLayoutPack& pack) const
 		{
-			if (pack.GetSize() != this->GetSize()) return false;
-			for (SIZE_T i = 0; i < pack.GetSize(); i++)
+			if (pack.Size() != this->Size()) return false;
+			for (SIZE_T i = 0; i < pack.Size(); i++)
 				if (this->operator[](i) != pack[i]) break;
 			return true;
 		}
@@ -91,11 +93,9 @@ namespace ME::Render
 		ME::Render::ResourceLayoutPack Layouts;
 	};
 
-	class MOON_API Shader : public RenderObject
+	class MEAPI Shader : public RenderObject
 	{
 	public:
-		virtual ~Shader() = default;
-
 		virtual const ME::Render::ShaderSpecification& GetSpecification() const = 0;
 
 	public:
@@ -106,15 +106,15 @@ namespace ME::Render
 
 	};
 
-	extern MOON_API SIZE_T SizeOfShaderType(ME::Render::ShaderType type);
-	extern MOON_API uint32 GetTypeAPISpecificShaderType(ME::Render::ShaderType type);
+	extern MEAPI SIZE_T SizeOfShaderType(ME::Render::ShaderType type);
+	extern MEAPI uint32 GetTypeAPISpecificShaderType(ME::Render::ShaderType type);
 
-	inline constexpr MOON_API ShaderStage operator|(ME::Render::ShaderStage a, ME::Render::ShaderStage b)
+	inline constexpr MEAPI ShaderStage operator|(ME::Render::ShaderStage a, ME::Render::ShaderStage b)
 	{
 		return static_cast<ShaderStage>(static_cast<uint32>(a) | static_cast<uint32>(b));
 	}
 
-	inline constexpr MOON_API ShaderStage operator|=(ME::Render::ShaderStage& a, ME::Render::ShaderStage b)
+	inline constexpr MEAPI ShaderStage operator|=(ME::Render::ShaderStage& a, ME::Render::ShaderStage b)
 	{
 		a = a | b;
 		return a;
@@ -128,12 +128,12 @@ namespace ME::Render
 	/*
 API-specific conversion function
 */
-MOON_API uint32 ConvertShaderTypeVulkan(ShaderType type);
+	MEAPI uint32 ConvertShaderTypeVulkan(ShaderType type);
 
 #ifdef PLATFORM_WINDOWS
-	//extern MOON_API uint32 ConvertShaderTypeDirectX12(ShaderType type);
+	//extern MEAPI uint32 ConvertShaderTypeDirectX12(ShaderType type);
 #else
-	//extern MOON_API uint32 ConvertShaderTypeDirectX12(ShaderType type) { ME_ASSERT(false, TEXT("DirectX12 conversion available only on Windows!")); return 0; }
+	//extern MEAPI uint32 ConvertShaderTypeDirectX12(ShaderType type) { ME_ASSERT(false, TEXT("DirectX12 conversion available only on Windows!")); return 0; }
 #endif
 }
 

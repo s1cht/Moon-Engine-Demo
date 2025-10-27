@@ -11,7 +11,7 @@
 
 namespace ME::Input::Devices
 {
-	class MOON_API Mouse
+	class MEAPI Mouse
 	{
 	public:
 		EVENT_CALLBACK_FUNCTION;
@@ -41,9 +41,9 @@ namespace ME::Input::Devices
 
 		bool IsSideButtonDown(uint8 sideButton)
 		{
-			if (sideButton >= PE_MAX_MOUSE_SIDEBTN_COUNT)
+			if (sideButton >= ME_MAX_MOUSE_SIDEBTN_COUNT)
 			{
-				ME_ERROR(TEXT("Unknown side button caught!"));
+				ME_ERROR("Unknown side button caught!");
 				return false;
 			}
 			return m_SideButtonDown[sideButton];
@@ -89,7 +89,7 @@ namespace ME::Input::Devices
 		bool m_MiddleButtonDown;
 		bool m_RightButtonDown;
 
-		bool m_SideButtonDown[PE_MAX_MOUSE_SIDEBTN_COUNT];
+		bool m_SideButtonDown[ME_MAX_MOUSE_SIDEBTN_COUNT];
 
 		ME::Core::Math::Vector2D32 m_MousePosition;
 		ME::Core::Math::Vector2D32 m_MouseDelta;

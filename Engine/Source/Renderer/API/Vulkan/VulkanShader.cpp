@@ -1,8 +1,8 @@
-﻿#include "VulkanShader.h"
+﻿#include "VulkanShader.hpp"
 
-#include "VulkanResourceHandler.h"
-#include "VulkanRenderAPI.h"
-#include "VulkanFunctions.h"
+#include "VulkanResourceHandler.hpp"
+#include "VulkanRenderAPI.hpp"
+#include "VulkanFunctions.hpp"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -50,14 +50,14 @@ namespace ME::Render
 
 		VkResult result = vkCreateShaderModule(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_Shader);
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(TEXT("Vulkan shader: failed to create shader! Error: {0}"), static_cast<uint32>(result));
+			ME_ASSERT("Vulkan shader: failed to create shader! Error: {0}", static_cast<uint32>(result));
 
 		CreateDescriptorSetLayout();
 	}
 
 	void VulkanShader::CreateDescriptorSetLayout()
 	{
-		for (uint32 i = 0; i < m_Specification.Layouts.GetSize(); i++)
+		for (uint32 i = 0; i < m_Specification.Layouts.Size(); i++)
 			m_Layouts.EmplaceBack(RenderCommand::Get()->As<VulkanRenderAPI>()->GetVulkanResourceHandler()->CreateLayout(m_Specification.Layouts[i]));
 	}
 
@@ -80,7 +80,7 @@ namespace ME::Render
 			case ME::Render::ShaderType::Uint4: return VK_FORMAT_R32G32B32A32_UINT;
 			default:
 			{
-				ME_ASSERT(false, TEXT("Vulkan: ShaderTypeConversion: Shader type None can't be	converted!"));
+				ME_ASSERT(false, "Vulkan: ShaderTypeConversion: Shader type None can't be converted!");
 				return VK_FORMAT_UNDEFINED;
 			}
 		}

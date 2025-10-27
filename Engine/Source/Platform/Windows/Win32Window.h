@@ -5,7 +5,7 @@
 
 namespace ME 
 {
-	class MOON_API Win32Window : public Window
+	class MEAPI Win32Window : public Window
 	{
 	public:
 		Win32Window(const WindowProperties& properties);

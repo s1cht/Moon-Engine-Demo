@@ -6,7 +6,7 @@ namespace ME::Core::Math
 {
 	struct PQuaternion;
 
-	struct CORE_API PMatrix3x3
+	struct COREAPI PMatrix3x3
 	{
 	public:
 		union

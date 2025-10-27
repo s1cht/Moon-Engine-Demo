@@ -2,7 +2,7 @@
 
 namespace ME::Core
 {
-    Layer::Layer(const ME::Core::Containers::String& name)
+    Layer::Layer(const ME::Core::String& name)
         : m_DebugName(name)
     {
     }

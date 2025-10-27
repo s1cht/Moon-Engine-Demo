@@ -1,16 +1,16 @@
-#pragma once
+﻿#pragma once
 
 #include "Core.hpp"
-#include "Core/Utils/Logging/Logger.hpp"
 #include "Core/Memory/Memory.hpp"
-#include "Core/Memory/Allocator.hpp"
+#include "Core/Memory/Allocators/Allocator.hpp"
 #include "Core/Containers/String/StringShared.hpp"
+#include "Core/Utils/Logging/Logger.hpp"
 
 #include <bitset>
 
 #define STR_RESIZE_MULTIPLYER 2
 
-namespace ME::Core::Containers
+namespace ME::Core
 {
 	template<typename type>
 	class PStringView;
@@ -28,6 +28,7 @@ namespace ME::Core::Containers
 		StringIterator(PtrType ptr) : m_Ptr(ptr) {}
 
 	public:
+		StringIterator& operator=(const StringIterator& it) = default;
 
 		StringIterator operator-(const SIZE_T& index)
 		{
@@ -55,27 +56,27 @@ namespace ME::Core::Containers
 
 		StringIterator& operator++()
 		{
-			m_Ptr++;
+			++m_Ptr;
 			return (*this);
 		}
 
 		StringIterator operator++(int)
 		{
 			StringIterator temp = (*this);
-			m_Ptr++;
+			++m_Ptr;
 			return temp;
 		}
 
 		StringIterator& operator--()
 		{
-			m_Ptr--;
+			--m_Ptr;
 			return (*this);
 		}
 
 		StringIterator operator--(int)
 		{
 			StringIterator temp = (*this);
-			m_Ptr--;
+			--m_Ptr;
 			return temp;
 		}
 
@@ -93,12 +94,6 @@ namespace ME::Core::Containers
 		bool operator==(const StringIterator& it)
 		{
 			return (m_Ptr == it.m_Ptr);
-		}
-
-		StringIterator& operator= (const StringIterator& it)
-		{
-			this->m_Ptr = it.m_Ptr;
-			return *this;
 		}
 
 		RefType operator[] (SIZE_T index)
@@ -124,6 +119,8 @@ namespace ME::Core::Containers
 	template<typename type, class allocator = ME::Core::Memory::Allocator<type>>
 	class PString
 	{
+		static_assert(std::is_same_v<type, char8> || std::is_same_v<type, wchar>, "Allowed only char8 and wchar types in ME::Core::String");
+
 	public:
 		using DataType = type;
 		using ReturnType = DataType;
@@ -133,9 +130,21 @@ namespace ME::Core::Containers
 
 	public:
 		PString()
-			: m_Data(nullptr), m_Size(0), m_Capacity(10), m_Allocator(AllocatorType())
+			: m_Allocator(AllocatorType()), m_Data(nullptr), m_Size(0), m_Capacity(10)
 		{
 			Allocate(m_Capacity);
+		}
+
+		PString(DataType str)
+			: m_Allocator(AllocatorType())
+		{
+			m_Size = 1;
+			m_Capacity = 10;
+			m_Data = nullptr;
+
+			Allocate(m_Capacity);
+			CopyString(&str, m_Size);
+			m_Data[m_Size] = '\0';
 		}
 
 		PString(const DataType* str)
@@ -162,6 +171,45 @@ namespace ME::Core::Containers
 			m_Data[m_Size] = '\0';
 		}
 
+		PString(asciichar ch)
+			: m_Allocator(AllocatorType())
+		{
+			static_assert(sizeof(DataType) == 1, "This constructor is available for only UTF8 string!");
+			m_Size = 1;
+			m_Capacity = 10;
+			m_Data = nullptr;
+
+			Allocate(m_Capacity);
+			CopyString(reinterpret_cast<const DataType*>(&ch), m_Size);
+			m_Data[m_Size] = '\0';
+		}
+
+		PString(const asciichar* str)
+			: m_Allocator(AllocatorType())
+		{
+			static_assert(sizeof(DataType) == 1, "This constructor is available for only UTF8 string!");
+			m_Size = GetStringSize(reinterpret_cast<const DataType*>(str));
+			m_Capacity = m_Size + 1;
+			m_Data = nullptr;
+
+			Allocate(m_Capacity);
+			CopyString(reinterpret_cast<const DataType*>(str), m_Size);
+			m_Data[m_Size] = '\0';
+		}
+
+	    PString(const asciichar* str, SIZE_T size)
+			: m_Allocator(AllocatorType())
+		{
+			static_assert(sizeof(DataType) == 1, "This constructor is available for only UTF8 string!");
+			m_Size = size;
+			m_Capacity = m_Size + 1;
+			m_Data = nullptr;
+
+			Allocate(m_Capacity);
+			CopyString(reinterpret_cast<const DataType*>(str), size);
+			m_Data[m_Size] = 0;
+		}
+
 		PString(const PString& other)
 			: m_Allocator(AllocatorType())
 		{
@@ -175,7 +223,7 @@ namespace ME::Core::Containers
 		}
 
 		PString(PString&& other) noexcept
-			: m_Allocator(other.m_Allocator), m_Size(other.m_Size), m_Capacity(other.m_Capacity), m_Data(other.m_Data)
+			: m_Allocator(other.m_Allocator), m_Data(other.m_Data), m_Size(other.m_Size), m_Capacity(other.m_Capacity)
 		{
 			other.m_Size = 0;
 			other.m_Capacity = 0;
@@ -192,9 +240,9 @@ namespace ME::Core::Containers
 		}
 
 	public:
-		inline SIZE_T GetSize() const noexcept { return m_Size; }
-		inline SIZE_T GetCapacity() const noexcept { return m_Capacity; }
-		inline const DataType* GetString() const noexcept { return m_Data; }
+		inline SIZE_T Size() const noexcept { return m_Size; }
+		inline SIZE_T Capacity() const noexcept { return m_Capacity; }
+		inline const DataType* String() const noexcept { return m_Data; }
 
 		inline Iterator begin() { return Iterator(m_Data); }
 		inline Iterator end() { return Iterator(m_Data + m_Size); }
@@ -257,14 +305,14 @@ namespace ME::Core::Containers
 		PString operator+(const PString& str) const
 		{
 			PString result = *this;
-			result.AddToString(str.GetString(), str.GetSize());
+			result.AddToString(str.String(), str.Size());
 			return result;
 		}
 
 		PString operator+(PStringView<DataType> str) const
 		{
 			PString result = *this;
-			result.AddToString(str.GetData(), str.GetSize());
+			result.AddToString(str.String(), str.Size());
 			return result;
 		}
 
@@ -277,12 +325,12 @@ namespace ME::Core::Containers
 
 		PString& operator+=(const PString& str)
 		{
-			return AddToString(str.GetString(), str.GetSize());
+			return AddToString(str.String(), str.Size());
 		}
 
 		PString operator+=(PStringView<DataType> str) const
 		{
-			return AddToString(str.GetData(), str.GetSize());
+			return AddToString(str.Data(), str.Size());
 		}
 
 		PString& operator+=(const DataType* str)
@@ -297,7 +345,7 @@ namespace ME::Core::Containers
 
 		bool operator==(const PString& str) const
 		{
-			if (str.GetSize() != m_Size)
+			if (str.Size() != m_Size)
 				return false;
 
 			if constexpr (std::is_trivially_copyable_v<DataType>)
@@ -374,7 +422,7 @@ namespace ME::Core::Containers
 	public:
 		inline SIZE_T Find(const PString& in, SIZE_T pos = 0) const
 		{
-			return PFind(in.GetString(), in.GetSize(), pos);
+			return PFind(in.String(), in.Size(), pos);
 		}
 
 		inline SIZE_T Find(const DataType* in, SIZE_T pos = 0) const
@@ -395,7 +443,7 @@ namespace ME::Core::Containers
 
 		inline 	SIZE_T FindFirst(const PString& in, SIZE_T pos = 0) const
 		{
-			return PFindFirst(in.GetString(), in.GetSize(), pos);
+			return PFindFirst(in.String(), in.Size(), pos);
 		}
 
 		inline SIZE_T FindFirst(const DataType* in, SIZE_T pos = 0) const
@@ -416,7 +464,7 @@ namespace ME::Core::Containers
 
 		inline SIZE_T FindFirstNot(const PString& in, SIZE_T pos = 0) const
 		{
-			return PFindFirstNot(in.GetString(), in.GetSize(), pos);
+			return PFindFirstNot(in.String(), in.Size(), pos);
 		}
 
 		inline SIZE_T FindFirstNot(const DataType* in, SIZE_T pos = 0) const
@@ -438,7 +486,7 @@ namespace ME::Core::Containers
 		inline SIZE_T FindLast(const PString& in, SIZE_T pos = 0) const
 		{
 			pos = pos == 0 ? m_Size : pos;
-			return PFindLast(in.GetString(), in.GetSize(), pos);
+			return PFindLast(in.String(), in.Size(), pos);
 		}
 
 		inline SIZE_T FindLast(const DataType* in, SIZE_T pos = 0) const
@@ -463,7 +511,7 @@ namespace ME::Core::Containers
 		inline SIZE_T FindLastNot(const PString& in, SIZE_T pos = 0) const
 		{
 			pos = pos == 0 ? m_Size : pos;
-			return PFindLastNot(in.GetString(), in.GetSize(), pos);
+			return PFindLastNot(in.String(), in.Size(), pos);
 		}
 
 		inline SIZE_T FindLastNot(const DataType* in, SIZE_T pos = 0) const
@@ -492,7 +540,7 @@ namespace ME::Core::Containers
 
 		void Assign(const DataType*& ptr, SIZE_T size)
 		{
-			ME_ASSERT(ptr != nullptr, TEXT("Assigning nullptr to string!"));
+			ME_ASSERT(ptr != nullptr, "Assigning nullptr to string!");
 			if (size + 1 > m_Capacity)
 				Allocate(size + 1);
 
@@ -516,8 +564,7 @@ namespace ME::Core::Containers
 
 			m_Data = newBlock;
 			m_Capacity = newCapacity;
-			if (copySize < m_Size)
-				m_Size = copySize;
+			if (copySize < m_Size) m_Size = copySize;
 			m_Data[m_Size] = '\0';
 		}
 
@@ -529,7 +576,7 @@ namespace ME::Core::Containers
 		PString& AddToString(const DataType* str, SIZE_T size)
 		{
 			if (m_Size + size + 1 > m_Capacity)
-				Allocate((SIZE_T)((m_Size + size + 1) * STR_RESIZE_MULTIPLYER));
+				Allocate((m_Size + size + 1) * STR_RESIZE_MULTIPLYER);
 
 			for (SIZE_T i = 0; i < size; i++)
 				m_Data[m_Size + i] = str[i];
@@ -542,7 +589,7 @@ namespace ME::Core::Containers
 		PString& AddChar(const DataType& character)
 		{
 			if (m_Size + 1 >= m_Capacity)
-				Allocate((SIZE_T)(m_Capacity * STR_RESIZE_MULTIPLYER));
+				Allocate(m_Capacity * STR_RESIZE_MULTIPLYER);
 
 			if (m_Size == 0)
 			{
@@ -629,7 +676,7 @@ namespace ME::Core::Containers
 				}
 				else
 				{
-					ME_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					ME_CORE_ERROR("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported.", sizeof(DataType));
 					return m_Size;
 				}
 			}
@@ -683,7 +730,7 @@ namespace ME::Core::Containers
 				}
 				else
 				{
-					ME_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					ME_CORE_ERROR("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported.", sizeof(DataType));
 					return m_Size;
 				}
 			}
@@ -698,7 +745,7 @@ namespace ME::Core::Containers
 
 			if (needleSize <= 16)
 			{
-				for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+				for (SIZE_T i = startAt; i != ~0ull; --i)
 				{
 					for (SIZE_T j = 0; j < needleSize; ++j)
 					{
@@ -715,7 +762,7 @@ namespace ME::Core::Containers
 					for (SIZE_T j = 0; j < needleSize; ++j)
 						table[static_cast<uint8>(needle[j])] = true;
 
-					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+					for (SIZE_T i = startAt; i != ~0ull; --i)
 						if (table[static_cast<uint8>(m_Data[i])])
 							return i;
 				}
@@ -725,13 +772,13 @@ namespace ME::Core::Containers
 					for (SIZE_T j = 0; j < needleSize; ++j)
 						table.set(static_cast<uint16>(needle[j]));
 
-					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+					for (SIZE_T i = startAt; i != ~0ull; --i)
 						if (table.test(static_cast<uint16>(m_Data[i])))
 							return i;
 				}
 				else
 				{
-					ME_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					ME_CORE_ERROR("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported.", sizeof(DataType));
 					return m_Size;
 				}
 			}
@@ -746,7 +793,7 @@ namespace ME::Core::Containers
 
 			if (needleSize <= 16)
 			{
-				for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+				for (SIZE_T i = startAt; i != ~0ull; --i)
 				{
 					bool found = false;
 					for (SIZE_T j = 0; j < needleSize; ++j)
@@ -769,7 +816,7 @@ namespace ME::Core::Containers
 					for (SIZE_T j = 0; j < needleSize; ++j)
 						table[static_cast<uint8>(needle[j])] = true;
 
-					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+					for (SIZE_T i = startAt; i != ~0ull; --i)
 						if (!table[static_cast<uint8>(m_Data[i])])
 							return i;
 				}
@@ -779,13 +826,13 @@ namespace ME::Core::Containers
 					for (SIZE_T j = 0; j < needleSize; ++j)
 						table.set(static_cast<uint16>(needle[j]));
 
-					for (SIZE_T i = startAt; i != static_cast<SIZE_T>(-1); --i)
+					for (SIZE_T i = startAt; i != ~0ull; --i)
 						if (!table.test(static_cast<uint16>(m_Data[i])))
 							return i;
 				}
 				else
 				{
-					ME_CORE_ERROR(TEXT("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported."), sizeof(DataType));
+					ME_CORE_ERROR("Unsupported DataType size ({0})! Only ASCII/UTF-8 (1 byte) and UTF-16 (2 bytes) are supported.", sizeof(DataType));
 					return m_Size;
 				}
 			}
@@ -801,128 +848,68 @@ namespace ME::Core::Containers
 
 	};
 
-	typedef PString<ansichar, ME::Core::Memory::Allocator<ansichar>> AnsiString;
-	typedef PString<wchar, ME::Core::Memory::Allocator<wchar>> WideString;
-
-	using String = PString<uchar, ME::Core::Memory::Allocator<uchar>>;
-
-	// AnsiString conversion functions
-
-	CORE_API AnsiString ToAnsiString(int8 value);
-	CORE_API AnsiString ToAnsiString(int16 value);
-	CORE_API AnsiString ToAnsiString(int32 value);
-	CORE_API AnsiString ToAnsiString(int64 value);
-
-	CORE_API AnsiString ToAnsiString(uint8 value);
-	CORE_API AnsiString ToAnsiString(uint16 value);
-	CORE_API AnsiString ToAnsiString(uint32 value);
-	CORE_API AnsiString ToAnsiString(uint64 value);
-
-	CORE_API AnsiString ToAnsiString(float32 value);
-	CORE_API AnsiString ToAnsiString(float64 value);
-
-	CORE_API AnsiString ToAnsiString(bool value);
-	CORE_API AnsiString ToAnsiString(const AnsiString& value);
-	CORE_API AnsiString ToAnsiString(const ansichar& value);
-
-	CORE_API int64 AnsiStringToInt(const AnsiString& str, SIZE_T* pos, int8 base = 10);
-	CORE_API uint64 AnsiStringToUint(const AnsiString& str, SIZE_T* pos, int8 base = 10);
-	CORE_API float64 AnsiStringToFloat(const AnsiString& str, SIZE_T* pos);
-
-	CORE_API AnsiString operator+(const ansichar* str1, const AnsiString& str2);
-	CORE_API AnsiString operator+(const ansichar& str1, const AnsiString& str2);
+	typedef PString<char8> UTF8String;
+	typedef PString<wchar> WideString;
+	typedef UTF8String String;
 
 	// WideString conversion functions
 
-	CORE_API WideString ToWideString(int8 value);
-	CORE_API WideString ToWideString(int16 value);
-	CORE_API WideString ToWideString(int32 value);
-	CORE_API WideString ToWideString(int64 value);
+	COREAPI WideString ToWideString(int8 value);
+	COREAPI WideString ToWideString(int16 value);
+	COREAPI WideString ToWideString(int32 value);
+	COREAPI WideString ToWideString(int64 value);
 			 
-	CORE_API WideString ToWideString(uint8 value);
-	CORE_API WideString ToWideString(uint16 value);
-	CORE_API WideString ToWideString(uint32 value);
-	CORE_API WideString ToWideString(uint64 value);
+	COREAPI WideString ToWideString(uint8 value);
+	COREAPI WideString ToWideString(uint16 value);
+	COREAPI WideString ToWideString(uint32 value);
+	COREAPI WideString ToWideString(uint64 value);
 		
-	CORE_API WideString ToWideString(float32 value);
-	CORE_API WideString ToWideString(float64 value);
+	COREAPI WideString ToWideString(float32 value);
+	COREAPI WideString ToWideString(float64 value);
 			 
-	CORE_API WideString ToWideString(bool value);
-	CORE_API WideString ToWideString(const WideString& value);
-	CORE_API WideString ToWideString(const wchar& value);
+	COREAPI WideString ToWideString(bool value);
+	COREAPI WideString ToWideString(const WideString& value);
+	COREAPI WideString ToWideString(const wchar& value);
 
-	CORE_API int64 WideStringToInt(const WideString& str, SIZE_T* pos, int8 base = 10);
-	CORE_API uint64 WideStringToUint(const WideString& str, SIZE_T* pos, int8 base = 10);
-	CORE_API float64 WideStringToFloat(const WideString& str, SIZE_T* pos);
+	COREAPI int64 WideStringToInt(const WideString& str, SIZE_T* pos, int8 base = 10);
+	COREAPI uint64 WideStringToUint(const WideString& str, SIZE_T* pos, int8 base = 10);
+	COREAPI float64 WideStringToFloat(const WideString& str, SIZE_T* pos);
 
-	CORE_API WideString operator+(const wchar* str1, const WideString& str2);
-	CORE_API WideString operator+(const wchar& str1, const WideString& str2);
+	COREAPI WideString operator+(const wchar* str1, const WideString& str2);
+	COREAPI WideString operator+(const wchar& str1, const WideString& str2);
+	COREAPI String operator+(const char8* str1, const String& str2);
+	COREAPI String operator+(const asciichar* str1, const String& str2);
+	COREAPI String operator+(const char8& str1, const String& str2);
+	COREAPI String operator+(const asciichar& str1, const String& str2);
 
 	// String conversion functions
 
-	CORE_API String ToString(int8 value);
-	CORE_API String ToString(int16 value);
-	CORE_API String ToString(int32 value);
-	CORE_API String ToString(int64 value);
+	COREAPI String ToString(int8 value);
+	COREAPI String ToString(int16 value);
+	COREAPI String ToString(int32 value);
+	COREAPI String ToString(int64 value);
 
-	CORE_API String ToString(uint8 value);
-	CORE_API String ToString(uint16 value);
-	CORE_API String ToString(uint32 value);
-	CORE_API String ToString(uint64 value);
+	COREAPI String ToString(uint8 value);
+	COREAPI String ToString(uint16 value);
+	COREAPI String ToString(uint32 value);
+	COREAPI String ToString(uint64 value);
 
-	CORE_API String ToString(float32 value);
-	CORE_API String ToString(float64 value);
+	COREAPI String ToString(float32 value);
+	COREAPI String ToString(float64 value);
 
-	CORE_API String ToString(bool value);
-	CORE_API String ToString(const String& value);
-	CORE_API String ToString(const uchar& value);
+	COREAPI String ToString(bool value);
+	COREAPI String ToString(const char8& value);
+	COREAPI String ToString(const String& value);
 
-	CORE_API int64 StringToInt(const String& str, SIZE_T* pos, int8 base = 10);
-	CORE_API uint64 StringToUint(const String& str, SIZE_T* pos, int8 base = 10);
-	CORE_API float64 StringToFloat(const String& str, SIZE_T* pos);
+	COREAPI int64 StringToInt(const String& str, SIZE_T* pos, int8 base = 10);
+	COREAPI uint64 StringToUint(const String& str, SIZE_T* pos, int8 base = 10);
+	COREAPI float64 StringToFloat(const String& str, SIZE_T* pos);
 
 	// String-to-string conversion
 
-	CORE_API AnsiString WideStringToAnsiString(const WideString& str);
-	CORE_API WideString AnsiStringToWideString(const AnsiString& str);
-
-	template <typename T>
-	WideString StringToWideString(const T& str)
-	{
-		static_assert(std::is_same_v<T, WideString> || std::is_same_v<T, AnsiString> || std::is_same_v<T, String>, "T is not a String!");
-		if constexpr (std::is_same_v<T, WideString>)
-			return str;
-		else
-			return AnsiStringToWideString(str);
-	}
-
-	template <typename T>
-	AnsiString StringToAnsiString(const T& str)
-	{
-		static_assert(std::is_same_v<T, WideString> || std::is_same_v<T, AnsiString> || std::is_same_v<T, String>, "T is not a String!");
-		if constexpr (std::is_same_v<T, WideString>)
-			return WideStringToAnsiString(str);
-		else
-			return str;
-	}
-
-	template <typename T>
-	String WideStringToString(const T& str)
-	{
-		static_assert(std::is_same_v<T, WideString>, "T is not a WideString!");
-		if constexpr (std::is_same_v<String, WideString>)
-			return str;
-		else
-			return WideStringToAnsiString(str);
-	}
-
-	template <typename T>
-	String AnsiStringToString(const T& str)
-	{
-		static_assert(std::is_same_v<T, AnsiString>, "T is not a AnsiString!");
-		if constexpr (std::is_same_v<String, AnsiString>)
-			return str;
-		else
-			return AnsiStringToWideString(str);
-	}
+	COREAPI WideString StringToWideString(const String& str);
+	COREAPI String WideStringToString(const WideString& str);
 }
+
+ME_FMT_FORMATTER_UTF8(ME::Core::String, "{}", reinterpret_cast<const char*>(ME_FMT_FORMATTER_METHOD(String)));
+ME_FMT_FORMATTER_UTF16(ME::Core::WideString, "{}", ME_FMT_FORMATTER_METHOD(String));

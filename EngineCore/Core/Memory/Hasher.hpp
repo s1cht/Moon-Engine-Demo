@@ -5,7 +5,7 @@
 
 namespace ME::Core::Memory
 {
-	CORE_API SIZE_T Hash64(const void* input, SIZE_T length, uint64 seed);
+	COREAPI SIZE_T Hash64(const void* input, SIZE_T length, uint64 seed);
 
 	template <typename T>
 	struct Hasher
@@ -13,9 +13,9 @@ namespace ME::Core::Memory
 		using DataType = T;
 
 	public:
-		ME_NODISCARD inline SIZE_T operator()(const ME::Core::Containers::StringView& str, SIZE_T tableSize) const noexcept
+		ME_NODISCARD inline SIZE_T operator()(const ME::Core::StringView& str, SIZE_T tableSize) const noexcept
 		{
-			return Hash64(str.GetData(), str.GetSize() * sizeof(uchar), 0) % tableSize;
+			return Hash64(str.String(), str.Size() * sizeof(char8), 0) % tableSize;
 		}
 
 		ME_NODISCARD inline SIZE_T operator()(const T* data, SIZE_T tableSize) const noexcept

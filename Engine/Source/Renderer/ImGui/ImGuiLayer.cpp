@@ -1,13 +1,13 @@
 #include "ImGuiLayer.h"
 #include "ImGuiReferences.h"
-#include "Renderer/Renderer.h"
+#include "Renderer/Renderer.hpp"
 #include "Application/Application.h"
 
 #include <Core/Misc/Time.hpp>
 
-#include "Renderer/API/Vulkan/VulkanCommandBuffer.h"
-#include "Renderer/API/Vulkan/VulkanRenderAPI.h"
-#include "Renderer/API/Vulkan/VulkanRenderPass.h"
+#include "Renderer/API/Vulkan/VulkanCommandBuffer.hpp"
+#include "Renderer/API/Vulkan/VulkanRenderAPI.hpp"
+#include "Renderer/API/Vulkan/VulkanRenderPass.hpp"
 
 namespace ME::Render::Imgui
 {
@@ -25,7 +25,7 @@ namespace ME::Render::Imgui
 		RenderAPI::API renderAPI = Renderer::GetRenderAPI();
 		if (renderAPI == RenderAPI::API::None)
 		{
-			ME_INFO(TEXT("Disabling ImGui layer, because RenderAPI is ::None"));
+			ME_INFO("Disabling ImGui layer, because RenderAPI is ::None");
 			m_Disabled = true;
 			return;
 		}
@@ -74,9 +74,9 @@ namespace ME::Render::Imgui
 				break;
 			}
 #ifdef PLATFORM_WINDOWS
-			case RenderAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+			case RenderAPI::API::DirectX12: ME_ASSERT(false, "RenderAPI::DirectX12 is unsupported"); break;
 #elif PLATFORM_MAC
-			case RenderAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+			case RenderAPI::API::Metal: ME_ASSERT(false, "RenderAPI::Metal is unsupported"); break;
 #endif
 		}
 
@@ -139,9 +139,9 @@ namespace ME::Render::Imgui
 				break;
 			}
 #ifdef PLATFORM_WINDOWS
-		case RenderAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+		case RenderAPI::API::DirectX12: ME_ASSERT(false, "RenderAPI::DirectX12 is unsupported"); break;
 #elif PLATFORM_MAC
-		case RenderAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+		case RenderAPI::API::Metal: ME_ASSERT(false, "RenderAPI::Metal is unsupported"); break;
 #endif
 		}
 
@@ -180,9 +180,9 @@ namespace ME::Render::Imgui
 			break;
 		}
 #ifdef PLATFORM_WINDOWS
-		case RenderAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+		case RenderAPI::API::DirectX12: ME_ASSERT(false, "RenderAPI::DirectX12 is unsupported"); break;
 #elif PLATFORM_MAC
-		case RenderAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+		case RenderAPI::API::Metal: ME_ASSERT(false, "RenderAPI::Metal is unsupported"); break;
 #endif
 		}
 
@@ -212,7 +212,7 @@ namespace ME::Render::Imgui
 
 		Render::RenderCommand::BeginRenderPass(commandBuffer, beginInfo);
 
-		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer->As<VulkanCommandBuffer>()->GetBuffer());
+		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
 
 		Render::RenderCommand::EndRenderPass(commandBuffer);
 	}

@@ -44,7 +44,7 @@ namespace ME::Core::Clock
 
 	Timestep Time::Update()
 	{
-		ME_ASSERT(s_Source, TEXT("TimeSource not initialized!"));
+		ME_ASSERT(s_Source, "TimeSource not initialized!");
 		Timepoint current = Timepoint::Now(s_Source.get());
 		s_DeltaTime = Timestep(s_LastFrame, current);
 		s_LastFrame = current;

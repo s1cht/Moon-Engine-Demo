@@ -31,13 +31,14 @@ enum EventCategory
 
 namespace ME::Core
 {
-    class CORE_API IEvent
+    class COREAPI IEvent
     {
     public:
+        virtual ~IEvent() = default;
         virtual EventType GetEventType() const = 0;
         virtual EVENT_CATEGORY GetEventCategory() const = 0;
-        virtual const uchar* GetName() const  = 0;
-        virtual ME::Core::Containers::String GetString() { return GetName(); }
+        virtual const char8* GetName() const  = 0;
+        virtual ME::Core::String GetString() { return GetName(); }
     
         inline bool IsInCategory(EventCategory category)
         {
@@ -51,7 +52,7 @@ namespace ME::Core
     
     };
     
-    class CORE_API EventDispatcher
+    class COREAPI EventDispatcher
     {
     public:
         EventDispatcher(IEvent& event) : m_Event(event) {}

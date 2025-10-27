@@ -1,12 +1,12 @@
-#include "VulkanSwapChain.h"
+#include "VulkanSwapChain.hpp"
 #include <algorithm>
 #include <complex>
 #include <limits>
 
 #include "Application/Application.h"
-#include "VulkanRenderAPI.h"
-#include "VulkanFunctions.h"
-#include "VulkanTexture.h"
+#include "VulkanRenderAPI.hpp"
+#include "VulkanFunctions.hpp"
+#include "VulkanTexture.hpp"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -14,13 +14,11 @@ namespace ME::Render
 {
 	ME::Core::Memory::Reference<SwapChain> SwapChain::CreateVulkanSwapChain(int32& result)
 	{
-		auto object = ME::Core::Memory::Reference<SwapChain>(new VulkanSwapChain(result));
-		RenderResourcesTracker::Get().AddItem(object);
-		return object;
+		return ME::Core::Memory::Reference<SwapChain>(new VulkanSwapChain(result));
 	}
 
 	VulkanSwapChain::VulkanSwapChain(int32& result)
-		: m_SwapChain(nullptr), m_VSYNCEnabled(false), m_CurrentFrame(0), m_UpdateRequired(false), m_Images({})
+		: m_SwapChain(nullptr), m_VSYNCEnabled(false), m_CurrentFrame(0), m_CurrentImage(0), m_UpdateRequired(false), m_Images({})
 	{
 		result = Init();
 	}
@@ -45,16 +43,16 @@ namespace ME::Render
 		}
 	}
 
-	void VulkanSwapChain::Present(VkQueue queue, VulkanFrameInfo& info)
+	void VulkanSwapChain::Present(VkQueue queue, VkSemaphore renderFinishedSemaphore)
 	{
 		VkResult result;
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &info.RenderFinished;
+		presentInfo.pWaitSemaphores = &renderFinishedSemaphore;
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &m_SwapChain;
-		presentInfo.pImageIndices = &m_NextImageIndex;
+		presentInfo.pImageIndices = &m_CurrentImage;
 
 		result = vkQueuePresentKHR(queue, &presentInfo);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
@@ -66,15 +64,14 @@ namespace ME::Render
 			m_UpdateRequired = true;
 		}
 		else if (ME_VK_FAILED(result))
-		{
-			ME_ASSERT(false, TEXT("Failed to present! Error: {}"), static_cast<int32>(result));
-		}
-		m_CurrentFrame = (m_NextImageIndex + 1) % m_Images.GetSize();
+			ME_ASSERT(false, "Failed to present! Error: {}", static_cast<int32>(result));
+		m_CurrentFrame = (m_CurrentFrame + 1) % m_Images.Size();
 	}
 
-	void VulkanSwapChain::NewFrame(VulkanFrameInfo& info)
+	void VulkanSwapChain::NewFrame(VkSemaphore acquireSemaphore)
 	{
-		VkResult result = vkAcquireNextImageKHR(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), m_SwapChain, UINT64_MAX, info.ImageAvailable, nullptr, &m_NextImageIndex);
+		m_LastImage = m_CurrentImage;
+	    VkResult result = vkAcquireNextImageKHR(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), m_SwapChain, UINT64_MAX, acquireSemaphore, nullptr, &m_CurrentImage);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 		{
 			ME::Application& app = ME::Application::Get();
@@ -84,7 +81,7 @@ namespace ME::Render
 			m_UpdateRequired = true;
 		}
 		else if (ME_VK_FAILED(result))
-			ME_ASSERT(TEXT("Failed to start new frame! Error: {}"), static_cast<int32>(result));
+			ME_ASSERT("Failed to start new frame! Error: {}", static_cast<int32>(result));
 	}
 
 	void VulkanSwapChain::Resize(uint32 x, uint32 y)
@@ -114,7 +111,7 @@ namespace ME::Render
 		result = CreateSwapChain(render, oldSwapChain);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan swap chain: recreation failed! Error: {0}"), result);
+			ME_ASSERT(false, "Vulkan swap chain: recreation failed! Error: {0}", result);
 			Shutdown();
 			return;
 		}
@@ -122,7 +119,7 @@ namespace ME::Render
 		result = CreateImages(render);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan swap chain: Image recreation failed! Error: {0}"), result);
+			ME_ASSERT(false, "Vulkan swap chain: Image recreation failed! Error: {0}", result);
 			Shutdown();
 			return;
 		}
@@ -150,7 +147,7 @@ namespace ME::Render
 		ME::Core::Containers::Array<uint32> queueFamilies;
 
 		imageCount = m_Capabilities.minImageCount;
-		queueFamilies = { (uint32)renderer->GetGraphicsQueueFamily(), (uint32)renderer->GetPresentQueueFamily() };
+		queueFamilies = { static_cast<uint32>(renderer->GetGraphicsQueueFamily()), static_cast<uint32>(renderer->GetPresentQueueFamily()) };
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -162,7 +159,7 @@ namespace ME::Render
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		createInfo.imageSharingMode = renderer->GetGraphicsQueueFamily() == renderer->GetPresentQueueFamily() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
-		createInfo.queueFamilyIndexCount = renderer->GetGraphicsQueueFamily() == renderer->GetPresentQueueFamily() ? 0 : (uint32)queueFamilies.GetSize();
+		createInfo.queueFamilyIndexCount = renderer->GetGraphicsQueueFamily() == renderer->GetPresentQueueFamily() ? 0 : (uint32)queueFamilies.Size();
 		createInfo.pQueueFamilyIndices = queueFamilies.Data();
 		createInfo.preTransform = m_Capabilities.currentTransform;
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -188,19 +185,19 @@ namespace ME::Render
 		specs.MipLevels = 1;
 		specs.SampleCount = SampleCount::Count1;
 		specs.CubeMapCount = 0;
-		specs.Layout = ImageLayout::Present;
+		specs.Layout = ImageLayout::ColorAttachment;
 		specs.Resolution.x = m_Extent.x;
 		specs.Resolution.y = m_Extent.y;
 
 		uint32 count = 0;
 		vkGetSwapchainImagesKHR(renderer->GetDevice(), m_SwapChain, &count, nullptr);
 		swapChainImages.Reserve(count);
-		swapChainImages.SetSize(count);
+		swapChainImages.Resize(count);
 		vkGetSwapchainImagesKHR(renderer->GetDevice(), m_SwapChain, &count, swapChainImages.Data());
 
 		for (uint32 i = 0; i < count; i++)
 		{
-			specs.DebugName = "SwapChain image" + ME::Core::Containers::ToAnsiString(i);
+			specs.DebugName = "SwapChain image" + ME::Core::ToString(i);
 			m_Images.PushBack(ME::Core::Memory::Reference<Texture2D>(new VulkanTexture2D(swapChainImages[i], specs)));
 		}
 
@@ -218,7 +215,7 @@ namespace ME::Render
 
 		if (formatCount != 0) {
 			formats.Reserve(formatCount);
-			formats.SetSize(formatCount);
+			formats.Resize(formatCount);
 			vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, formats.Data());
 		}
 
@@ -227,7 +224,7 @@ namespace ME::Render
 
 		if (presentModeCount != 0) {
 			presentModes.Reserve(formatCount);
-			presentModes.SetSize(formatCount);
+			presentModes.Resize(formatCount);
 			vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, presentModes.Data());
 		}
 
@@ -317,7 +314,7 @@ namespace ME::Render
 		result = uint32(SetDetails(render->GetPhysicalDevice(), render->GetSurface(), formats, presentModes));
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan swap chain: Present modes or formats are empty! Error: {0}"), result);
+			ME_ASSERT(false, "Vulkan swap chain: Present modes or formats are empty! Error: {0}", result);
 			return ME_VK_RETURN_V(VulkanErrors::PresentModesOrFormatsEmpty);
 		}
 
@@ -328,7 +325,7 @@ namespace ME::Render
 		result = CreateSwapChain(render, nullptr);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan swap chain: creation failed! Error: {0}"), result);
+			ME_ASSERT(false, "Vulkan swap chain: creation failed! Error: {0}", result);
 			Shutdown();
 			return ME_VK_RETURN_V(result);
 		}
@@ -338,10 +335,9 @@ namespace ME::Render
 		result = CreateImages(render);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, TEXT("Vulkan swap chain: Image recreation failed! Error: {0}"), result);
+			ME_ASSERT(false, "Vulkan swap chain: Image recreation failed! Error: {0}", result);
 			Shutdown();
 			return ME_VK_RETURN_V(result);
-
 		}
 
 		return result;

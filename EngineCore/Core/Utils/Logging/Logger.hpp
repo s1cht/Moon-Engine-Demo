@@ -16,7 +16,7 @@
 
 namespace ME::Core::Utils 
 {
-	class CORE_API Logger
+	class COREAPI Logger
 	{
 	public:
 		static void Init();

@@ -1,8 +1,8 @@
-﻿#include "VulkanFramebuffer.h"
+﻿#include "VulkanFramebuffer.hpp"
 
-#include "VulkanRenderAPI.h"
-#include "VulkanRenderPass.h"
-#include "VulkanTexture.h"
+#include "VulkanRenderAPI.hpp"
+#include "VulkanRenderPass.hpp"
+#include "VulkanTexture.hpp"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -36,9 +36,8 @@ namespace ME::Render
 	}
 
 	void VulkanFramebuffer::Init()
-	{	
-		VkResult result;
-		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
+	{
+        VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		ME::Core::Containers::Array<VkImageView> attachments;
 
 		for (auto attachment : m_Specification.Attachments)
@@ -49,13 +48,13 @@ namespace ME::Render
 		createInfo.renderPass = m_Specification.RenderPass->As<VulkanRenderPass>()->GetRenderPass();
 		createInfo.width = m_Specification.Resolution.x;
 		createInfo.height = m_Specification.Resolution.y;
-		createInfo.attachmentCount = static_cast<uint32>(m_Specification.Attachments.GetSize());
+		createInfo.attachmentCount = static_cast<uint32>(m_Specification.Attachments.Size());
 		createInfo.pAttachments = attachments.Data();
 		createInfo.layers = m_Specification.Layers;
 
-		result = vkCreateFramebuffer(render->GetDevice(), &createInfo, nullptr, &m_Buffer);
+		VkResult result = vkCreateFramebuffer(render->GetDevice(), &createInfo, nullptr, &m_Buffer);
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(false, TEXT("Vulkan framebuffer: framebuffer creation failed! Error: {0}"), static_cast<uint32>(result));
+			ME_ASSERT(false, "Vulkan framebuffer: framebuffer creation failed! Error: {0}", static_cast<uint32>(result));
 	}
 
 }

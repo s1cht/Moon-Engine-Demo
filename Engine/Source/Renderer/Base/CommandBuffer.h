@@ -5,11 +5,9 @@
 
 namespace ME::Render
 {
-	class MOON_API CommandBuffer : public RenderObject
+	class MEAPI CommandBuffer : public RenderObject
 	{
 	public:
-		virtual ~CommandBuffer() {};
-
 		virtual void Record() = 0;
 		virtual void Finish() = 0;
 		virtual void Reset() = 0;

@@ -3,7 +3,7 @@
 #include "Core/Utils/Logging/Logger.hpp"
 #include "Core/Containers/String/StringShared.hpp"
 
-namespace ME::Core::Containers
+namespace ME::Core
 {
 	template<typename type, class allocator>
 	class PString;
@@ -18,6 +18,18 @@ namespace ME::Core::Containers
 
 	public:
 		PStringView() : m_Data(nullptr), m_Size(0) {}
+
+		PStringView(const asciichar* data)
+			: m_Data(CONVERT_TEXT_UTF8(data)), m_Size(data ? GetStringSize(CONVERT_TEXT_UTF8(data)) : 0)
+	    {
+            static_assert(sizeof(DataType) == 1, "This constructor is available for only UTF8 string!");
+		}
+
+		PStringView(const asciichar* data, SIZE_T size)
+			: m_Data(data), m_Size(data ? GetStringSize(data) : 0)
+	    {
+            static_assert(sizeof(DataType) == 1, "This constructor is available for only UTF8 string!");
+		}
 
 		PStringView(PtrType data)
 			: m_Data(data), m_Size(data ? GetStringSize(data) : 0) {
@@ -37,8 +49,8 @@ namespace ME::Core::Containers
 		}
 
 	public:
-		inline SIZE_T GetSize() const noexcept { return m_Size; }
-		inline PtrType GetData() const noexcept { return m_Data; }
+		inline SIZE_T Size() const noexcept { return m_Size; }
+		inline PtrType String() const noexcept { return m_Data; }
 
 		PtrType begin() const { return m_Data; }
 		PtrType end() const { return m_Data + m_Size; }
@@ -74,7 +86,7 @@ namespace ME::Core::Containers
 			return PStringView(m_Data + start, newSize);
 		}
 
-		template<class allocator>
+		template<class allocator = ME::Core::Memory::Allocator<type>>
 		PString<DataType, allocator> ToString() const
 		{
 			return PString<DataType, allocator>(m_Data, m_Size);
@@ -85,7 +97,9 @@ namespace ME::Core::Containers
 		SIZE_T m_Size;
 	};
 
-	typedef PStringView<ansichar> AnsiStringView; // UTF-8
+	typedef PStringView<char8> StringView; // UTF-8
 	typedef PStringView<wchar> WideStringView; // UTF-16
-	typedef std::conditional_t<sizeof(uchar) == 2, WideStringView, AnsiStringView> StringView;
 }
+
+ME_FMT_FORMATTER_UTF8(ME::Core::StringView, "{}", reinterpret_cast<const char*>(ME_FMT_FORMATTER_METHOD(String)));
+ME_FMT_FORMATTER_UTF16(ME::Core::WideStringView, "{}", ME_FMT_FORMATTER_METHOD(String));

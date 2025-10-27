@@ -4,7 +4,23 @@
 
 namespace ME::Render
 {
-	class Texture1D;
+    class IndexBuffer;
+}
+
+namespace ME::Render
+{
+    class VertexBuffer;
+}
+
+namespace ME::Render
+{
+    class IndirectBuffer;
+}
+
+namespace ME::Render
+{
+    class Texture;
+    class Texture1D;
 	class Texture2D;
 	class Texture3D;
 	class Uniform;
@@ -15,7 +31,7 @@ namespace ME::Render
 
 namespace ME::Render
 {
-	class MOON_API ResourceHandler : public RenderObject
+	class MEAPI ResourceHandler : public RenderObject
 	{
 	public:
 		virtual uint32 CreateLayout(const ME::Render::ResourceLayout& layout) = 0;
@@ -36,13 +52,17 @@ namespace ME::Render
 
 		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::Uniform> buffer) = 0;
 		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::StorageBuffer> buffer) = 0;
+		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::IndirectBuffer> buffer) = 0;
+		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::VertexBuffer> buffer) = 0;
+		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::IndexBuffer> buffer) = 0;
 		virtual void BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, uint32 set, uint32 setIndex) = 0;
+		virtual void BindTexture(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline,
+			uint32 set, uint32 setIndex) = 0;
 
 		virtual void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture1D> texture) = 0;
 		virtual void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture2D> texture) = 0;
 		virtual void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture3D> texture) = 0;
-
-		virtual void BindTextureSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, uint32 set, uint32 setIndex) = 0;
+		virtual void ClearTextureQueue() = 0;
 		virtual void WriteTexture() = 0;
 
 	public:

@@ -7,7 +7,7 @@
 
 namespace ME::Events
 {
-    class KeyEvent : public Core::Event
+    class KeyEvent : public ME::Core::Event
     {
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Keyboard | EventCategory_Input)
@@ -23,16 +23,17 @@ namespace ME::Events
     };
 
     // Input started event. Args: keycode(int32), repeatCount(int32)
-    class KeyInputStartedEvent : public KeyEvent
+    class KeyInputStartedEvent final : public KeyEvent
     {
     public:
         KeyInputStartedEvent(int16 keycode, int8 repeatCount)
-            : KeyEvent(keycode), m_repeatCount(repeatCount) {
-        }
+            : KeyEvent(keycode), m_repeatCount(repeatCount)
+        {}
+        ~KeyInputStartedEvent() override = default;
 
     public:
-        EVENT_CLASS_TYPE(KeyInputStarted)
-            EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, "keycode") + ME_NAMED_VARIABLE_TOSTRING(int8, m_repeatCount, "repeatCount"));
+        EVENT_CLASS_TYPE(KeyInputStarted);
+        EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, "keycode") + ME_NAMED_VARIABLE_TOSTRING(int8, m_repeatCount, "repeatCount"));
 
     public:
         inline int8 GetRepeatCount() const { return m_repeatCount; }
@@ -46,13 +47,13 @@ namespace ME::Events
     {
     public:
         KeyInputEndedEvent(int16 keycode)
-            : KeyEvent(keycode) {
-        }
+            : KeyEvent(keycode)
+        {}
+        ~KeyInputEndedEvent() override = default;
 
     public:
-        EVENT_CLASS_TYPE(KeyInputEnded)
-            EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, TEXT("keycode")));
-
+        EVENT_CLASS_TYPE(KeyInputEnded);
+        EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(int16, m_KeyCode, TEXT("keycode")));
     };
 
 }

@@ -2,7 +2,7 @@
 
 namespace ME::Input
 {
-	ME::Core::Containers::String InputController::ConvertKeycodeToString(uint8 keycode)
+	ME::Core::String InputController::ConvertKeycodeToString(uint8 keycode)
 	{
 		return m_Chars[keycode];
 	}
@@ -10,10 +10,6 @@ namespace ME::Input
 	InputController::InputController()
 	{
 		Init();
-	}
-
-	InputController::~InputController()
-	{
 	}
 
 	void InputController::SetEventCallback(const EventCallbackFunc& callback)
@@ -42,10 +38,8 @@ namespace ME::Input
 
 	void InputController::Init()
 	{
-		for (SIZE_T i = 0; i < PE_MAX_KEYCODE_COUNT; i++)
-		{
+		for (SIZE_T i = 0; i < ME_MAX_KEYCODE_COUNT; i++)
 			m_Chars[i] = TEXT("Unknown");
-		}
 	}
 
 	inline ME::Core::Math::Vector2D32 InputController::GetMousePosition()

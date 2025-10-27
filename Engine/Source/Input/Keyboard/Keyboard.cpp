@@ -4,7 +4,7 @@ namespace ME::Input::Devices
 {
 	Keyboard::Keyboard()
 	{
-		for (SIZE_T i = 0; i < PE_MAX_KEYCODE_COUNT; i++)
+		for (SIZE_T i = 0; i < ME_MAX_KEYCODE_COUNT; i++)
 			m_KeyRepeatCount[i] = 0;
 	}
 	Keyboard::~Keyboard()
@@ -13,12 +13,12 @@ namespace ME::Input::Devices
 
 	void Keyboard::SetKeyPressed(uint8 key, bool pressed)
 	{
-		if (key > PE_MAX_KEYCODE_COUNT)
+		if (key > ME_MAX_KEYCODE_COUNT)
 			return;
 
 		if (m_KeysPressing[key] == true && pressed)
 		{
-			if (m_KeyRepeatCount[key] < PE_MAX_REPEAT_COUNT)
+			if (m_KeyRepeatCount[key] < ME_MAX_REPEAT_COUNT)
 				m_KeyRepeatCount[key]++;
 
 			Events::KeyInputStartedEvent inputStartedEvent(key, m_KeyRepeatCount[key]);

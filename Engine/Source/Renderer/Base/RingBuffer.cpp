@@ -33,7 +33,7 @@ namespace ME::Render
 
 	void RFramebuffer::Validate()
 	{
-		if (m_Buffers.GetSize() == RenderCommand::Get()->GetSwapChain()->GetFrameCount()) return;
+		if (m_Buffers.Size() == RenderCommand::Get()->GetSwapChain()->GetFrameCount()) return;
 
 		RecreateBuffers(m_Specification);
 	}
@@ -107,7 +107,7 @@ namespace ME::Render
 		for (uint32 i = 0; i < frameCount; i++)
 		{
 			UniformSpecification spec = m_Specification;
-			spec.DebugName = m_Specification.DebugName + TEXT(" frame ") + Core::Containers::ToString(i);
+			spec.DebugName = m_Specification.DebugName + TEXT(" frame ")+ Core::ToString(i);
 
 			m_Buffers.PushBack(Render::Uniform::Create(spec));
 		}

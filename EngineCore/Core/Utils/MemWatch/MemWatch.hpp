@@ -5,7 +5,7 @@
 
 namespace Pawn {
 
-	class CORE_API MemWatch
+	class COREAPI MemWatch
 	{
 	public:
 		MemWatch(const MemWatch&) = delete;

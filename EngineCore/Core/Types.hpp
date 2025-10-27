@@ -1,4 +1,4 @@
-#pragma once
+﻿    #pragma once
 
 #include "Platform/Platform.hpp"
 
@@ -8,22 +8,15 @@
 	#include "Core/Platform/Unix/UnixTypes.hpp"
 #else
 	#include "Core/Platform/Base/BaseTypes.hpp"
-	struct PlatformTypes : BaseTypes
-	{
-		typedef uchar ansichar;
-	};
 #endif 
 
 /*							Characters								*/
 
 // Ansi character
-typedef PlatformTypes::ansichar						ansichar;
+typedef PlatformTypes::asciichar					asciichar;
 
 // Wide character
 typedef PlatformTypes::wchar						wchar;
-
-// Base character (not unsigned char)
-typedef PlatformTypes::uchar						uchar;
 
 // UTF-8 char
 typedef PlatformTypes::char8						char8;

@@ -1,0 +1,2 @@
+#define MS_MAX_VERTS 64
+#define MS_MAX_TRIANGLES 128

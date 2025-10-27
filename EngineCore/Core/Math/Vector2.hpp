@@ -20,11 +20,11 @@ namespace ME::Core::Math
 		};
 
 	public:
-		CORE_API static const Vector2 ZeroVector;
-		CORE_API static const Vector2 UpVector;
-		CORE_API static const Vector2 DownVector;
-		CORE_API static const Vector2 LeftVector;
-		CORE_API static const Vector2 RightVector;
+		COREAPI static const Vector2 ZeroVector;
+		COREAPI static const Vector2 UpVector;
+		COREAPI static const Vector2 DownVector;
+		COREAPI static const Vector2 LeftVector;
+		COREAPI static const Vector2 RightVector;
 
 	public:
 		inline Vector2();
@@ -155,7 +155,7 @@ namespace ME::Core::Math
 	template<typename T>
 	inline Vector2<T> Vector2<T>::operator/(const Vector2& b) const
 	{
-		if (b == Vector2::ZeroVector) ME_ASSERT(false, TEXT("Multiplication by zero"));
+		if (b == Vector2::ZeroVector) ME_ASSERT(false, "Multiplication by zero");
 		return Vector2<T>(
 			b.x != 0 ? x / b.x : 0,
 			b.y != 0 ? y / b.y : 0

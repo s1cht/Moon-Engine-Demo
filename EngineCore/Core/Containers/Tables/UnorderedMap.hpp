@@ -3,24 +3,25 @@
 #include "Core.hpp"
 #include "Core/Misc/Pair.hpp"
 #include "Core/Memory/Hasher.hpp"
-#include "Core/Memory/Allocator.hpp"
+#include "Core/Memory/Allocators/Allocator.hpp"
 
 namespace ME::Core::Containers
 {
 	template <typename KeyType, typename ValueType>
-	struct Node
+	struct MapNode
 	{
-		const KeyType Key;
-		ValueType Value;
-		Node* NextNode;
+	    ME::Core::Misc::Pair<KeyType, ValueType> Pair;
+	    KeyType& Key;
+	    ValueType& Value;
+		MapNode* NextNode;
 
-		Node(const KeyType& k, const ValueType& v) : Key(k), Value(v), NextNode(nullptr)
-		{
-		}
+		MapNode(const KeyType& k, const ValueType& v)
+	        : Pair({ k, v }), Key(Pair.Value1), Value(Pair.Value2), NextNode(nullptr) {}
 
-		Node(KeyType&& k, ValueType&& v) : Key(std::move(k)), Value(std::move(v)), NextNode(nullptr)
-		{
-		}
+		MapNode(KeyType&& k, ValueType&& v)
+	        : Pair({ std::move(k), std::move(v) }), Key(Pair.Value1), Value(Pair.Value2), NextNode(nullptr) {}
+
+		ME::Core::Misc::Pair<KeyType, ValueType>& ToPair() { return Pair; }
 	};
 
 	template <typename _Map>
@@ -33,16 +34,12 @@ namespace ME::Core::Containers
 
 	public:
 		UMapIterator(PtrType ptr, NodeType** buckets, SIZE_T num_buckets, SIZE_T bucket_index)
-			: m_Ptr(ptr), m_Buckets(buckets), m_NumBuckets(num_buckets), m_BucketIndex(bucket_index)
-		{
-		}
+			: m_Ptr(ptr), m_Buckets(buckets), m_NumBuckets(num_buckets), m_BucketIndex(bucket_index), m_Pair(ValueType(m_Ptr->Key, m_Ptr->Value)) {}
 
 		UMapIterator& operator++()
 		{
 			if (m_Ptr && m_Ptr->NextNode)
-			{
 				m_Ptr = m_Ptr->NextNode;
-			}
 			else
 			{
 				m_Ptr = nullptr;
@@ -78,14 +75,12 @@ namespace ME::Core::Containers
 
 		ValueType* operator->()
 		{
-			m_Pair = ValueType(m_Ptr->Key, m_Ptr->Value);
 			return reinterpret_cast<ValueType*>(&m_Pair);
 		}
 
-
 		inline ValueType& operator*()
 		{
-			return ValueType(m_Ptr->Key, m_Ptr->Value);
+			return m_Ptr->Pair;
 		}
 
 	private:
@@ -96,6 +91,72 @@ namespace ME::Core::Containers
 		ValueType m_Pair;
 	};
 
+	template <typename _Map>
+	class UMapConstIterator
+	{
+	public:
+		using NodeType = typename _Map::NodeType;
+		using PtrType = NodeType*;
+		using ValueType = typename _Map::ReturnType;
+
+	public:
+		UMapConstIterator(PtrType ptr, NodeType** buckets, SIZE_T num_buckets, SIZE_T bucket_index)
+			: m_Ptr(ptr), m_Buckets(buckets), m_NumBuckets(num_buckets), m_BucketIndex(bucket_index) {}
+
+		UMapConstIterator& operator++()
+		{
+			if (m_Ptr && m_Ptr->NextNode)
+				m_Ptr = m_Ptr->NextNode;
+			else
+			{
+				m_Ptr = nullptr;
+				for (SIZE_T i = m_BucketIndex + 1; i < m_NumBuckets; ++i)
+				{
+					if (m_Buckets[i])
+					{
+						m_Ptr = m_Buckets[i];
+						m_BucketIndex = i;
+						break;
+					}
+				}
+			}
+			return *this;
+		}
+
+		UMapConstIterator operator++(int)
+		{
+			UMapConstIterator temp = *this;
+			++(*this);
+			return temp;
+		}
+
+		inline bool operator!=(const UMapConstIterator& it) const
+		{
+			return m_Ptr != it.m_Ptr;
+		}
+
+		inline bool operator==(const UMapConstIterator& it) const
+		{
+			return m_Ptr == it.m_Ptr;
+		}
+
+		const ValueType* operator->() const
+		{
+			return &m_Ptr->Pair;
+		}
+
+		inline const ValueType& operator*() const
+		{
+			return m_Ptr->Pair;
+		}
+
+	private:
+	    PtrType m_Ptr;
+		NodeType** m_Buckets;
+		SIZE_T m_NumBuckets;
+		SIZE_T m_BucketIndex;
+	};
+
 	template <typename keyType, typename valType, class _hasher = Core::Memory::Hasher<keyType>, class _allocator =
 	          Memory::Allocator<void>>
 	class UnorderedMap
@@ -104,7 +165,7 @@ namespace ME::Core::Containers
 		using KeyType = keyType;
 		using ValueType = valType;
 
-		using NodeType = Node<KeyType, ValueType>;
+		using NodeType = MapNode<KeyType, ValueType>;
 
 	public:
 		using ReturnType = ME::Core::Misc::Pair<KeyType, ValueType>;
@@ -116,18 +177,19 @@ namespace ME::Core::Containers
 		using BucketAllocator = AllocatorType::template Rebind<NodeType*>::Other;
 
 		using Iterator = UMapIterator<UnorderedMap>;
+		using ConstIterator = UMapIterator<UnorderedMap>;
 
 	public:
 		UnorderedMap(SIZE_T initial_size = 16)
-			: m_Buckets(nullptr), m_NumElements(0), m_NumBuckets(0), m_MaxLoadFactor(1.0f),
-			  m_Hash(HasherType()), m_NodeAllocator(NodeAllocator())
+			: m_MaxLoadFactor(1.0f), m_Buckets(nullptr), m_NumElements(0), m_NumBuckets(0),
+			  m_NodeAllocator(NodeAllocator()), m_Hash(HasherType())
 		{
 			AllocateBuckets(initial_size);
 		}
 
 		UnorderedMap(const UnorderedMap& other)
-			: m_Buckets(nullptr), m_NumElements(0), m_NumBuckets(0), m_MaxLoadFactor(other.m_MaxLoadFactor),
-			  m_Hash(other.m_Hash), m_NodeAllocator(other.m_NodeAllocator)
+			: m_MaxLoadFactor(other.m_MaxLoadFactor), m_Buckets(nullptr), m_NumElements(0), m_NumBuckets(0),
+			  m_NodeAllocator(other.m_NodeAllocator), m_Hash(other.m_Hash)
 		{
 			AllocateBuckets(other.m_NumBuckets);
 
@@ -148,9 +210,9 @@ namespace ME::Core::Containers
 		}
 
 		UnorderedMap(UnorderedMap&& other) noexcept
-			: m_Buckets(other.m_Buckets), m_NumElements(other.m_NumElements), m_NumBuckets(other.m_NumBuckets),
-			  m_MaxLoadFactor(other.m_MaxLoadFactor), m_Hash(std::move(other.m_Hash)),
-			  m_NodeAllocator(std::move(other.m_NodeAllocator))
+			: m_MaxLoadFactor(other.m_MaxLoadFactor), m_Buckets(other.m_Buckets), m_NumElements(other.m_NumElements),
+			  m_NumBuckets(other.m_NumBuckets), m_NodeAllocator(std::move(other.m_NodeAllocator)),
+			  m_Hash(std::move(other.m_Hash))
 		{
 			other.m_Buckets = nullptr;
 			other.m_NumElements = 0;
@@ -178,7 +240,7 @@ namespace ME::Core::Containers
 					NodeType** tail = &m_Buckets[i];
 					while (current)
 					{
-						NodeType* new_node = m_NodeAllocator.Allocate(sizeof(Node));
+						NodeType* new_node = m_NodeAllocator.Allocate(sizeof(NodeType));
 						m_NodeAllocator.Construct(new_node, current->Key, current->Value);
 						*tail = new_node;
 						tail = &new_node->NextNode;
@@ -225,14 +287,38 @@ namespace ME::Core::Containers
 			return Iterator(nullptr, m_Buckets, m_NumBuckets, m_NumBuckets);
 		}
 
-		inline Iterator End()
+		inline Iterator cbegin() const
 		{
-			return Iterator(nullptr, m_Buckets, m_NumBuckets, m_NumBuckets);
+			return CBegin();
+		}
+
+		ConstIterator CBegin() const
+		{
+			for (SIZE_T i = 0; i < m_NumBuckets; ++i)
+			{
+				if (m_Buckets[i]) return ConstIterator(m_Buckets[i], m_Buckets, m_NumBuckets, i);
+			}
+			return ConstIterator(nullptr, m_Buckets, m_NumBuckets, m_NumBuckets);
 		}
 
 		inline Iterator end()
 		{
 			return End();
+		}
+
+		inline Iterator End()
+		{
+			return Iterator(nullptr, m_Buckets, m_NumBuckets, m_NumBuckets);
+		}
+
+		inline Iterator cend() const
+		{
+			return CEnd();
+		}
+
+		inline Iterator CEnd() const
+		{
+			return Iterator(nullptr, m_Buckets, m_NumBuckets, m_NumBuckets);
 		}
 
 	public:
@@ -264,12 +350,12 @@ namespace ME::Core::Containers
 
 			while (current)
 			{
-				if (current->key == key)
+				if (current->Key == key)
 				{
 					if (prev)
-						prev->next = current->next;
+						prev->NextNode = current->NextNode;
 					else
-						m_Buckets[index] = current->next;
+						m_Buckets[index] = current->NextNode;
 
 					m_NodeAllocator.Destroy(current);
 					m_NodeAllocator.Deallocate(current, sizeof(NodeType));
@@ -277,8 +363,40 @@ namespace ME::Core::Containers
 					return;
 				}
 				prev = current;
-				current = current->next;
+				current = current->NextNode;
 			}
+		}
+
+		void Erase(Iterator& iterator)
+		{
+			KeyType key = iterator->Value1;
+
+			SIZE_T index = GetBucketIndex(key);
+			NodeType* current = m_Buckets[index];
+			NodeType* prev = nullptr;
+
+			while (current)
+			{
+				if (current->Key == key)
+				{
+					if (prev)
+						prev->NextNode = current->NextNode;
+					else
+						m_Buckets[index] = current->NextNode;
+
+					m_NodeAllocator.Destroy(current);
+					m_NodeAllocator.Deallocate(current, sizeof(NodeType));
+					m_NumElements--;
+					return;
+				}
+				prev = current;
+				current = current->NextNode;
+			}
+		}
+
+		inline bool Contains(const KeyType& key) const
+		{
+		    return PFind(key) != CEnd();
 		}
 
 		inline SIZE_T Size() const
@@ -306,9 +424,9 @@ namespace ME::Core::Containers
 
 			while (current)
 			{
-				if constexpr (std::is_same_v<KeyType, const ansichar*>)
+				if constexpr (std::is_same_v<KeyType, const asciichar*> || std::is_same_v<KeyType, const char8*>)
 				{
-					if (strcmp(current->Key, key) == 0)
+					if (strcmp(reinterpret_cast<const asciichar*>(current->Key), key) == 0)
 					{
 						return current->Value;
 					}
@@ -341,9 +459,9 @@ namespace ME::Core::Containers
 			NodeType* current = m_Buckets[index];
 			while (current)
 			{
-				if constexpr (std::is_same_v<KeyType, const ansichar*>)
+				if constexpr (std::is_same_v<KeyType, const asciichar*> || std::is_same_v<KeyType, const char8*>)
 				{
-					if (strcmp(current->Key, key) == 0)
+					if (strcmp(reinterpret_cast<const asciichar*>(current->Key), key) == 0)
 						return current->Value;
 				}
 				else if constexpr (std::is_same_v<KeyType, const wchar*>)
@@ -421,6 +539,21 @@ namespace ME::Core::Containers
 				current = current->NextNode;
 			}
 			return End();
+		}
+
+		ConstIterator PFind(const KeyType& key) const
+		{
+			if (m_NumElements <= 0) return CEnd();
+			SIZE_T index = GetBucketIndex(key);
+			NodeType* current = m_Buckets[index];
+
+			while (current)
+			{
+				if (current->Key == key)
+					return ConstIterator(current, m_Buckets, m_NumBuckets, index);
+				current = current->NextNode;
+			}
+			return CEnd();
 		}
 
 		bool PReserve(SIZE_T capacity)

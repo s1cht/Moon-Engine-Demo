@@ -1,6 +1,6 @@
 #pragma once
 #include "Core.hpp"
-#include "Core/Memory/Allocator.hpp"
+#include "Core/Memory/Allocators/Allocator.hpp"
 #include "Core/Utils/Logging/Logger.hpp"
 
 #define ARR_RESIZE_MULTIPLYER 2
@@ -186,12 +186,12 @@ namespace ME::Core::Containers
 		}
 
 	public:
-		ME_NODISCARD inline SIZE_T GetSize() const
+		ME_NODISCARD inline SIZE_T Size() const
 		{
 			return m_Size;
 		}
 
-		ME_NODISCARD inline SIZE_T GetCapacity() const
+		ME_NODISCARD inline SIZE_T Capacity() const
 		{
 			return m_Capacity;
 		}
@@ -231,9 +231,7 @@ namespace ME::Core::Containers
 			return *(m_Data + m_Size - 1);
 		}
 
-
 	public:
-
 		Array& operator=(const Array& other)
 		{
 			if (this != &other)
@@ -270,6 +268,16 @@ namespace ME::Core::Containers
 		}
 
 	public:
+		void Append(const Array& other)
+		{
+			PAppend(other);
+		}
+
+		void Append(Array&& other)
+		{
+			PAppend(std::move(other));
+		}
+
 		void Clear()
 		{
 			if (m_Size == 0)
@@ -285,7 +293,7 @@ namespace ME::Core::Containers
 			return PReserve(size);
 		}
 
-		void SetSize(SIZE_T size)
+		void Resize(SIZE_T size)
 		{
 			if (size <= m_Capacity)
 				m_Size = size;
@@ -324,6 +332,11 @@ namespace ME::Core::Containers
 		Iterator Erase(const Iterator it)
 		{
 			return PErase(it);
+		}
+
+		Iterator EraseAt(SIZE_T index)
+		{
+			return PErase(Begin() + index);
 		}
 
 		void PopBack()
@@ -459,6 +472,24 @@ namespace ME::Core::Containers
 			Allocate(size);
 
 			return true;
+		}
+
+		void PAppend(const Array& array)
+		{
+            if (array.Size() + m_Size >= m_Capacity)
+				Allocate(m_Capacity * ARR_RESIZE_MULTIPLYER);
+
+			memcpy_s(m_Data + (m_Size - 1), m_Capacity - m_Size, array.m_Data, array.Size());
+		}
+
+		void PAppend(Array&& array)
+		{
+			if (array.Size() + m_Size >= m_Capacity)
+				Allocate(m_Capacity * ARR_RESIZE_MULTIPLYER);
+
+			memmove_s(m_Data + (m_Size - 1), m_Capacity - m_Size, array.m_Data, array.Size());
+			array.m_Capacity = 0;
+			array.m_Size = 0;
 		}
 
 	private:

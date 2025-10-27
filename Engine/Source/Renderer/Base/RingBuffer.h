@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include <Core.hpp>
-#include "Renderer/Base/Buffer.h"
+#include "Renderer/Base/Buffer.hpp"
 #include "Renderer/Base/Framebuffer.h"
 
 // R - stands for ring
 namespace ME::Render
 {
-	class MOON_API RFramebuffer
+	class MEAPI RFramebuffer
 	{
 	public:
 		RFramebuffer(const FramebufferSpecification& specification);
@@ -33,7 +33,7 @@ namespace ME::Render
 
 	};
 
-	class MOON_API RUniform
+	class MEAPI RUniform
 	{
 	public:
 		RUniform(const UniformSpecification& specification);

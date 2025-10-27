@@ -6,7 +6,7 @@
 
 namespace ME::Core
 {
-	class CORE_API LayerStack
+	class COREAPI LayerStack
 	{
 	private:
 		using Iterator = ME::Core::Containers::Array<Layer*>::Iterator;

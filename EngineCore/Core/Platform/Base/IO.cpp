@@ -5,7 +5,7 @@ namespace ME::Core::IO
 	bool DirectoryStorage::StoreDirectory(Directory dir)
 	{
 		bool result;
-		result = PFileExists(dir.DirectoryPath.GetString());
+		result = PFileExists(dir.DirectoryPath.String());
 
 		if (!result)
 			return false;
@@ -14,7 +14,7 @@ namespace ME::Core::IO
 		return true;
 	}
 
-	Containers::String DirectoryStorage::GetDirectory(Containers::String directoryName)
+	String DirectoryStorage::GetDirectory(String directoryName)
 	{
 		for (Directory* dir : s_Directories)
 		{
@@ -24,7 +24,6 @@ namespace ME::Core::IO
 				break;
 			}
 		}
-
 		return TEXT("");
 	}
 

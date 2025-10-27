@@ -4,31 +4,32 @@
 #include "Core/Macros.hpp"
 #include <cstring>
 #include <initializer_list>
+#include <atomic>
 
 #if defined(_MSC_VER)
 	#include "Core/Platform/Windows/MSVCErrors.hpp"
 #endif
 
-#define MOON_API
-#define CORE_API
+#define MEAPI
+#define COREAPI
 
 #if defined(PLATFORM_WINDOWS)
 #	define _CRT_SECURE_NO_WARNINGS
 #	define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #
-#	undef CORE_API
-#	undef MOON_API
+#	undef COREAPI
+#	undef MEAPI
 #
 #	ifdef MOON_LIBRARY_BUILD
-#		define MOON_API DLLEXPORT
+#		define MEAPI DLLEXPORT
 #	else	
-#		define MOON_API DLLIMPORT
+#		define MEAPI DLLIMPORT
 #	endif 
 #
 #	ifdef MOON_CORE_LIBRARY_BUILD
-#		define CORE_API DLLEXPORT
+#		define COREAPI DLLEXPORT
 #	else	
-#		define CORE_API DLLIMPORT
+#		define COREAPI DLLIMPORT
 #		// for xxHash
 //#		define XXH_IMPORT 1
 #	endif 

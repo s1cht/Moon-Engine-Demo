@@ -10,24 +10,24 @@
 
 namespace ME 
 {
-	struct MOON_API WindowProperties
+	struct MEAPI WindowProperties
 	{	
 	public:
-		ME::Core::Containers::String WindowTitle;
+		ME::Core::String WindowTitle;
 		ME::Core::Math::Vector2D32 WindowSize;
 
-		WindowProperties(ME::Core::Containers::String title = TEXT("Moon Engine"),
+		WindowProperties(ME::Core::String title = TEXT("Moon Engine"),
 			ME::Core::Math::Vector2D32 size = ME::Core::Math::Vector2D32(1280.f, 960.f)
 		) : WindowTitle(title), WindowSize(size) {};
 	};
 
-	class MOON_API Window
+	class MEAPI Window
 	{
 	public:
 		using EventCallbackFunc = std::function<void(ME::Core::Event&)>;
 
 	protected:
-		struct MOON_API WindowData : WindowProperties
+		struct MEAPI WindowData : WindowProperties
 		{
 			bool Focused;
 			bool EventCallbackIsSetUp;
@@ -53,7 +53,7 @@ namespace ME
 		virtual float32 GetWidth() const = 0;
 		virtual float32 GetHeight() const = 0;
 		virtual bool GetFocused() const { return m_Data.Focused; }
-		virtual const ME::Core::Containers::String& GetWindowName() const { return m_Data.WindowTitle; }
+		virtual const ME::Core::String& GetWindowName() const { return m_Data.WindowTitle; }
 
 	public:
 		virtual void OnUpdate(float64 deltaTime) = 0;

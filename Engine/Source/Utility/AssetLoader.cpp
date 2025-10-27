@@ -4,57 +4,54 @@
 #include <Core/Platform/Base/IO.hpp>
 
 #include "Application/Application.h"
-#include "Assets/Image.h"
+#include "Renderer/Assets/Image.h"
+#include "Renderer/Assets/Mesh.hpp"
+#include "Renderer/Managers/MeshManager.hpp"
 
 #define DEBUG_MESH
 //#define DEBUG_INDICES
 
 #define SIGN(p1, p2, p3) (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x)* (p1.y - p3.y)
 
-
 namespace ME::Utility
 {
-	constexpr const uchar* DefaultMeshName = TEXT("unnamed");
+	constexpr const char8* DefaultMeshName = TEXT("unnamed");
 	namespace LocalFunctions
 	{
-		void Split(const ME::Core::Containers::String& str,
-			ME::Core::Containers::Array<ME::Core::Containers::String>& out,
-			ME::Core::Containers::String splitStr)
+		void Split(const ME::Core::String& str,
+			ME::Core::Containers::Array<ME::Core::String>& out,
+			ME::Core::String splitStr)
 		{
 			out.Clear();
 
-			ME::Core::Containers::String temp;
+			ME::Core::String temp;
 
-			for (int32 i = 0; i < static_cast<int32>(str.GetSize()); i++)
+			for (int32 i = 0; i < static_cast<int32>(str.Size()); i++)
 			{
-				ME::Core::Containers::String test = str.Substring(i, splitStr.GetSize());
+				ME::Core::String test = str.Substring(i, splitStr.Size());
 
 				if (test == splitStr)
 				{
 					out.EmplaceBack(temp);
 					temp.Clear();
-					i += static_cast<int32>(splitStr.GetSize()) - 1;
+					i += static_cast<int32>(splitStr.Size()) - 1;
 				}
 				else
-				{
 					temp += str[i];
-				}
 			}
 			if (!temp.Empty())
-			{
 				out.EmplaceBack(temp);
-			}
 		}
 
-		void TrimLineEnding(ME::Core::Containers::String& in)
+		void TrimLineEnding(ME::Core::String& in)
 		{
-			if (!in.Empty() && (in[in.GetSize() - 1] == TEXT('\r') || in[in.GetSize() - 1] == '\n'))
+			if (!in.Empty() && (in[in.Size() - 1] == TEXT('\r') || in[in.Size() - 1] == '\n'))
 				in.PopBack();
-			if (!in.Empty() && (in[in.GetSize() - 1] == TEXT('\r') || in[in.GetSize() - 1] == '\n'))
+			if (!in.Empty() && (in[in.Size() - 1] == TEXT('\r') || in[in.Size() - 1] == '\n'))
 				in.PopBack();
 		}
 
-		ME::Core::Containers::String GetTokenValues(ME::Core::Containers::String& in)
+		ME::Core::String GetTokenValues(ME::Core::String& in)
 		{
 			if (in.Empty())
 				return TEXT("");
@@ -67,16 +64,12 @@ namespace ME::Utility
 			SIZE_T valEnd = in.FindLastNot(TEXT(" \t"));
 
 			if (valStart != -1 && valEnd != -1)
-			{
 				return in.Substring(valStart, valEnd - valStart + 1);
-			}
 			else if (valStart != -1)
-			{
 				return in.Substring(valStart);
-			}
 		}
 
-		inline ME::Core::Containers::String GetToken(const ME::Core::Containers::String& in)
+		inline ME::Core::String GetToken(const ME::Core::String& in)
 		{
 			if (!in.Empty())
 			{
@@ -92,22 +85,22 @@ namespace ME::Utility
 		}
 
 		template <class T>
-		inline const T& FindElement(const ME::Core::Containers::Array<T>& elements, ME::Core::Containers::String& index)
+		inline const T& FindElement(const ME::Core::Containers::Array<T>& elements, ME::Core::String& index)
 		{
-			int32 idx = static_cast<int32>(ME::Core::Containers::StringToInt(index, nullptr));
+			int32 idx = static_cast<int32>(ME::Core::StringToInt(index, nullptr));
 			if (idx == 0)
 			{
-				ME_ERROR(TEXT("Invalid vertex index 0 in OBJ file."));
+				ME_ERROR("Invalid vertex index 0 in OBJ file.");
 				static T defaultVal{};
 				return defaultVal;
 			}
 			if (idx < 0)
-				idx = static_cast<int32>(elements.GetSize()) + idx;
+				idx = static_cast<int32>(elements.Size()) + idx;
 			else
 				idx--;
-			if (idx < 0 || idx >= static_cast<int32>(elements.GetSize()))
+			if (idx < 0 || idx >= static_cast<int32>(elements.Size()))
 			{
-				ME_ERROR(TEXT("Vertex index out of bounds: {} (array size: {})"), idx + 1, elements.GetSize());
+				ME_ERROR("Vertex index out of bounds: {} (array size: {})", idx + 1, elements.Size());
 				static T defaultVal{};
 				return defaultVal;
 			}
@@ -116,20 +109,16 @@ namespace ME::Utility
 
 		inline void CenterMesh(ME::Core::Containers::Array<ME::Assets::Vertex>& vertices)
 		{
-			if (vertices.GetSize() == 0)
+			if (vertices.Size() == 0)
 				return;
 
 			ME::Core::Math::Vector3D32 centroid(0.0f, 0.0f, 0.0f);
 			for (const auto& vertex : vertices)
-			{
 				centroid += vertex.Position;
-			}
-			centroid /= static_cast<float32>(vertices.GetSize());
+			centroid /= static_cast<float32>(vertices.Size());
 
 			for (auto& vertex : vertices)
-			{
 				vertex.Position -= centroid;
-			}
 		}
 
 		inline void CenterMeshGroup(ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>>& meshes)
@@ -137,15 +126,13 @@ namespace ME::Utility
 			if (meshes.Empty())
 				return;
 
-			int32 totalVertices = 0;
+			SIZE_T totalVertices = 0;
 			ME::Core::Math::Vector3D32 centroid(0.0f, 0.0f, 0.0f);
 			for (const auto& mesh : meshes)
 			{
-				totalVertices += mesh->GetVertices().GetSize();
+				totalVertices += mesh->GetVertices().Size();
 				for (const auto& vertex : mesh->GetVertices())
-				{
 					centroid += vertex.Position;
-				}
 			}
 
 			if (totalVertices == 0)
@@ -154,49 +141,41 @@ namespace ME::Utility
 			centroid /= static_cast<float32>(totalVertices);
 
 			for (auto& mesh : meshes)
-			{
 				for (auto& vertex : mesh->GetVertices())
-				{
 					vertex.Position -= centroid;
-				}
-			}
 
 			ME::Core::Math::Vector3D32 newCentroid(0.0f, 0.0f, 0.0f);
-			int32 newTotalVertices = 0;
+			SIZE_T newTotalVertices = 0;
 			for (const auto& mesh : meshes)
 			{
-				newTotalVertices += mesh->GetVertices().GetSize();
+				newTotalVertices += mesh->GetVertices().Size();
 				for (const auto& vertex : mesh->GetVertices())
-				{
 					newCentroid += vertex.Position;
-				}
 			}
 			newCentroid /= static_cast<float32>(newTotalVertices);
 		}
 	}
 
-	AssetLoadResult AssetLoader::Load(const ME::Core::Containers::String& filePath, bool centered,
+	AssetLoadResult AssetLoader::Load(const ME::Core::String& filePath, bool centered,
 		AssetFileFormats format)
 	{
 		switch (format)
 		{
-		case AssetFileFormats::OBJ:
-			return LoadOBJ(filePath.GetString(), centered);
-		case AssetFileFormats::TRG:
-		{
-			return LoadTGA(filePath.GetString());
-		}
-		default:
-			ME_ERROR("Unsupported asset format!: {}", static_cast<uint32>(format));
-			return AssetLoadResult();
+			case AssetFileFormats::OBJ:
+				return LoadOBJ(filePath.String(), centered);
+			case AssetFileFormats::TRG:
+				return LoadTGA(filePath.String());
+			default:
+				ME_ERROR("Unsupported asset format!: {}", static_cast<uint32>(format));
+				return AssetLoadResult();
 		}
 	}
 
-	AssetLoadResult AssetLoader::LoadOBJ(const uchar* filePath, bool centered)
+	AssetLoadResult AssetLoader::LoadOBJ(const char8* filePath, bool centered)
 	{
 		if (!ME::Core::IO::PFileExists(filePath))
 		{
-			ME_ERROR(TEXT("File {0} not found!"), filePath);
+			ME_ERROR("File {0} not found!", ME_LOGGER_TEXT(filePath));
 			return AssetLoadResult();
 		}
 
@@ -205,7 +184,7 @@ namespace ME::Utility
 		file = ME::Core::IO::POpenFile(filePath);
 		if (!file || !file->IsOpen())
 		{
-			ME_ERROR(TEXT("File is not opened! Error: {0}"),
+			ME_ERROR("File is not opened! Error: {0}",
 				file ? static_cast<uint32>(file->GetFileLastError()) : 0);
 			return AssetLoadResult();
 		}
@@ -226,12 +205,12 @@ namespace ME::Utility
 		ME::Core::Containers::Array<ME::Core::Math::Vector2D32> uvCoords(1000);
 		ME::Core::Containers::Array<ME::Core::Math::Vector3D32> normals(1000);
 
-		ME::Core::Containers::String meshName;
-		ME::Core::Containers::String line;
-		ME::Core::Containers::String token = TEXT("");
-		ME::Core::Containers::String value = TEXT("");
-		ME::Core::Containers::Array<ME::Core::Containers::String> values(4);
-		ME::Core::Containers::Array<ME::Core::Containers::String> faceValues(3);
+		ME::Core::String meshName;
+		ME::Core::String line;
+		ME::Core::String token = TEXT("");
+		ME::Core::String value = TEXT("");
+		ME::Core::Containers::Array<ME::Core::String> values(4);
+		ME::Core::Containers::Array<ME::Core::String> faceValues(3);
 
 		vertices.Clear();
 		indices.Clear();
@@ -248,11 +227,10 @@ namespace ME::Utility
 			{
 				if (!indices.Empty() && !vertices.Empty())
 				{
-					mesh = ME::Core::Memory::MakeReference<ME::Assets::Mesh>();
+					mesh = ME::Render::Manager::MeshManager::Get().CreateMesh();
 					mesh->SetVertices(vertices);
 					mesh->SetIndices(indices);
 					mesh->SetGroupName(meshName);
-					mesh->CreateBuffers();
 					result.Meshes.EmplaceBack(mesh);
 
 					vertices.Clear();
@@ -263,9 +241,7 @@ namespace ME::Utility
 					meshName = LocalFunctions::GetTokenValues(line);
 				}
 				else
-				{
 					meshName = LocalFunctions::GetTokenValues(line);
-				}
 			}
 			else if (token == TEXT("mtllib")) continue;
 			else if (token == TEXT("usemtl")) continue;
@@ -274,9 +250,9 @@ namespace ME::Utility
 				Core::Math::Vector3D32 position;
 				value = LocalFunctions::GetTokenValues(line);
 				LocalFunctions::Split(value, values, TEXT(" "));
-				position.X = static_cast<float32>(Core::Containers::StringToFloat(values[0], nullptr));
-				position.Y = static_cast<float32>(Core::Containers::StringToFloat(values[1], nullptr));
-				position.Z = static_cast<float32>(Core::Containers::StringToFloat(values[2], nullptr));
+				position.X = static_cast<float32>(Core::StringToFloat(values[0], nullptr));
+				position.Y = static_cast<float32>(Core::StringToFloat(values[1], nullptr));
+				position.Z = static_cast<float32>(Core::StringToFloat(values[2], nullptr));
 				// W is ignored
 
 				positions.EmplaceBack(position);
@@ -286,8 +262,8 @@ namespace ME::Utility
 				Core::Math::Vector2D32 coords;
 				value = LocalFunctions::GetTokenValues(line);
 				LocalFunctions::Split(value, values, TEXT(" "));
-				coords.X = static_cast<float32>(Core::Containers::StringToFloat(values[0], nullptr));
-				coords.Y = static_cast<float32>(Core::Containers::StringToFloat(values[1], nullptr));
+				coords.X = static_cast<float32>(Core::StringToFloat(values[0], nullptr));
+				coords.Y = static_cast<float32>(Core::StringToFloat(values[1], nullptr));
 
 				uvCoords.EmplaceBack(coords);
 			}
@@ -296,9 +272,9 @@ namespace ME::Utility
 				Core::Math::Vector3D32 normal;
 				value = LocalFunctions::GetTokenValues(line);
 				LocalFunctions::Split(value, values, TEXT(" "));
-				normal.X = static_cast<float32>(Core::Containers::StringToFloat(values[0], nullptr));
-				normal.Y = static_cast<float32>(Core::Containers::StringToFloat(values[1], nullptr));
-				normal.Z = static_cast<float32>(Core::Containers::StringToFloat(values[2], nullptr));
+				normal.X = static_cast<float32>(Core::StringToFloat(values[0], nullptr));
+				normal.Y = static_cast<float32>(Core::StringToFloat(values[1], nullptr));
+				normal.Z = static_cast<float32>(Core::StringToFloat(values[2], nullptr));
 
 				normals.EmplaceBack(normal);
 			}
@@ -307,43 +283,43 @@ namespace ME::Utility
 			{	
 				value = LocalFunctions::GetTokenValues(line);
 				LocalFunctions::Split(value, values, TEXT(" "));
-				if (values.GetSize() < 3)
+				if (values.Size() < 3)
 					continue;
 
-				for (const Core::Containers::String& val : values)
+				for (const Core::String& val : values)
 				{
 					LocalFunctions::Split(val, faceValues, TEXT("/"));
 
 					Assets::Vertex vertex;
 					vertex.Position = LocalFunctions::FindElement(positions, faceValues[0]);
-					if (faceValues.GetSize() > 1 && !faceValues[1].Empty()) {
+					if (faceValues.Size() > 1 && !faceValues[1].Empty()) {
 						vertex.TextureCoords = LocalFunctions::FindElement(uvCoords, faceValues[1]);
 					}
-					if (faceValues.GetSize() > 2 && !faceValues[2].Empty()) {
+					if (faceValues.Size() > 2 && !faceValues[2].Empty()) {
 						vertex.Normal = LocalFunctions::FindElement(normals, faceValues[2]);
 					}
-					indices.PushBack(vertices.GetSize());
+					indices.PushBack(static_cast<uint32>(vertices.Size()));
 					vertices.EmplaceBack(vertex);
 				}
 #if 0
 				value = LocalFunctions::GetTokenValues(line);
 				LocalFunctions::Split(value, values, TEXT(" "));
-				if (values.GetSize() < 3)
+				if (values.Size() < 3)
 					continue;
 
 				faceVertices.Clear();
 				faceIndices.Clear();
 
-				for (const Core::Containers::String& val : values)
+				for (const Core::String& val : values)
 				{
 					LocalFunctions::Split(val, faceValues, TEXT("/"));
 
 					Assets::Vertex vertex;
 					vertex.Position = LocalFunctions::FindElement(positions, faceValues[0]);
-					if (faceValues.GetSize() > 1 && !faceValues[1].Empty()) {
+					if (faceValues.Size() > 1 && !faceValues[1].Empty()) {
 						vertex.TextureCoords = LocalFunctions::FindElement(uvCoords, faceValues[1]);
 					}
-					if (faceValues.GetSize() > 2 && !faceValues[2].Empty()) {
+					if (faceValues.Size() > 2 && !faceValues[2].Empty()) {
 						vertex.Normal = LocalFunctions::FindElement(normals, faceValues[2]);
 					}
 					faceVertices.EmplaceBack(vertex);
@@ -363,7 +339,7 @@ namespace ME::Utility
 					}
 					else
 					{
-						globalIdx = static_cast<uint32>(vertices.GetSize());
+						globalIdx = static_cast<uint32>(vertices.Size());
 						vertices.EmplaceBack(v);
 						vertexToIndex[v] = globalIdx;
 					}
@@ -377,11 +353,10 @@ namespace ME::Utility
 		}
 		if (!indices.Empty() && !vertices.Empty())
 		{
-			mesh = ME::Core::Memory::MakeReference<ME::Assets::Mesh>();
+			mesh = ME::Render::Manager::MeshManager::Get().CreateMesh();
 			mesh->SetVertices(vertices);
 			mesh->SetIndices(indices);
 			mesh->SetGroupName(meshName);
-			mesh->CreateBuffers();
 			result.Meshes.EmplaceBack(mesh);
 		}
 
@@ -393,18 +368,18 @@ namespace ME::Utility
 		return result;
 	}
 
-	AssetLoadResult AssetLoader::LoadTGA(const uchar* filePath)
+	AssetLoadResult AssetLoader::LoadTGA(const char8* filePath)
 	{
 		if (!ME::Core::IO::PFileExists(filePath))
 		{
-			ME_ERROR(TEXT("File {0} not found!"), filePath);
+			ME_ERROR("File {0} not found!", CONVERT_TEXT(filePath));
 			return {};
 		}
 
 		auto file = ME::Core::IO::POpenFile(filePath);
 		if (!file || !file->IsOpen())
 		{
-			ME_ERROR(TEXT("File is not opened! Error: {0}"),
+			ME_ERROR("File is not opened! Error: {0}",
 				file ? static_cast<uint32>(file->GetFileLastError()) : 0);
 			return {};
 		}
@@ -416,14 +391,14 @@ namespace ME::Utility
 
 		if (!file->ReadBinary(data, size))
 		{
-			ME_ERROR(TEXT("Failed to read file! Error: {0}"),
+			ME_ERROR("Failed to read file! Error: {0}",
 				file ? static_cast<uint32>(file->GetFileLastError()) : 0);
 			return {};
 		}
 
 		if (size < sizeof(TRGHeader))
 		{
-			ME_ERROR(TEXT("Invalid TGA file size"));
+			ME_ERROR("Invalid TGA file size");
 			delete[] data;
 			return {};
 		}
@@ -435,8 +410,8 @@ namespace ME::Utility
 
 		if (header.pixelDepth != BIT(5))
 		{
-			ME_ERROR(TEXT("Unsupported \"{1}\" file! Error: {0}"),
-				file ? static_cast<uint32>(file->GetFileLastError()) : 0, filePath);
+			ME_ERROR("Unsupported \"{1}\" file! Error: {0}",
+				file ? static_cast<uint32>(file->GetFileLastError()) : 0, CONVERT_TEXT(filePath));
 			delete[] data;
 			return {};
 		}
@@ -449,11 +424,11 @@ namespace ME::Utility
 		delete[] data;
 
 		int32 index = 0;
-		int32 k = imageSize - resolution.x * 4;
+		int32 k = (resolution.x * resolution.y * 4) - (resolution.x * 4);
 
-		for (int32 j = 0; j < resolution.y; j++)
+		for (uint32 j = 0; j < resolution.y; j++)
 		{
-			for (int32 i = 0; i < resolution.x; i++)
+			for (uint32 i = 0; i < resolution.x; i++)
 			{
 				imageData[index + 0] = targaData[k + 2];
 				imageData[index + 1] = targaData[k + 1];
@@ -480,9 +455,9 @@ namespace ME::Utility
 	{
 		ME::Core::Math::Vector3D32 normal(0.0f, 0.0f, 0.0f);
 
-		for (int32 i = 0; i < static_cast<int32>(vertices.GetSize()); ++i)
+		for (int32 i = 0; i < static_cast<int32>(vertices.Size()); ++i)
 		{
-			int32 j = (i + 1) % vertices.GetSize();
+			int32 j = (i + 1) % vertices.Size();
 			const auto& pi = vertices[i].Position;
 			const auto& pj = vertices[j].Position;
 			normal.X += (pi.Y - pj.Y) * (pi.Z + pj.Z);
@@ -512,7 +487,7 @@ namespace ME::Utility
 		else if (normal.z > normal.x && normal.z > normal.y) dropAxis = 2;
 
 		out2D.Clear();
-		out2D.Reserve(vertices.GetSize());
+		out2D.Reserve(vertices.Size());
 		for (auto& v : vertices)
 		{
 			if (dropAxis == 0) out2D.EmplaceBack(ME::Core::Math::Vector2D32{ v.Position.y, v.Position.z });
@@ -534,9 +509,9 @@ namespace ME::Utility
 	bool AssetLoader::IsEar(int i, const ME::Core::Containers::Array<ME::Core::Math::Vector2D32>& poly,
 		const ME::Core::Containers::Array<uint32>& idx)
 	{
-		int prev = idx[(i + idx.GetSize() - 1) % idx.GetSize()];
+		int prev = idx[(i + idx.Size() - 1) % idx.Size()];
 		int curr = idx[i];
-		int next = idx[(i + 1) % idx.GetSize()];
+		int next = idx[(i + 1) % idx.Size()];
 
 		const ME::Core::Math::Vector2D32& a = poly[prev];
 		const ME::Core::Math::Vector2D32& b = poly[curr];
@@ -546,9 +521,9 @@ namespace ME::Utility
 			(b.y - a.y) * (c.x - a.x);
 		if (cross <= 0) return false;
 
-		for (uint32 j = 0; j < idx.GetSize(); j++)
+		for (uint32 j = 0; j < idx.Size(); j++)
 		{
-			if (j == static_cast<uint32>(i) || j == static_cast<uint32>((i + 1) % idx.GetSize()) || j == static_cast<uint32>((i + idx.GetSize() - 1) % idx.GetSize()))
+			if (j == static_cast<uint32>(i) || j == static_cast<uint32>((i + 1) % idx.Size()) || j == static_cast<uint32>((i + idx.Size() - 1) % idx.Size()))
 				continue;
 			if (IsPointInTriangle(poly[idx[j]], a, b, c))
 				return false;
@@ -564,19 +539,19 @@ namespace ME::Utility
 		ProjectTo2D(vertices, projected);
 
 		Core::Containers::Array<uint32> idx;
-		for (uint32 i = 0; i < vertices.GetSize(); i++)
+		for (uint32 i = 0; i < vertices.Size(); i++)
 			idx.EmplaceBack(i);
 
-		while (idx.GetSize() > 3)
+		while (idx.Size() > 3)
 		{
 			bool earFound = false;
-			for (uint32 i = 0; i < idx.GetSize(); i++)
+			for (uint32 i = 0; i < idx.Size(); i++)
 			{
 				if (IsEar(i, projected, idx))
 				{
-					uint32 prev = idx[(i + idx.GetSize() - 1) % idx.GetSize()];
+					uint32 prev = idx[(i + idx.Size() - 1) % idx.Size()];
 					uint32 curr = idx[i];
-					uint32 next = idx[(i + 1) % idx.GetSize()];
+					uint32 next = idx[(i + 1) % idx.Size()];
 
 					indicesOut.EmplaceBack(prev);
 					indicesOut.EmplaceBack(curr);
@@ -594,7 +569,7 @@ namespace ME::Utility
 			}
 		}
 
-		if (idx.GetSize() == 3)
+		if (idx.Size() == 3)
 		{
 			indicesOut.EmplaceBack(idx[0]);
 			indicesOut.EmplaceBack(idx[1]);

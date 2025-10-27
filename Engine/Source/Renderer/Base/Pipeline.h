@@ -5,7 +5,7 @@
 #include <Core/Containers/Array.hpp>
 #include <Core/Math/Math.hpp>
 
-#include "Assets/ShaderManager.hpp"
+#include "Renderer/Managers/ShaderManager.hpp"
 #include "Core/Misc/Rect2D.hpp"
 
 namespace ME::Render
@@ -140,13 +140,13 @@ namespace ME::Render
 	struct VertexBufferElement
 	{
 		ShaderType Type;
-		Core::Containers::AnsiString Name;
+		Core::String Name;
 		SIZE_T Size;
 		SIZE_T Offset;
 		uint32 SemanticIndex;
 		uint32 InputSlot;
 
-		VertexBufferElement(ShaderType type, Core::Containers::AnsiString name, uint32 semanticIndex, uint32 inputSlot)
+		VertexBufferElement(ShaderType type, Core::String name, uint32 semanticIndex, uint32 inputSlot)
 			: Type(type), Name(name), Size(SizeOfShaderType(type)), Offset(0), SemanticIndex(semanticIndex), InputSlot(inputSlot)
 		{
 		}
@@ -248,13 +248,66 @@ namespace ME::Render
 		LogicOperation LogicOperation;
 	};
 
+	struct PushConstant
+	{
+		ME::Render::ShaderStage Stage;
+		uint32 Offset = 0;
+		uint32 Size = 0;
+	};
+
+	class PushConstants
+	{
+	public:
+		PushConstants()
+			: m_Elements({})
+		{
+		}
+
+		PushConstants(std::initializer_list<PushConstant> elements)
+			: m_Elements(elements)
+		{
+			CalculateOffset();
+		}
+
+		PushConstants(const PushConstants& other)
+			: m_Elements(other.m_Elements)
+		{
+		}
+
+	public:
+		inline const Core::Containers::Array<PushConstant>& GetElements() const { return m_Elements; }
+		inline uint32 GetOffset(uint32 elementId) const { return m_Elements[elementId].Offset; }
+		inline const InputClassification GetInputClassification() const { return m_InputClassification; }
+
+	private:
+		void CalculateOffset()
+		{
+			uint32 offset = 0;
+
+			for (auto& element : m_Elements)
+			{
+				element.Offset = offset;
+				offset += element.Size;
+			}
+		}
+
+	private:
+		Core::Containers::Array<PushConstant> m_Elements;
+		InputClassification m_InputClassification;
+
+	};
+
 	struct PipelineSpecification
 	{
 		PipelineType Type;
 		ME::Core::Memory::Reference<RenderPass> RenderPass;
 		uint32 Subpass;
-		Assets::ShaderManager::ShaderGroup Shaders;
-		ME::Core::Memory::Reference<ME::Render::Shader> ComputeShader;
+		PushConstants Constants;
+
+		// Compute pipeline
+	    ME::Core::Memory::Reference<ME::Render::Shader> ComputeShader;
+		// Graphics pipeline
+		Render::Manager::ShaderManager::ShaderGroup Shaders;
 		VertexBufferLayout BufferLayout;
 		InputAssesemblySpecification InputAssembly;
 		uint32 PatchControlPoints;
@@ -275,13 +328,13 @@ namespace ME::Render
 		int32 MaxDepth;
 	};
 
-	class MOON_API Pipeline : public RenderObject
+	class MEAPI Pipeline : public RenderObject
 	{
 	public:
-		virtual ~Pipeline() = default;
-
 		virtual void SetViewports(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Containers::Array<ME::Render::ViewportSpecification> specifications) = 0;
 		virtual void SetScissors(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Containers::Array<ME::Core::Math::Rect2D> scissors) = 0;
+		virtual void SetConstants(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ShaderStage shaderStage, void* constants,
+			SIZE_T constantsSize) = 0;
 
 		virtual void Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) = 0;
 
@@ -295,23 +348,23 @@ namespace ME::Render
 
 	};
 
-	inline constexpr MOON_API PipelineStageFlags operator|(ME::Render::PipelineStageFlags a, ME::Render::PipelineStageFlags b)
+	inline constexpr MEAPI PipelineStageFlags operator|(ME::Render::PipelineStageFlags a, ME::Render::PipelineStageFlags b)
 	{
 		return static_cast<PipelineStageFlags>((uint32)a | (uint32)b);
 	}
 
-	inline constexpr MOON_API AccessFlags operator|(ME::Render::AccessFlags a, ME::Render::AccessFlags b)
+	inline constexpr MEAPI AccessFlags operator|(ME::Render::AccessFlags a, ME::Render::AccessFlags b)
 	{
 		return static_cast<AccessFlags>((uint32)a | (uint32)b);
 	}
 
-	inline constexpr MOON_API PipelineStageFlags operator|=(ME::Render::PipelineStageFlags& a, ME::Render::PipelineStageFlags b)
+	inline constexpr MEAPI PipelineStageFlags operator|=(ME::Render::PipelineStageFlags& a, ME::Render::PipelineStageFlags b)
 	{
 		a = a | b;
 		return a;
 	}
 
-	inline constexpr MOON_API AccessFlags operator|=(ME::Render::AccessFlags& a, ME::Render::AccessFlags b)
+	inline constexpr MEAPI AccessFlags operator|=(ME::Render::AccessFlags& a, ME::Render::AccessFlags b)
 	{
 		a = a | b;
 		return a;

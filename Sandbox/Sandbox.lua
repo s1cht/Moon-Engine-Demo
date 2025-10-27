@@ -46,10 +46,10 @@
 
 		prebuildcommands
 		{
-			("{MKDIR} %{wks.location}/bin/" .. outputdir .. "/Sandbox"),
-			("{COPYDIR} %{wks.location}/bin/" .. outputdir .. "/EngineCore/EngineCore.dll %{wks.location}/bin/" .. outputdir .. "/Sandbox/"),
-			("{COPYDIR} %{wks.location}/bin/" .. outputdir .. "/Engine/Engine.dll %{wks.location}/bin/" .. outputdir .. "/Sandbox/"),
-			("{COPYDIR} %{wks.location}/bin/" .. outputdir .. "/DXC/dxcompiler.dll %{wks.location}/bin/" .. outputdir .. "/Sandbox/"),
+			("{MKDIR} %{wks.location}bin/" .. outputdir .. "/Sandbox"),
+			("{COPYDIR} %{wks.location}bin/" .. outputdir .. "/EngineCore/EngineCore.dll %{wks.location}bin/" .. outputdir .. "/Sandbox/"),
+			("{COPYDIR} %{wks.location}bin/" .. outputdir .. "/Engine/Engine.dll %{wks.location}bin/" .. outputdir .. "/Sandbox/"),
+			("{COPYDIR} %{wks.location}bin/" .. outputdir .. "/DXC/dxcompiler.dll %{wks.location}bin/" .. outputdir .. "/Sandbox/"),
 		}
 
 		filter "system:windows"
