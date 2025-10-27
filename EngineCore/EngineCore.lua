@@ -1,27 +1,25 @@
 project "EngineCore"
-
-	if string.sub(_ACTION, 1, 5) == "gmake" then
-		error "GCC is not supported yet. Waiting for full C++20 modules support."
-	end
-
 	kind "SharedLib"
 	language "C++"
-	cppdialect "C++20"
+	cppdialect "C++23"
 	staticruntime "off"
-	allmodulespublic "on"
-	scanformoduledependencies "on"
+	allmodulespublic "off"
+	scanformoduledependencies "off"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
+
+	EngineCoreLib = "%{cfg.buildtarget.relpath}"
 
 	characterset "Unicode"
 
 	files
 	{
 		"Core/**.h",
+		"Core/**.hpp",
 		"Core/**.cpp",
 		"Core/**.cppm", -- modules
-		"Core.h",
+		"Core.hpp",
 	}
 
 	includedirs 
@@ -34,17 +32,25 @@ project "EngineCore"
 	defines 
 	{
 		"SPDLOG_BUILD_SHARED",
-		"PAWN_CORE_LIBRARY_BUILD", 
+		"MOON_CORE_LIBRARY_BUILD", 
 		"_WINDLL",
+	}
+
+	links
+	{
+		"xxHash",
 	}
 
 	filter "system:windows"
 		systemversion "latest"
-
-		postbuildcommands
+		links
 		{
-			("{COPYDIR} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox/")
+			"shlwapi.lib",
 		}
+
+	filter "system:linux"
+		toolset "clang"
+		
 	filter "action:vs*"
 
 		buildoptions
@@ -62,16 +68,16 @@ project "EngineCore"
 		compileas "C++"
 
 	filter "configurations:Debug"
-		defines "PE_DEBUG"
+		defines "ME_DEBUG"
 		symbols "on"
 		runtime "Debug"
 
 	filter "configurations:Release"
-		defines "PE_RELEASE"
+		defines "ME_RELEASE"
 		optimize "on"
 		runtime "Release"
 
 	filter "configurations:Distribute"
-		defines "PE_DIST"
+		defines "ME_DIST"
 		optimize "on"
 		runtime "Release"

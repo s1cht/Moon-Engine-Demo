@@ -2,7 +2,7 @@
 
 #include "RenderCommand.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
 	bool Renderer::Init()
 	{
@@ -12,7 +12,7 @@ namespace Pawn::Render
 	{
 		RenderCommand::Shutdown();
 	}
-	void Renderer::BeginScene(Pawn::Core::Memory::Reference<Pawn::Render::Camera::Camera> camera)
+	void Renderer::BeginScene(ME::Core::Memory::Reference<ME::Render::Camera::Camera> camera)
 	{
 	}
 
@@ -20,17 +20,12 @@ namespace Pawn::Render
 	{
 	}
 
-	void Renderer::Submit(uint32 indexCount, uint32 index)
+	void Renderer::SetRenderAPI(RenderAPI::API api)
 	{
-		RenderCommand::DrawIndexed(indexCount, index);
+		RenderAPI::SetRendererAPI(api);
 	}
-
-	void Renderer::SetRenderAPI(RendererAPI::API api)
+	inline RenderAPI::API Renderer::GetRenderAPI()
 	{
-		RendererAPI::SetRendererAPI(api);
-	}
-	inline RendererAPI::API Renderer::GetRenderAPI()
-	{
-		return RendererAPI::GetRendererAPI();
+		return RenderAPI::GetRendererAPI();
 	}
 }

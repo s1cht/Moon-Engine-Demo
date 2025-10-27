@@ -1,128 +1,87 @@
 #include "AssetLoader.h"
 
-#include <Core/Math/MathMacros.h>
+#include <Core/Containers/Tables/UnorderedMap.hpp>
+#include <Core/Platform/Base/IO.hpp>
 
-import Pawn.Core.Math;
-import Pawn.Core.IO;
-import Pawn.Core.Algorithm;
-import Pawn.Core.Container.String;
-import Pawn.Core.Container.UnorderedMap;
+#include "Application/Application.h"
+#include "Assets/Image.h"
 
-namespace Pawn::Utility
+#define DEBUG_MESH
+//#define DEBUG_INDICES
+
+#define SIGN(p1, p2, p3) (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x)* (p1.y - p3.y)
+
+
+namespace ME::Utility
 {
+	constexpr const uchar* DefaultMeshName = TEXT("unnamed");
 	namespace LocalFunctions
 	{
-		void Split(const Pawn::Core::Containers::String& str, Pawn::Core::Containers::Array<Pawn::Core::Containers::String>& out, Pawn::Core::Containers::String splitStr)
+		void Split(const ME::Core::Containers::String& str,
+			ME::Core::Containers::Array<ME::Core::Containers::String>& out,
+			ME::Core::Containers::String splitStr)
 		{
 			out.Clear();
 
-			Pawn::Core::Containers::String temp;
+			ME::Core::Containers::String temp;
 
-			for (int32 i = 0; i < (int32)str.GetSize(); i++)
+			for (int32 i = 0; i < static_cast<int32>(str.GetSize()); i++)
 			{
-				Pawn::Core::Containers::String test = str.Substring(i, splitStr.GetSize());
+				ME::Core::Containers::String test = str.Substring(i, splitStr.GetSize());
 
 				if (test == splitStr)
 				{
-					if (!temp.Empty())
-					{
-						out.EmplaceBack(temp);
-						temp.Clear();
-						i += (int32)splitStr.GetSize() - 1;
-					}
-					else
-					{
-						if constexpr (sizeof(Pawn::Core::Containers::String::DataType) == 1)
-							out.EmplaceBack("");
-						else if constexpr (sizeof(Pawn::Core::Containers::String::DataType) == 2)
-							out.EmplaceBack(TEXT(""));
-						else
-							PE_ASSERT(false, TEXT("Unsupported string!"));
-					}
-				}
-				else if (i + splitStr.GetSize() >= str.GetSize())
-				{
-					temp += str.Substring(i, splitStr.GetSize());
 					out.EmplaceBack(temp);
-					break;
+					temp.Clear();
+					i += static_cast<int32>(splitStr.GetSize()) - 1;
 				}
 				else
 				{
 					temp += str[i];
 				}
 			}
-		}
-
-		bool IsOnSameSide(Pawn::Core::Math::Vector3D32 p1, Pawn::Core::Math::Vector3D32 p2, 
-			Pawn::Core::Math::Vector3D32 a, Pawn::Core::Math::Vector3D32 b)
-		{
-			Pawn::Core::Math::Vector3D32 cp1 = (b - a).Cross(p1 - a);
-			Pawn::Core::Math::Vector3D32 cp2 = (b - a).Cross(p2 - a);
-
-			if (cp1.Dot(cp2) >= 0)
-				return true;
-			else
-				return false;
-		}
-
-		Pawn::Core::Math::Vector3D32 GenerateTriangleNormal(Pawn::Core::Math::Vector3D32 t1, 
-			Pawn::Core::Math::Vector3D32 t2, 
-			Pawn::Core::Math::Vector3D32 t3)
-		{
-			Pawn::Core::Math::Vector3D32 u = t2 - t1;
-			Pawn::Core::Math::Vector3D32 v = t3 - t1;
-
-			Pawn::Core::Math::Vector3D32 normal = u.Cross(v);
-
-			return normal;
-		}
-
-		bool IsInTriangle(Pawn::Core::Math::Vector3D32 point, 
-			Pawn::Core::Math::Vector3D32 tri1, Pawn::Core::Math::Vector3D32 tri2, Pawn::Core::Math::Vector3D32 tri3)
-		{
-			bool within_tri_prisim = IsOnSameSide(point, tri1, tri2, tri3) && IsOnSameSide(point, tri2, tri1, tri3)
-				&& IsOnSameSide(point, tri3, tri1, tri2);
-
-			if (!within_tri_prisim)
-				return false;
-
-			Pawn::Core::Math::Vector3D32 n = GenerateTriangleNormal(tri1, tri2, tri3);
-
-			Pawn::Core::Math::Vector3D32 proj = point.Project(n);
-
-			if (proj.Length() == 0)
-				return true;
-			else
-				return false;
-		}
-
-		Pawn::Core::Containers::String GetTokenValues(const Pawn::Core::Containers::String& in)
-		{
-			if (!in.Empty())
+			if (!temp.Empty())
 			{
-				SIZE_T tokStart = in.FindFirstNot(TEXT(" \t"));
-				SIZE_T spaceStart = in.FindFirst(TEXT(" \t"), tokStart);
-				SIZE_T valStart = in.FindFirstNot(TEXT(" \t"), spaceStart);
-				SIZE_T valEnd = in.FindLastNot(TEXT(" \t"));
-
-				if (valStart != -1 && valEnd != -1)
-				{
-					return in.Substring(valStart, valEnd - valStart + 1);
-				}
-				else if (valStart != -1)
-				{
-					return in.Substring(valEnd);
-				}
+				out.EmplaceBack(temp);
 			}
-			return TEXT("");
 		}
 
-		inline Pawn::Core::Containers::String GetToken(const Pawn::Core::Containers::String& in)
+		void TrimLineEnding(ME::Core::Containers::String& in)
+		{
+			if (!in.Empty() && (in[in.GetSize() - 1] == TEXT('\r') || in[in.GetSize() - 1] == '\n'))
+				in.PopBack();
+			if (!in.Empty() && (in[in.GetSize() - 1] == TEXT('\r') || in[in.GetSize() - 1] == '\n'))
+				in.PopBack();
+		}
+
+		ME::Core::Containers::String GetTokenValues(ME::Core::Containers::String& in)
+		{
+			if (in.Empty())
+				return TEXT("");
+
+			TrimLineEnding(in);
+
+			SIZE_T tokStart = in.FindFirstNot(TEXT(" \t"));
+			SIZE_T spaceStart = in.FindFirst(TEXT(" \t"), tokStart);
+			SIZE_T valStart = in.FindFirstNot(TEXT(" \t"), spaceStart);
+			SIZE_T valEnd = in.FindLastNot(TEXT(" \t"));
+
+			if (valStart != -1 && valEnd != -1)
+			{
+				return in.Substring(valStart, valEnd - valStart + 1);
+			}
+			else if (valStart != -1)
+			{
+				return in.Substring(valStart);
+			}
+		}
+
+		inline ME::Core::Containers::String GetToken(const ME::Core::Containers::String& in)
 		{
 			if (!in.Empty())
 			{
 				SIZE_T tokStart = in.FindFirstNot(TEXT(" \t"));
-				SIZE_T tokEnd = in.FindFirst(TEXT(" \t"));
+				SIZE_T tokEnd = in.FindFirst(TEXT(" \t"), tokStart);
 
 				if (tokStart != -1 && tokEnd != -1)
 					return in.Substring(tokStart, tokEnd - tokStart);
@@ -133,386 +92,513 @@ namespace Pawn::Utility
 		}
 
 		template <class T>
-		inline const T& FindElement(const Pawn::Core::Containers::Array<T>& elements, Pawn::Core::Containers::String& index)
+		inline const T& FindElement(const ME::Core::Containers::Array<T>& elements, ME::Core::Containers::String& index)
 		{
-			int32 idx = (int32)Pawn::Core::Containers::StringToInt(index, nullptr);
+			int32 idx = static_cast<int32>(ME::Core::Containers::StringToInt(index, nullptr));
+			if (idx == 0)
+			{
+				ME_ERROR(TEXT("Invalid vertex index 0 in OBJ file."));
+				static T defaultVal{};
+				return defaultVal;
+			}
 			if (idx < 0)
-				idx = (int32)elements.GetSize() + idx;
+				idx = static_cast<int32>(elements.GetSize()) + idx;
 			else
 				idx--;
+			if (idx < 0 || idx >= static_cast<int32>(elements.GetSize()))
+			{
+				ME_ERROR(TEXT("Vertex index out of bounds: {} (array size: {})"), idx + 1, elements.GetSize());
+				static T defaultVal{};
+				return defaultVal;
+			}
 			return elements[idx];
 		}
 
-		inline void GenVerticesFromRawOBJ(Pawn::Core::Containers::Array<Pawn::Assets::Vertex>& vertices,
-			const Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32>& positions,
-			const Pawn::Core::Containers::Array<Pawn::Core::Math::Vector2D32>& textureCoords,
-			const Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32>& normals,
-			Pawn::Core::Containers::String currentLine)
+		inline void CenterMesh(ME::Core::Containers::Array<ME::Assets::Vertex>& vertices)
 		{
-			Pawn::Core::Containers::Array<Pawn::Core::Containers::String> sface, svert;
-			Pawn::Assets::Vertex vertexTemp;
-			LocalFunctions::Split(LocalFunctions::GetTokenValues(currentLine), sface, Pawn::Core::Containers::String(TEXT(" ")));
+			if (vertices.GetSize() == 0)
+				return;
 
-			bool noNormal = false;
-
-			for (int32 i = 0; i < (int)sface.GetSize(); i++)
+			ME::Core::Math::Vector3D32 centroid(0.0f, 0.0f, 0.0f);
+			for (const auto& vertex : vertices)
 			{
-				int32 vtype;
-
-				LocalFunctions::Split(sface[i], svert, Pawn::Core::Containers::String(TEXT("/")));
-
-				if (svert.GetSize() == 1)
-					vtype = 1;
-
-				if (svert.GetSize() == 2)
-					vtype = 2;
-
-				if (svert.GetSize() == 3)
-				{
-					if (svert[1] != TEXT(""))
-						vtype = 4;
-					else
-						vtype = 3;
-				}
-
-				switch (vtype)
-				{
-				case 1:
-				{
-					vertexTemp.Position = LocalFunctions::FindElement(positions, svert[0]);
-					vertexTemp.TextureCoordinate = Pawn::Core::Math::Vector2D32(0, 0);
-					noNormal = true;
-					vertices.EmplaceBack(vertexTemp);
-					break;
-				}
-				case 2:
-				{
-					vertexTemp.Position = LocalFunctions::FindElement(positions, svert[0]);
-					vertexTemp.TextureCoordinate = LocalFunctions::FindElement(textureCoords, svert[1]);
-					noNormal = true;
-					vertices.EmplaceBack(vertexTemp);
-					break;
-				}
-				case 3:
-				{
-					vertexTemp.Position = LocalFunctions::FindElement(positions, svert[0]);
-					vertexTemp.TextureCoordinate = Pawn::Core::Math::Vector2D32(0, 0);
-					vertexTemp.Normal = LocalFunctions::FindElement(normals, svert[2]);
-					vertices.EmplaceBack(vertexTemp);
-					break;
-				}
-				case 4:
-				{
-					vertexTemp.Position = LocalFunctions::FindElement(positions, svert[0]);
-					vertexTemp.TextureCoordinate = LocalFunctions::FindElement(textureCoords, svert[1]);
-					vertexTemp.Normal = LocalFunctions::FindElement(normals, svert[2]);
-					vertices.EmplaceBack(vertexTemp);
-					break;
-				}
-				default:
-					break;
-				}
+				centroid += vertex.Position;
 			}
+			centroid /= static_cast<float32>(vertices.GetSize());
 
-			if (noNormal)
+			for (auto& vertex : vertices)
 			{
-				Pawn::Core::Math::Vector3D32 A = vertices[0].Position - vertices[1].Position;
-				Pawn::Core::Math::Vector3D32 B = vertices[2].Position - vertices[1].Position;
-
-				Pawn::Core::Math::Vector3D32 normal = A.Cross(B);
-
-				for (int32 i = 0; i < (int32)vertices.GetSize(); i++)
-					vertices[i].Normal = normal;
-			}	
+				vertex.Position -= centroid;
+			}
 		}
 
-		inline void VertexTriangluation(Pawn::Core::Containers::Array<int32>& oIndices,
-			const Pawn::Core::Containers::Array<Pawn::Assets::Vertex>& iVerts)
+		inline void CenterMeshGroup(ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>>& meshes)
 		{
-			if (iVerts.GetSize() < 3)
+			if (meshes.Empty())
 				return;
-			
-			if (iVerts.GetSize() == 3)
-			{
-				oIndices.EmplaceBack(0);
-				oIndices.EmplaceBack(1);
-				oIndices.EmplaceBack(2);
-				return;
-			}
 
-			Pawn::Core::Containers::Array<Pawn::Assets::Vertex> tVerts = iVerts;
-
-			while (true)
+			int32 totalVertices = 0;
+			ME::Core::Math::Vector3D32 centroid(0.0f, 0.0f, 0.0f);
+			for (const auto& mesh : meshes)
 			{
-				for (int32 i = 0; i < (int32)tVerts.GetSize(); i++)
+				totalVertices += mesh->GetVertices().GetSize();
+				for (const auto& vertex : mesh->GetVertices())
 				{
-					Pawn::Assets::Vertex pPrev;
-					Pawn::Assets::Vertex pNext;
-					Pawn::Assets::Vertex pCur = tVerts[i];
-
-					if (i == 0)
-						pPrev = tVerts[tVerts.GetSize() - 1];
-					else
-						pPrev = tVerts[i - 1];
-
-					if (i == tVerts.GetSize() - 1)
-						pNext = tVerts[0];
-					else
-						pNext = tVerts[i + 1];
-
-					if (tVerts.GetSize() == 3)
-					{
-						for (int32 j = 0; j < (int32)tVerts.GetSize(); j++)
-						{
-							if (iVerts[j].Position == pCur.Position)
-								oIndices.EmplaceBack(j);
-							if (iVerts[j].Position == pPrev.Position)
-								oIndices.EmplaceBack(j);
-							if (iVerts[j].Position == pNext.Position)
-								oIndices.EmplaceBack(j);
-						}
-
-						tVerts.Clear();
-						break;
-					}
-
-					if (tVerts.GetSize() == 4)
-					{
-						for (int32 j = 0; j < (int32)iVerts.GetSize(); j++)
-						{
-							if (iVerts[j].Position == pCur.Position)
-								oIndices.EmplaceBack(j);
-							if (iVerts[j].Position == pPrev.Position)
-								oIndices.EmplaceBack(j);
-							if (iVerts[j].Position == pNext.Position)
-								oIndices.EmplaceBack(j);
-						}
-
-						Pawn::Core::Math::Vector3D32 tempVec;
-						for (int32 j = 0; j < (int32)tVerts.GetSize(); j++)
-						{
-							if (tVerts[j].Position != pCur.Position
-								&& tVerts[j].Position != pPrev.Position
-								&& tVerts[j].Position != pNext.Position)
-							{
-								tempVec = tVerts[j].Position;
-								break;
-							}
-						}
-
-						for (int32 j = 0; j < (int32)iVerts.GetSize(); j++)
-						{
-							if (iVerts[j].Position == pPrev.Position)
-								oIndices.EmplaceBack(j);
-							if (iVerts[j].Position == pNext.Position)
-								oIndices.EmplaceBack(j);
-							if (iVerts[j].Position == tempVec)
-								oIndices.EmplaceBack(j);
-						}
-
-						tVerts.Clear();
-						break;
-					}
-
-					float32 angle = (float32)((pPrev.Position - pCur.Position).GetAngleBetweenVectors(pNext.Position - pCur.Position) * 180 / PI);
-					if (angle <= 0 && angle >= 180)
-						continue;
-
-					bool inTri = false;
-					for (int32 j = 0; j < (int32)iVerts.GetSize(); j++)
-					{
-						if (LocalFunctions::IsInTriangle(iVerts[j].Position, pPrev.Position, pCur.Position, pNext.Position)
-							&& iVerts[j].Position != pPrev.Position
-							&& iVerts[j].Position != pCur.Position
-							&& iVerts[j].Position != pNext.Position)
-						{
-							inTri = true;
-							break;
-						}
-					}
-					if (inTri)
-						continue;
-
-					for (int32 j = 0; j < (int32)iVerts.GetSize(); j++)
-					{
-						if (iVerts[j].Position == pCur.Position)
-							oIndices.EmplaceBack(j);
-						if (iVerts[j].Position == pPrev.Position)
-							oIndices.EmplaceBack(j);
-						if (iVerts[j].Position == pNext.Position)
-							oIndices.EmplaceBack(j);
-					}
-
-					for (int32 j = 0; j < (int32)tVerts.GetSize(); j++)
-					{
-						if (tVerts[j].Position == pCur.Position)
-						{
-							tVerts.Erase(tVerts.Begin() + j);
-							break;
-						}
-					}
-
-					i = -1;
+					centroid += vertex.Position;
 				}
-
-				if (oIndices.GetSize() == 0)
-					break;
-
-				if (tVerts.GetSize() == 0)
-					break;
 			}
+
+			if (totalVertices == 0)
+				return;
+
+			centroid /= static_cast<float32>(totalVertices);
+
+			for (auto& mesh : meshes)
+			{
+				for (auto& vertex : mesh->GetVertices())
+				{
+					vertex.Position -= centroid;
+				}
+			}
+
+			ME::Core::Math::Vector3D32 newCentroid(0.0f, 0.0f, 0.0f);
+			int32 newTotalVertices = 0;
+			for (const auto& mesh : meshes)
+			{
+				newTotalVertices += mesh->GetVertices().GetSize();
+				for (const auto& vertex : mesh->GetVertices())
+				{
+					newCentroid += vertex.Position;
+				}
+			}
+			newCentroid /= static_cast<float32>(newTotalVertices);
 		}
 	}
 
-	AssetLoadResult AssetLoader::Load(const Pawn::Core::Containers::String& filePath, AssetFileFormats format)
+	AssetLoadResult AssetLoader::Load(const ME::Core::Containers::String& filePath, bool centered,
+		AssetFileFormats format)
 	{
 		switch (format)
 		{
 		case AssetFileFormats::OBJ:
-			return LoadOBJ(filePath.GetString());
+			return LoadOBJ(filePath.GetString(), centered);
+		case AssetFileFormats::TRG:
+		{
+			return LoadTGA(filePath.GetString());
+		}
 		default:
-			PE_ERROR("Unsupported asset format!: {}", (uint32)(format));
+			ME_ERROR("Unsupported asset format!: {}", static_cast<uint32>(format));
 			return AssetLoadResult();
 		}
 	}
 
-	AssetLoadResult AssetLoader::LoadOBJ(const uchar* filePath)
+	AssetLoadResult AssetLoader::LoadOBJ(const uchar* filePath, bool centered)
 	{
-		if (!Pawn::Core::IO::PFileExists(filePath))
+		if (!ME::Core::IO::PFileExists(filePath))
 		{
-			PE_ERROR(TEXT("File {0} not found!"), filePath);
+			ME_ERROR(TEXT("File {0} not found!"), filePath);
 			return AssetLoadResult();
 		}
-	
-		Pawn::Core::Memory::Reference <Pawn::Core::IO::File> file;
 
-		file = Pawn::Core::IO::POpenFile(filePath);
+		ME::Core::Memory::Reference<ME::Core::IO::File> file;
+
+		file = ME::Core::IO::POpenFile(filePath);
 		if (!file || !file->IsOpen())
 		{
-			PE_ERROR(TEXT("File is not opened! Error: {0}"),
-				file ? (uint32)file->GetFileLastError() : 0);
+			ME_ERROR(TEXT("File is not opened! Error: {0}"),
+				file ? static_cast<uint32>(file->GetFileLastError()) : 0);
 			return AssetLoadResult();
 		}
 
 		bool readingStarted = false;
 		AssetLoadResult result;
+		result.Meshes = ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Mesh>>();
 
-		result.Meshes = Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>>(10);
+		ME::Core::Memory::Reference<ME::Assets::Mesh> mesh;
 
-		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> positions(1000);
-		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector2D32> uvCoords(1000);
-		Pawn::Core::Containers::Array<Pawn::Core::Math::Vector3D32> normals(1000);
+		ME::Core::Containers::Array<Assets::Vertex> vertices(10000);
+		ME::Core::Containers::Array<uint32> indices(10000);
+		ME::Core::Containers::Array<Assets::Vertex> faceVertices(3);
+		ME::Core::Containers::Array<uint32> faceIndices(3);
+		ME::Core::Containers::UnorderedMap<Assets::Vertex, uint32> vertexToIndex(1000);
 
-		Pawn::Core::Memory::Reference<Pawn::Assets::Mesh> mesh;
-		Pawn::Core::Containers::String meshName;
-		Pawn::Core::Containers::Array<Assets::Vertex> vertices(1000);
-		Pawn::Core::Containers::Array<int32> indices(1000);
+		ME::Core::Containers::Array<ME::Core::Math::Vector3D32> positions(1000);
+		ME::Core::Containers::Array<ME::Core::Math::Vector2D32> uvCoords(1000);
+		ME::Core::Containers::Array<ME::Core::Math::Vector3D32> normals(1000);
 
-		Pawn::Core::Containers::String readStr;
-		while (file->Read(readStr, Pawn::Core::IO::StringReadMode::Line))
+		ME::Core::Containers::String meshName;
+		ME::Core::Containers::String line;
+		ME::Core::Containers::String token = TEXT("");
+		ME::Core::Containers::String value = TEXT("");
+		ME::Core::Containers::Array<ME::Core::Containers::String> values(4);
+		ME::Core::Containers::Array<ME::Core::Containers::String> faceValues(3);
+
+		vertices.Clear();
+		indices.Clear();
+		positions.Clear();
+		uvCoords.Clear();
+		normals.Clear();
+
+		while (file->Read(line, Core::IO::StringReadMode::Line))
 		{
-			if (LocalFunctions::GetToken(readStr) == TEXT("o") || LocalFunctions::GetToken(readStr) == TEXT("g") || LocalFunctions::GetToken(readStr)[0] == TEXT('g'))
-			{
-				if (!readingStarted)
-				{
-					readingStarted = true;
+			token = LocalFunctions::GetToken(line);
 
-					if (LocalFunctions::GetToken(readStr) == TEXT("o") || LocalFunctions::GetToken(readStr) == TEXT("g"))
-						meshName = LocalFunctions::GetTokenValues(readStr);
-					else
-						meshName = TEXT("unnamed");
+			if (token == TEXT("#")) continue;
+			else if (token == TEXT("o") || token == TEXT("g"))
+			{
+				if (!indices.Empty() && !vertices.Empty())
+				{
+					mesh = ME::Core::Memory::MakeReference<ME::Assets::Mesh>();
+					mesh->SetVertices(vertices);
+					mesh->SetIndices(indices);
+					mesh->SetGroupName(meshName);
+					mesh->CreateBuffers();
+					result.Meshes.EmplaceBack(mesh);
+
+					vertices.Clear();
+					indices.Clear();
+					meshName.Clear();
+					vertexToIndex.Clear();
+
+					meshName = LocalFunctions::GetTokenValues(line);
 				}
 				else
 				{
-					if (!indices.Empty() && !vertices.Empty())
+					meshName = LocalFunctions::GetTokenValues(line);
+				}
+			}
+			else if (token == TEXT("mtllib")) continue;
+			else if (token == TEXT("usemtl")) continue;
+			else if (token == TEXT("v"))
+			{
+				Core::Math::Vector3D32 position;
+				value = LocalFunctions::GetTokenValues(line);
+				LocalFunctions::Split(value, values, TEXT(" "));
+				position.X = static_cast<float32>(Core::Containers::StringToFloat(values[0], nullptr));
+				position.Y = static_cast<float32>(Core::Containers::StringToFloat(values[1], nullptr));
+				position.Z = static_cast<float32>(Core::Containers::StringToFloat(values[2], nullptr));
+				// W is ignored
+
+				positions.EmplaceBack(position);
+			}
+			else if (token == TEXT("vt"))
+			{
+				Core::Math::Vector2D32 coords;
+				value = LocalFunctions::GetTokenValues(line);
+				LocalFunctions::Split(value, values, TEXT(" "));
+				coords.X = static_cast<float32>(Core::Containers::StringToFloat(values[0], nullptr));
+				coords.Y = static_cast<float32>(Core::Containers::StringToFloat(values[1], nullptr));
+
+				uvCoords.EmplaceBack(coords);
+			}
+			else if (token == TEXT("vn"))
+			{
+				Core::Math::Vector3D32 normal;
+				value = LocalFunctions::GetTokenValues(line);
+				LocalFunctions::Split(value, values, TEXT(" "));
+				normal.X = static_cast<float32>(Core::Containers::StringToFloat(values[0], nullptr));
+				normal.Y = static_cast<float32>(Core::Containers::StringToFloat(values[1], nullptr));
+				normal.Z = static_cast<float32>(Core::Containers::StringToFloat(values[2], nullptr));
+
+				normals.EmplaceBack(normal);
+			}
+			else if (token == TEXT("vp")) continue;
+			else if (token == TEXT("f"))
+			{	
+				value = LocalFunctions::GetTokenValues(line);
+				LocalFunctions::Split(value, values, TEXT(" "));
+				if (values.GetSize() < 3)
+					continue;
+
+				for (const Core::Containers::String& val : values)
+				{
+					LocalFunctions::Split(val, faceValues, TEXT("/"));
+
+					Assets::Vertex vertex;
+					vertex.Position = LocalFunctions::FindElement(positions, faceValues[0]);
+					if (faceValues.GetSize() > 1 && !faceValues[1].Empty()) {
+						vertex.TextureCoords = LocalFunctions::FindElement(uvCoords, faceValues[1]);
+					}
+					if (faceValues.GetSize() > 2 && !faceValues[2].Empty()) {
+						vertex.Normal = LocalFunctions::FindElement(normals, faceValues[2]);
+					}
+					indices.PushBack(vertices.GetSize());
+					vertices.EmplaceBack(vertex);
+				}
+#if 0
+				value = LocalFunctions::GetTokenValues(line);
+				LocalFunctions::Split(value, values, TEXT(" "));
+				if (values.GetSize() < 3)
+					continue;
+
+				faceVertices.Clear();
+				faceIndices.Clear();
+
+				for (const Core::Containers::String& val : values)
+				{
+					LocalFunctions::Split(val, faceValues, TEXT("/"));
+
+					Assets::Vertex vertex;
+					vertex.Position = LocalFunctions::FindElement(positions, faceValues[0]);
+					if (faceValues.GetSize() > 1 && !faceValues[1].Empty()) {
+						vertex.TextureCoords = LocalFunctions::FindElement(uvCoords, faceValues[1]);
+					}
+					if (faceValues.GetSize() > 2 && !faceValues[2].Empty()) {
+						vertex.Normal = LocalFunctions::FindElement(normals, faceValues[2]);
+					}
+					faceVertices.EmplaceBack(vertex);
+				}
+
+				Triangulate(faceVertices, faceIndices);
+
+				for (uint32 li : faceIndices)
+				{
+					const Assets::Vertex& v = faceVertices[li];
+
+					auto iter = vertexToIndex.Find(v);
+					uint32 globalIdx;
+					if (iter != vertexToIndex.End())
 					{
-						mesh = Pawn::Core::Memory::Reference<Pawn::Assets::Mesh>(new Pawn::Assets::Mesh());
-						mesh->SetVertexes(vertices);
-						mesh->SetIndexes(indices);
-						mesh->SetGroupName(meshName);
-						mesh->CreateBuffers();
-						result.Meshes.EmplaceBack(mesh);
-
-						vertices.Clear();
-						indices.Clear();
-						meshName.Clear();
-
-						meshName = LocalFunctions::GetTokenValues(readStr);
+						globalIdx = iter->Value2;
 					}
 					else
 					{
-						if (LocalFunctions::GetToken(readStr) == TEXT("o") || LocalFunctions::GetToken(readStr) == TEXT("g"))
-							meshName = LocalFunctions::GetTokenValues(readStr);
-						else
-							meshName = TEXT("unnamed");
+						globalIdx = static_cast<uint32>(vertices.GetSize());
+						vertices.EmplaceBack(v);
+						vertexToIndex[v] = globalIdx;
 					}
+
+					indices.EmplaceBack(globalIdx);
 				}
+#endif
 			}
-
-			if (LocalFunctions::GetToken(readStr) == TEXT("v"))
-			{
-				Pawn::Core::Containers::Array<Pawn::Core::Containers::String> spos;
-				Pawn::Core::Math::Vector3D32 vpos;
-				LocalFunctions::Split(LocalFunctions::GetTokenValues(readStr), spos, Pawn::Core::Containers::String(TEXT(" ")));
-
-				vpos.X = (float32)Pawn::Core::Containers::StringToFloat(spos[0], nullptr);
-				vpos.Y = (float32)Pawn::Core::Containers::StringToFloat(spos[1], nullptr);
-				vpos.Z = (float32)Pawn::Core::Containers::StringToFloat(spos[2], nullptr);
-
-				positions.EmplaceBack(vpos);
-			}
-			if (LocalFunctions::GetToken(readStr) == TEXT("vt"))
-			{
-				Pawn::Core::Containers::Array<Pawn::Core::Containers::String> stex;
-				Pawn::Core::Math::Vector2D32 vtex;
-				LocalFunctions::Split(LocalFunctions::GetTokenValues(readStr), stex, Pawn::Core::Containers::String(TEXT(" ")));
-
-				vtex.X = (float32)Pawn::Core::Containers::StringToFloat(stex[0], nullptr);
-				vtex.Y = (float32)Pawn::Core::Containers::StringToFloat(stex[1], nullptr);
-
-				uvCoords.EmplaceBack(vtex);
-			}
-			if (LocalFunctions::GetToken(readStr) == TEXT("vn"))
-			{
-				Pawn::Core::Containers::Array<Pawn::Core::Containers::String> snor;
-				Pawn::Core::Math::Vector3D32 vnor;
-				LocalFunctions::Split(LocalFunctions::GetTokenValues(readStr), snor, Pawn::Core::Containers::String(TEXT(" ")));
-
-				vnor.X = (float32)Pawn::Core::Containers::StringToFloat(snor[0], nullptr);
-				vnor.Y = (float32)Pawn::Core::Containers::StringToFloat(snor[1], nullptr);
-				vnor.Z = (float32)Pawn::Core::Containers::StringToFloat(snor[2], nullptr);
-
-				normals.EmplaceBack(vnor);
-			}
-			if (LocalFunctions::GetToken(readStr) == TEXT("f"))
-			{
-				Pawn::Core::Containers::Array<Assets::Vertex> tempVertices;
-				Pawn::Core::Containers::Array<int32> tempIndices;
-				LocalFunctions::GenVerticesFromRawOBJ(tempVertices, positions, uvCoords, normals, readStr);
-				
-				for (int32 i = 0; i < (int32)tempVertices.GetSize(); i++)
-					vertices.PushBack(tempVertices[i]);
-
-				LocalFunctions::VertexTriangluation(indices, tempVertices);
-
-				for (int i = 0; i < int(tempIndices.GetSize()); i++)
-				{
-					indices.EmplaceBack((int32)((vertices.GetSize()) - tempVertices.GetSize()) + tempIndices[i]);
-				}
-			}
+			else if (token == TEXT("l")) continue;
+			else if (token == TEXT("s")) continue;
 		}
 		if (!indices.Empty() && !vertices.Empty())
 		{
-			mesh = Pawn::Core::Memory::Reference<Pawn::Assets::Mesh>(new Pawn::Assets::Mesh());
-			mesh->SetVertexes(vertices);
-			mesh->SetIndexes(indices);
+			mesh = ME::Core::Memory::MakeReference<ME::Assets::Mesh>();
+			mesh->SetVertices(vertices);
+			mesh->SetIndices(indices);
 			mesh->SetGroupName(meshName);
 			mesh->CreateBuffers();
 			result.Meshes.EmplaceBack(mesh);
 		}
 
-		file->Close();
+		if (centered) {
+			LocalFunctions::CenterMeshGroup(result.Meshes);
+		}
 
+		file->Close();
 		return result;
+	}
+
+	AssetLoadResult AssetLoader::LoadTGA(const uchar* filePath)
+	{
+		if (!ME::Core::IO::PFileExists(filePath))
+		{
+			ME_ERROR(TEXT("File {0} not found!"), filePath);
+			return {};
+		}
+
+		auto file = ME::Core::IO::POpenFile(filePath);
+		if (!file || !file->IsOpen())
+		{
+			ME_ERROR(TEXT("File is not opened! Error: {0}"),
+				file ? static_cast<uint32>(file->GetFileLastError()) : 0);
+			return {};
+		}
+
+		uint8* data = nullptr;
+		SIZE_T size = 0;
+		size = file->GetFileSize();
+		data = new uint8[size];
+
+		if (!file->ReadBinary(data, size))
+		{
+			ME_ERROR(TEXT("Failed to read file! Error: {0}"),
+				file ? static_cast<uint32>(file->GetFileLastError()) : 0);
+			return {};
+		}
+
+		if (size < sizeof(TRGHeader))
+		{
+			ME_ERROR(TEXT("Invalid TGA file size"));
+			delete[] data;
+			return {};
+		}
+
+		TRGHeader header;
+		memcpy(&header, data, sizeof(TRGHeader));
+
+		ME::Core::Math::Resolution2D<uint32> resolution{ header.width, header.height };
+
+		if (header.pixelDepth != BIT(5))
+		{
+			ME_ERROR(TEXT("Unsupported \"{1}\" file! Error: {0}"),
+				file ? static_cast<uint32>(file->GetFileLastError()) : 0, filePath);
+			delete[] data;
+			return {};
+		}
+
+		SIZE_T imageSize = size - sizeof(TRGHeader);
+		uint8* targaData = new uint8[imageSize];
+		memcpy(targaData, data + sizeof(TRGHeader), imageSize);
+
+		uint8* imageData = new uint8[imageSize];
+		delete[] data;
+
+		int32 index = 0;
+		int32 k = imageSize - resolution.x * 4;
+
+		for (int32 j = 0; j < resolution.y; j++)
+		{
+			for (int32 i = 0; i < resolution.x; i++)
+			{
+				imageData[index + 0] = targaData[k + 2];
+				imageData[index + 1] = targaData[k + 1];
+				imageData[index + 2] = targaData[k + 0];
+				imageData[index + 3] = targaData[k + 3];
+
+				k += 4;
+				index += 4;
+			}
+			k -= resolution.x * 8;
+		}
+
+		delete[] targaData;
+
+		AssetLoadResult result;
+		result.Images.PushBack(ME::Core::Memory::Reference<Assets::Image>(new Assets::Image(imageData, imageSize, resolution, file->GetFileInfo().Name)));
+
+		file->Close();
+		return result;
+	}
+
+
+	ME::Core::Math::Vector3D32 AssetLoader::CalculateNormal(const ME::Core::Containers::Array<Assets::Vertex>& vertices)
+	{
+		ME::Core::Math::Vector3D32 normal(0.0f, 0.0f, 0.0f);
+
+		for (int32 i = 0; i < static_cast<int32>(vertices.GetSize()); ++i)
+		{
+			int32 j = (i + 1) % vertices.GetSize();
+			const auto& pi = vertices[i].Position;
+			const auto& pj = vertices[j].Position;
+			normal.X += (pi.Y - pj.Y) * (pi.Z + pj.Z);
+			normal.Y += (pi.Z - pj.Z) * (pi.X + pj.X);
+			normal.Z += (pi.X - pj.X) * (pi.Y + pj.Y);
+		}
+
+		float32 len = normal.Length();
+		if (len > 1e-6f)
+		{
+			normal /= len;
+		}
+		else
+		{
+			normal = ME::Core::Math::Vector3D32(0.0f, 0.0f, 1.0f);
+		}
+		return normal;
+	}
+
+	void AssetLoader::ProjectTo2D(const ME::Core::Containers::Array<Assets::Vertex>& vertices,
+	                              ME::Core::Containers::Array<ME::Core::Math::Vector2D32>& out2D)
+	{
+		Core::Math::Vector3D32 normal = CalculateNormal(vertices).Abs();
+
+		int32 dropAxis = 0;
+		if (normal.y > normal.x && normal.y > normal.z) dropAxis = 1;
+		else if (normal.z > normal.x && normal.z > normal.y) dropAxis = 2;
+
+		out2D.Clear();
+		out2D.Reserve(vertices.GetSize());
+		for (auto& v : vertices)
+		{
+			if (dropAxis == 0) out2D.EmplaceBack(ME::Core::Math::Vector2D32{ v.Position.y, v.Position.z });
+			else if (dropAxis == 1) out2D.EmplaceBack(ME::Core::Math::Vector2D32{ v.Position.x, v.Position.z });
+			else out2D.EmplaceBack(ME::Core::Math::Vector2D32{ v.Position.x, v.Position.y });
+		}
+	}
+
+	bool AssetLoader::IsPointInTriangle(const ME::Core::Math::Vector2D32& pt, const ME::Core::Math::Vector2D32& a,
+		const ME::Core::Math::Vector2D32& b, const ME::Core::Math::Vector2D32& c)
+	{
+		bool b1 = SIGN(pt, a, b) < 0.0f;
+		bool b2 = SIGN(pt, b, c) < 0.0f;
+		bool b3 = SIGN(pt, c, a) < 0.0f;
+
+		return (b1 == b2) && (b2 == b3);
+	}
+
+	bool AssetLoader::IsEar(int i, const ME::Core::Containers::Array<ME::Core::Math::Vector2D32>& poly,
+		const ME::Core::Containers::Array<uint32>& idx)
+	{
+		int prev = idx[(i + idx.GetSize() - 1) % idx.GetSize()];
+		int curr = idx[i];
+		int next = idx[(i + 1) % idx.GetSize()];
+
+		const ME::Core::Math::Vector2D32& a = poly[prev];
+		const ME::Core::Math::Vector2D32& b = poly[curr];
+		const ME::Core::Math::Vector2D32& c = poly[next];
+
+		float cross = (b.x - a.x) * (c.y - a.y) -
+			(b.y - a.y) * (c.x - a.x);
+		if (cross <= 0) return false;
+
+		for (uint32 j = 0; j < idx.GetSize(); j++)
+		{
+			if (j == static_cast<uint32>(i) || j == static_cast<uint32>((i + 1) % idx.GetSize()) || j == static_cast<uint32>((i + idx.GetSize() - 1) % idx.GetSize()))
+				continue;
+			if (IsPointInTriangle(poly[idx[j]], a, b, c))
+				return false;
+		}
+
+		return true;
+	}
+
+	void AssetLoader::Triangulate(const ME::Core::Containers::Array<Assets::Vertex>& vertices,
+		ME::Core::Containers::Array<uint32>& indicesOut)
+	{
+		Core::Containers::Array<ME::Core::Math::Vector2D32> projected;
+		ProjectTo2D(vertices, projected);
+
+		Core::Containers::Array<uint32> idx;
+		for (uint32 i = 0; i < vertices.GetSize(); i++)
+			idx.EmplaceBack(i);
+
+		while (idx.GetSize() > 3)
+		{
+			bool earFound = false;
+			for (uint32 i = 0; i < idx.GetSize(); i++)
+			{
+				if (IsEar(i, projected, idx))
+				{
+					uint32 prev = idx[(i + idx.GetSize() - 1) % idx.GetSize()];
+					uint32 curr = idx[i];
+					uint32 next = idx[(i + 1) % idx.GetSize()];
+
+					indicesOut.EmplaceBack(prev);
+					indicesOut.EmplaceBack(curr);
+					indicesOut.EmplaceBack(next);
+
+					idx.Erase(idx.Begin() + i);
+					earFound = true;
+					break;
+				}
+			}
+
+			if (!earFound)
+			{
+				break;
+			}
+		}
+
+		if (idx.GetSize() == 3)
+		{
+			indicesOut.EmplaceBack(idx[0]);
+			indicesOut.EmplaceBack(idx[1]);
+			indicesOut.EmplaceBack(idx[2]);
+		}
 	}
 }

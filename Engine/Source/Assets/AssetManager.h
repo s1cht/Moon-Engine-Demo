@@ -1,19 +1,20 @@
 #pragma once
 
-#include <Core.h>
-#include <Core/Utils/Logging/Logger.h>
+#include <Core.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
 
 #include "Mesh.h"
 #include "Utility/AssetLoader.h"
 
-import Pawn.Core.Memory;
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
-import Pawn.Core.Container.StringView;
+#include <Core/Memory/Memory.hpp>
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/String/String.hpp>
 
-namespace Pawn::Assets
+#include "Renderer/Base/Texture.h"
+
+namespace ME::Assets
 {
-	class PAWN_API AssetManager
+	class MOON_API AssetManager
 	{
 	public:
 		AssetManager();
@@ -21,8 +22,9 @@ namespace Pawn::Assets
 		~AssetManager();
 
 	public:
-		bool LoadAsset(const Pawn::Core::Containers::String& path);
-		Pawn::Core::Memory::Reference<Assets::Mesh> GetMesh(const Pawn::Core::Containers::String& meshName);
+		bool LoadAsset(const ME::Core::Containers::String& path, bool centered = false);
+		ME::Core::Memory::Reference<Assets::Mesh> GetMesh(const ME::Core::Containers::String& meshName);
+		ME::Core::Memory::Reference<Assets::Image> GetImage(const ME::Core::Containers::String& imageName);
 
 	public:
 		static AssetManager& Get()
@@ -30,13 +32,14 @@ namespace Pawn::Assets
 			static AssetManager instance;
 			return instance;
 		}
-		inline static bool Load(const Pawn::Core::Containers::String& path) { return Get().LoadAsset(path); }
+		inline static bool Load(const ME::Core::Containers::String& path, bool centered = false) { return Get().LoadAsset(path, centered); }
 
 	private:
-		Pawn::Utility::AssetFileFormats GetExtension(const Pawn::Core::Containers::String& path) const;
+		ME::Utility::AssetFileFormats GetExtension(const ME::Core::Containers::String& path) const;
 
 	private:
-		Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
+		ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
+		ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Image>> m_Images;
 		//Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
 		//Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
 

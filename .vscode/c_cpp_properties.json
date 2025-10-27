@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/bin/../lib/gcc/aarch64-linux-gnu/14/../../../../include/c++/14",
+                "/usr/bin/../lib/gcc/aarch64-linux-gnu/14/../../../../include/aarch64-linux-gnu/c++/14",
+                "/usr/bin/../lib/gcc/aarch64-linux-gnu/14/../../../../include/c++/14/backward",
+                "/usr/lib/llvm-18/lib/clang/18/include",
+                "/usr/local/include",
+                "/usr/include/aarch64-linux-gnu",
+                "/usr/include",
+                "${workspaceFolder}/EngineCore",
+                "${workspaceFolder}/Sandbox",
+                "${workspaceFolder}/Engine",
+                "${workspaceFolder}/Engine/Source",
+                "${workspaceFolder}/Engine/vendor/ImGui",
+                "${workspaceFolder}/Engine/vendor/spdlog",
+                "${workspaceFolder}/vendor/xxHash",
+                "${VULKAN_SDK}/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "linux-clang-arm64"
+        }
+    ],
+    "version": 4
+}

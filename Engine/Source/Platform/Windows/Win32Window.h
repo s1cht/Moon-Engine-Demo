@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Core.h>
+#include <Core.hpp>
 #include "Platform/Base/Window.h"
 
-namespace Pawn 
+namespace ME 
 {
-	class PAWN_API Win32Window : public Window
+	class MOON_API Win32Window : public Window
 	{
 	public:
 		Win32Window(const WindowProperties& properties);
@@ -15,8 +15,8 @@ namespace Pawn
 		virtual void SetEventCallback(const EventCallbackFunc& callback) override;
 
 	public:
-		virtual float32 GetWidth() override;
-		virtual float32 GetHeight() override;
+		virtual float32 GetWidth() const override;
+		virtual float32 GetHeight() const override;
 
 		inline HWND GetWindowHandle() { return m_Window; };
 

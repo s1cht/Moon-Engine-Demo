@@ -1,70 +1,106 @@
 #include "Mesh.h"
 
-namespace Pawn::Assets
+namespace ME::Assets
 {
-	Pawn::Assets::Mesh::Mesh()
-		: m_GroupName(TEXT("default"))
+	ME::Assets::Mesh::Mesh()
+		: m_GroupName(TEXT("default")), m_Valid(false)
 	{
-		m_Vertexes = Pawn::Core::Containers::Array<Vertex>();
-		m_Indexes = Pawn::Core::Containers::Array<int32>();
+		m_Vertices = ME::Core::Containers::Array<Vertex>();
+		m_Indices = ME::Core::Containers::Array<uint32>();
 	}
 
-	Pawn::Assets::Mesh::Mesh(const Pawn::Core::Containers::String& groupName)
-		: m_GroupName(groupName)
+	ME::Assets::Mesh::Mesh(const ME::Core::Containers::String& groupName)
+		: m_GroupName(groupName), m_Valid(false)
 	{
-		m_Vertexes = Pawn::Core::Containers::Array<Vertex>();
-		m_Indexes = Pawn::Core::Containers::Array<int32>();
+		m_Vertices = ME::Core::Containers::Array<Vertex>();
+		m_Indices = ME::Core::Containers::Array<uint32>();
 	}
 
-	Pawn::Assets::Mesh::~Mesh()
+	ME::Assets::Mesh::~Mesh()
 	{
-
+		if (m_VertexBuffer != nullptr)
+		{
+			m_VertexBuffer->Shutdown();
+			m_VertexBuffer = nullptr;
+		}
+		if (m_IndexBuffer != nullptr)
+		{
+			m_IndexBuffer->Shutdown();
+			m_IndexBuffer = nullptr;
+		}
 	}
 
-	Pawn::Core::Memory::Reference<Pawn::Render::VertexBuffer> Pawn::Assets::Mesh::GetVertexBuffer()
+	void Mesh::SetIndices(const ME::Core::Containers::Array<uint32>& indices)
 	{
-		return m_VertexBuffer;
+		m_Indices = indices;
 	}
 
-	Pawn::Core::Memory::Reference<Pawn::Render::IndexBuffer> Pawn::Assets::Mesh::GetIndexBuffer()
+	void Mesh::SetVertices(const ME::Core::Containers::Array<Vertex>& vertices)
 	{
-		return m_IndexBuffer;
+		m_Vertices = vertices;
 	}
 
-	void Mesh::SetVertexes(const Pawn::Core::Containers::Array<Vertex>& vertexes)
-	{
-		m_Vertexes = vertexes;
-	}
-
-	void Mesh::SetIndexes(const Pawn::Core::Containers::Array<int32>& indexes)
-	{
-		m_Indexes = indexes;
-	}
-
-	void Mesh::SetGroupName(const Pawn::Core::Containers::String& groupName)
+	void Mesh::SetGroupName(ME::Core::Containers::String groupName)
 	{
 		m_GroupName = groupName;
 	}
 
-	void Mesh::SetVertexes(Pawn::Core::Containers::Array<Vertex>&& vertexes)
+	void Mesh::SetVertices(ME::Core::Containers::Array<Vertex>&& vertices)
 	{
-		m_Vertexes = Pawn::Core::Containers::Array<Vertex>(std::move(vertexes));
+		m_Vertices = ME::Core::Containers::Array<Vertex>(std::move(vertices));
 	}
 
-	void Mesh::SetIndexes(Pawn::Core::Containers::Array<int32>&& indexes)
+	void Mesh::SetIndices(ME::Core::Containers::Array<uint32>&& indexes)
 	{
-		m_Indexes = Pawn::Core::Containers::Array<int32>(std::move(indexes));
+		m_Indices = ME::Core::Containers::Array<uint32>(std::move(indexes));
 	}
 
-	void Mesh::SetGroupName(Pawn::Core::Containers::String&& groupName)
+	void Mesh::SetGroupName(ME::Core::Containers::String&& groupName)
 	{
 		m_GroupName = std::move(groupName);
 	}
 
-	void Mesh::CreateBuffers()
+	void Mesh::Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer)
 	{
-		m_VertexBuffer.reset(Pawn::Render::VertexBuffer::Create(const_cast<Vertex*>(m_Vertexes.Data()), sizeof(Pawn::Assets::Vertex) * m_Vertexes.GetSize(), Pawn::Render::Usage::Default));
-		m_IndexBuffer.reset(Pawn::Render::IndexBuffer::Create(const_cast<int32*>(m_Indexes.Data()), (uint32)m_Indexes.GetSize(), Pawn::Render::Usage::Default));
+		m_VertexBuffer->Bind(commandBuffer);
+		m_IndexBuffer->Bind(commandBuffer);
 	}
 
+	void Mesh::Unbind() const
+	{
+		m_VertexBuffer->Unbind();
+		m_IndexBuffer->Unbind();
+	}
+
+	void Mesh::CreateBuffers()
+	{
+		Render::VertexBufferSpecification vbSpecification = {};
+		vbSpecification.Size = m_Vertices.GetSize() * sizeof(ME::Assets::Vertex);
+		vbSpecification.DebugName = m_GroupName;
+
+		Render::IndexBufferSpecification ibSpecification = {};
+		ibSpecification.IndexCount = static_cast<uint32>(m_Indices.GetSize());
+		ibSpecification.DebugName = m_GroupName;
+
+		if (m_VertexBuffer != nullptr)
+			m_VertexBuffer->Shutdown();
+		if (m_IndexBuffer != nullptr)
+			m_IndexBuffer->Shutdown();
+
+		m_VertexBuffer = nullptr;
+		m_IndexBuffer = nullptr;
+
+		m_VertexBuffer = ME::Render::VertexBuffer::Create(vbSpecification);
+		m_IndexBuffer = ME::Render::IndexBuffer::Create(ibSpecification);
+
+		m_Valid = false;
+	}
+
+	void Mesh::UpdateBuffers(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer)
+	{
+		if (m_Valid == true) return;
+		m_VertexBuffer->SetData(commandBuffer, static_cast<void*>(m_Vertices.Data()), m_Vertices.GetSize() * sizeof(Vertex));
+		m_IndexBuffer->SetData(commandBuffer, m_Indices.Data(), m_Indices.GetSize());
+		m_Valid = true;
+	}
 }

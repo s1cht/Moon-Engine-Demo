@@ -3,11 +3,13 @@
 #include "Renderer/Renderer.h"
 #include "Application/Application.h"
 
-#include <Core/Misc/Assertion.h>
+#include <Core/Misc/Time.hpp>
 
-import Pawn.Core.Clock;
+#include "Renderer/API/Vulkan/VulkanCommandBuffer.h"
+#include "Renderer/API/Vulkan/VulkanRenderAPI.h"
+#include "Renderer/API/Vulkan/VulkanRenderPass.h"
 
-namespace Pawn::Render::Imgui
+namespace ME::Render::Imgui
 {
 	ImGuiLayer::ImGuiLayer()
 		: Layer(TEXT("ImGuiLayer"))
@@ -20,10 +22,10 @@ namespace Pawn::Render::Imgui
 
 	void ImGuiLayer::OnAttach()
 	{
-		RendererAPI::API renderAPI = Renderer::GetRenderAPI();
-		if (renderAPI == RendererAPI::API::None)
+		RenderAPI::API renderAPI = Renderer::GetRenderAPI();
+		if (renderAPI == RenderAPI::API::None)
 		{
-			PE_INFO(TEXT("Disabling ImGui layer, because RenderAPI is ::None"));
+			ME_INFO(TEXT("Disabling ImGui layer, because RenderAPI is ::None"));
 			m_Disabled = true;
 			return;
 		}
@@ -46,25 +48,41 @@ namespace Pawn::Render::Imgui
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
+		m_ResourceHandler = Render::ResourceHandler::Create(RenderCommand::Get()->GetSwapChain()->GetFrameCount());
+		CreateRenderResources();
+
 		switch (renderAPI)
 		{
-			case RendererAPI::API::Vulkan: PE_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
-#ifdef PLATFORM_WINDOWS
-			case RendererAPI::API::DirectX11:
+			case RenderAPI::API::Vulkan:
 			{
-				Win32Window& window = *static_cast<Win32Window*>(Application::Get().GetWindow());
-				DirectX11Renderer& renderer = *static_cast<DirectX11Renderer*>(RenderCommand::Get());
+				ImGui_ImplVulkan_InitInfo info = {};
+				info.Instance = RenderCommand::Get()->As<VulkanRenderAPI>()->GetInstance();
+				info.PhysicalDevice = RenderCommand::Get()->As<VulkanRenderAPI>()->GetPhysicalDevice();
+				info.Device = RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice();
+				info.Queue = RenderCommand::Get()->As<VulkanRenderAPI>()->GetGraphicsQueue();
+				info.DescriptorPool = m_ResourceHandler->As<VulkanResourceHandler>()->GetDescriptorPool();
+				info.Allocator = nullptr;
+				info.RenderPass = m_RenderPass->As<VulkanRenderPass>()->GetRenderPass();
+				info.Subpass = 0;
+				info.ImageCount = 2;
+				info.MinImageCount = 2;
+				info.ApiVersion = VK_API_VERSION_1_4;
+				info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
-				ImGui_ImplWin32_Init(window.GetWindowHandle());
-				ImGui_ImplDX11_Init(renderer.GetDevice(), renderer.GetDeviceContext());
+				ImGui_ImplVulkan_Init(&info);
 
 				break;
-			};
-			case RendererAPI::API::DirectX12: PE_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+			}
+#ifdef PLATFORM_WINDOWS
+			case RenderAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
 #elif PLATFORM_MAC
-			case RendererAPI::API::Metal: PE_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+			case RenderAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
 #endif
 		}
+
+#ifdef PLATFORM_WINDOWS
+		ImGui_ImplWin32_Init(static_cast<Win32Window*>(Application::Get().GetWindow())->GetWindowHandle());
+#endif
 	}
 
 	void ImGuiLayer::OnDetach()
@@ -75,7 +93,7 @@ namespace Pawn::Render::Imgui
 		Shutdown();
 	}
 
-	void ImGuiLayer::OnEvent(Pawn::Core::Event& event)
+	void ImGuiLayer::OnEvent(ME::Core::Event& event)
 	{
 		if (m_EnabledEvents)
 		{
@@ -98,15 +116,15 @@ namespace Pawn::Render::Imgui
 		if (ImGui::Begin("DeltaTime", &visible))
 		{
 			ImGui::Text("%.5f", deltaTime);
-			ImGui::Text("A FPS: %d", Pawn::Core::Clock::Time::GetAverageFPS());
-			ImGui::Text("I FPS: %d", Pawn::Core::Clock::Time::GetInstantFPS());
+			ImGui::Text("A FPS: %d", ME::Core::Clock::Time::GetAverageFPS());
+			ImGui::Text("I FPS: %d", ME::Core::Clock::Time::GetInstantFPS());
 		}
 		ImGui::End();
 	}
 
 	void ImGuiLayer::BeginRender()
 	{
-		RendererAPI::API renderAPI;
+		RenderAPI::API renderAPI;
 		if (m_Disabled)
 			return;
 
@@ -115,16 +133,15 @@ namespace Pawn::Render::Imgui
 
 		switch (renderAPI)
 		{
-		case RendererAPI::API::Vulkan: PE_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
+			case RenderAPI::API::Vulkan:
+			{
+				ImGui_ImplVulkan_NewFrame();
+				break;
+			}
 #ifdef PLATFORM_WINDOWS
-		case RendererAPI::API::DirectX11:
-		{
-			ImGui_ImplDX11_NewFrame();
-			break;
-		};
-		case RendererAPI::API::DirectX12: PE_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+		case RenderAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
 #elif PLATFORM_MAC
-		case RendererAPI::API::Metal: PE_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+		case RenderAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
 #endif
 		}
 
@@ -134,21 +151,19 @@ namespace Pawn::Render::Imgui
 		ImGui::NewFrame();
 	}
 
-	void ImGuiLayer::EndRender()
+	void ImGuiLayer::EndRender(const ME::Core::Memory::Reference<ME::Render::CommandBuffer>& commandBuffer)
 	{
 		if (m_Disabled)
 			return;
 
 		ImGui::SetCurrentContext(m_ImGuiContext);
 		ImGui::Render();
-#ifdef PLATFORM_WINDOWS
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-#endif 
+		Render(commandBuffer);
 	}
 
 	void ImGuiLayer::Shutdown()
 	{
-		RendererAPI::API renderAPI;
+		RenderAPI::API renderAPI;
 		if (m_Disabled)
 			return;
 
@@ -157,16 +172,17 @@ namespace Pawn::Render::Imgui
 
 		switch (renderAPI)
 		{
-		case RendererAPI::API::Vulkan: PE_ASSERT(false, TEXT("RenderAPI::Vulkan is unsupported")); break;
-#ifdef PLATFORM_WINDOWS
-		case RendererAPI::API::DirectX11:
+		case RenderAPI::API::Vulkan:
 		{
-			ImGui_ImplDX11_Shutdown();
+			ImGui_ImplVulkan_Shutdown();
+			m_RenderPass->Shutdown();
+			m_ResourceHandler->Shutdown();
 			break;
-		};
-		case RendererAPI::API::DirectX12: PE_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
+		}
+#ifdef PLATFORM_WINDOWS
+		case RenderAPI::API::DirectX12: ME_ASSERT(false, TEXT("RenderAPI::DirectX12 is unsupported")); break;
 #elif PLATFORM_MAC
-		case RendererAPI::API::Metal: PE_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
+		case RenderAPI::API::Metal: ME_ASSERT(false, TEXT("RenderAPI::Metal is unsupported")); break;
 #endif
 		}
 
@@ -178,10 +194,68 @@ namespace Pawn::Render::Imgui
 		m_ImGuiContext = nullptr;
 	}
 
+	void ImGuiLayer::Render(const ME::Core::Memory::Reference<ME::Render::CommandBuffer>& commandBuffer)
+	{
+		if (Renderer::GetRenderAPI() != Render::RenderAPI::API::Vulkan) return;
+		ImDrawData* drawData = ImGui::GetDrawData();
+
+		Render::ClearValue clrVal = {};
+		clrVal.ColorClearValue = Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f);
+
+		Render::RenderPassBeginInfo beginInfo = {};
+		beginInfo.RenderPass = m_RenderPass;
+		beginInfo.Framebuffer = Render::RenderCommand::GetAvailableFramebuffer();
+		beginInfo.ClearValues = { clrVal };
+		beginInfo.RenderArea = {};
+		beginInfo.RenderArea.Offset = { 0,0 };
+		beginInfo.RenderArea.Extent = Render::RenderCommand::Get()->GetSwapChain()->GetExtent();
+
+		Render::RenderCommand::BeginRenderPass(commandBuffer, beginInfo);
+
+		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer->As<VulkanCommandBuffer>()->GetBuffer());
+
+		Render::RenderCommand::EndRenderPass(commandBuffer);
+	}
+
+	void ImGuiLayer::CreateRenderResources()
+	{
+		ME::Core::Containers::Array<Render::AttachmentSpecification> attachments;
+		Render::AttachmentSpecification attachmentSpecs = {};
+		attachmentSpecs.IsStencil = false;
+		attachmentSpecs.IsDepth = false;
+		attachmentSpecs.AttachmentFormat = RenderCommand::Get()->GetSwapChain()->GetImages()[0]->GetSpecification().Format;
+		attachmentSpecs.LoadOp = Render::LoadOperation::Load;
+		attachmentSpecs.StoreOp = Render::StoreOperation::Store;
+		attachmentSpecs.InitialLayout = Render::ImageLayout::Present;
+		attachmentSpecs.FinalLayout = Render::ImageLayout::Present;
+		attachmentSpecs.SampleCount = Render::SampleCount::Count1;
+
+		attachments.EmplaceBack(attachmentSpecs);
+
+		Render::SubpassSpecification subpass = {};
+		subpass.ColorAttachmentRefs = { 0 };
+		subpass.DepthStencilAttachmentRef = ~0u;
+		subpass.PipelineBindPoint = Render::PipelineBindPoint::Graphics;
+
+		Render::SubpassDependency subpassDependency = {};
+		subpassDependency.SubpassSrc = ~0u;
+		subpassDependency.AccessFlagsDst = Render::AccessFlags::DepthStencilWrite | Render::AccessFlags::ColorAttachmentWrite;
+		subpassDependency.PipelineStageFlagsSrc = Render::PipelineStageFlags::ColorAttachmentOutput | Render::PipelineStageFlags::EarlyFragmentTests;
+		subpassDependency.PipelineStageFlagsDst = Render::PipelineStageFlags::ColorAttachmentOutput | Render::PipelineStageFlags::EarlyFragmentTests;
+
+		Render::RenderPassSpecification rpSpecs = {};
+		rpSpecs.AttachmentSpecs = attachments;
+		rpSpecs.SubpassSpecs = { subpass };
+		rpSpecs.SubpassDependencies = { subpassDependency };
+		rpSpecs.DebugName = "ImGui render pass";
+
+		m_RenderPass = Render::RenderPass::Create(rpSpecs);
+	}
+
 	void ImGuiLayer::PostRender()
 	{
-#ifdef PLATFORM_WINDOWS
 		ImGuiIO& io = ImGui::GetIO();
+#ifdef PLATFORM_WINDOWS
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			ImGui::UpdatePlatformWindows();

@@ -1,9 +1,7 @@
-#include "Matrix3x3.h"
-#include "Quaternion.h"
+#include "Matrix3x3.hpp"
+#include "Core/Math/Quaternion.hpp"
 
-#define MAT2x2_DET(a, b, c, d) (a * d - b * c)
-
-namespace Pawn::Core::Math
+namespace ME::Core::Math
 {
 	PMatrix3x3 operator*(const float32& scalar, const PMatrix3x3& mat)
 	{

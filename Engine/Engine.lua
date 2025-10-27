@@ -1,15 +1,10 @@
 project "Engine"
-
-	if string.sub(_ACTION, 1, 5) == "gmake" then
-		error "GCC is not supported yet. Waiting for full C++20 modules support."
-	end
-
 	kind "SharedLib"
 	language "C++"
-	cppdialect "C++20"
+	cppdialect "C++23"
 	staticruntime "off"
-	allmodulespublic "on"
-	scanformoduledependencies "on"
+	allmodulespublic "off"
+	scanformoduledependencies "off"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
@@ -19,62 +14,73 @@ project "Engine"
 	files 
 	{
 		"Source/**.h",
+		"Source/**.hpp",
 		"Source/**.cpp",
 		"Source/**.cppm",
-		"PawnEngine.h",
+		"MoonEngine.hpp",
 	}
 
 	includedirs 
 	{
 		"Source",
 		includeDirs.ImGui,
+		--Vulkan SDK
+		VULKAN_SDK .."/Include",
 
 		includeDirs.spdlog,
 		includeDirs.EngineCore,
 		includeDirs.xxHash,
+		includeDirs.DXC,
+		includeDirs.VMA,
 	}
 
 	defines 
 	{
 		"SPDLOG_BUILD_SHARED",
-		"PAWN_LIBRARY_BUILD", 
+		"MOON_LIBRARY_BUILD", 
 		"_WINDLL",
 	}
 
 	links
 	{
+		"VMA",
 		"EngineCore",
 		"ImGui",
+		"dxcompiler",
+		"SPIRV-Tools-shared",
 	}
 
 	libdirs
 	{
 		"%{wks.location}/bin/" .. outputdir .. "/EngineCore",
+		"%{wks.location}/bin/" .. outputdir .. "/DXC",
+		"%{wks.location}/bin/" .. outputdir .. "/SPIRV-Tools",
+	}
+
+	libdirs
+	{
+		VULKAN_SDK .."/Lib",
 	}
 
 	filter "system:windows"
 		systemversion "latest"
 
-		postbuildcommands
-		{
-			("{COPYDIR} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox/")
-		}
-
 		includedirs
 		{
 			"C:/Windows/System32",
-			"C:/VulkanSDK/1.4.304.1/Include",
 		}
 
 		links
 		{
-			"vulkan-1.dll",
-			"d3d9",
+			"vulkan-1",
 			"d3d11",
 			"d3d12",
 			"dxgi",
-			"d3dcompiler",
 		}
+
+	filter "system:linux"
+		toolset "clang"
+		
 
 	filter "action:vs*"
 
@@ -90,19 +96,22 @@ project "Engine"
 		compileas "Module"
 
 	filter "files:**.cpp"
-		compileas "C++"
+		compileas "C++"		libdirs
+		{
+			VULKAN_SDK .."/Lib",
+		}
 
 	filter "configurations:Debug"
-		defines "PE_DEBUG"
+		defines "ME_DEBUG"
 		symbols "on"
 		runtime "Debug"
 
 	filter "configurations:Release"
-		defines "PE_RELEASE"
+		defines "ME_RELEASE"
 		optimize "on"
 		runtime "Release"
 
 	filter "configurations:Distribute"
-		defines "PE_DIST"
+		defines "ME_DIST"
 		optimize "on"
 		runtime "Release"

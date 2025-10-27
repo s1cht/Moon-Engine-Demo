@@ -1,10 +1,8 @@
-#include "Layer.h"
+#include "Layer.hpp"
 
-import Pawn.Core.Container.String;
-
-namespace Pawn::Core
+namespace ME::Core
 {
-    Layer::Layer(const Pawn::Core::Containers::String& name)
+    Layer::Layer(const ME::Core::Containers::String& name)
         : m_DebugName(name)
     {
     }

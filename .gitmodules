@@ -1,12 +1,24 @@
-[submodule "Engine/vendor/spdlog"]
-	path = Engine/vendor/spdlog
+[submodule "vendor/premake-core"]
+	path = vendor/premake-core
+	url = https://github.com/premake/premake-core
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "GLFW"]
-	path = GLFW
-	url = https://github.com/TheCherno/GLFW
-[submodule "Engine/vendor/ImGui"]
-	path = Engine/vendor/ImGui
+[submodule "vendor/ImGui"]
+	path = vendor/ImGui
 	url = https://github.com/s1cht/ImGui
+	branch = docking
+[submodule "vendor/DXC"]
+	path = vendor/DXC
+	url = https://github.com/microsoft/DirectXShaderCompiler
+[submodule "vendor/SPIRV-Tools"]
+	path = vendor/SPIRV-Tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools
 [submodule "vendor/xxHash"]
 	path = vendor/xxHash
-	url = https://github.com/Cyan4973/xxHash
+	url = https://github.com/s1cht/xxHash
+	branch = dev
+[submodule "vendor/VulkanMemoryAllocator"]
+	path = vendor/VulkanMemoryAllocator
+	url = https://github.com/s1cht/VulkanMemoryAllocator
+	branch = master

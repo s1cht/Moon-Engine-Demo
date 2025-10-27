@@ -1,9 +1,9 @@
 #include "AssetManager.h"
-#include <Core/Misc/Assertion.h>
+#include <Core/Containers/Algorithm.hpp>
 
-import Pawn.Core.Algorithm;
+#include "Image.h"
 
-namespace Pawn::Assets
+namespace ME::Assets
 {
 	AssetManager::AssetManager()
 	{
@@ -13,29 +13,37 @@ namespace Pawn::Assets
 	{
 	}
 
-	bool AssetManager::LoadAsset(const Pawn::Core::Containers::String& path)
+	bool AssetManager::LoadAsset(const ME::Core::Containers::String& path, bool centered)
 	{
-		Pawn::Utility::AssetFileFormats fileFormat;
-		Pawn::Utility::AssetLoadResult assetLoadResult;
+		ME::Utility::AssetFileFormats fileFormat;
+		ME::Utility::AssetLoadResult assetLoadResult;
 
 		fileFormat = GetExtension(path);
-		assetLoadResult = Pawn::Utility::AssetLoader::Load(path, fileFormat);
+		assetLoadResult = ME::Utility::AssetLoader::Load(path, centered, fileFormat);
 
-		if (assetLoadResult.Meshes.GetSize() == 0)
-			return false;
-
-		for (auto mesh = assetLoadResult.Meshes.Begin(); mesh != assetLoadResult.Meshes.End(); ++mesh)
+		if (assetLoadResult.Meshes.GetSize() > 0)
 		{
-			(*mesh)->CreateBuffers();
-			m_Meshes.EmplaceBack(std::move((*mesh)));
+			for (auto mesh = assetLoadResult.Meshes.Begin(); mesh != assetLoadResult.Meshes.End(); ++mesh)
+			{
+				(*mesh)->CreateBuffers();
+				m_Meshes.EmplaceBack(std::move((*mesh)));
+			}
 		}
+		if (assetLoadResult.Images.GetSize() > 0)
+		{
+			for (auto image = assetLoadResult.Images.Begin(); image != assetLoadResult.Images.End(); ++image)
+			{
+				m_Images.EmplaceBack(std::move((*image)));
+			}
+		}
+
 
 		return true;
 	}
 
-	Pawn::Utility::AssetFileFormats AssetManager::GetExtension(const Pawn::Core::Containers::String& path) const
+	ME::Utility::AssetFileFormats AssetManager::GetExtension(const ME::Core::Containers::String& path) const
 	{
-		Pawn::Core::Containers::String result = TEXT("");
+		ME::Core::Containers::String result = TEXT("");
 
 		for (SIZE_T i = path.GetSize() - 1; i >= 0; --i)
 		{
@@ -48,17 +56,34 @@ namespace Pawn::Assets
 		}
 
 		if (result == TEXT(".obj"))
-			return Pawn::Utility::AssetFileFormats::OBJ;
+			return ME::Utility::AssetFileFormats::OBJ;
+		else if (result == TEXT(".tga"))
+			return ME::Utility::AssetFileFormats::TRG;
 		else
-			return Pawn::Utility::AssetFileFormats::None;
+			return ME::Utility::AssetFileFormats::None;
 	}
 
-	Pawn::Core::Memory::Reference<Pawn::Assets::Mesh> AssetManager::GetMesh(const Pawn::Core::Containers::String& meshName)
+	ME::Core::Memory::Reference<ME::Assets::Mesh> AssetManager::GetMesh(const ME::Core::Containers::String& meshName)
 	{
-		for (auto mesh = m_Meshes.Begin(); mesh != m_Meshes.End(); ++mesh)
-			if ((*mesh)->GetGroupName() == meshName)
-				return (*mesh);
+		for (const auto& mesh : m_Meshes)
+		{
+			if (mesh->GetGroupName() == meshName)
+			{
+				return mesh;
+			}
+		}
 		return nullptr;
 	}
 
+	ME::Core::Memory::Reference<Assets::Image> AssetManager::GetImage(const ME::Core::Containers::String& imageName)
+	{
+		for (const auto& image : m_Images)
+		{
+			if (image->GetName() == imageName)
+			{
+				return image;
+			}
+		}
+		return nullptr;
+	}
 }

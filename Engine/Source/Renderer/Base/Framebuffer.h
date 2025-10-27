@@ -1,20 +1,30 @@
 #pragma once
 
-#include <Core.h>
+#include <Core.hpp>
+#include "Renderer/Base/RenderPass.h"
 
-namespace Pawn::Render
+namespace ME::Render
 {
-	class PAWN_API Framebuffer
+	class RenderPass;
+
+	struct FramebufferSpecification
+	{
+		Core::Memory::Reference<Render::RenderPass> RenderPass;
+		ME::Core::Math::Resolution2D<uint32> Resolution;
+		ME::Core::Containers::Array<ME::Core::Memory::Reference<Render::Texture2D>> Attachments;
+		uint32 Layers;
+	};
+
+	class MOON_API Framebuffer : public RenderObject
 	{
 	public:
-		virtual bool Bind() = 0;
-		virtual bool Unbind() = 0;
+		virtual ~Framebuffer() = default;
 
-		virtual void Shutdown() = 0;
+		virtual inline const FramebufferSpecification& GetSpecification() const = 0;
 
-	private:
-		static Framebuffer* Create(uint32 x, uint32 y);
-		static Framebuffer* CreateDirectX11Framebuffer(uint32 x, uint32 y);
+	public:
+		static ME::Core::Memory::Reference<Render::Framebuffer> Create(FramebufferSpecification& specification);
+		static ME::Core::Memory::Reference<Render::Framebuffer> CreateVulkanFramebuffer(FramebufferSpecification& specification);
 
 	};
 }

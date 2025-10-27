@@ -2,48 +2,64 @@
 
 #include "Application/Application.h"
 #include "Renderer/Base/Shader.h"
-#include <Core/Utils/Logging/Logger.h>
-#include <Core/Utils/MemWatch/MemWatch.h>
+#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Utils/MemWatch/MemWatch.hpp>
 
-import Pawn.Core.IO;
-import Pawn.Core.Clock;
+#include <Core/Platform/Base/IO.hpp>
+#include <Core/Misc/Time.hpp>
 
-extern Pawn::Application* Pawn::CreateApplication();
+extern ME::Application* ME::CreateApplication();
 
 #ifdef PLATFORM_WINDOWS
 
+BOOL WINAPI TerminationHandler(DWORD signal)
+{
+	if (signal == CTRL_CLOSE_EVENT || signal == CTRL_C_EVENT || signal == CTRL_BREAK_EVENT)
+	{
+		ME::Application::RequestShutdown();
+
+		ME::Core::IO::DirectoryStorage::Shutdown();
+		//	Pawn::MemWatch::OnExit();
+		ME::Core::Utils::Logger::Shutdown();
+		ME::Core::Clock::Time::Shutdown();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 int wmain(int32 argc, const uchar** argv)
 {
-	Pawn::Core::Clock::Time::Init();
-	Pawn::MemWatch::Get();
-	Pawn::Core::Utils::Logger::Init();
-	Pawn::MemWatch::EnableMemWatch();
+	SetConsoleCtrlHandler(TerminationHandler, TRUE);
+
+	ME::Core::Clock::Time::Init();
+//	Pawn::MemWatch::Get();
+	ME::Core::Utils::Logger::Init();
+//	Pawn::MemWatch::EnableMemWatch();
 
 	for (int32 i = 0; i < argc; i++)
 	{
 		if (i == 0)
 		{
-			Pawn::Core::Containers::String programPath = argv[0];
+			ME::Core::Containers::String programPath = argv[0];
 			
 			for (auto it = programPath.end() - 1; (*it) != TEXT('\\'); --it)
 				programPath.PopBack();
 
-			Pawn::Core::IO::DirectoryStorage::StoreDirectory(Pawn::Core::IO::DirectoryStorage::Directory(TEXT("ProgramPath"), programPath));
+			ME::Core::IO::DirectoryStorage::StoreDirectory(ME::Core::IO::DirectoryStorage::Directory(TEXT("ProgramPath"), programPath));
 		}
 	}
 
-	Pawn::Render::Shader::SetShaderSourceExtension(TEXT(".pshader"));
-	Pawn::Render::Shader::SetCompiledShaderExtension(TEXT(".cpshader"));
-
-	auto app = Pawn::CreateApplication();
+	auto app = ME::CreateApplication();
 	app->Run();
 	delete app;
 
 
-	Pawn::Core::IO::DirectoryStorage::Shutdown();
-	Pawn::MemWatch::OnExit();
-	Pawn::Core::Utils::Logger::Shutdown();
-	Pawn::Core::Clock::Time::Shutdown();
+	ME::Core::IO::DirectoryStorage::Shutdown();
+//	Pawn::MemWatch::OnExit();
+	ME::Core::Utils::Logger::Shutdown();
+	ME::Core::Clock::Time::Shutdown();
+
+	return 0;
 }
 
 #endif

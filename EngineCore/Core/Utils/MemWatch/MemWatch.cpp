@@ -1,3 +1,4 @@
+/*
 #include "MemWatch.h"
 
 static bool MemWatchInitialized = false;
@@ -125,3 +126,4 @@ void operator delete[](void* ptr)
 	//Pawn::MemWatch::OnFreed(sizeof(ptr));
 	free(ptr);
 }
+*/

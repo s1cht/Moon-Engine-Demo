@@ -2,59 +2,90 @@
 
 #include "Renderer/Base/Buffer.h"
 
-#include <Core.h>
+#include <Core.hpp>
+#include <Core/Math/Math.hpp>
+#include <Core/Memory/Memory.hpp>
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/String/String.hpp>
 
-import Pawn.Core.Math;
-import Pawn.Core.Memory;
-import Pawn.Core.Container.Array;
-import Pawn.Core.Container.String;
-import Pawn.Core.Container.StringView;
-
-namespace Pawn::Assets
+namespace ME::Assets
 {
 	struct Vertex
 	{
-		Pawn::Core::Math::Vector3D32 Position;
-		Pawn::Core::Math::Vector2D32 TextureCoordinate;
-		Pawn::Core::Math::Vector3D32 Normal;
+		ME::Core::Math::Vector3D32 Position;
+		ME::Core::Math::Vector2D32 TextureCoords;
+		ME::Core::Math::Vector3D32 Normal;
+
+		inline bool operator==(const Vertex& other) const {
+			return Position == other.Position &&
+				TextureCoords == other.TextureCoords &&
+				Normal == other.Normal;
+		}
 	};
 
-	class PAWN_API Mesh
+	class MOON_API Mesh
 	{
 	public: 
 		Mesh();
-		Mesh(const Pawn::Core::Containers::String& path);
+		Mesh(const ME::Core::Containers::String& path);
 
 		~Mesh();
 
 	public:
-		Pawn::Core::Memory::Reference<Render::VertexBuffer> GetVertexBuffer();
-		Pawn::Core::Memory::Reference<Render::IndexBuffer> GetIndexBuffer();
-		const Pawn::Core::Containers::StringView GetGroupName() const
+		ME::Core::Memory::Reference<Render::VertexBuffer> GetVertexBuffer() const
+		{
+			return m_VertexBuffer;
+		}
+
+		ME::Core::Memory::Reference<Render::IndexBuffer> GetIndexBuffer() const
+		{
+			return m_IndexBuffer;
+		}
+
+		ME::Core::Containers::Array<Vertex>& GetVertices()
+		{
+			return m_Vertices;
+		}
+
+		ME::Core::Containers::Array<uint32>& GetIndices()
+		{
+			return m_Indices;
+		}
+
+		const ME::Core::Containers::StringView GetGroupName() const
 		{
 			return m_GroupName.ToStringView();
 		}
 
+		bool IsValid() const { return m_Valid; }
+
 	public:
-		void SetVertexes(const Pawn::Core::Containers::Array<Vertex>& vertexes);
-		void SetIndexes(const Pawn::Core::Containers::Array<int32>& indexes);
-		void SetGroupName(const Pawn::Core::Containers::String& groupName);
+		void SetVertices(const ME::Core::Containers::Array<Vertex>& vertexes);
+		void SetIndices(const ME::Core::Containers::Array<uint32>& indexes);
+		void SetGroupName(ME::Core::Containers::String groupName);
 
-		void SetVertexes(Pawn::Core::Containers::Array<Vertex>&& vertexes);
-		void SetIndexes(Pawn::Core::Containers::Array<int32>&& indexes);
-		void SetGroupName(Pawn::Core::Containers::String&& groupName);
+		void SetVertices(ME::Core::Containers::Array<Vertex>&& vertexes);
+		void SetIndices(ME::Core::Containers::Array<uint32>&& indexes);
+		void SetGroupName(ME::Core::Containers::String&& groupName);
 
+	public:
+		void Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer);
+		void Unbind() const;
 		void CreateBuffers();
+		void UpdateBuffers(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer);
 
 	private:
-		Pawn::Core::Containers::String m_GroupName;
+		bool m_Valid;
 
-		Pawn::Core::Containers::Array<Vertex> m_Vertexes;
-		Pawn::Core::Containers::Array<int32> m_Indexes;
+		ME::Core::Containers::String m_GroupName;
 
-		Pawn::Core::Memory::Reference<Render::VertexBuffer> m_VertexBuffer;
-		Pawn::Core::Memory::Reference<Render::IndexBuffer> m_IndexBuffer;
+		ME::Core::Containers::Array<Vertex> m_Vertices;
+		ME::Core::Containers::Array<uint32> m_Indices;
+
+		ME::Core::Memory::Reference<Render::VertexBuffer> m_VertexBuffer;
+		ME::Core::Memory::Reference<Render::IndexBuffer> m_IndexBuffer;
 
 	};
 }
 
+ME_FMT_FORMATTER(ME::Assets::Vertex, "Position: {}; TextureCoords: {}; Normal: {}", ME_FMT_FORMATTER_VALUE(Position), ME_FMT_FORMATTER_VALUE(TextureCoords), ME_FMT_FORMATTER_VALUE(Normal));

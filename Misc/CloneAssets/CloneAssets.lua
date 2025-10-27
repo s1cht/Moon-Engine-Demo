@@ -8,11 +8,12 @@ project "CloneAssets"
 	prebuildcommands
 	{
 		("{RMDIR} %{wks.location}/bin/" .. outputdir .. "/Sandbox/assets"),
-	}
-	postbuildcommands
-	{
 		("{MKDIR} %{wks.location}bin/" .. outputdir .. "/Sandbox/assets"),
 		("{ECHO} %{wks.location}bin/" .. outputdir .. "/Sandbox/assets"),
 		("{COPYDIR} %{wks.location}/Assets %{wks.location}bin/" .. outputdir .. "/Sandbox/assets"),
+	}
+	postbuildcommands
+	{
+	    ("{RMDIR} %{wks.location}/bin/" .. outputdir .. "/%{prj.name}"),
 	}
 	

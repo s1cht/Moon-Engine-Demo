@@ -1,18 +1,17 @@
 #pragma once
 
-#include <Core.h>
-#include <Core/Events/EventMacros.h>
-#include <Core/Utils/Logging/Logger.h>
+#include <Core.hpp>
+#include <Core/Events/EventMacros.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Events/Event.hpp>
+#include <Core/Math/Math.hpp>
 
 #include "Input/Keycodes.h"
 #include "Events/MouseEvents.h"
 
-import Pawn.Core.Event;
-import Pawn.Core.Math;
-
-namespace Pawn::Input::Devices
+namespace ME::Input::Devices
 {
-	class PAWN_API Mouse
+	class MOON_API Mouse
 	{
 	public:
 		EVENT_CALLBACK_FUNCTION;
@@ -44,18 +43,18 @@ namespace Pawn::Input::Devices
 		{
 			if (sideButton >= PE_MAX_MOUSE_SIDEBTN_COUNT)
 			{
-				PE_ERROR(TEXT("Unknown side button caught!"));
+				ME_ERROR(TEXT("Unknown side button caught!"));
 				return false;
 			}
 			return m_SideButtonDown[sideButton];
 		};
 
-		inline Pawn::Core::Math::Vector2D32 GetPosition()
+		inline ME::Core::Math::Vector2D32 GetPosition()
 		{
 			return m_MousePosition;
 		}
 
-		inline Pawn::Core::Math::Vector2D32 GetMouseDelta()
+		inline ME::Core::Math::Vector2D32 GetMouseDelta()
 		{
 			return m_MouseDelta;
 		}
@@ -78,6 +77,7 @@ namespace Pawn::Input::Devices
 		void SetMiddleButtonPressed(bool pressed);
 		void SetMousePosition(float32 x, float32 y);
 		void SetSideButtonPressed(uint8 sideButton, bool pressed);
+		void SetCursorPosition(float32 x, float32 y);
 
 	private:
 		void Init();
@@ -91,8 +91,8 @@ namespace Pawn::Input::Devices
 
 		bool m_SideButtonDown[PE_MAX_MOUSE_SIDEBTN_COUNT];
 
-		Pawn::Core::Math::Vector2D32 m_MousePosition;
-		Pawn::Core::Math::Vector2D32 m_MouseDelta;
+		ME::Core::Math::Vector2D32 m_MousePosition;
+		ME::Core::Math::Vector2D32 m_MouseDelta;
 
 	private:
 		bool m_CallbackExists = false;

@@ -1,6 +1,6 @@
 #include "Mouse.h"
 
-namespace Pawn::Input::Devices
+namespace ME::Input::Devices
 {
 	Mouse::Mouse()
 	{
@@ -74,7 +74,7 @@ namespace Pawn::Input::Devices
 	{
 		if (sideButton >= PE_MAX_MOUSE_SIDEBTN_COUNT)
 		{
-			PE_ERROR(TEXT("Unknown side button caught!")); 
+			ME_ERROR(TEXT("Unknown side button caught!")); 
 			return;
 		}
 
@@ -92,6 +92,17 @@ namespace Pawn::Input::Devices
 		}
 
 	}
+
+	void Mouse::SetCursorPosition(float32 x, float32 y)
+	{
+#ifdef PLATFORM_WINDOWS
+		SetCursorPos(static_cast<int32>(x), static_cast<int32>(y));
+#endif
+
+		m_MousePosition.x = x;
+		m_MousePosition.y = y;
+	}
+
 	void Mouse::Init()
 	{
 		for (SIZE_T i = 0; i < PE_MAX_MOUSE_SIDEBTN_COUNT; i++)

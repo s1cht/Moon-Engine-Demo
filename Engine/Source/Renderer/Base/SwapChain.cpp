@@ -3,28 +3,23 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
 
-#include <Core/Misc/Assertion.h>
-
-namespace Pawn::Render
+namespace ME::Render
 {
-	SwapChain* SwapChain::Create(Window* window)
+	ME::Core::Memory::Reference<SwapChain> SwapChain::Create(int32& result, Window* window)
 	{
-		RendererAPI::API renderApi = Renderer::GetRenderAPI();
+		RenderAPI::API renderApi = Renderer::GetRenderAPI();
 
 		switch (renderApi)
 		{
-			case Pawn::Render::RendererAPI::API::None:
-			case Pawn::Render::RendererAPI::API::Vulkan:
-			case Pawn::Render::RendererAPI::API::DirectX12:
-			case Pawn::Render::RendererAPI::API::Metal:
+			case ME::Render::RenderAPI::API::Vulkan:
 			{
-				PE_ASSERT(false, TEXT("SwapChain: Unsupported render API! {0}"), (int32)renderApi);
-				return nullptr;
+				return CreateVulkanSwapChain(result);
 				break;
 			}
-			case Pawn::Render::RendererAPI::API::DirectX11:
+			default:
 			{
-				return CreateDirectX11SwapChain(window);
+				ME_ASSERT(false, TEXT("SwapChain: Unsupported render API! {0}"), static_cast<int32>(renderApi));
+				return nullptr;
 				break;
 			}
 		}

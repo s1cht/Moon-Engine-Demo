@@ -1,0 +1,87 @@
+# Blender 4.4.0 MTL File: 'proj.blend'
+# www.blender.org
+
+newmtl Button
+Ns 1000.000000
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 100.000000 100.000000 100.000000
+Ni 0.000000
+d 1.000000
+illum 2
+
+newmtl Button_Plate
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Button_Plate_BaseColor.png
+map_Ns D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Button_Plate_OcclusionRoughnessMetallic.png
+map_refl D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Button_Plate_OcclusionRoughnessMetallic.png
+
+newmtl Glass
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Grip
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Grip_BaseColor.png
+map_Ns D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Grip_OcclusionRoughnessMetallic.png
+map_refl D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Grip_OcclusionRoughnessMetallic.png
+
+newmtl Inside_Flash_Part
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Inside_Flash_Part_BaseColor.png
+map_Ns D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Button_Plate_OcclusionRoughnessMetallic.png
+map_refl D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Button_Plate_OcclusionRoughnessMetallic.png
+
+newmtl Outside
+Ka 0.050000 0.050000 0.050000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 3
+map_Kd D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Outside_BaseColor.png
+map_Ns D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Outside_OcclusionRoughnessMetallic.png
+map_refl D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Outside_OcclusionRoughnessMetallic.png
+
+newmtl Ring.002
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800149 0.000000 0.002363
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl Ring_Part
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Ring_Part_BaseColor.png
+map_Ns D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Ring_Part_OcclusionRoughnessMetallic.png
+map_refl D:/Projects/Blender/NewHorror/Flashlight/Textures/flashlight_Ring_Part_OcclusionRoughnessMetallic.png

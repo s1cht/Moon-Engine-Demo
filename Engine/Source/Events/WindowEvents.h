@@ -2,10 +2,10 @@
 
 #include "EventsShared.h"
 
-#include <Core/PawnMacros.h>
-import Pawn.Core.Event;
+#include <Core.hpp>
+#include <Core/Events/Event.hpp>
 
-namespace Pawn::Events
+namespace ME::Events
 {
     class WindowClosedEvent : public Core::Event
     {
@@ -24,7 +24,7 @@ namespace Pawn::Events
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Window | EventCategory_Application);
         EVENT_CLASS_TYPE(WindowMoved);
-        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(float, m_x, "X") + PE_NAMED_VARIABLE_TOSTRING(float, m_y, "Y"));
+        EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(float, m_x, "X") + ME_NAMED_VARIABLE_TOSTRING(float, m_y, "Y"));
 
     public:
         float GetPositionX() { return m_x; };
@@ -44,7 +44,7 @@ namespace Pawn::Events
     public:
         EVENT_CLASS_CATEGORY(EventCategory_Window | EventCategory_Application);
         EVENT_CLASS_TYPE(WindowResized);
-        EVENT_CLASS_GETSTRING(PE_NAMED_VARIABLE_TOSTRING(float, m_x, "X") + PE_NAMED_VARIABLE_TOSTRING(float, m_y, "Y"));
+        EVENT_CLASS_GETSTRING(ME_NAMED_VARIABLE_TOSTRING(float, m_x, "X") + ME_NAMED_VARIABLE_TOSTRING(float, m_y, "Y"));
 
     public:
         float GetSizeX() { return m_x; };

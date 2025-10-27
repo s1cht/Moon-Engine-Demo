@@ -1,22 +1,34 @@
 #pragma once
 
-#include <Core.h>
-#include <Core/Layer/LayerStack.h>
+#include <Core.hpp>
+#include <Core/Layer/LayerStack.hpp>
+#include <Core/Events/Event.hpp>
+#include <Core/Memory/Memory.hpp>
 
 #include "Input/Input.h"
 #include "Platform/Platform.h"
 #include "Renderer/ImGui/ImGuiLayer.h"
 #include "Events/WindowEvents.h"
 
-import Pawn.Core.Event;
-import Pawn.Core.Memory;
-
-namespace Pawn 
+namespace ME 
 {
-	class PAWN_API Application
+	struct MOON_API ApplicationProperties
+	{
+		int32 VersionMajor; 
+		int32 VersionMinor;
+		int32 VersionPatch;
+		ME::Core::Containers::String ApplicationName;
+
+		ApplicationProperties(int32 verMajor = 1, int32 verMinor = 0, int32 verPatch = 0, ME::Core::Containers::String appName = TEXT("Application"))
+			: VersionMajor(verMajor), VersionMinor(verMinor), VersionPatch(verPatch), ApplicationName(appName) {}
+	};
+
+	typedef ApplicationProperties ApplicationData;
+
+	class MOON_API Application
 	{
 	public:
-		Application();
+		Application(ApplicationProperties props = ApplicationProperties());
 		virtual ~Application();
 
 	public:
@@ -29,21 +41,31 @@ namespace Pawn
 		void PushOverlay(Core::Layer* overlay);
 
 	public:
+		const ApplicationData& GetAppData() const { return m_AppData; }
+
+	public:
 		void OnEvent(Core::Event& event);
 
 	public:
 		static Application& Get() { return *s_Instance; }
+		static void RequestShutdown() { s_ShutdownRequested = true; }
 
 	private:
 		bool m_Runs;
 
 		Core::LayerStack m_LayerStack;
-	private:
-		bool OnClosedEvent(Pawn::Events::WindowClosedEvent& event);
-		bool OnWindowSizeEvent(Pawn::Events::WindowResizedEvent& event);
 
 	private:
-		Pawn::Core::Memory::Scope<Window> m_Window;
+		ApplicationData m_AppData;
+
+	private:
+
+	private:
+		bool OnClosedEvent(ME::Events::WindowClosedEvent& event);
+		bool OnWindowSizeEvent(ME::Events::WindowResizedEvent& event);
+
+	private:
+		ME::Core::Memory::Scope<Window> m_Window;
 		Render::Imgui::ImGuiLayer* m_ImGuiLayer;
 
 	private:
@@ -52,8 +74,9 @@ namespace Pawn
 
 	private:
 		static Application* s_Instance;
-
-	};
+		static bool s_ShutdownRequested;
+	}
+	;
 	// Must be defined in client
 	Application* CreateApplication();
 	

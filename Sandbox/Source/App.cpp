@@ -1,10 +1,13 @@
-#include <PawnEngine.h>
+#include <MoonEngine.hpp>
 #include "SandboxLayer.h"
 
-class App : public Pawn::Application
+static ME::ApplicationProperties AppProps;
+
+class App : public ME::Application
 {
 public:
 	App()
+		: ME::Application(AppProps)
 	{
 		PushLayer(new SandboxLayer());
 	};
@@ -12,7 +15,14 @@ public:
 
 };
 
-Pawn::Application* Pawn::CreateApplication()
+ME::Application* ME::CreateApplication()
 {
+	AppProps = {};
+
+	AppProps.ApplicationName = TEXT("Sandbox");
+	AppProps.VersionMajor = 0;
+	AppProps.VersionMinor = 1;
+	AppProps.VersionPatch = 0;
+
 	return new App();
 }

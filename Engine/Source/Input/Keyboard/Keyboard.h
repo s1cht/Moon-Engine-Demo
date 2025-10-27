@@ -1,20 +1,17 @@
 #pragma once
-#include <Core.h>
-#include <Core/PawnMacros.h>
+#include <Core.hpp>
 
 #include "Input/Keycodes.h"
 #include "Events/KeyEvents.h"
-
-import Pawn.Core.Event;
 
 #define PE_MAX_REPEAT_COUNT 50
 
 #define CHECK_KEY_VALUE(x)	if (x > PE_MAX_KEYCODE_COUNT)\
 								return false;
 
-namespace Pawn::Input::Devices
+namespace ME::Input::Devices
 {
-	class PAWN_API Keyboard
+	class MOON_API Keyboard
 	{
 	public:
 		EVENT_CALLBACK_FUNCTION;

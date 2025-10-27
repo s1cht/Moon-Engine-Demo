@@ -1,13 +1,6 @@
-module;
+#include "Time.hpp"
 
-#include "Core.h"
-#include "Core/Misc/Assertion.h"
-
-module Pawn.Core.Clock;
-
-import Pawn.Core.Memory;
-
-namespace Pawn::Core::Clock
+namespace ME::Core::Clock
 {
 	Memory::Scope<TimeSource> Time::s_Source = nullptr;
 	Timepoint Time::s_LastFrame{};
@@ -51,7 +44,7 @@ namespace Pawn::Core::Clock
 
 	Timestep Time::Update()
 	{
-		PE_ASSERT(s_Source, TEXT("TimeSource not initialized!"));
+		ME_ASSERT(s_Source, TEXT("TimeSource not initialized!"));
 		Timepoint current = Timepoint::Now(s_Source.get());
 		s_DeltaTime = Timestep(s_LastFrame, current);
 		s_LastFrame = current;
@@ -60,7 +53,7 @@ namespace Pawn::Core::Clock
 		return s_DeltaTime;
 	}
 
-	Pawn::Core::Clock::Timestep Time::GetDeltaTime()
+	ME::Core::Clock::Timestep Time::GetDeltaTime()
 	{
 		return s_DeltaTime;
 	}

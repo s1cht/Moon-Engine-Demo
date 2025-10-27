@@ -9,15 +9,14 @@
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
 
-#include <Core/Misc/Assertion.h>
-#include <Core/Utils/Logging/Logger.h>
-
-import Pawn.Core.Container.String;
-import Pawn.Core.Utils.Benchmark;
+#include <Core.hpp>
+#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Containers/String/String.hpp>
+#include <Core/Utils/Benchmark/Benchmark.hpp>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-namespace Pawn
+namespace ME
 {
 	Window* Window::Create(WindowProperties properties)
 	{
@@ -41,12 +40,12 @@ namespace Pawn
 		m_Data.EventCallbackIsSetUp = true;
 	}
 
-	float32 Win32Window::GetWidth()
+	float32 Win32Window::GetWidth() const
 	{
 		return m_Data.WindowSize.X;
 	}
 
-	float32 Win32Window::GetHeight()
+	float32 Win32Window::GetHeight() const
 	{
 		return m_Data.WindowSize.Y;
 	}
@@ -64,8 +63,6 @@ namespace Pawn
 
 	void Win32Window::Init()
 	{
-		PE_INFO("Window creation begin");
-		PE_INFO("Registering window class");
 		WNDCLASSEXW wc;
 
 		ZeroMemory(&wc, sizeof(wc));
@@ -84,7 +81,6 @@ namespace Pawn
 		RECT windowViewport = { 0, 0, (LONG)m_Data.WindowSize.X, (LONG)m_Data.WindowSize.Y };
 		AdjustWindowRect(&windowViewport, WS_OVERLAPPEDWINDOW, FALSE);
 
-		PE_INFO("Creating window");
 		m_Window = CreateWindowExW(
 			0,													// Optional window styles.
 			PE_WND_CLASSNAME,									// Window class
@@ -101,14 +97,12 @@ namespace Pawn
 			NULL												// Additional application data
 		);
 
-		PE_CORE_ASSERT(m_Window, "Window creation failed! Error: {}", GetLastError());
+		ME_CORE_ASSERT(m_Window, "Window creation failed! Error: {}", GetLastError());
 
-		PE_INFO("Setting up window data");
 		bool result = SetPropW(m_Window, L"WndData", &m_Data);
-		PE_CORE_ASSERT(!(result && GetLastError()), "Window user pointer assign failed! Error: {}", GetLastError());
+		ME_CORE_ASSERT(result, "Window user pointer assign failed! Error: {}", GetLastError());
 		
 		ShowWindow(m_Window, 1);
-		PE_INFO("Window creation end");
 	}
 
 	void Win32Window::Shutdown()
@@ -169,7 +163,7 @@ namespace Pawn
 			{
 				case WM_SETFOCUS:
 				{
-					Pawn::Events::WindowFocusedEvent event;
+					ME::Events::WindowFocusedEvent event;
 
 					wndData->Focused = true;
 					wndData->EventCallback(event);
@@ -178,7 +172,7 @@ namespace Pawn
 				}
 				case WM_KILLFOCUS:
 				{
-					Pawn::Events::WindowLostFocusEvent event;
+					ME::Events::WindowLostFocusEvent event;
 
 					wndData->Focused = false;
 					wndData->EventCallback(event);
@@ -190,14 +184,14 @@ namespace Pawn
 					wndData->WindowSize.X = LOWORD(lParam);
 					wndData->WindowSize.Y = HIWORD(lParam);
 
-					Pawn::Events::WindowResizedEvent event((float32)wndData->WindowSize.X, (float32)wndData->WindowSize.Y);
+					ME::Events::WindowResizedEvent event((float32)wndData->WindowSize.X, (float32)wndData->WindowSize.Y);
 					wndData->EventCallback(event);
 
 					break;
 				}
 				case WM_CLOSE:
 				{
-					Pawn::Events::WindowClosedEvent event;
+					ME::Events::WindowClosedEvent event;
 					wndData->EventCallback(event);
 
 					break;
@@ -262,6 +256,37 @@ namespace Pawn
 				Input::InputController::Get().GetMouse().SetMousePosition((float32)GET_X_LPARAM(lParam), (float32)GET_Y_LPARAM(lParam));
 				break;
 			}
+			case WM_LBUTTONUP:
+			{
+				Input::InputController::Get().GetMouse().SetLeftButtonPressed(false);
+				break;
+			}
+			case WM_LBUTTONDOWN:
+			{
+				Input::InputController::Get().GetMouse().SetLeftButtonPressed(true);
+				break;
+			}
+			case WM_RBUTTONUP:
+			{
+				Input::InputController::Get().GetMouse().SetRightButtonPressed(false);
+				break;
+			}
+			case WM_RBUTTONDOWN:
+			{
+				Input::InputController::Get().GetMouse().SetRightButtonPressed(true);
+				break;
+			}
+			case WM_MBUTTONUP:
+			{
+				Input::InputController::Get().GetMouse().SetMiddleButtonPressed(false);
+				break;
+			}
+			case WM_MBUTTONDOWN:
+			{
+				Input::InputController::Get().GetMouse().SetMiddleButtonPressed(true);
+				break;
+			}
+
 
 			//case WM_INPUT:
 			//{
