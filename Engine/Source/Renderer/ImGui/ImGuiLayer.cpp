@@ -1,15 +1,14 @@
-#include "ImGuiLayer.h"
-#include "ImGuiReferences.h"
+#include "ImGuiLayer.hpp"
+#include <Core/Time.hpp>
+
+#include "ImGuiReferences.hpp"
+#include "Application/Application.hpp"
 #include "Renderer/Renderer.hpp"
-#include "Application/Application.h"
-
-#include <Core/Misc/Time.hpp>
-
 #include "Renderer/API/Vulkan/VulkanCommandBuffer.hpp"
 #include "Renderer/API/Vulkan/VulkanRenderAPI.hpp"
 #include "Renderer/API/Vulkan/VulkanRenderPass.hpp"
 
-namespace ME::Render::Imgui
+namespace ME::Render::ImGui
 {
 	ImGuiLayer::ImGuiLayer()
 		: Layer(TEXT("ImGuiLayer"))
@@ -29,10 +28,10 @@ namespace ME::Render::Imgui
 			m_Disabled = true;
 			return;
 		}
-		m_ImGuiContext = ImGui::CreateContext();
-		ImGui::StyleColorsDark();
+		m_ImGuiContext = ::ImGui::CreateContext();
+		::ImGui::StyleColorsDark();
 
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ::ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -41,7 +40,7 @@ namespace ME::Render::Imgui
 		io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 	
-		ImGuiStyle& style = ImGui::GetStyle();
+		ImGuiStyle& style = ::ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 0.0f;
@@ -75,6 +74,7 @@ namespace ME::Render::Imgui
 			}
 #ifdef PLATFORM_WINDOWS
 			case RenderAPI::API::DirectX12: ME_ASSERT(false, "RenderAPI::DirectX12 is unsupported"); break;
+        default: break;
 #elif PLATFORM_MAC
 			case RenderAPI::API::Metal: ME_ASSERT(false, "RenderAPI::Metal is unsupported"); break;
 #endif
@@ -97,7 +97,7 @@ namespace ME::Render::Imgui
 	{
 		if (m_EnabledEvents)
 		{
-			ImGuiIO& io = ImGui::GetIO();
+			ImGuiIO& io = ::ImGui::GetIO();
 			event.IsHandled |= event.IsInCategory(EventCategory_Mouse) & io.WantCaptureMouse;
 			event.IsHandled |= event.IsInCategory(EventCategory_Keyboard) & io.WantCaptureKeyboard;
 		}
@@ -108,18 +108,18 @@ namespace ME::Render::Imgui
 		if (m_Disabled)
 			return;
 
-		ImGui::SetCurrentContext(m_ImGuiContext);
+		::ImGui::SetCurrentContext(m_ImGuiContext);
 		static bool visible = true;
 
-		//ImGui::ShowDemoWindow(&visible);
+		//::ImGui::ShowDemoWindow(&visible);
 
-		if (ImGui::Begin("DeltaTime", &visible))
+		if (::ImGui::Begin("DeltaTime", &visible))
 		{
-			ImGui::Text("%.5f", deltaTime);
-			ImGui::Text("A FPS: %d", ME::Core::Clock::Time::GetAverageFPS());
-			ImGui::Text("I FPS: %d", ME::Core::Clock::Time::GetInstantFPS());
+			::ImGui::Text("%.7f", deltaTime);
+			::ImGui::Text("A FPS: %d", ME::Core::Clock::Time::GetAverageFPS());
+			::ImGui::Text("I FPS: %d", ME::Core::Clock::Time::GetInstantFPS());
 		}
-		ImGui::End();
+		::ImGui::End();
 	}
 
 	void ImGuiLayer::BeginRender()
@@ -128,7 +128,7 @@ namespace ME::Render::Imgui
 		if (m_Disabled)
 			return;
 
-		ImGui::SetCurrentContext(m_ImGuiContext);
+		::ImGui::SetCurrentContext(m_ImGuiContext);
 		renderAPI = Renderer::GetRenderAPI();
 
 		switch (renderAPI)
@@ -148,7 +148,7 @@ namespace ME::Render::Imgui
 #ifdef PLATFORM_WINDOWS
 		ImGui_ImplWin32_NewFrame();
 #endif
-		ImGui::NewFrame();
+		::ImGui::NewFrame();
 	}
 
 	void ImGuiLayer::EndRender(const ME::Core::Memory::Reference<ME::Render::CommandBuffer>& commandBuffer)
@@ -156,8 +156,8 @@ namespace ME::Render::Imgui
 		if (m_Disabled)
 			return;
 
-		ImGui::SetCurrentContext(m_ImGuiContext);
-		ImGui::Render();
+		::ImGui::SetCurrentContext(m_ImGuiContext);
+		::ImGui::Render();
 		Render(commandBuffer);
 	}
 
@@ -167,7 +167,7 @@ namespace ME::Render::Imgui
 		if (m_Disabled)
 			return;
 
-		ImGui::SetCurrentContext(m_ImGuiContext);
+		::ImGui::SetCurrentContext(m_ImGuiContext);
 		renderAPI = Renderer::GetRenderAPI();
 
 		switch (renderAPI)
@@ -190,14 +190,14 @@ namespace ME::Render::Imgui
 		ImGui_ImplWin32_Shutdown();
 #endif
 
-		ImGui::DestroyContext(m_ImGuiContext);
+		::ImGui::DestroyContext(m_ImGuiContext);
 		m_ImGuiContext = nullptr;
 	}
 
 	void ImGuiLayer::Render(const ME::Core::Memory::Reference<ME::Render::CommandBuffer>& commandBuffer)
 	{
 		if (Renderer::GetRenderAPI() != Render::RenderAPI::API::Vulkan) return;
-		ImDrawData* drawData = ImGui::GetDrawData();
+		ImDrawData* drawData = ::ImGui::GetDrawData();
 
 		Render::ClearValue clrVal = {};
 		clrVal.ColorClearValue = Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f);
@@ -219,54 +219,41 @@ namespace ME::Render::Imgui
 
 	void ImGuiLayer::CreateRenderResources()
 	{
-		ME::Core::Containers::Array<Render::AttachmentSpecification> attachments;
-		Render::AttachmentSpecification attachmentSpecs = {};
+		AttachmentSpecification attachmentSpecs = {};
 		attachmentSpecs.IsStencil = false;
 		attachmentSpecs.IsDepth = false;
-		attachmentSpecs.AttachmentFormat = RenderCommand::Get()->GetSwapChain()->GetImages()[0]->GetSpecification().Format;
-		attachmentSpecs.LoadOp = Render::LoadOperation::Load;
-		attachmentSpecs.StoreOp = Render::StoreOperation::Store;
-		attachmentSpecs.InitialLayout = Render::ImageLayout::Present;
-		attachmentSpecs.FinalLayout = Render::ImageLayout::Present;
-		attachmentSpecs.SampleCount = Render::SampleCount::Count1;
+		attachmentSpecs.AttachmentFormat = Renderer::GetRenderPass()->GetSpecification().AttachmentSpecs[0].AttachmentFormat;
+		attachmentSpecs.LoadOp = LoadOperation::Load;
+		attachmentSpecs.StoreOp = StoreOperation::Store;
+		attachmentSpecs.InitialLayout = ImageLayout::ColorAttachment;
+		attachmentSpecs.FinalLayout = ImageLayout::Present;
+		attachmentSpecs.SampleCount = SampleCount::Count1;
 
-		attachments.EmplaceBack(attachmentSpecs);
+		AttachmentSpecification depthSpecs = {};
+		depthSpecs.IsStencil = true;
+		depthSpecs.IsDepth = true;
+		depthSpecs.AttachmentFormat = Renderer::GetRenderPass()->GetSpecification().AttachmentSpecs[1].AttachmentFormat;
+		depthSpecs.LoadOp = LoadOperation::DontCare;
+		depthSpecs.StoreOp = StoreOperation::DontCare;
+		depthSpecs.InitialLayout = ImageLayout::DepthStencilAttachment;
+		depthSpecs.FinalLayout = ImageLayout::DepthStencilAttachment;
+		depthSpecs.SampleCount = Renderer::GetRenderPass()->GetSpecification().AttachmentSpecs[1].SampleCount;
 
-		Render::SubpassSpecification subpass = {};
-		subpass.ColorAttachmentRefs = { 0 };
-		subpass.DepthStencilAttachmentRef = ~0u;
-		subpass.PipelineBindPoint = Render::PipelineBindPoint::Graphics;
-
-		Render::SubpassDependency subpassDependency = {};
-		subpassDependency.SubpassSrc = ~0u;
-		subpassDependency.AccessFlagsDst = Render::AccessFlags::DepthStencilWrite | Render::AccessFlags::ColorAttachmentWrite;
-		subpassDependency.PipelineStageFlagsSrc = Render::PipelineStageFlags::ColorAttachmentOutput | Render::PipelineStageFlags::EarlyFragmentTests;
-		subpassDependency.PipelineStageFlagsDst = Render::PipelineStageFlags::ColorAttachmentOutput | Render::PipelineStageFlags::EarlyFragmentTests;
-
-		Render::RenderPassSpecification rpSpecs = {};
-		rpSpecs.AttachmentSpecs = attachments;
-		rpSpecs.SubpassSpecs = { subpass };
-		rpSpecs.SubpassDependencies = { subpassDependency };
+		Render::RenderPassSpecification rpSpecs = Renderer::GetRenderPass()->GetSpecification();
+		rpSpecs.AttachmentSpecs = { attachmentSpecs, depthSpecs };
 		rpSpecs.DebugName = "ImGui render pass";
-
 		m_RenderPass = Render::RenderPass::Create(rpSpecs);
 	}
 
 	void ImGuiLayer::PostRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO& io = ::ImGui::GetIO();
 #ifdef PLATFORM_WINDOWS
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
+			::ImGui::UpdatePlatformWindows();
+			::ImGui::RenderPlatformWindowsDefault();
 		}
 #endif
 	}
-
-	ImGuiContext* ImGuiLayer::GetContext()
-	{
-		return m_ImGuiContext;
-	}
-
 }

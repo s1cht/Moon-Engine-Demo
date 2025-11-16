@@ -1,4 +1,4 @@
-﻿#include "ResourceHandler.h"
+﻿#include "ResourceHandler.hpp"
 #include "Renderer/Renderer.hpp"
 
 namespace ME::Render

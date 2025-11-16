@@ -1,4 +1,4 @@
-﻿#include "RenderPass.h"
+﻿#include "RenderPass.hpp"
 #include "Renderer/Renderer.hpp"
 
 namespace ME::Render

@@ -21,3 +21,8 @@ project "Assets"
 	{
 		"Shaders/Source/**.hlsl"
 	}
+
+	includedirs 
+	{
+		"Shaders/Source",
+	}

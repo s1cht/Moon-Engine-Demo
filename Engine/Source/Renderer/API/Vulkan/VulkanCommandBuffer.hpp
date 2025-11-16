@@ -1,9 +1,8 @@
 ﻿#pragma once
-
 #include <Core.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/CommandBuffer.h"
+#include "Renderer/Base/CommandBuffer.hpp"
 
 namespace ME::Render
 {

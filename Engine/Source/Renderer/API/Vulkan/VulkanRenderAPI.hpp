@@ -7,7 +7,7 @@
 
 #include "Vulkan.hpp"
 #include "VulkanResourceHandler.hpp"
-#include "Renderer/Base/RenderAPI.h"
+#include "Renderer/Base/RenderAPI.hpp"
 #include "VulkanSwapChain.hpp"
 
 namespace ME::Render
@@ -46,7 +46,8 @@ namespace ME::Render
 	public:
 		void PostInit() override;
 
-		void CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass) override;
+		void CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass,
+			const ME::Core::Array<ME::Core::Memory::Reference<Render::RTexture2D>>& attachments) override;
 		void Submit(ME::Core::Memory::Reference<Render::CommandBuffer> buffer) override;
 		void NewFrame() override;
 		void EndFrame() override;
@@ -58,7 +59,8 @@ namespace ME::Render
 		void DrawIndexedIndirect(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 			const ME::Core::Memory::Reference<Render::IndirectBuffer>& buffer, SIZE_T offset,
 			uint32 drawCount, uint32 stride) override;
-		void DrawIndexedIndirectCount(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, 
+		void DrawIndexedIndirectCount(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			PipelineStageFlags bufferSrc,
 			const ME::Core::Memory::Reference<Render::IndirectBuffer>& buffer, SIZE_T offset, 
 			const ME::Core::Memory::Reference<Render::IndirectBuffer>& drawCount, uint32 drawCountOffset, 
 			uint32 maxDrawCount, uint32 stride) override;
@@ -70,9 +72,42 @@ namespace ME::Render
 
 		inline void WriteResource(ME::Core::Memory::Reference<ME::Render::Uniform> buffer) override;
 		inline void WriteResource(ME::Core::Memory::Reference<ME::Render::StorageBuffer> buffer) override;
+		inline void WriteResource(ME::Core::Memory::Reference<ME::Render::IndexBuffer> buffer) override;
+		inline void WriteResource(ME::Core::Memory::Reference<ME::Render::VertexBuffer> buffer) override;
+		inline void WriteResource(ME::Core::Memory::Reference<ME::Render::IndirectBuffer> buffer) override;
 		inline void BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, 
 			ME::Core::Memory::Reference<Render::Pipeline> pipeline, 
 			ME::Core::Memory::Reference<ME::Render::Buffer> buffer) override;
+		inline void BindIndexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::IndexBuffer>& buffer, uint32 offset) override;
+		inline void BindVertexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, uint32 offset) override;
+
+		inline void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, BarrierInfo src,
+			BarrierInfo dst) override;
+		inline void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::IndexBuffer>& buffer, BarrierInfo src,
+			BarrierInfo dst) override;
+		inline void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::IndirectBuffer>& buffer, BarrierInfo src,
+			BarrierInfo dst) override;
+		inline void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::StorageBuffer>& buffer, BarrierInfo src,
+			BarrierInfo dst) override;
+		inline void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::Uniform>& buffer, BarrierInfo src,
+			BarrierInfo dst) override;
+
+		inline void TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::Texture1D>& texture, BarrierInfo src,
+			BarrierInfo dst) override;
+		inline void TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::Texture2D>& texture, BarrierInfo src,
+			BarrierInfo dst) override;
+		inline void TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			const ME::Core::Memory::Reference<Render::Texture3D>& texture, BarrierInfo src,
+			BarrierInfo dst) override;
 
 		void BindTexture(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, ME::Core::Memory::Reference<ME::Render::Texture2D> texture, uint32 set) override;
 
@@ -148,10 +183,9 @@ namespace ME::Render
 
 	private:
 		void CreateFrameInfoObjects();
+		void CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass);
 
-    public:
-
-	private:
+    private:
         PFN_vkCmdDrawMeshTasksEXT f_vkCmdDrawMeshTasksEXT;
 
     private:
@@ -161,7 +195,7 @@ namespace ME::Render
 
 	private:
 		uint32 m_SelectedPhysicalDevice;
-		ME::Core::Containers::Array<VkPhysicalDevice> m_PhysicalDevices;
+		ME::Core::Array<VkPhysicalDevice> m_PhysicalDevices;
 
 	private:
 		VmaAllocator m_Allocator;
@@ -177,15 +211,16 @@ namespace ME::Render
 
 	private:
 		ME::Core::Memory::Reference<SwapChain> m_SwapChain;
-		ME::Core::Containers::Array<VkSemaphore> m_SubmitSemaphores;
-		ME::Core::Containers::Array<VulkanImageInfo> m_FrameInfos;
+		ME::Core::Array<VkSemaphore> m_SubmitSemaphores;
+		ME::Core::Array<VulkanImageInfo> m_FrameInfos;
+		ME::Core::Array<ME::Core::Memory::Reference<Render::RTexture2D>> m_FramebufferAttachments;
 
 	private:
-		ME::Core::Containers::Array<ME::Core::StringView> m_Layers;
-		ME::Core::Containers::Array<ME::Core::StringView> m_Extensions;
+		ME::Core::Array<ME::Core::StringView> m_Layers;
+		ME::Core::Array<ME::Core::StringView> m_Extensions;
 
-		ME::Core::Containers::Array<ME::Core::StringView> m_DeviceLayers;
-		ME::Core::Containers::Array<ME::Core::StringView> m_DeviceExtensions;
+		ME::Core::Array<ME::Core::StringView> m_DeviceLayers;
+		ME::Core::Array<ME::Core::StringView> m_DeviceExtensions;
 
 	private:
 		VkDebugUtilsMessengerEXT m_ValidationLayer;

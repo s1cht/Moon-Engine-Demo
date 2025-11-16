@@ -1,10 +1,10 @@
 ﻿#pragma once
 
 #include <Core.hpp>
-#include <Core/Containers/String/String.hpp>
-#include <Core/Containers/Tables/UnorderedMap.hpp>
+#include <Core/Containers/String.hpp>
+#include <Core/Containers/UnorderedMap.hpp>
 
-#include "Renderer/Base/Shader.h"
+#include "Renderer/Base/Shader.hpp"
 #include "Utility/ShaderCompiler.hpp"
 
 #define ME_COMPILED_SHADER_EXT ".cso"
@@ -29,6 +29,11 @@
 
 namespace ME::Render::Manager
 {
+	enum class ShaderGroupType : uint8
+	{
+		Mesh, Vertex, Compute
+	};
+
 	struct VertexPipelineShaderPaths
 	{
 		ME::Core::String Vertex;
@@ -45,11 +50,14 @@ namespace ME::Render::Manager
 
 	struct ShaderGroupSpecification
 	{
+		ShaderGroupType Type;
+	    MeshPipelineShaderPaths Mesh;
 		VertexPipelineShaderPaths Vertex;
-		MeshPipelineShaderPaths Mesh;
+	    ME::Core::String Compute;
 		ME::Core::String Pixel;
 		Render::ResourceLayoutPack Layout;
 		ME::Core::String ShaderGroupName;
+		ME::Core::Array<ME::Core::String> Defines = {};
 	};
 
 	class MEAPI ShaderManager
@@ -91,21 +99,11 @@ namespace ME::Render::Manager
 		void Shutdown();
 
 	public:
-		bool LoadVertexPipelineShadersFromFiles(const ShaderGroupSpecification& specification);
-		bool LoadMeshPipelineShadersFromFiles(const ShaderGroupSpecification& specification);
-		bool LoadComputeFile(const ME::Core::String& groupName, const ME::Core::String& shaderPath, const Render::ResourceLayoutPack& resourceLayout);
+		bool LoadShaders(const ShaderGroupSpecification& specification);
 
 	public:
 		void SetCompiledShaderPath(const ME::Core::StringView& path) { m_CompiledShaderPath = path.ToString<ME::Core::String::AllocatorType>(); }
 		void SetShaderSourcePath(const ME::Core::StringView& path) { m_ShaderSourcePath = path.ToString<ME::Core::String::AllocatorType>(); }
-
-	public:
-		inline ShaderGroup GetShaderGroupM(const char8* name) { return m_GraphicsShaders[name]; }
-		inline ShaderGroup GetShaderGroupM(const ME::Core::String& name) { return m_GraphicsShaders[name.String()]; }
-		inline ComputeShaderGroup GetComputeShaderM(const char8* name) { return m_ComputeShaders[name]; }
-		inline ComputeShaderGroup GetComputeShaderM(const ME::Core::String& name) { return m_ComputeShaders[name.String()]; }
-		inline ME::Core::StringView GetCompiledShadersPathM() const { return m_CompiledShaderPath; }
-		inline ME::Core::StringView GetShadersSourcePathM() const { return m_ShaderSourcePath; }
 
 	public:
 		static bool LoadCompiler() { return Utility::ShaderCompiler::Get().InitCompiler(); }
@@ -113,19 +111,36 @@ namespace ME::Render::Manager
 
 		inline static ShaderGroup GetShaderGroup(const char8* name) { return Get().GetShaderGroupM(name); }
 		inline static ShaderGroup GetShaderGroup(const ME::Core::String& name) { return Get().GetShaderGroupM(name); }
+		inline static ComputeShaderGroup GetComputeShaderGroup(const char8* name) { return Get().GetComputeShaderM(name); }
+		inline static ComputeShaderGroup GetComputeShaderGroup(const ME::Core::String& name) { return Get().GetComputeShaderM(name); }
 
 	private:
-		ME::Core::Memory::Reference<ME::Render::Shader> LoadShader(const ME::Core::StringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const;
-		ME::Core::Memory::Reference<ME::Render::Shader> LoadCompiledShader(const ME::Core::StringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const;
-		ME::Core::Memory::Reference<ME::Render::Shader> CompileShader(const ME::Core::StringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage) const;
+		inline ShaderGroup GetShaderGroupM(const char8* name) { return m_Shaders[name]; }
+		inline ShaderGroup GetShaderGroupM(const ME::Core::String& name) { return m_Shaders[name.String()]; }
+		inline ComputeShaderGroup GetComputeShaderM(const char8* name) { return m_ComputeShaders[name]; }
+		inline ComputeShaderGroup GetComputeShaderM(const ME::Core::String& name) { return m_ComputeShaders[name.String()]; }
+		inline ME::Core::StringView GetCompiledShadersPathM() const { return m_CompiledShaderPath; }
+		inline ME::Core::StringView GetShadersSourcePathM() const { return m_ShaderSourcePath; }
 
 	private:
-		ME::Core::Containers::UnorderedMap<ME::Core::String, ShaderGroup> m_GraphicsShaders;
-		ME::Core::Containers::UnorderedMap<ME::Core::String, ComputeShaderGroup> m_ComputeShaders;
+		bool LoadMeshPipelineShaders(const ShaderGroupSpecification& specification);
+		bool LoadVertexPipelineShaders(const ShaderGroupSpecification& specification);
+		bool LoadComputeShader(const ShaderGroupSpecification& specification);
+
+	private:
+		ME::Core::Memory::Reference<ME::Render::Shader> LoadShader(const ME::Core::StringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage, const ME::Core::Array<ME::Core::String>& defines) const;
+		ME::Core::Memory::Reference<ME::Render::Shader> LoadCompiledShader(const ME::Core::StringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage, const ME::Core::Array<ME::Core::String>& defines) const;
+		ME::Core::Memory::Reference<ME::Render::Shader> CompileShader(const ME::Core::StringView& shaderName, const Render::ResourceLayoutPack& layouts, const ME::Render::ShaderStage& shaderStage, const ME::Core::Array<ME::Core::String>& defines) const;
+
+	private:
+		ME::Core::Array<ME::Core::WideString> ConvertDefines(const ME::Core::Array<ME::Core::String>& defines) const;
+
+	private:
+		ME::Core::UnorderedMap<ME::Core::String, ShaderGroup> m_Shaders;
+		ME::Core::UnorderedMap<ME::Core::String, ComputeShaderGroup> m_ComputeShaders;
 
 		ME::Core::String m_CompiledShaderPath;
 		ME::Core::String m_ShaderSourcePath;
-
 	};
 
 }

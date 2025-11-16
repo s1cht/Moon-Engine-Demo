@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 #include "Core/Platform/Base/IO.hpp"
-#include "Core/Containers/String/String.hpp"
+#include "Core/Containers/String.hpp"
 
 namespace ME::Core::IO
 {

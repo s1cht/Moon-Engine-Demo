@@ -1,12 +1,11 @@
 ﻿#include "VulkanPipeline.hpp"
-
 #include "VulkanRenderAPI.hpp"
 #include "VulkanFunctions.hpp"
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanResourceHandler.hpp"
 #include "VulkanRenderPass.hpp"
 #include "VulkanShader.hpp"
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
@@ -45,9 +44,9 @@ namespace ME::Render
 		}
 	}
 
-	void VulkanPipeline::SetViewports(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Containers::Array<ME::Render::ViewportSpecification> specifications)
+	void VulkanPipeline::SetViewports(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Array<ME::Render::ViewportSpecification> specifications)
 	{
-		ME::Core::Containers::Array<VkViewport> viewports;
+		ME::Core::Array<VkViewport> viewports;
 
 		for (const auto& spec : specifications)
 		{
@@ -62,12 +61,12 @@ namespace ME::Render
 			viewports.EmplaceBack(viewport);
 		}
 
-		vkCmdSetViewport(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, static_cast<uint32>(viewports.Size()), viewports.Data());
+		vkCmdSetViewportWithCount(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), static_cast<uint32>(viewports.Size()), viewports.Data());
 	}
 
-	void VulkanPipeline::SetScissors(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Containers::Array<ME::Core::Math::Rect2D> scissors)
+	void VulkanPipeline::SetScissors(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Array<ME::Core::Math::Rect2D> scissors)
 	{
-		ME::Core::Containers::Array<VkRect2D> vkScissors;
+		ME::Core::Array<VkRect2D> vkScissors;
 
 		for (const auto& spec : scissors)
 		{
@@ -80,13 +79,13 @@ namespace ME::Render
 			vkScissors.EmplaceBack(scissor);
 		}
 
-		vkCmdSetScissor(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, static_cast<uint32>(vkScissors.Size()), vkScissors.Data());
+		vkCmdSetScissorWithCount(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), static_cast<uint32>(vkScissors.Size()), vkScissors.Data());
 	}
 
     void VulkanPipeline::SetConstants(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ShaderStage shaderStage, void* constants,
         SIZE_T constantsSize)
     {
-		vkCmdPushConstants(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_PipelineLayout, ConvertShaderStageVulkan(shaderStage), 0, constantsSize, constants);
+		vkCmdPushConstants(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_PipelineLayout, ConvertShaderStageVulkan(shaderStage), 0, static_cast<uint32>(constantsSize), constants);
     }
 
     void VulkanPipeline::Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer)
@@ -105,14 +104,16 @@ namespace ME::Render
 		}	
 	}
 
-	ME::Core::Containers::Array<VkPipelineShaderStageCreateInfo> VulkanPipeline::FormatPipelineShaderStageCI()
+	ME::Core::Array<VkPipelineShaderStageCreateInfo> VulkanPipeline::FormatPipelineShaderStageCI()
 	{
-		ME::Core::Containers::Array<VkPipelineShaderStageCreateInfo> shaderStages(5);
+		ME::Core::Array<VkPipelineShaderStageCreateInfo> shaderStages(5);
 
 		for (uint8 i = 0; i < 5; i++)
 		{
 			shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			shaderStages[i].pSpecializationInfo = nullptr;
+			shaderStages[i].pNext = nullptr;
+			shaderStages[i].flags = 0;
 		}
 
 		shaderStages[0].module = m_Specification.Shaders.Pixel->As<VulkanShader>()->GetShaderModule();
@@ -179,9 +180,9 @@ namespace ME::Render
 		return shaderStages;
 	}
 
-    ME::Core::Containers::Array<VkPushConstantRange> VulkanPipeline::FormatPushConstantRange()
+    ME::Core::Array<VkPushConstantRange> VulkanPipeline::FormatPushConstantRange()
     {
-		ME::Core::Containers::Array<VkPushConstantRange> ranges = {};
+		ME::Core::Array<VkPushConstantRange> ranges = {};
 
 		for (const auto& constant : m_Specification.Constants.GetElements())
 		{
@@ -197,13 +198,13 @@ namespace ME::Render
 
     void VulkanPipeline::CreatePipelineLayout()
 	{
-		ME::Core::Containers::Array<VkDescriptorSetLayout> layouts;
+		ME::Core::Array<VkDescriptorSetLayout> layouts;
 		if (m_Specification.Type == PipelineType::Compute)
 			layouts = RenderCommand::Get()->As<VulkanRenderAPI>()->GetVulkanResourceHandler()->GetDescriptorSetLayouts(m_Specification.ComputeShader->As<VulkanShader>()->GetDescriptorSetLayouts());
 		else
 			layouts = RenderCommand::Get()->As<VulkanRenderAPI>()->GetVulkanResourceHandler()->GetDescriptorSetLayouts(m_Specification.Shaders.Pixel->As<VulkanShader>()->GetDescriptorSetLayouts());
 
-		ME::Core::Containers::Array<VkPushConstantRange> constants = FormatPushConstantRange();
+		ME::Core::Array<VkPushConstantRange> constants = FormatPushConstantRange();
 
 		VkPipelineLayoutCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -220,6 +221,7 @@ namespace ME::Render
 	void VulkanPipeline::CreateComputePipeline()
 	{
         VkPipelineShaderStageCreateInfo shaderCreateInfo = {};
+		shaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		shaderCreateInfo.pSpecializationInfo = nullptr;
 		shaderCreateInfo.module = m_Specification.ComputeShader->As<VulkanShader>()->GetShaderModule();
 		shaderCreateInfo.pName = ME_SHADER_COMPUTE_ENTRY_POINT;
@@ -227,7 +229,7 @@ namespace ME::Render
 
 		VkComputePipelineCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-		createInfo.basePipelineHandle = m_Specification.BasePipeline->As<VulkanPipeline>()->GetPipeline();
+		createInfo.basePipelineHandle = m_Specification.BasePipeline ? m_Specification.BasePipeline->As<VulkanPipeline>()->GetPipeline() : nullptr;
 		createInfo.basePipelineIndex = -1;
 		createInfo.layout = m_PipelineLayout;
 		createInfo.stage = shaderCreateInfo;
@@ -242,7 +244,7 @@ namespace ME::Render
 	{
 		VkResult result;
 
-		ME::Core::Containers::Array<VkPipelineShaderStageCreateInfo> shaderStage = FormatPipelineShaderStageCI();
+		ME::Core::Array<VkPipelineShaderStageCreateInfo> shaderStage = FormatPipelineShaderStageCI();
 
 		VkVertexInputBindingDescription visBindingDesc = {};
 		visBindingDesc.binding = 0;
@@ -254,7 +256,7 @@ namespace ME::Render
 		case InputClassification::None: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; ME_WARN("Vulkan pipeline: InputClassification::None is used! Using VK_VERTEX_INPUT_RATE_VERTEX instead."); break;
 		}
 
-		ME::Core::Containers::Array<VkVertexInputAttributeDescription> visAttributeDesc = {};
+		ME::Core::Array<VkVertexInputAttributeDescription> visAttributeDesc = {};
 
 		for (const auto& element : m_Specification.BufferLayout.GetElements())
 		{
@@ -285,9 +287,9 @@ namespace ME::Render
 
 		VkPipelineViewportStateCreateInfo vsCreateInfo = {};
 		vsCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		vsCreateInfo.scissorCount = 1;
+		vsCreateInfo.scissorCount = 0;
 		vsCreateInfo.pScissors = nullptr;
-		vsCreateInfo.viewportCount = 1;
+		vsCreateInfo.viewportCount = 0;
 		vsCreateInfo.pViewports = nullptr;
 
 		VkPipelineRasterizationStateCreateInfo rsCreateInfo = {};
@@ -330,7 +332,7 @@ namespace ME::Render
 		dssCreateInfo.minDepthBounds = m_Specification.DepthStencil.MinDepthBounds;
 		dssCreateInfo.maxDepthBounds = m_Specification.DepthStencil.MaxDepthBounds;
 
-		ME::Core::Containers::Array<VkPipelineColorBlendAttachmentState> cbsAttachments(m_Specification.ColorBlending.Attachments.Size());
+		ME::Core::Array<VkPipelineColorBlendAttachmentState> cbsAttachments(m_Specification.ColorBlending.Attachments.Size());
 
 		for (uint32 i = 0; i < m_Specification.ColorBlending.Attachments.Size(); i++)
 		{
@@ -355,9 +357,9 @@ namespace ME::Render
 		cbsCreateInfo.logicOpEnable = m_Specification.ColorBlending.LogicOperation != LogicOperation::None;
 		cbsCreateInfo.logicOp = ConvertLogicOperationVulkan(m_Specification.ColorBlending.LogicOperation);
 
-		ME::Core::Containers::Array<VkDynamicState> dynamicStates = {
-			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR,
+		ME::Core::Array<VkDynamicState> dynamicStates = {
+			VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
+			VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
 			VK_DYNAMIC_STATE_STENCIL_REFERENCE,
 		};
 
@@ -372,8 +374,8 @@ namespace ME::Render
 		createInfo.subpass = m_Specification.Subpass;
 		createInfo.pStages = shaderStage.Data();
 		createInfo.stageCount = static_cast<uint32>(shaderStage.Size());
-		createInfo.pVertexInputState = &visCreateInfo;
-		createInfo.pInputAssemblyState = &iasCreateInfo;
+		createInfo.pVertexInputState = m_Specification.Shaders.UsesMeshPipeline ? nullptr : &visCreateInfo;
+		createInfo.pInputAssemblyState = m_Specification.Shaders.UsesMeshPipeline ? nullptr : &iasCreateInfo;
 		createInfo.pTessellationState = &tsCreateInfo;
 		createInfo.pViewportState = &vsCreateInfo;
 		createInfo.pRasterizationState = &rsCreateInfo;

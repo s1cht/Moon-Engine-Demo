@@ -1,14 +1,13 @@
-#include "AssetLoader.h"
+#include "AssetLoader.hpp"
 
-#include <Core/Containers/Tables/UnorderedMap.hpp>
+#include <Core/Containers/UnorderedMap.hpp>
 #include <Core/Platform/Base/IO.hpp>
 
-#include "Application/Application.h"
-#include "Renderer/Assets/Image.h"
-#include "Renderer/Assets/Mesh.hpp"
+#include "Application/Application.hpp"
+#include "Renderer/Assets/Image.hpp"
 #include "Renderer/Managers/MeshManager.hpp"
 
-#define DEBUG_MESH
+//#define DEBUG_MESH
 //#define DEBUG_INDICES
 
 #define SIGN(p1, p2, p3) (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x)* (p1.y - p3.y)
@@ -19,7 +18,7 @@ namespace ME::Utility
 	namespace LocalFunctions
 	{
 		void Split(const ME::Core::String& str,
-			ME::Core::Containers::Array<ME::Core::String>& out,
+			ME::Core::Array<ME::Core::String>& out,
 			ME::Core::String splitStr)
 		{
 			out.Clear();
@@ -67,6 +66,7 @@ namespace ME::Utility
 				return in.Substring(valStart, valEnd - valStart + 1);
 			else if (valStart != -1)
 				return in.Substring(valStart);
+			return TEXT("");
 		}
 
 		inline ME::Core::String GetToken(const ME::Core::String& in)
@@ -85,7 +85,7 @@ namespace ME::Utility
 		}
 
 		template <class T>
-		inline const T& FindElement(const ME::Core::Containers::Array<T>& elements, ME::Core::String& index)
+		inline const T& FindElement(const ME::Core::Array<T>& elements, ME::Core::String& index)
 		{
 			int32 idx = static_cast<int32>(ME::Core::StringToInt(index, nullptr));
 			if (idx == 0)
@@ -107,7 +107,7 @@ namespace ME::Utility
 			return elements[idx];
 		}
 
-		inline void CenterMesh(ME::Core::Containers::Array<ME::Assets::Vertex>& vertices)
+		inline void CenterMesh(ME::Core::Array<ME::Assets::Vertex>& vertices)
 		{
 			if (vertices.Size() == 0)
 				return;
@@ -121,7 +121,7 @@ namespace ME::Utility
 				vertex.Position -= centroid;
 		}
 
-		inline void CenterMeshGroup(ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>>& meshes)
+		inline void CenterMeshGroup(ME::Core::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>>& meshes)
 		{
 			if (meshes.Empty())
 				return;
@@ -191,26 +191,28 @@ namespace ME::Utility
 
 		bool readingStarted = false;
 		AssetLoadResult result;
-		result.Meshes = ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Mesh>>();
+		result.Meshes = ME::Core::Array<ME::Core::Memory::Reference<Assets::Mesh>>();
 
 		ME::Core::Memory::Reference<ME::Assets::Mesh> mesh;
 
-		ME::Core::Containers::Array<Assets::Vertex> vertices(10000);
-		ME::Core::Containers::Array<uint32> indices(10000);
-		ME::Core::Containers::Array<Assets::Vertex> faceVertices(3);
-		ME::Core::Containers::Array<uint32> faceIndices(3);
-		ME::Core::Containers::UnorderedMap<Assets::Vertex, uint32> vertexToIndex(1000);
+		ME::Core::Array<Assets::Vertex> vertices(10000);
+		ME::Core::Array<uint32> indices(10000);
+		ME::Core::Array<Assets::Vertex> faceVertices(3);
+		ME::Core::Array<uint32> faceIndices(3);
+		ME::Core::UnorderedMap<Assets::Vertex, uint32> vertexToIndex(1000);
 
-		ME::Core::Containers::Array<ME::Core::Math::Vector3D32> positions(1000);
-		ME::Core::Containers::Array<ME::Core::Math::Vector2D32> uvCoords(1000);
-		ME::Core::Containers::Array<ME::Core::Math::Vector3D32> normals(1000);
+		ME::Core::Array<ME::Core::Math::Vector3D32> positions(1000);
+		ME::Core::Array<ME::Core::Math::Vector2D32> uvCoords(1000);
+		ME::Core::Array<ME::Core::Math::Vector3D32> normals(1000);
 
 		ME::Core::String meshName;
 		ME::Core::String line;
 		ME::Core::String token = TEXT("");
 		ME::Core::String value = TEXT("");
-		ME::Core::Containers::Array<ME::Core::String> values(4);
-		ME::Core::Containers::Array<ME::Core::String> faceValues(3);
+		ME::Core::Array<ME::Core::String> values(4);
+		ME::Core::Array<ME::Core::String> faceValues(3);
+
+		uint32 faceCount = 0;
 
 		vertices.Clear();
 		indices.Clear();
@@ -228,8 +230,7 @@ namespace ME::Utility
 				if (!indices.Empty() && !vertices.Empty())
 				{
 					mesh = ME::Render::Manager::MeshManager::Get().CreateMesh();
-					mesh->SetVertices(vertices);
-					mesh->SetIndices(indices);
+					mesh->UpdateMeshInfo(vertices, indices);
 					mesh->SetGroupName(meshName);
 					result.Meshes.EmplaceBack(mesh);
 
@@ -280,35 +281,13 @@ namespace ME::Utility
 			}
 			else if (token == TEXT("vp")) continue;
 			else if (token == TEXT("f"))
-			{	
-				value = LocalFunctions::GetTokenValues(line);
-				LocalFunctions::Split(value, values, TEXT(" "));
-				if (values.Size() < 3)
-					continue;
-
-				for (const Core::String& val : values)
-				{
-					LocalFunctions::Split(val, faceValues, TEXT("/"));
-
-					Assets::Vertex vertex;
-					vertex.Position = LocalFunctions::FindElement(positions, faceValues[0]);
-					if (faceValues.Size() > 1 && !faceValues[1].Empty()) {
-						vertex.TextureCoords = LocalFunctions::FindElement(uvCoords, faceValues[1]);
-					}
-					if (faceValues.Size() > 2 && !faceValues[2].Empty()) {
-						vertex.Normal = LocalFunctions::FindElement(normals, faceValues[2]);
-					}
-					indices.PushBack(static_cast<uint32>(vertices.Size()));
-					vertices.EmplaceBack(vertex);
-				}
-#if 0
+			{
 				value = LocalFunctions::GetTokenValues(line);
 				LocalFunctions::Split(value, values, TEXT(" "));
 				if (values.Size() < 3)
 					continue;
 
 				faceVertices.Clear();
-				faceIndices.Clear();
 
 				for (const Core::String& val : values)
 				{
@@ -316,37 +295,48 @@ namespace ME::Utility
 
 					Assets::Vertex vertex;
 					vertex.Position = LocalFunctions::FindElement(positions, faceValues[0]);
-					if (faceValues.Size() > 1 && !faceValues[1].Empty()) {
+					if (faceValues.Size() > 1 && !faceValues[1].Empty())
 						vertex.TextureCoords = LocalFunctions::FindElement(uvCoords, faceValues[1]);
-					}
-					if (faceValues.Size() > 2 && !faceValues[2].Empty()) {
+					if (faceValues.Size() > 2 && !faceValues[2].Empty())
 						vertex.Normal = LocalFunctions::FindElement(normals, faceValues[2]);
-					}
+
 					faceVertices.EmplaceBack(vertex);
 				}
 
+				if (faceVertices.Size() == 3)
+				{
+				    for (const Assets::Vertex& vertex : faceVertices)
+				    {
+						if (vertexToIndex.Contains(vertex))
+							indices.EmplaceBack(vertexToIndex[vertex]);
+						else
+						{
+							uint32 index = static_cast<uint32>(vertices.Size());
+							indices.EmplaceBack(index);
+							vertices.EmplaceBack(vertex);
+							vertexToIndex.Insert(vertex, index);
+						}
+				    }
+					continue;
+				}
+
+				faceIndices.Clear();
 				Triangulate(faceVertices, faceIndices);
 
-				for (uint32 li : faceIndices)
+				for (const uint32& localIndex : faceIndices)
 				{
-					const Assets::Vertex& v = faceVertices[li];
+					Assets::Vertex vertex = faceVertices[localIndex];
 
-					auto iter = vertexToIndex.Find(v);
-					uint32 globalIdx;
-					if (iter != vertexToIndex.End())
-					{
-						globalIdx = iter->Value2;
-					}
+					if (vertexToIndex.Contains(vertex))
+						indices.EmplaceBack(vertexToIndex[vertex]);
 					else
 					{
-						globalIdx = static_cast<uint32>(vertices.Size());
-						vertices.EmplaceBack(v);
-						vertexToIndex[v] = globalIdx;
+						uint32 index = static_cast<uint32>(vertices.Size());
+						indices.EmplaceBack(index);
+						vertices.EmplaceBack(vertex);
+						vertexToIndex.Insert(vertex, index);
 					}
-
-					indices.EmplaceBack(globalIdx);
 				}
-#endif
 			}
 			else if (token == TEXT("l")) continue;
 			else if (token == TEXT("s")) continue;
@@ -354,8 +344,7 @@ namespace ME::Utility
 		if (!indices.Empty() && !vertices.Empty())
 		{
 			mesh = ME::Render::Manager::MeshManager::Get().CreateMesh();
-			mesh->SetVertices(vertices);
-			mesh->SetIndices(indices);
+			mesh->UpdateMeshInfo(vertices, indices);
 			mesh->SetGroupName(meshName);
 			result.Meshes.EmplaceBack(mesh);
 		}
@@ -451,7 +440,7 @@ namespace ME::Utility
 	}
 
 
-	ME::Core::Math::Vector3D32 AssetLoader::CalculateNormal(const ME::Core::Containers::Array<Assets::Vertex>& vertices)
+	ME::Core::Math::Vector3D32 AssetLoader::CalculateNormal(const ME::Core::Array<Assets::Vertex>& vertices)
 	{
 		ME::Core::Math::Vector3D32 normal(0.0f, 0.0f, 0.0f);
 
@@ -477,8 +466,8 @@ namespace ME::Utility
 		return normal;
 	}
 
-	void AssetLoader::ProjectTo2D(const ME::Core::Containers::Array<Assets::Vertex>& vertices,
-	                              ME::Core::Containers::Array<ME::Core::Math::Vector2D32>& out2D)
+	void AssetLoader::ProjectTo2D(const ME::Core::Array<Assets::Vertex>& vertices,
+	                              ME::Core::Array<ME::Core::Math::Vector2D32>& out2D)
 	{
 		Core::Math::Vector3D32 normal = CalculateNormal(vertices).Abs();
 
@@ -506,8 +495,8 @@ namespace ME::Utility
 		return (b1 == b2) && (b2 == b3);
 	}
 
-	bool AssetLoader::IsEar(int i, const ME::Core::Containers::Array<ME::Core::Math::Vector2D32>& poly,
-		const ME::Core::Containers::Array<uint32>& idx)
+	bool AssetLoader::IsEar(int i, const ME::Core::Array<ME::Core::Math::Vector2D32>& poly,
+		const ME::Core::Array<uint32>& idx)
 	{
 		int prev = idx[(i + idx.Size() - 1) % idx.Size()];
 		int curr = idx[i];
@@ -532,13 +521,13 @@ namespace ME::Utility
 		return true;
 	}
 
-	void AssetLoader::Triangulate(const ME::Core::Containers::Array<Assets::Vertex>& vertices,
-		ME::Core::Containers::Array<uint32>& indicesOut)
+	void AssetLoader::Triangulate(const ME::Core::Array<Assets::Vertex>& vertices,
+		ME::Core::Array<uint32>& indicesOut)
 	{
-		Core::Containers::Array<ME::Core::Math::Vector2D32> projected;
+		Core::Array<ME::Core::Math::Vector2D32> projected;
 		ProjectTo2D(vertices, projected);
 
-		Core::Containers::Array<uint32> idx;
+		Core::Array<uint32> idx;
 		for (uint32 i = 0; i < vertices.Size(); i++)
 			idx.EmplaceBack(i);
 

@@ -2,7 +2,7 @@
 
 #include "VulkanRenderAPI.hpp"
 #include "VulkanCommandBuffer.hpp"
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
@@ -17,7 +17,8 @@ namespace ME::Render
 	VulkanIndexBuffer::VulkanIndexBuffer(const IndexBufferSpecification& specification)
 		: IndexBuffer(specification),
         m_Buffer(nullptr), m_Allocation(nullptr),
-        m_StagingBuffer(nullptr), m_StagingAllocation(nullptr)
+        m_StagingBuffer(nullptr), m_StagingAllocation(nullptr),
+		m_ResourceIndex(m_Specification.SetIndex)
 	{
 		Init(specification);
 	}
@@ -36,7 +37,7 @@ namespace ME::Render
 
 	void VulkanIndexBuffer::SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, uint32* indices, SIZE_T indexCount, SIZE_T offset)
 	{
-		ME_ASSERT(indexCount == m_Specification.IndexCount, "Trying to set data with different size in index buffer \"{0}\"!");
+		ME_ASSERT(indexCount <= m_Specification.IndexCount, "Trying to set data with different size in index buffer \"{0}\"!", m_DebugName);
         void* bufferData;
 		VkBufferCopy bufferCopy;
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
@@ -230,7 +231,7 @@ namespace ME::Render
 	{
 		VkBufferCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		createInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		createInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		createInfo.size = static_cast<uint64>(m_Specification.IndexCount * sizeof(int32));
 		createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		createInfo.queueFamilyIndexCount = 0;

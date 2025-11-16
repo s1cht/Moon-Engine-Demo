@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 #include "Core/Math/MathMacros.hpp"
-#include "Core/Utils/Logging/Logger.hpp"
+#include "Core/Utility/Logging/Logger.hpp"
 
 namespace ME::Core::Math
 {

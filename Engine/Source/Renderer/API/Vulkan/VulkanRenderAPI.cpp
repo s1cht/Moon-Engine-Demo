@@ -1,21 +1,24 @@
 #include "VulkanRenderAPI.hpp"
-#include <set>
+#include <Core/Containers/Set.hpp>
 
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
-#include "Application/Application.h"
-#include "EngineDefines.h"
+#include "Application/Application.hpp"
+#include "EngineDefines.hpp"
 #include "VulkanFunctions.hpp"
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanFramebuffer.hpp"
+#include "VulkanIndexBuffer.hpp"
 #include "VulkanIndirectBuffer.hpp"
 #include "VulkanRenderPass.hpp"
 #include "VulkanResourceHandler.hpp"
+#include "VulkanStorageBuffer.hpp"
 #include "VulkanTexture.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+#include "VulkanUniform.hpp"
+#include "VulkanVertexBuffer.hpp"
 #include "Renderer/Base/Buffer.hpp"
-
+#include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
 {
@@ -27,7 +30,7 @@ namespace ME::Render
     VulkanRenderAPI::VulkanRenderAPI()
         : m_Instance(nullptr),
         m_Surface(nullptr), m_Device(nullptr), m_SelectedPhysicalDevice(static_cast<uint32>(-1)),
-        m_PhysicalDevices(ME::Core::Containers::Array<VkPhysicalDevice>()), m_GraphicsQueueFamily(static_cast<uint32>(-1)), m_PresentQueueFamily(static_cast<uint32>(-1)),
+        m_PhysicalDevices(ME::Core::Array<VkPhysicalDevice>()), m_GraphicsQueueFamily(static_cast<uint32>(-1)), m_PresentQueueFamily(static_cast<uint32>(-1)),
         m_GraphicsQueue(nullptr), m_PresentQueue(nullptr), m_SwapChain(nullptr),
         m_ValidationLayer(nullptr)
     {
@@ -54,14 +57,17 @@ namespace ME::Render
 
     }
 
-    void VulkanRenderAPI::CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass)
+    void VulkanRenderAPI::CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass,
+        const ME::Core::Array<ME::Core::Memory::Reference<Render::RTexture2D>>& attachments)
     {
-        ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> swapChainImages = m_SwapChain->GetImages();
-
+        ME::Core::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> swapChainImages = m_SwapChain->GetImages();
+        m_FramebufferAttachments = attachments;
         for (SIZE_T i = 0; i < swapChainImages.Size(); i++)
         {
             Render::FramebufferSpecification framebufferSpecification = {};
             framebufferSpecification.Attachments = { swapChainImages[i] };
+            for (auto& attachment : m_FramebufferAttachments)
+                framebufferSpecification.Attachments.EmplaceBack(attachment->GetTextures()[i]);
             framebufferSpecification.Layers = 1;
             framebufferSpecification.RenderPass = renderPass;
             framebufferSpecification.Resolution.x = swapChainImages[i]->GetResolution().x;
@@ -103,6 +109,8 @@ namespace ME::Render
         {
             vkDeviceWaitIdle(m_Device);
             auto renderPass = m_FrameInfos[0].Framebuffer->GetSpecification().RenderPass;
+            auto attachments = m_FrameInfos[0].Framebuffer->GetSpecification().Attachments;
+            attachments.Erase(--attachments.End());
 
             for (SIZE_T i = 0; i < m_SwapChain->GetImages().Size(); i++)
             {
@@ -112,7 +120,7 @@ namespace ME::Render
 
             m_SwapChain->Resize(0, 0);
 
-            CreateFramebuffers(renderPass);
+            CreateFramebuffers(renderPass, m_FramebufferAttachments);
             m_SwapChain->Updated();
         }
 
@@ -148,7 +156,7 @@ namespace ME::Render
 
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         barrier.image = m_SwapChain->GetImages()[currentImage]->As<VulkanTexture2D>()->GetImage();
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -167,6 +175,7 @@ namespace ME::Render
             1, &barrier);
 
         m_FrameInfos[currentImage].CommandBuffer->Finish();
+        Submit(m_FrameInfos[currentImage].CommandBuffer);
     }
 
     void VulkanRenderAPI::Present()
@@ -211,46 +220,11 @@ namespace ME::Render
     }
 
     void VulkanRenderAPI::DrawIndexedIndirectCount(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        PipelineStageFlags bufferSrc,
         const ME::Core::Memory::Reference<Render::IndirectBuffer>& buffer, SIZE_T offset,
         const ME::Core::Memory::Reference<Render::IndirectBuffer>& drawCount, uint32 drawCountOffset,
         uint32 maxDrawCount, uint32 stride)
     {
-        VkBufferMemoryBarrier bufferBarrier = {};
-        bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-        bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-        bufferBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-        bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        bufferBarrier.buffer = buffer->As<VulkanIndirectBuffer>()->GetBuffer();
-        bufferBarrier.offset = 0;
-        bufferBarrier.size = VK_WHOLE_SIZE;
-
-        VkBufferMemoryBarrier drawCountBarrier = {};
-        drawCountBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-        drawCountBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-        drawCountBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-        drawCountBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        drawCountBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        drawCountBarrier.buffer = drawCount->As<VulkanIndirectBuffer>()->GetBuffer();
-        drawCountBarrier.offset = 0;
-        drawCountBarrier.size = VK_WHOLE_SIZE;
-
-        vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-            0,
-            0, nullptr,
-            1, &bufferBarrier,
-            0, nullptr);
-
-        vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-            0,
-            0, nullptr,
-            1, &drawCountBarrier,
-            0, nullptr);
-
         vkCmdDrawIndexedIndirectCount(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
             buffer->As<VulkanIndirectBuffer>()->GetBuffer(), offset,
             drawCount->As<VulkanIndirectBuffer>()->GetBuffer(), drawCountOffset,
@@ -327,11 +301,88 @@ namespace ME::Render
         m_ResourceHandler->WriteResource(buffer);
     }
 
+    inline void VulkanRenderAPI::WriteResource(ME::Core::Memory::Reference<ME::Render::VertexBuffer> buffer)
+    {
+        m_ResourceHandler->WriteResource(buffer);
+    }
+
+    inline void VulkanRenderAPI::WriteResource(ME::Core::Memory::Reference<ME::Render::IndexBuffer> buffer)
+    {
+        m_ResourceHandler->WriteResource(buffer);
+    }
+
+    inline void VulkanRenderAPI::WriteResource(ME::Core::Memory::Reference<ME::Render::IndirectBuffer> buffer)
+    {
+        m_ResourceHandler->WriteResource(buffer);
+    }
+
     void VulkanRenderAPI::BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
         ME::Core::Memory::Reference<Render::Pipeline> pipeline, 
         ME::Core::Memory::Reference<ME::Render::Buffer> buffer)
     {
         m_ResourceHandler->BindResourceSet(commandBuffer, pipeline, buffer->GetBaseSpecification().Set, buffer->GetResourceSet());
+    }
+
+    void VulkanRenderAPI::BindIndexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::IndexBuffer>& buffer, uint32 offset)
+    {
+        vkCmdBindIndexBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), buffer->As<VulkanIndexBuffer>()->GetBuffer(), offset, VK_INDEX_TYPE_UINT32);
+    }
+
+    void VulkanRenderAPI::BindVertexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, uint32 offset)
+    {
+        VkDeviceSize vkOffset = offset;
+        VkBuffer vkBuffer = buffer->As<VulkanVertexBuffer>()->GetBuffer();
+        vkCmdBindVertexBuffers(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, 1, &vkBuffer, &vkOffset);
+    }
+
+    void VulkanRenderAPI::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, BarrierInfo src, BarrierInfo dst)
+    {
+        m_ResourceHandler->BufferBarrier(commandBuffer, buffer, src, dst);
+    }
+
+    void VulkanRenderAPI::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::IndexBuffer>& buffer, BarrierInfo src, BarrierInfo dst)
+    {
+        m_ResourceHandler->BufferBarrier(commandBuffer, buffer, src, dst);
+    }
+
+    void VulkanRenderAPI::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::IndirectBuffer>& buffer, BarrierInfo src, BarrierInfo dst)
+    {
+        m_ResourceHandler->BufferBarrier(commandBuffer, buffer, src, dst);
+    }
+
+    void VulkanRenderAPI::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::StorageBuffer>& buffer, BarrierInfo src, BarrierInfo dst)
+    {
+        m_ResourceHandler->BufferBarrier(commandBuffer, buffer, src, dst);
+    }
+
+    void VulkanRenderAPI::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::Uniform>& buffer, BarrierInfo src, BarrierInfo dst)
+    {
+        m_ResourceHandler->BufferBarrier(commandBuffer, buffer, src, dst);
+    }
+
+    void VulkanRenderAPI::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::Texture1D>& texture, BarrierInfo src, BarrierInfo dst)
+    {
+        m_ResourceHandler->TextureBarrier(commandBuffer, texture, src, dst);
+    }
+
+    void VulkanRenderAPI::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::Texture2D>& texture, BarrierInfo src, BarrierInfo dst)
+    {
+        m_ResourceHandler->TextureBarrier(commandBuffer, texture, src, dst);
+    }
+
+    void VulkanRenderAPI::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        const ME::Core::Memory::Reference<Render::Texture3D>& texture, BarrierInfo src, BarrierInfo dst)
+    {
+        m_ResourceHandler->TextureBarrier(commandBuffer, texture, src, dst);
     }
 
     void VulkanRenderAPI::BindTexture(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
@@ -348,7 +399,7 @@ namespace ME::Render
 
     void VulkanRenderAPI::BeginRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Render::RenderPassBeginInfo& info)
     {
-        ME::Core::Containers::Array<VkClearValue> clearValues;
+        ME::Core::Array<VkClearValue> clearValues;
 
         for (SIZE_T i = 0; i < info.ClearValues.Size(); i++)
         {
@@ -440,6 +491,8 @@ namespace ME::Render
         vkDeviceWaitIdle(m_Device);
 
         auto renderPass = m_FrameInfos[0].Framebuffer ? m_FrameInfos[0].Framebuffer->GetSpecification().RenderPass : nullptr;
+        auto attachments = m_FrameInfos[0].Framebuffer->GetSpecification().Attachments;
+        attachments.Erase(--attachments.End());
 
         for (auto& frameInfo : m_FrameInfos)
         {
@@ -453,9 +506,7 @@ namespace ME::Render
         m_SwapChain->Resize(x, y);
 
         if (!m_SwapChain->UpdateRequired() && renderPass)
-        {
-            CreateFramebuffers(renderPass);
-        }
+            CreateFramebuffers(renderPass, m_FramebufferAttachments);
     }
 
     int32 VulkanRenderAPI::Init()
@@ -489,6 +540,7 @@ namespace ME::Render
             VK_GOOGLE_HLSL_FUNCTIONALITY_1_EXTENSION_NAME,
             VK_GOOGLE_USER_TYPE_EXTENSION_NAME,
             VK_EXT_MESH_SHADER_EXTENSION_NAME,
+            VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME,
         };
 
         bool supported = CheckLayerSupport(unsupported);
@@ -639,7 +691,7 @@ namespace ME::Render
     int32 VulkanRenderAPI::CreateInstance(const uint32& apiVersion)
     {
         uint32 extensionCount = 0;
-        ME::Core::Containers::Array<VkExtensionProperties> extensions;
+        ME::Core::Array<VkExtensionProperties> extensions;
         const ME::ApplicationData& appData = ME::Application::Get().GetAppData();
 
         VkApplicationInfo appInfo = {};
@@ -650,11 +702,11 @@ namespace ME::Render
         appInfo.engineVersion = VK_MAKE_API_VERSION(0, ENGINE_VER_MAJOR, ENGINE_VER_MINOR, ENGINE_VER_PATCH);
         appInfo.apiVersion = apiVersion;
 
-        ME::Core::Containers::Array<const char*> layers = {};
-        for (const ME::Core::StringView& layer : m_DeviceLayers)
+        ME::Core::Array<const char*> layers = {};
+        for (const ME::Core::StringView& layer : m_Layers)
             layers.EmplaceBack(CONVERT_TEXT(layer.String()));
-        ME::Core::Containers::Array<const char*> extensionsC = {};
-        for (const ME::Core::StringView& extension : m_DeviceExtensions)
+        ME::Core::Array<const char*> extensionsC = {};
+        for (const ME::Core::StringView& extension : m_Extensions)
             extensionsC.EmplaceBack(CONVERT_TEXT(extension.String()));
 
         VkInstanceCreateInfo instanceInfo = {};
@@ -690,14 +742,17 @@ namespace ME::Render
     {
         VkResult result;
 
-        std::set<uint32> families = { m_GraphicsQueueFamily, m_PresentQueueFamily };
-        ME::Core::Containers::Array<VkDeviceQueueCreateInfo> queueCreateInfos;
-        queueCreateInfos.Reserve(families.size());
+        ME::Core::Set<uint32> families;
+        families.Insert(m_GraphicsQueueFamily);
+        families.Insert(m_PresentQueueFamily);
+        ME::Core::Array<VkDeviceQueueCreateInfo> queueCreateInfos;
+        queueCreateInfos.Reserve(families.Size());
         float32 queuePriority = 1.f;
 
         for (const auto& family : families)
         {
             VkDeviceQueueCreateInfo queueCreateInfo{};
+
             queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueCreateInfo.queueCount = 1;
             queueCreateInfo.pQueuePriorities = &queuePriority;
@@ -713,17 +768,35 @@ namespace ME::Render
     	features.depthBiasClamp = true;
         features.sampleRateShading = true;
 
-        VkPhysicalDeviceDescriptorIndexingFeatures descFeatures = {};
-        descFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-        descFeatures.descriptorBindingUpdateUnusedWhilePending = true;
-        descFeatures.descriptorBindingPartiallyBound = true;
-        descFeatures.runtimeDescriptorArray = true;
-        descFeatures.pNext = nullptr;
+        VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures = {};
+        meshShaderFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+        meshShaderFeatures.meshShader = true;
+        meshShaderFeatures.taskShader = true;
+        meshShaderFeatures.meshShaderQueries = true;
+        meshShaderFeatures.pNext = nullptr;
 
-        ME::Core::Containers::Array<const char*> layers = {};
+        VkPhysicalDeviceVulkan14Features vk14Features = {};
+        vk14Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES;
+        vk14Features.pNext = &meshShaderFeatures;
+
+        VkPhysicalDeviceVulkan13Features vk13Features = {};
+        vk13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+        vk13Features.pNext = &vk14Features;
+
+        VkPhysicalDeviceVulkan12Features vk12Features = {};
+        vk12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        vk12Features.separateDepthStencilLayouts = true;
+        vk12Features.scalarBlockLayout = true;
+        vk12Features.descriptorBindingUpdateUnusedWhilePending = true;
+        vk12Features.descriptorBindingPartiallyBound = true;
+        vk12Features.runtimeDescriptorArray = true;
+        vk12Features.drawIndirectCount = true;
+        vk12Features.pNext = &vk13Features;
+
+        ME::Core::Array<const char*> layers = {};
         for (const ME::Core::StringView& layer : m_DeviceLayers)
             layers.EmplaceBack(CONVERT_TEXT(layer.String()));
-        ME::Core::Containers::Array<const char*> extensions = {};
+        ME::Core::Array<const char*> extensions = {};
         for (const ME::Core::StringView& extension : m_DeviceExtensions)
             extensions.EmplaceBack(CONVERT_TEXT(extension.String()));
 
@@ -736,7 +809,7 @@ namespace ME::Render
         createInfo.enabledExtensionCount = static_cast<uint32>(extensions.Size());
         createInfo.ppEnabledExtensionNames = extensions.Data();
         createInfo.pEnabledFeatures = &features;
-        createInfo.pNext = &descFeatures;
+        createInfo.pNext = &vk12Features;
 
         result = vkCreateDevice(m_PhysicalDevices[m_SelectedPhysicalDevice], &createInfo, nullptr, &m_Device);
         if (ME_VK_FAILED(result))
@@ -784,7 +857,7 @@ namespace ME::Render
     void VulkanRenderAPI::DestroyValidationLayer()
     {
         auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
-	        m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
+	        m_Instance, "vkDestroyDebugUtilityMessengerEXT"));
         if (func != nullptr)
             func(m_Instance, m_ValidationLayer, nullptr);
     }
@@ -794,7 +867,7 @@ namespace ME::Render
         if (m_FrameInfos.Size() == 0)
             return;
 
-        ME::Core::Containers::Array<VkFence> fences(m_FrameInfos.Size());
+        ME::Core::Array<VkFence> fences(m_FrameInfos.Size());
         for (SIZE_T i = 0; i < m_FrameInfos.Size(); i++)
             fences[i] = m_FrameInfos[i].InFlight;
 
@@ -816,7 +889,7 @@ namespace ME::Render
     bool VulkanRenderAPI::CheckLayerSupport(uint32& unsupportedLayer) const
     {
         uint32 layerCount = 0;
-        ME::Core::Containers::Array<VkLayerProperties> availableLayers;
+        ME::Core::Array<VkLayerProperties> availableLayers;
 
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -847,7 +920,7 @@ namespace ME::Render
     bool VulkanRenderAPI::CheckExtensionSupport(uint32& unsupportedExtension) const
     {
         uint32 extensionCount = 0;
-        ME::Core::Containers::Array<VkExtensionProperties> availableExtensions;
+        ME::Core::Array<VkExtensionProperties> availableExtensions;
 
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
@@ -865,7 +938,10 @@ namespace ME::Render
             for (const auto& aExtension : availableExtensions)
             {
                 if (str == CONVERT_TEXT_UTF8(aExtension.extensionName))
+                {
                     extensionFound = true;
+                    break;
+                }
             }
 
             if (extensionFound != true)
@@ -881,7 +957,7 @@ namespace ME::Render
             return true;
 
         uint32 count = 0;
-        ME::Core::Containers::Array<VkLayerProperties> availableLayers;
+        ME::Core::Array<VkLayerProperties> availableLayers;
 
         vkEnumerateDeviceLayerProperties(m_PhysicalDevices[m_SelectedPhysicalDevice], &count, nullptr);
 
@@ -911,11 +987,11 @@ namespace ME::Render
 
     bool VulkanRenderAPI::CheckDeviceExtensionSupport(uint32& unsupportedExtension) const
     {
-        if (m_DeviceLayers.Size() <= 0)
+        if (m_DeviceExtensions.Size() <= 0)
             return true;
 
         uint32 extensionCount = 0;
-        ME::Core::Containers::Array<VkExtensionProperties> availableExtensions;
+        ME::Core::Array<VkExtensionProperties> availableExtensions;
 
         vkEnumerateDeviceExtensionProperties(m_PhysicalDevices[m_SelectedPhysicalDevice], nullptr, &extensionCount, nullptr);
 
@@ -925,14 +1001,14 @@ namespace ME::Render
         vkEnumerateDeviceExtensionProperties(m_PhysicalDevices[m_SelectedPhysicalDevice], nullptr, &extensionCount, availableExtensions.Data());
 
         unsupportedExtension = 0;
-        for (const ME::Core::StringView str : m_Extensions)
+        for (const ME::Core::StringView str : m_DeviceExtensions)
         {
             unsupportedExtension++;
             bool extensionFound = false;
 
             for (const auto& aExtension : availableExtensions)
             {
-                if (str.String() == CONVERT_TEXT_UTF8(aExtension.extensionName))
+                if (str == CONVERT_TEXT_UTF8(aExtension.extensionName))
                     extensionFound = true;
             }
 
@@ -945,7 +1021,7 @@ namespace ME::Render
 
     void VulkanRenderAPI::CheckPhysicalDevices()
     {
-        ME::Core::Containers::Array<VkPhysicalDevice> suitableDevices;
+        ME::Core::Array<VkPhysicalDevice> suitableDevices;
         suitableDevices.Reserve(m_PhysicalDevices.Size());
         for (const auto& device : m_PhysicalDevices)
             if (DeviceSuitable(device))
@@ -997,7 +1073,7 @@ namespace ME::Render
     int32 VulkanRenderAPI::PickQueueFamily()
     {
         uint32 familyCount = 0;
-        ME::Core::Containers::Array<VkQueueFamilyProperties> props;
+        ME::Core::Array<VkQueueFamilyProperties> props;
 
         vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevices[m_SelectedPhysicalDevice], &familyCount, nullptr);
 
@@ -1094,6 +1170,24 @@ namespace ME::Render
             VkSemaphore semaphore;
             vkCreateSemaphore(m_Device, &semaphoreCreateInfo, nullptr, &semaphore);
             m_SubmitSemaphores.EmplaceBack(semaphore);
+        }
+    }
+
+    void VulkanRenderAPI::CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass)
+    {
+        ME::Core::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> swapChainImages = m_SwapChain->GetImages();
+        for (SIZE_T i = 0; i < swapChainImages.Size(); i++)
+        {
+            Render::FramebufferSpecification framebufferSpecification = {};
+            framebufferSpecification.Attachments = { swapChainImages[i] };
+            for (auto& attachment : m_FramebufferAttachments)
+                framebufferSpecification.Attachments.EmplaceBack(attachment->GetTextures()[i]);
+            framebufferSpecification.Layers = 1;
+            framebufferSpecification.RenderPass = renderPass;
+            framebufferSpecification.Resolution.x = swapChainImages[i]->GetResolution().x;
+            framebufferSpecification.Resolution.y = swapChainImages[i]->GetResolution().y;
+
+            m_FrameInfos[i].Framebuffer = ME::Render::Framebuffer::Create(framebufferSpecification);
         }
     }
 

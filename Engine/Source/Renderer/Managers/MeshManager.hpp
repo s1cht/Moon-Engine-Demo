@@ -1,7 +1,6 @@
 ﻿#pragma once
-
 #include <Core.hpp>
-#include <Core/Containers/Tables/Map.hpp>
+#include <Core/Containers/Map.hpp>
 #include <Core/Memory/Allocators/BuddyAllocator.hpp>
 
 #include "Renderer/Base/Buffer.hpp"
@@ -12,7 +11,8 @@ constexpr SIZE_T ME_MESH_MNG_IND_BUFFER_SIZE            = ME_MB(BIT(7)); // 128 
 constexpr SIZE_T ME_MESH_MNG_MESHLET_BUFFER_SIZE        = ME_MB(BIT(7)); // 128 MB
 constexpr SIZE_T ME_MESH_MNG_MIN_SIZE                   = ME_KB(BIT(8)); // 256 KB
 constexpr uint32 ME_MESH_MNG_MAX_MESH_COUNT             = 0xffff;
-constexpr uint32 ME_MESH_MNG_MESHLET_MAX_VERTEX_COUNT   = 128;
+constexpr uint32 ME_MESH_MNG_MAX_MESH_BOX_COUNT         = 0xffff;
+constexpr uint32 ME_MESH_MNG_MESHLET_MAX_VERTEX_COUNT   = 64;
 constexpr uint32 ME_MESH_MNG_MESHLET_MAX_TRI_COUNT      = 126;
 
 namespace ME::Assets
@@ -27,6 +27,8 @@ namespace ME::Render::Manager
         SIZE_T VertexMemoryPoolSize;
         SIZE_T IndexMemoryPoolSize;
         SIZE_T MeshletMemoryPoolSize;
+        Render::ResourceBinding BindingInfo;
+        bool UsingMeshlets = false;
     };
 
     class MEAPI MeshManager
@@ -64,8 +66,8 @@ namespace ME::Render::Manager
         ME::Core::Memory::Reference<ME::Render::StorageBuffer> GetDrawBuffer() const { return m_DrawBuffer; }
         ME::Core::Memory::Reference<ME::Render::StorageBuffer> GetMeshBoxBuffer() const { return m_MeshBoxBuffer; }
 
-        ME::Core::Containers::Array<ME::Assets::DrawIndirectIndexedMesh>& GetDrawBufferData() { return m_DrawData; }
-        ME::Core::Containers::Array<ME::Assets::MeshBox> GetMeshBoxBufferData() { return m_MeshBoxes; }
+        ME::Core::Array<ME::Assets::DrawMeshData>& GetDrawBufferData() { return m_DrawData; }
+        ME::Core::Array<ME::Assets::BoundingBox> GetMeshBoxBufferData() { return m_MeshBoxes; }
         SIZE_T GetMeshCount() const { return m_Meshes.Size(); }
 
         Render::ResourceLayout GetSetLayout() const { return m_SetLayout; }
@@ -85,9 +87,9 @@ namespace ME::Render::Manager
         void MeshletFree(ME::Core::Memory::OAllocation& alloc);
 
     private:
-        ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>> m_Meshes;
-        ME::Core::Containers::Array<ME::Assets::MeshBox> m_MeshBoxes;
-        ME::Core::Containers::Array<ME::Assets::DrawIndirectIndexedMesh> m_DrawData;
+        ME::Core::Array<ME::Core::Memory::Reference<ME::Assets::Mesh>> m_Meshes;
+        ME::Core::Array<ME::Assets::BoundingBox> m_MeshBoxes;
+        ME::Core::Array<ME::Assets::DrawMeshData> m_DrawData;
 
     private:
         ME::Core::Memory::Reference<ME::Render::VertexBuffer> m_VertexBuffer;
@@ -101,8 +103,8 @@ namespace ME::Render::Manager
 
     private:
         Render::ResourceLayout m_SetLayout;
+        bool m_UsingMeshlets;
 
         SIZE_T m_MaxMeshCount;
-
     };
 }

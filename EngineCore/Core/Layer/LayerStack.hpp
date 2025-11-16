@@ -9,7 +9,7 @@ namespace ME::Core
 	class COREAPI LayerStack
 	{
 	private:
-		using Iterator = ME::Core::Containers::Array<Layer*>::Iterator;
+		using Iterator = ME::Core::Array<Layer*>::Iterator;
 
 	public:
 		LayerStack();
@@ -28,7 +28,7 @@ namespace ME::Core
 		Iterator End() { return m_Layers.End(); }
 
 	private:
-		ME::Core::Containers::Array<Layer*> m_Layers;
+		ME::Core::Array<Layer*> m_Layers;
 		SIZE_T m_LayerInsertIndex;
 
 	};

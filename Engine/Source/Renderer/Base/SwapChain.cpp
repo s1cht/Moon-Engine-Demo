@@ -1,5 +1,5 @@
-#include "SwapChain.h"
-#include "Application/Application.h"
+#include "SwapChain.hpp"
+#include "Application/Application.hpp"
 #include "Renderer/Renderer.hpp"
 
 namespace ME::Render

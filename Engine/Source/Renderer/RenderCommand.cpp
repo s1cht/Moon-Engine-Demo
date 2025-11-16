@@ -1,4 +1,4 @@
-#include "RenderCommand.h"
+#include "RenderCommand.hpp"
 
 namespace ME::Render
 {

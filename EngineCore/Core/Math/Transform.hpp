@@ -22,9 +22,9 @@ namespace ME::Core::Math
         Transform& operator=(const Transform&) = default;
 
     public:
-        Vector3D Position() const { return m_Position; }
-        Vector3D Rotation() const { return m_Rotation; }
-        Vector3D Scale() const { return m_Scale; }
+        const Vector3D& Position() const { return m_Position; }
+        const Vector3D& Rotation() const { return m_Rotation; }
+        const Vector3D& Scale() const { return m_Scale; }
         const Matrix4x4& Matrix() const { return m_Matrix; }
 
         Vector3D LookVector() const { return m_Matrix.LookVector(); }
@@ -41,7 +41,7 @@ namespace ME::Core::Math
             result.m_Rotation = result.m_Matrix.GetEulerAnglesXYZ();
             return result;
         }
-        Transform Lerp(const Transform& goal, float64 alpha) const
+        Transform Lerp(const Transform& goal, float32 alpha) const
         {
             Transform result = *this;
             result.m_Position = m_Position.Lerp(goal.m_Position, alpha);
@@ -63,7 +63,44 @@ namespace ME::Core::Math
 
         inline Transform& operator*=(const Transform& other)
         {
-            *this = FromMatrix(m_Matrix * other.m_Matrix);
+            *this = *this * other;
+            return *this;
+        }
+
+        inline Vector3D operator*(const Vector3D& other) const
+        {
+            return m_Position * other;
+        }
+
+        inline Transform operator+(const Vector3D& other) const
+        {
+            Transform result = *this;
+            result.m_Position += other;
+            result.m_Matrix.a14 = result.m_Position.X;
+            result.m_Matrix.a24 = result.m_Position.Y;
+            result.m_Matrix.a34 = result.m_Position.Z;
+            return result;
+        }
+
+        inline Transform& operator+=(const Vector3D& other)
+        {
+            *this = *this + other;
+            return *this;
+        }
+
+        inline Transform operator-(const Vector3D& other) const
+        {
+            Transform result = *this;
+            result.m_Position += other;
+            result.m_Matrix.a14 = result.m_Position.X;
+            result.m_Matrix.a24 = result.m_Position.Y;
+            result.m_Matrix.a34 = result.m_Position.Z;
+            return result;
+        }
+
+        inline Transform& operator-(const Vector3D& other)
+        {
+            *this = *this + other;
             return *this;
         }
 

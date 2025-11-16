@@ -2,8 +2,8 @@
 
 #include "Core.hpp"
 #include "Core/Containers/Array.hpp"
-#include "Core/Containers/String/String.hpp"
-#include "Core/Misc/Time.hpp"
+#include "Core/Containers/String.hpp"
+#include "Core/Time.hpp"
 
 namespace ME::Core::IO
 {
@@ -103,7 +103,7 @@ namespace ME::Core::IO
 		static void Shutdown();
 
 	private:
-		static ME::Core::Containers::Array<Directory*> s_Directories;
+		static ME::Core::Array<Directory*> s_Directories;
 
 	};
 }

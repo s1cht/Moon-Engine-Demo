@@ -32,6 +32,9 @@ namespace ME::Render
 
 		inline SIZE_T GetCount() const override { return m_Specification.IndexCount; }
 
+		inline void UpdateResourceSet(uint32 setIndex) override { m_ResourceIndex = setIndex; };
+		inline uint32 GetResourceSet() const override { return m_ResourceIndex; }
+
 	public:
 		inline VkBuffer GetBuffer() const { return m_Buffer; }
 
@@ -46,5 +49,7 @@ namespace ME::Render
 
 		VkBuffer m_StagingBuffer;
 		VmaAllocation m_StagingAllocation;
+
+		uint32 m_ResourceIndex;
 	};
 }

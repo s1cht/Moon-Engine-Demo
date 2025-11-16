@@ -1,14 +1,10 @@
-#include "Mouse.h"
+#include "Mouse.hpp"
 
 namespace ME::Input::Devices
 {
 	Mouse::Mouse()
 	{
 		Init();
-	}
-	
-	Mouse::~Mouse()
-	{
 	}
 	
 	void Mouse::SetLeftButtonPressed(bool pressed)

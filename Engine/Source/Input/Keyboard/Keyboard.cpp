@@ -1,17 +1,14 @@
-#include "Keyboard.h"
+#include "Keyboard.hpp"
 
 namespace ME::Input::Devices
 {
-	Keyboard::Keyboard()
-	{
-		for (SIZE_T i = 0; i < ME_MAX_KEYCODE_COUNT; i++)
-			m_KeyRepeatCount[i] = 0;
-	}
-	Keyboard::~Keyboard()
-	{
-	}
+	Keyboard::Keyboard() : m_KeysPressing()
+    {
+        for (SIZE_T i = 0; i < ME_MAX_KEYCODE_COUNT; i++)
+            m_KeyRepeatCount[i] = 0;
+    }
 
-	void Keyboard::SetKeyPressed(uint8 key, bool pressed)
+    void Keyboard::SetKeyPressed(uint8 key, bool pressed)
 	{
 		if (key > ME_MAX_KEYCODE_COUNT)
 			return;
@@ -41,7 +38,5 @@ namespace ME::Input::Devices
 			Events::KeyInputStartedEvent inputStartedEvent(key, m_KeyRepeatCount[key]);
 			m_Callback(inputStartedEvent);
 		}
-		
-		return;
 	}
 };

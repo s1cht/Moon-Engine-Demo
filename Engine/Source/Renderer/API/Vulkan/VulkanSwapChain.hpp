@@ -1,9 +1,8 @@
 #pragma once
-
 #include <Core.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/SwapChain.h"
+#include "Renderer/Base/SwapChain.hpp"
 
 namespace ME::Render
 {
@@ -47,17 +46,17 @@ namespace ME::Render
 		inline VkSurfaceCapabilitiesKHR GetCapabilities() { return m_Capabilities; }
 		inline VkSurfaceFormatKHR GetFormats() { return m_Format; }
 		inline VkPresentModeKHR GetPresentMode() { return m_PresentMode; }
-		inline ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> GetImages() override { return m_Images; }
+		inline ME::Core::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> GetImages() override { return m_Images; }
 		inline Core::Math::Resolution2D<uint32> GetExtent() override { return m_Extent; }
 
 	private:
 		int32 CreateSwapChain(VulkanRenderAPI* renderer, VkSwapchainKHR oldSwapChain);
 		int32 CreateImages(VulkanRenderAPI* renderer);
 		bool SetDetails(VkPhysicalDevice device, VkSurfaceKHR surface, 
-			ME::Core::Containers::Array<VkSurfaceFormatKHR>& formats,
-			ME::Core::Containers::Array<VkPresentModeKHR>& presentModes);
-		void SelectFormat(ME::Core::Containers::Array<VkSurfaceFormatKHR>& formats);
-		void SelectPresentMode(ME::Core::Containers::Array<VkPresentModeKHR>& formats);
+			ME::Core::Array<VkSurfaceFormatKHR>& formats,
+			ME::Core::Array<VkPresentModeKHR>& presentModes);
+		void SelectFormat(ME::Core::Array<VkSurfaceFormatKHR>& formats);
+		void SelectPresentMode(ME::Core::Array<VkPresentModeKHR>& formats);
 		void SelectSwapExtent();
 		void UpdateSwapExtent(uint32 x, uint32 y);
 
@@ -77,7 +76,7 @@ namespace ME::Render
 		uint32 m_CurrentFrame;
 		uint32 m_CurrentImage;
 		uint32 m_LastImage;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> m_Images;
+		ME::Core::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> m_Images;
 
 		bool m_UpdateRequired;
 

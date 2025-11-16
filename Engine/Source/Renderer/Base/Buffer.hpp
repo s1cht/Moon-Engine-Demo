@@ -12,10 +12,10 @@
 
 #include <Core.hpp>
 #include <Core/Containers/Array.hpp>
-#include <Core/Containers/String/String.hpp>
+#include <Core/Containers/String.hpp>
 
-#include "Renderer/Base/Pipeline.h"
-#include "Renderer/Base/Shader.h"
+#include "Renderer/Base/Pipeline.hpp"
+#include "Renderer/Base/Shader.hpp"
 
 
 // This macro contains definitions and implementations of these methods and members:
@@ -124,25 +124,17 @@ namespace ME::Render
 	class MEAPI VertexBuffer : public Buffer
 	{
 	    ME_BUFFER_TEMPLATE(VertexBuffer, VertexBufferSpecification);
-
-	public:
-		// Overriding every unsupported method
-		void UpdateResourceSet(uint32 setIndex) final { ME_WARN("UpdateResourceSet() is unsupported in vertex buffer! Object: \"{}\"", m_DebugName); }
-		uint32 GetResourceSet() const final { ME_WARN("GetResourceSet() is unsupported in vertex buffer! Object: \"{}\"", m_DebugName); return ~0u; }
-		void ChangeSet(uint32 set) final { ME_WARN("ChangeSet() is unsupported in vertex buffer! Object: \"{}\"", m_DebugName); }
+		ME_BUFFER_SET;
 	};
 
 	// Index buffer abstract class
 	class MEAPI IndexBuffer : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(IndexBuffer, IndexBufferSpecification);
+		ME_BUFFER_SET;
 
 	public:
 		// Overriding every unsupported method
-	    void UpdateResourceSet(uint32 setIndex) final { ME_WARN("UpdateResourceSet() is unsupported in index buffer! Object: \"{}\"", m_DebugName); }
-	    uint32 GetResourceSet() const final { ME_WARN("GetResourceSet() is unsupported in index buffer! Object: \"{}\"", m_DebugName); return ~0u; }
-		void ChangeSet(uint32 set) final { ME_WARN("ChangeSet() is unsupported in index buffer! Object: \"{}\"", m_DebugName); }
-
 	    void SetData(void* data, SIZE_T size, SIZE_T offset) final { ME_WARN("SetData() is unsupported in index buffer! Object: \"{}\"", m_DebugName); }
 		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size, SIZE_T offset) final { ME_WARN("SetData() is unsupported in index buffer! Object: \"{}\"", m_DebugName); }
 
@@ -153,7 +145,6 @@ namespace ME::Render
 		virtual void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, uint32* indices, SIZE_T indexCount, SIZE_T offset = 0) = 0;
 
 		virtual void Resize(SIZE_T indexCount) = 0;
-
 	};
 
 	// Uniform abstract class

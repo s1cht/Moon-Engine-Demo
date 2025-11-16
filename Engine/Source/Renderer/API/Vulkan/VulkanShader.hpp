@@ -3,7 +3,7 @@
 #include <Core.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/Shader.h"
+#include "Renderer/Base/Shader.hpp"
 
 namespace ME::Render
 {
@@ -20,7 +20,7 @@ namespace ME::Render
 
 	public:
 		inline VkShaderModule GetShaderModule() const { return m_Shader; }
-		inline ME::Core::Containers::Array<uint32> GetDescriptorSetLayouts() { return m_Layouts; }
+		inline ME::Core::Array<uint32> GetDescriptorSetLayouts() { return m_Layouts; }
 
 	private:
 		void Init();
@@ -28,10 +28,9 @@ namespace ME::Render
 
 	private:
 		VkShaderModule m_Shader;
-		ME::Core::Containers::Array<uint32> m_Layouts;
+		ME::Core::Array<uint32> m_Layouts;
 
 	private:
 		ShaderSpecification m_Specification;
-
 	};
 }

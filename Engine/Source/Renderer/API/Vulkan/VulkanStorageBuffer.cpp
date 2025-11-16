@@ -1,8 +1,7 @@
 ﻿#include "VulkanStorageBuffer.hpp"
-
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanRenderAPI.hpp"
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
@@ -237,11 +236,19 @@ namespace ME::Render
             m_OptimalDstPipelineStage = VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
         if (static_cast<uint32>(m_Specification.ResourceBinding.Stage & ShaderStage::Vertex) != 0)
             m_OptimalDstPipelineStage = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+        if (static_cast<uint32>(m_Specification.ResourceBinding.Stage & ShaderStage::Mesh) != 0)
+            m_OptimalDstPipelineStage = VK_PIPELINE_STAGE_MESH_SHADER_BIT_EXT;
+        if (static_cast<uint32>(m_Specification.ResourceBinding.Stage & ShaderStage::Task) != 0)
+            m_OptimalDstPipelineStage = VK_PIPELINE_STAGE_TASK_SHADER_BIT_EXT;
     }
 
     void VulkanStorageBuffer::ChooseOptimalSrcStage()
     {
-        m_OptimalSrcPipelineStage = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+        m_OptimalDstPipelineStage = VK_PIPELINE_STAGE_TASK_SHADER_BIT_EXT;
+        if (static_cast<uint32>(m_Specification.ResourceBinding.Stage & ShaderStage::Mesh) != 0)
+            m_OptimalDstPipelineStage = VK_PIPELINE_STAGE_MESH_SHADER_BIT_EXT;
+        if (static_cast<uint32>(m_Specification.ResourceBinding.Stage & ShaderStage::Vertex) != 0)
+            m_OptimalDstPipelineStage = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
         if (static_cast<uint32>(m_Specification.ResourceBinding.Stage & ShaderStage::Hull) != 0)
             m_OptimalSrcPipelineStage = VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
         if (static_cast<uint32>(m_Specification.ResourceBinding.Stage & ShaderStage::Domain) != 0)
@@ -281,8 +288,8 @@ namespace ME::Render
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.buffer = m_Buffer;
-        barrier.offset = 0;
-        barrier.size = m_Specification.Size;
+        barrier.offset = offset;
+        barrier.size = size;
 
         vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
             VK_PIPELINE_STAGE_TRANSFER_BIT, m_OptimalDstPipelineStage,
@@ -304,8 +311,8 @@ namespace ME::Render
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.buffer = m_Buffer;
-        barrier.offset = 0;
-        barrier.size = m_Specification.Size;
+        barrier.offset = offset;
+        barrier.size = size;
 
         vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
             VK_PIPELINE_STAGE_TRANSFER_BIT, m_OptimalDstPipelineStage,

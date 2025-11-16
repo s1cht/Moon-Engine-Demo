@@ -32,10 +32,19 @@ namespace ME::Core::Math
 	typedef PMatrix4x4 Matrix4x4;
 	typedef PQuaternion Quaternion;
 
+	struct Frustum
+	{
+		Vector4D Planes[6];
+	};
+
+	COREAPI Frustum ExtractFrustumFromMatrix(const Matrix4x4& vpMatrix);
+
 	inline COREAPI float64 Lerp(float64 a, float64 b, float64 d);
 	inline COREAPI float32 Lerp(float32 a, float32 b, float32 d);
 
+	inline COREAPI float32 ToDegrees(float32 radians);
 	inline COREAPI float64 ToDegrees(float64 radians);
+	inline COREAPI float32 ToRadians(float32 degrees);
 	inline COREAPI float64 ToRadians(float64 degrees);
 }
 

@@ -150,7 +150,7 @@ namespace ME::Core
         if (is_negative) value = -value;
 
         int64 int_part = static_cast<int64>(value);
-        float64 frac_part = value - int_part;
+        float64 frac_part = value - static_cast<float64>(int_part);
 
         String result = ToString(int_part);
         result += ".";
@@ -287,7 +287,7 @@ namespace ME::Core
         if (is_negative) value = -value;
 
         int64 int_part = static_cast<int64>(value);
-        float64 frac_part = value - int_part;
+        float64 frac_part = value - static_cast<float64>(int_part);
 
         WideString result = ToWideString(int_part);
         result += L".";
@@ -369,25 +369,39 @@ namespace ME::Core
     String WideStringToString(const WideString& str)
     {
         SIZE_T num;
-        SIZE_T strSize = str.Size();
+        SIZE_T strSize = str.Size() + 1;
         asciichar* resultStr = new asciichar[strSize];
 
-        wcstombs_s(&num, resultStr, strSize, str.String(), strSize);
+        errno_t err = wcstombs_s(&num, resultStr, strSize, 
+            str.String(), str.Size());
 
-        String result = UTF8String(resultStr, strSize);
-        delete resultStr;
+        if (err != 0)
+        {
+            delete[] resultStr;
+            return "";
+        }
+
+        String result = String(resultStr, num - 1);
+        delete[] resultStr;
         return result;
     }
 
     WideString StringToWideString(const String& str)
     {
         SIZE_T num;
-        SIZE_T strSize = str.Size();
+        SIZE_T strSize = str.Size() + 1;
         wchar* resultStr = new wchar[strSize];
-        mbstowcs_s(&num, resultStr, strSize, reinterpret_cast<const char*>(str.String()), strSize);
+        errno_t err = mbstowcs_s(&num, resultStr, strSize, 
+            reinterpret_cast<const char*>(str.String()), str.Size());
 
-        WideString result = WideString(resultStr, strSize);
-        delete resultStr;
+        if (err != 0)
+        {
+            delete[] resultStr;
+            return L"";
+        }
+
+        WideString result = WideString(resultStr, num - 1);
+        delete[] resultStr;
         return result;
     }
 

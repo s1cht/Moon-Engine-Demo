@@ -1,10 +1,9 @@
 ﻿#include "VulkanRenderPass.hpp"
-
 #include "VulkanRenderAPI.hpp"
 #include "VulkanFunctions.hpp"
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanFramebuffer.hpp"
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
@@ -17,6 +16,7 @@ namespace ME::Render
 	}
 
 	VulkanRenderPass::VulkanRenderPass(RenderPassSpecification& specification)
+		: m_Specification(specification)
 	{
 		Init(specification);
 	}
@@ -63,8 +63,8 @@ namespace ME::Render
 		VkResult result;
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 
-		ME::Core::Containers::Array<VkAttachmentDescription> attachmentDescriptions;
-		ME::Core::Containers::Array<VkAttachmentReference> globalAttachmentReferences;
+		ME::Core::Array<VkAttachmentDescription> attachmentDescriptions;
+		ME::Core::Array<VkAttachmentReference> globalAttachmentReferences;
 
 		for (auto& attachment : specification.AttachmentSpecs)
 		{
@@ -90,11 +90,11 @@ namespace ME::Render
 			globalAttachmentReferences.EmplaceBack(ref);
 		}
 
-		ME::Core::Containers::Array<ME::Core::Containers::Array<VkAttachmentReference>> colorAttachmentRefsList;
-		ME::Core::Containers::Array<ME::Core::Containers::Array<VkAttachmentReference>> inputAttachmentRefsList;
-		ME::Core::Containers::Array<VkAttachmentReference> depthStencilAttachmentRefs;
+		ME::Core::Array<ME::Core::Array<VkAttachmentReference>> colorAttachmentRefsList;
+		ME::Core::Array<ME::Core::Array<VkAttachmentReference>> inputAttachmentRefsList;
+		ME::Core::Array<VkAttachmentReference> depthStencilAttachmentRefs;
 
-		ME::Core::Containers::Array<VkSubpassDescription> subpassDescriptions;
+		ME::Core::Array<VkSubpassDescription> subpassDescriptions;
 
 		for (const auto& subpass : specification.SubpassSpecs)
 		{
@@ -128,7 +128,7 @@ namespace ME::Render
 			subpassDescriptions.EmplaceBack(subpassDesc);
 		}
 
-		ME::Core::Containers::Array<VkSubpassDependency> subpassDependencies;
+		ME::Core::Array<VkSubpassDependency> subpassDependencies;
 		for (auto& dep : specification.SubpassDependencies)
 		{
 			VkSubpassDependency vkDep = {};

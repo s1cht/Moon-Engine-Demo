@@ -1,8 +1,7 @@
 ﻿#include "VulkanVertexBuffer.hpp"
-
 #include "VulkanRenderAPI.hpp"
 #include "VulkanCommandBuffer.hpp"
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
@@ -15,7 +14,8 @@ namespace ME::Render
 	}
 
 	VulkanVertexBuffer::VulkanVertexBuffer(const VertexBufferSpecification& specification)
-		: VertexBuffer(specification), m_Buffer(nullptr), m_Allocation(nullptr)
+		: VertexBuffer(specification), m_Buffer(nullptr), m_Allocation(nullptr),
+		m_ResourceIndex(m_Specification.SetIndex)
 	{
 		Init(specification);
 	}

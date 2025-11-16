@@ -1,11 +1,10 @@
 ﻿#pragma once
-
 #include <Core.hpp>
 #include <Core/Containers/String/BasicString.hpp>
 #include <Core/Containers/String/StringView.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/Texture.h"
+#include "Renderer/Base/Texture.hpp"
 
 namespace ME::Render
 {

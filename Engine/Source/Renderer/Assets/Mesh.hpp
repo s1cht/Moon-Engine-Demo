@@ -1,13 +1,10 @@
 #pragma once
-
 #include <Core.hpp>
 #include <Core/Math/Math.hpp>
 #include <Core/Memory/Memory.hpp>
 #include <Core/Containers/Array.hpp>
-#include <Core/Containers/String/String.hpp>
+#include <Core/Containers/String.hpp>
 #include <Core/Memory/Allocators/BuddyAllocator.hpp>
-
-#include "Renderer/Base/RenderAPI.h"
 
 namespace ME::Assets
 {
@@ -24,10 +21,16 @@ namespace ME::Assets
 		}
 	};
 
-	struct MeshBox
+	struct BoundingBox
 	{
 		ME::Core::Math::Vector3D32 CenterPosition;
 		ME::Core::Math::Vector3D32 Extents;
+	};
+
+	struct BoundingSphere
+	{
+		ME::Core::Math::Vector3D32 CenterPosition;
+		float32 Radius;
 	};
 
 	struct Meshlet
@@ -37,12 +40,20 @@ namespace ME::Assets
 		uint32 VertexCount;
 		uint32 TriangleCount;
 		uint32 MeshId;
-		uint32 Padding[3];
+		BoundingSphere BoundingSphere;
+	    uint32 Padding[3];
 	};
 
-	struct DrawIndirectIndexedMesh
+	struct DrawMeshData
 	{
-		ME::Render::DrawIndirectIndexedData command;
+		uint32 VertexOffset;
+		uint32 MeshletOffset;
+		uint32 IndexOffset;
+
+		uint32 MeshletCount;
+		uint32 VertexCount;
+	    uint32 IndexCount;
+
 		uint32 MeshID;
 	};
 
@@ -56,26 +67,22 @@ namespace ME::Assets
 		~Mesh();
 
 	public:
-        void SetVertices(const ME::Core::Containers::Array<Vertex>& vertices);
-        void SetVertices(ME::Core::Containers::Array<Vertex>&& vertices);
-
-        void SetIndices(const ME::Core::Containers::Array<uint32>& indices);
-        void SetIndices(ME::Core::Containers::Array<uint32>&& indices);
-
-        void SetMeshlets(const ME::Core::Containers::Array<Meshlet>& meshlets);
-        void SetMeshlets(ME::Core::Containers::Array<Meshlet>&& meshlets);
+        void UpdateMeshInfo(const ME::Core::Array<Vertex>& vertices, 
+			const ME::Core::Array<uint32>& indices);
 
         inline void SetGroupName(const ME::Core::String& groupName) { m_GroupName = groupName; }
 		inline void SetGroupName(ME::Core::String&& groupName) { m_GroupName = groupName; }
 
-        void SetMeshBox(const MeshBox& meshBox);
-
-        inline ME::Core::Containers::Array<Vertex>& GetVertices() { return m_Vertices; }
-		inline ME::Core::Containers::Array<uint32>& GetIndices() { return m_Indices; }
-		inline ME::Core::Containers::Array<Meshlet>& GetMeshlets() { return m_Meshlets; }
+        inline ME::Core::Array<Vertex>& GetVertices() { return m_Vertices; }
+		inline ME::Core::Array<uint32>& GetIndices() { return m_Indices; }
+		inline ME::Core::Array<Meshlet>& GetMeshlets() { return m_Meshlets; }
 		inline ME::Core::StringView GetGroupName() const { return m_GroupName.ToStringView(); }
-		inline MeshBox GetMeshBox() const { return m_MeshBox; }
-		inline DrawIndirectIndexedMesh GetDrawData() const { return m_DrawData; }
+
+		inline void SetMeshBox(const BoundingBox& meshBox) { m_MeshBox = meshBox; }
+		inline BoundingBox GetMeshBox() const { return m_MeshBox; }
+
+		inline void SetDrawData(const DrawMeshData& drawData) { m_DrawData = drawData; }
+	    inline DrawMeshData GetDrawData() const { return m_DrawData; }
 
 		inline void SetVertexAllocation(const ME::Core::Memory::OAllocation& alloc) { m_VertexAllocation = alloc; }
 		inline ME::Core::Memory::OAllocation GetVertexAllocation() const { return m_VertexAllocation; }
@@ -86,6 +93,7 @@ namespace ME::Assets
 		inline void SetMeshletAllocation(const ME::Core::Memory::OAllocation& alloc) { m_MeshletAllocation = alloc; }
 		inline ME::Core::Memory::OAllocation GetMeshletAllocation() const { return m_MeshletAllocation; }
 
+
 		inline void SetMeshID(uint64 meshId) { m_MeshId = meshId; }
 		inline uint64 GetMeshID() const { return m_MeshId; }
 
@@ -95,9 +103,6 @@ namespace ME::Assets
 	public:
 		void Load();
 		void Unload();
-
-		void IncrementUsage();
-        void DecrementUsage();
 			
 	private:
 		void GenerateMeshlets();
@@ -107,8 +112,6 @@ namespace ME::Assets
 		bool m_Loaded;
 
 		uint64 m_MeshId;
-		std::atomic<uint32> m_UsageCount;
-
 	private:
 		ME::Core::Memory::OAllocation m_VertexAllocation;
 		ME::Core::Memory::OAllocation m_IndexAllocation;
@@ -117,11 +120,11 @@ namespace ME::Assets
 		ME::Core::String m_GroupName;
 
 	private:
-		ME::Core::Containers::Array<Vertex> m_Vertices;
-		ME::Core::Containers::Array<uint32> m_Indices;
-		ME::Core::Containers::Array<Meshlet> m_Meshlets;
-		MeshBox m_MeshBox;
-		DrawIndirectIndexedMesh m_DrawData;
+		ME::Core::Array<Vertex> m_Vertices;
+		ME::Core::Array<uint32> m_Indices;
+		ME::Core::Array<Meshlet> m_Meshlets;
+		BoundingBox m_MeshBox;
+		DrawMeshData m_DrawData;
 
 	public:
 		static ME::Core::Memory::Reference<Mesh> Create();

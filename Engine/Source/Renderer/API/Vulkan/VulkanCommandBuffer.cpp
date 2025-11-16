@@ -1,6 +1,6 @@
 ﻿#include "VulkanCommandBuffer.hpp"
 
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 #include "Renderer/API/Vulkan/VulkanRenderAPI.hpp"
 
