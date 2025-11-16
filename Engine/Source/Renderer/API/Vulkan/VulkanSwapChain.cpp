@@ -1,13 +1,9 @@
 #include "VulkanSwapChain.hpp"
-#include <algorithm>
-#include <complex>
-#include <limits>
-
-#include "Application/Application.h"
+#include "Application/Application.hpp"
 #include "VulkanRenderAPI.hpp"
 #include "VulkanFunctions.hpp"
 #include "VulkanTexture.hpp"
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
@@ -144,7 +140,7 @@ namespace ME::Render
 	int32 VulkanSwapChain::CreateSwapChain(VulkanRenderAPI* renderer, VkSwapchainKHR oldSwapChain)
 	{
 		uint32 imageCount;
-		ME::Core::Containers::Array<uint32> queueFamilies;
+		ME::Core::Array<uint32> queueFamilies;
 
 		imageCount = m_Capabilities.minImageCount;
 		queueFamilies = { static_cast<uint32>(renderer->GetGraphicsQueueFamily()), static_cast<uint32>(renderer->GetPresentQueueFamily()) };
@@ -173,7 +169,7 @@ namespace ME::Render
 
 	int32 VulkanSwapChain::CreateImages(VulkanRenderAPI* renderer)
 	{
-		Core::Containers::Array<VkImage> swapChainImages;
+		Core::Array<VkImage> swapChainImages;
 		Texture2DSpecification specs = {};
 		specs.bOwnsImage = false;
 		specs.Data = nullptr;
@@ -185,7 +181,7 @@ namespace ME::Render
 		specs.MipLevels = 1;
 		specs.SampleCount = SampleCount::Count1;
 		specs.CubeMapCount = 0;
-		specs.Layout = ImageLayout::ColorAttachment;
+		specs.Layout = ImageLayout::Present;
 		specs.Resolution.x = m_Extent.x;
 		specs.Resolution.y = m_Extent.y;
 
@@ -205,8 +201,8 @@ namespace ME::Render
 	}
 
 	bool VulkanSwapChain::SetDetails(VkPhysicalDevice device, VkSurfaceKHR surface,
-		ME::Core::Containers::Array<VkSurfaceFormatKHR>& formats,
-		ME::Core::Containers::Array<VkPresentModeKHR>& presentModes)
+		ME::Core::Array<VkSurfaceFormatKHR>& formats,
+		ME::Core::Array<VkPresentModeKHR>& presentModes)
 	{
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &m_Capabilities);
 
@@ -231,7 +227,7 @@ namespace ME::Render
 		return presentModes.Empty() && formats.Empty();
 	}
 
-	void VulkanSwapChain::SelectFormat(ME::Core::Containers::Array<VkSurfaceFormatKHR>& formats)
+	void VulkanSwapChain::SelectFormat(ME::Core::Array<VkSurfaceFormatKHR>& formats)
 	{
 		for (const auto& availableFormat : formats) 
 			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) 
@@ -240,7 +236,7 @@ namespace ME::Render
 		m_Format = formats[0];
 	}
 
-	void VulkanSwapChain::SelectPresentMode(ME::Core::Containers::Array<VkPresentModeKHR>& presentModes)
+	void VulkanSwapChain::SelectPresentMode(ME::Core::Array<VkPresentModeKHR>& presentModes)
 	{
 		for (const auto& availablePresentMode : presentModes)
 		{
@@ -308,8 +304,8 @@ namespace ME::Render
 	{
 		int32 result;
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
-		ME::Core::Containers::Array<VkSurfaceFormatKHR> formats;
-		ME::Core::Containers::Array<VkPresentModeKHR> presentModes;
+		ME::Core::Array<VkSurfaceFormatKHR> formats;
+		ME::Core::Array<VkPresentModeKHR> presentModes;
 
 		result = uint32(SetDetails(render->GetPhysicalDevice(), render->GetSurface(), formats, presentModes));
 		if (ME_VK_FAILED(result))

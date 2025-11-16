@@ -4,14 +4,14 @@
 #include <Core/Memory/Memory.hpp>
 #include <Core/Containers/Array.hpp>
 
+#include "Core/Containers/Map.hpp"
 #include "Renderer/Base/Buffer.hpp"
-#include "Renderer/Base/Framebuffer.h"
-#include "Renderer/Base/CommandBuffer.h"
-#include "Renderer/Base/Texture.h"
-#include "Renderer/Base/RenderPass.h"
-#include "Renderer/Base/Shader.h"
-#include "Renderer/Base/Pipeline.h"
-
+#include "Renderer/Base/Framebuffer.hpp"
+#include "Renderer/Base/CommandBuffer.hpp"
+#include "Renderer/Base/Texture.hpp"
+#include "Renderer/Base/RenderPass.hpp"
+#include "Renderer/Base/Shader.hpp"
+#include "Renderer/Base/Pipeline.hpp"
 
 namespace ME::Render
 {
@@ -46,7 +46,7 @@ namespace ME::Render
 		// For future
 		//void SavePipelines();
 		template<typename T>
-		void Shutdown(const ME::Core::Containers::Array<ME::Core::Memory::Reference<T>>& objects)
+		void Shutdown(const ME::Core::Array<ME::Core::Memory::Reference<T>>& objects)
 		{
 			for (const auto& element : objects)
 			{
@@ -58,20 +58,6 @@ namespace ME::Render
 		}
 
 	private:
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<Shader>> m_Shaders;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<VertexBuffer>> m_VertexBuffers;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<IndexBuffer>> m_IndexBuffers;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<Uniform>> m_Uniforms;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<StorageBuffer>> m_StorageBuffers;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<IndirectBuffer>> m_IndirectBuffers;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<Texture>> m_Textures;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<CommandBuffer>> m_CommandBuffers;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<Framebuffer>> m_Framebuffers;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<RenderPass>> m_RenderPasses;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<Pipeline>> m_Pipelines;
-
-	private:
 		std::atomic<uint64> m_TotalObjectCount;
-
 	};
 }

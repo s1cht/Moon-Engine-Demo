@@ -1,10 +1,10 @@
 #pragma once
-
 #include "Core/Types.hpp"
 #include "Core/Macros.hpp"
 #include <cstring>
+#include <concepts>
+#include <limits>
 #include <initializer_list>
-#include <atomic>
 
 #if defined(_MSC_VER)
 	#include "Core/Platform/Windows/MSVCErrors.hpp"
@@ -30,8 +30,6 @@
 #		define COREAPI DLLEXPORT
 #	else	
 #		define COREAPI DLLIMPORT
-#		// for xxHash
-//#		define XXH_IMPORT 1
 #	endif 
 #
 #elif defined(PLATFORM_LINUX)

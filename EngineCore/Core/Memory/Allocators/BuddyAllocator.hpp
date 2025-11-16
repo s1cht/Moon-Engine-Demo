@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 #include "Core/Containers/Array.hpp"
-#include "Core/Containers/Tables/UnorderedMap.hpp"
+#include "Core/Containers/UnorderedMap.hpp"
 
 namespace ME::Core::Memory
 {
@@ -64,15 +64,14 @@ namespace ME::Core::Memory
         static bool ValidateSpecification(const BuddyAllocatorSpecification& specification);
 
     private:
-        ME::Core::Containers::Array<ME::Core::Containers::Array<SIZE_T>> m_FreeLists;
-        ME::Core::Containers::Array<OAllocation> m_Allocations;
-        ME::Core::Containers::UnorderedMap<SIZE_T, uint8> m_Allocated;
+        ME::Core::Array<ME::Core::Array<SIZE_T>> m_FreeLists;
+        ME::Core::Array<OAllocation> m_Allocations;
+        ME::Core::UnorderedMap<SIZE_T, uint8> m_Allocated;
 
     private:
         uint8 m_MaxLevel;
         SIZE_T m_MinBlockSize;
         SIZE_T m_TotalSize;
-
     };
 
 }

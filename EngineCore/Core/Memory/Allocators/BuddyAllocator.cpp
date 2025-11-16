@@ -1,5 +1,4 @@
 #include "BuddyAllocator.hpp"
-
 #include "Core/Algorithm.hpp"
 
 namespace ME::Core::Memory
@@ -43,7 +42,7 @@ namespace ME::Core::Memory
         m_TotalSize = specification.TotalSize;
         m_MinBlockSize = specification.MinBlockSize;
         m_MaxLevel = CalculateMaxLevel(m_TotalSize, m_MinBlockSize);
-        m_FreeLists = Containers::Array<Containers::Array<SIZE_T>>(m_MaxLevel + 1);
+        m_FreeLists = Array<Array<SIZE_T>>(m_MaxLevel + 1);
         for (uint8 i = 0; i <= m_MaxLevel; ++i) m_FreeLists[i].Clear();
         m_FreeLists[m_MaxLevel].EmplaceBack(0);
 
@@ -92,7 +91,7 @@ namespace ME::Core::Memory
 
             m_Allocated.Insert(offset, level);
 
-            auto allocPtr = new OAllocation_S{ size, offset };
+            auto allocPtr = new OAllocation_S{ offset, size };
             m_Allocations.EmplaceBack(allocPtr);
             allocation = allocPtr;
             return BuddyAllocatorErrors::Success;

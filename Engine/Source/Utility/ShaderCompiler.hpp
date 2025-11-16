@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include <Core.hpp>
-#include <Core/Containers/String/String.hpp>
+#include <Core/Containers/String.hpp>
 
 #include <dxc/dxcapi.h>
 #include <spirv-tools/libspirv.hpp>
 
 #include "Core/Containers/Array.hpp"
-#include "Renderer/Base/Shader.h"
+#include "Renderer/Base/Shader.hpp"
 
 #define SHADER_MODEL "_6_9"
 
@@ -43,10 +43,10 @@ namespace ME::Utility
 		ME::Core::WideStringView EntryPoint;
 
 		// Specific session-only defines (optional)
-		ME::Core::Containers::Array<ME::Core::WideString> Defines;
+		ME::Core::Array<ME::Core::WideString> Defines;
 
 		// Specific session-only includes (optional)
-		ME::Core::Containers::Array<ME::Core::WideString> Includes;
+		ME::Core::Array<ME::Core::WideString> Includes;
 
 		// Compiler optimizations level (default - Level3, if debug then disabled (ShaderOptimizationParameter::Disabled))
 		ME::Utility::ShaderOptimizationParameter Optimization;
@@ -100,13 +100,13 @@ namespace ME::Utility
 		DisassemblyResult Disassemble(ME::Render::CompiledShader& shader);
 
 	public:
-		inline void SetGlobalDefines(ME::Core::Containers::Array<ME::Core::WideString>& defines) { m_Defines = defines; }
-		inline void SetGlobalIncludePaths(ME::Core::Containers::Array<ME::Core::WideString>& paths) { m_IncludePaths = paths; };
+		inline void SetGlobalDefines(ME::Core::Array<ME::Core::WideString>& defines) { m_Defines = defines; }
+		inline void SetGlobalIncludePaths(ME::Core::Array<ME::Core::WideString>& paths) { m_IncludePaths = paths; };
 		inline void SetDebugMode(bool mode) { m_DebugInfo = true; }
 
 	public:
-		inline ME::Core::Containers::Array<ME::Core::WideString>& GetGlobalDefines() { return m_Defines; }
-		inline ME::Core::Containers::Array<ME::Core::WideString>& GetGlobalIncludePaths() { return m_IncludePaths; }
+		inline ME::Core::Array<ME::Core::WideString>& GetGlobalDefines() { return m_Defines; }
+		inline ME::Core::Array<ME::Core::WideString>& GetGlobalIncludePaths() { return m_IncludePaths; }
 		inline bool DebugEnabled() const { return m_DebugInfo; }
 		inline bool CompilerWorks() const { return m_CompilerWorks; }
 
@@ -120,7 +120,7 @@ namespace ME::Utility
 
 	private:
 		COMPtr<IDxcCompiler3> m_Compiler;
-		COMPtr<IDxcUtils> m_Utils;
+		COMPtr<IDxcUtils> m_Utility;
 		COMPtr<IDxcIncludeHandler> m_IncludeHandler;
 		spv_context m_SpvContext;
 
@@ -128,8 +128,8 @@ namespace ME::Utility
 
 	private:
 		bool m_DebugInfo;
-		ME::Core::Containers::Array<ME::Core::WideString> m_Defines;
-		ME::Core::Containers::Array<ME::Core::WideString> m_IncludePaths;
+		ME::Core::Array<ME::Core::WideString> m_Defines;
+		ME::Core::Array<ME::Core::WideString> m_IncludePaths;
 
 	};
 }

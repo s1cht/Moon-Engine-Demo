@@ -12,6 +12,6 @@ namespace ME::ECS::Components
         ME_NODISCARD uint64 GetComponentType() const { return m_ComponentType; }
 
     protected:
-        const uint64 m_ComponentType;
+        uint64 m_ComponentType;
     };
 }

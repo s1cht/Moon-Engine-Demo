@@ -1,64 +1,79 @@
 #pragma once
 
 #include <Core.hpp>
-#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Utility/Logging/Logger.hpp>
+
 #include "Component.hpp"
-#include "ComponentManager.hpp"
-#include "Components/MeshComponent.hpp"
-#include "Components/TransformComponent.hpp"
+#include "Managers/ECSLimits.hpp"
+
+#define ME_ENT_DEFAULT(entityClassName)                                                             \
+public: entityClassName()                                                                           \
+    : Entity() {}                                                                                   \
+public: entityClassName(ME::Core::Memory::WeakReference<ME::ECS::World> relatedWorld, uint64 id)    \
+    : Entity(relatedWorld, id) {}                                                                   \
+private:
+                                        
+#define ME_ENT_CONSTRUCTOR(entityClassName, .../*arguments*/) entityClassName(ME::Core::Memory::WeakReference<World> relatedWorld, uint64 id, __VA_ARGS__) : Entity(relatedWorld, uint64 id)
+#define ME_ENTITY_INHERIT(entityClassName)  public ME::ECS::Entity
 
 namespace ME::ECS
 {
+    class World;
+
     class MEAPI Entity
     {
     public:
-        explicit Entity(uint64 id);
+        struct EntityVirtualFunctions
+        {
+            std::function<void()> OnCreated;
+            std::function<void(float32)> OnUpdate;
+            std::function<void()> OnDestroy;
+        };
 
-        Entity() = delete;
+    public:
+        Entity();
+        Entity(ME::Core::Memory::WeakReference<World> relatedWorld, uint64 id);
         Entity(const Entity&) = delete;
         Entity(Entity&&) = delete;
-        Entity& operator=(const Entity&) = delete;
-        Entity& operator=(Entity&&) noexcept = delete;
+
+        virtual ~Entity();
+
+    public:
+        virtual void OnCreated() {}
+        virtual void OnUpdate(float32 deltaTime) {}
+        virtual void OnDestroy() {}
 
     public:
         bool operator<(const Entity& other) const noexcept;
 
     public:
-        template<typename T>
-        void AddComponent(ME::Core::Memory::Reference<Components::Component> component) const
-        {
-            if constexpr (std::is_same_v<T, Components::MeshComponent>)
-            {
-                if (!HasComponent<Components::TransformComponent>())
-                    AddComponent<Components::TransformComponent>(ME::Core::Memory::MakeReference<Components::Component>(Components::TransformComponent()));
-            }
-            ComponentManager::Get().AttachComponent<T>(m_EntityId, component);
-        }
-
-        template<typename T>
-        ME_NODISCARD T& GetComponent() const
-        {
-            return ComponentManager::Get().GetComponent<T>(m_EntityId);
-        }
-
-        template<typename T>
-        ME_NODISCARD bool HasComponent() const
-        {
-            return ComponentManager::Get().HasComponent<T>(m_EntityId);
-        }
-
-        template<typename T>
-        inline void RemoveComponent() const
-        {
-            ComponentManager::Get().RemoveComponent<T>(m_EntityId);
-        }
-
-        ME_NODISCARD uint64 GetID() const { return m_EntityId; }
+        bool Exists() const { return m_EntityId != ENT_NIL; }
 
     public:
-        ME_NODISCARD static Entity Create();
+        template<typename T>
+        void AttachComponent(Components::Component component) const;
+
+        template<typename T>
+        void AddComponent() const;
+
+        template<typename T>
+        ME_NODISCARD T& GetComponent() const;
+
+        template<typename T>
+        ME_NODISCARD bool HasComponent() const;
+
+        template<typename T>
+        void RemoveComponent() const;
+
+        void Destroy();
+
+        ME_NODISCARD uint64 GetID() const
+        {
+            return m_EntityId;
+        }
 
     private:
         uint64 m_EntityId;
+        ME::Core::Memory::WeakReference<World> m_RelatedWorld;
     };
 }

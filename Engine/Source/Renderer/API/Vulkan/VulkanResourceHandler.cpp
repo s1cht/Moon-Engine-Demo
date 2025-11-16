@@ -1,12 +1,15 @@
 ﻿#include "VulkanResourceHandler.hpp"
-
 #include "VulkanFunctions.hpp"
 #include "VulkanPipeline.hpp"
 #include "VulkanCommandBuffer.hpp"
+#include "VulkanIndexBuffer.hpp"
+#include "VulkanIndirectBuffer.hpp"
 #include "VulkanRenderAPI.hpp"
+#include "VulkanStorageBuffer.hpp"
 #include "VulkanTexture.hpp"
 #include "VulkanUniform.hpp"
-#include "Renderer/RenderCommand.h"
+#include "VulkanVertexBuffer.hpp"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/Base/Buffer.hpp"
 
 namespace ME::Render
@@ -130,7 +133,7 @@ namespace ME::Render
 	uint32 VulkanResourceHandler::GetResourceLayoutIndex(const ME::Render::ResourceLayout& layout)
 	{
 		int32 index = GetLayoutIndex(layout);
-		if (index < 0) return ~0u;
+		if (index < 0) return CreateLayout(layout);
 		return static_cast<uint32>(index);
 	}
 
@@ -163,7 +166,7 @@ namespace ME::Render
 	void VulkanResourceHandler::WriteResource(ME::Core::Memory::Reference<ME::Render::StorageBuffer> buffer)
 	{
 		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = buffer->As<VulkanUniform>()->GetBuffer();
+		bufferInfo.buffer = buffer->As<VulkanStorageBuffer>()->GetBuffer();
 		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
 		bufferInfo.offset = 0;
 
@@ -189,7 +192,7 @@ namespace ME::Render
     void VulkanResourceHandler::WriteResource(ME::Core::Memory::Reference<ME::Render::IndirectBuffer> buffer)
     {
 		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = buffer->As<VulkanUniform>()->GetBuffer();
+		bufferInfo.buffer = buffer->As<VulkanIndirectBuffer>()->GetBuffer();
 		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
 		bufferInfo.offset = 0;
 
@@ -215,7 +218,7 @@ namespace ME::Render
     void VulkanResourceHandler::WriteResource(ME::Core::Memory::Reference<ME::Render::VertexBuffer> buffer)
     {
 		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = buffer->As<VulkanUniform>()->GetBuffer();
+		bufferInfo.buffer = buffer->As<VulkanVertexBuffer>()->GetBuffer();
 		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
 		bufferInfo.offset = 0;
 
@@ -241,8 +244,8 @@ namespace ME::Render
     void VulkanResourceHandler::WriteResource(ME::Core::Memory::Reference<ME::Render::IndexBuffer> buffer)
     {
 		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = buffer->As<VulkanUniform>()->GetBuffer();
-		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetCount() / sizeof(uint32));
+		bufferInfo.buffer = buffer->As<VulkanIndexBuffer>()->GetBuffer();
+		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetCount() * sizeof(uint32));
 		bufferInfo.offset = 0;
 
 		VkWriteDescriptorSet writeDesc = {};
@@ -263,6 +266,163 @@ namespace ME::Render
 			0,
 			nullptr);
     }
+
+	void VulkanResourceHandler::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, BarrierInfo src, BarrierInfo dst)
+	{
+		VkBufferMemoryBarrier bufferBarrier = {};
+		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		bufferBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		bufferBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.buffer = buffer->As<VulkanVertexBuffer>()->GetBuffer();
+		bufferBarrier.offset = 0;
+		bufferBarrier.size = VK_WHOLE_SIZE;
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			1, &bufferBarrier,
+			0, nullptr);
+	}
+
+	void VulkanResourceHandler::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		const ME::Core::Memory::Reference<Render::IndexBuffer>& buffer, BarrierInfo src, BarrierInfo dst)
+	{
+		VkBufferMemoryBarrier bufferBarrier = {};
+		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		bufferBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		bufferBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.buffer = buffer->As<VulkanIndexBuffer>()->GetBuffer();
+		bufferBarrier.offset = 0;
+		bufferBarrier.size = VK_WHOLE_SIZE;
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			1, &bufferBarrier,
+			0, nullptr);
+	}
+
+	void VulkanResourceHandler::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		const ME::Core::Memory::Reference<Render::IndirectBuffer>& buffer, BarrierInfo src,
+		BarrierInfo dst)
+	{
+		VkBufferMemoryBarrier bufferBarrier = {};
+		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		bufferBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		bufferBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.buffer = buffer->As<VulkanIndirectBuffer>()->GetBuffer();
+		bufferBarrier.offset = 0;
+		bufferBarrier.size = VK_WHOLE_SIZE;
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			1, &bufferBarrier,
+			0, nullptr);
+	}
+
+	void VulkanResourceHandler::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		const ME::Core::Memory::Reference<Render::StorageBuffer>& buffer, BarrierInfo src,
+		BarrierInfo dst)
+	{
+		VkBufferMemoryBarrier bufferBarrier = {};
+		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		bufferBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		bufferBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.buffer = buffer->As<VulkanStorageBuffer>()->GetBuffer();
+		bufferBarrier.offset = 0;
+		bufferBarrier.size = VK_WHOLE_SIZE;
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			1, &bufferBarrier,
+			0, nullptr);
+	}
+
+	void VulkanResourceHandler::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		const ME::Core::Memory::Reference<Render::Uniform>& buffer, BarrierInfo src, BarrierInfo dst)
+	{
+		VkBufferMemoryBarrier bufferBarrier = {};
+		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		bufferBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		bufferBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.buffer = buffer->As<VulkanUniform>()->GetBuffer();
+		bufferBarrier.offset = 0;
+		bufferBarrier.size = VK_WHOLE_SIZE;
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			1, &bufferBarrier,
+			0, nullptr);
+	}
+
+	void VulkanResourceHandler::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		const ME::Core::Memory::Reference<Render::Texture1D>& texture, BarrierInfo src, BarrierInfo dst)
+	{
+	}
+
+	void VulkanResourceHandler::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		const ME::Core::Memory::Reference<Render::Texture2D>& texture, BarrierInfo src, BarrierInfo dst)
+	{
+		Texture2DSpecification texSpecs = texture->As<VulkanTexture2D>()->GetSpecification();
+
+		VkImageSubresourceRange range = {};
+		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (texSpecs.IsDepth)  range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (texSpecs.IsStencil) range.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		range.baseMipLevel = 0;
+		range.baseArrayLayer = 0;
+		range.levelCount = texSpecs.MipLevels;
+		range.layerCount = texSpecs.CubeMapCount > 0 ? 6 * texSpecs.CubeMapCount : 1;
+
+		VkImageMemoryBarrier textureBarrier = {};
+		textureBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		textureBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		textureBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		textureBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		textureBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		textureBarrier.image = texture->As<VulkanTexture2D>()->GetImage();
+		textureBarrier.subresourceRange = range;
+		textureBarrier.oldLayout = ConvertImageLayoutVulkan(src.Layout);
+		textureBarrier.newLayout = ConvertImageLayoutVulkan(dst.Layout);
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+		    ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+		    ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+		    0,
+		    0, nullptr,
+		    0, nullptr,
+		    1, &textureBarrier);
+	}
+
+	void VulkanResourceHandler::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+		const ME::Core::Memory::Reference<Render::Texture3D>& texture, BarrierInfo src, BarrierInfo dst)
+	{
+
+	}
 
     void VulkanResourceHandler::QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture1D> texture)
 	{
@@ -403,9 +563,9 @@ namespace ME::Render
 		vkCmdBindDescriptorSets(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), pipeline->As<VulkanPipeline>()->GetPipelineBindPoint(), pipeline->As<VulkanPipeline>()->GetPipelineLayout(), set, 1, &m_TextureSets[setIndex].Set, 0, nullptr);
 	}
 
-	ME::Core::Containers::Array<VkDescriptorSetLayout> VulkanResourceHandler::GetDescriptorSetLayouts(ME::Core::Containers::Array<uint32> layouts) const
+	ME::Core::Array<VkDescriptorSetLayout> VulkanResourceHandler::GetDescriptorSetLayouts(ME::Core::Array<uint32> layouts) const
 	{
-		ME::Core::Containers::Array<VkDescriptorSetLayout> result;
+		ME::Core::Array<VkDescriptorSetLayout> result;
 
 		for (const auto& layoutIndex : layouts)
 		{
@@ -445,8 +605,8 @@ namespace ME::Render
 	{
 		constexpr VkDescriptorBindingFlags bindingFlags =
 			VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT;
-		ME::Core::Containers::Array<VkDescriptorSetLayoutBinding> bindings;
-		ME::Core::Containers::Array<VkDescriptorBindingFlags> bindFlags;
+		ME::Core::Array<VkDescriptorSetLayoutBinding> bindings;
+		ME::Core::Array<VkDescriptorBindingFlags> bindFlags;
 
 		for (uint32 u = 0; u < layout.Layout.Size(); u++)
 		{
@@ -454,7 +614,7 @@ namespace ME::Render
 			vkBinding.binding = u;
 			vkBinding.descriptorType = ConvertResourceTypeVulkan(layout.Layout[u].Type);
 			vkBinding.stageFlags = ConvertShaderStageVulkan(layout.Layout[u].Stage);
-			vkBinding.descriptorCount = layout.Layout[u].MaxSize;
+			vkBinding.descriptorCount = 1;
 			bindings.EmplaceBack(vkBinding);
 			bindFlags.EmplaceBack(bindingFlags);
 		}
@@ -477,7 +637,7 @@ namespace ME::Render
 
 	void VulkanResourceHandler::Init()
 	{
-		ME::Core::Containers::Array<VkDescriptorPoolSize> poolSizes;
+		ME::Core::Array<VkDescriptorPoolSize> poolSizes;
 		
 		VkDescriptorPoolSize poolSize = {};
 		poolSize.descriptorCount = ME_VK_INITIAL_MAX_DESCRIPTOR_SETS * m_BufferCount;

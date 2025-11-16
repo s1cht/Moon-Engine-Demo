@@ -1,6 +1,5 @@
-
 #include <Core.hpp>
-#include "Input/Input.h"
+#include "Input/Input.hpp"
 
 namespace ME::Input
 {
@@ -125,7 +124,5 @@ namespace ME::Input
 
 		END_KEYCODE_CONVERTATION;
 	}
-
 #endif
-
 }

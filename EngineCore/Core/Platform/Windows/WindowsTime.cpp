@@ -4,7 +4,6 @@ namespace ME::Core::Clock
 {
 	WindowsTimeSource::WindowsTimeSource()
 	{
-		QueryPerformanceFrequency(&m_Frequency);
 	}
 
 	uint64 WindowsTimeSource::GetTicks() const
@@ -16,7 +15,9 @@ namespace ME::Core::Clock
 
 	uint64 WindowsTimeSource::GetFrequency() const
 	{
-		return static_cast<uint64>(m_Frequency.QuadPart);
+		LARGE_INTEGER frequency;
+		QueryPerformanceFrequency(&frequency);
+		return static_cast<uint64>(frequency.QuadPart);
 	}
 
 #ifdef PLATFORM_WINDOWS

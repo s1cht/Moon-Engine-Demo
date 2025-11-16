@@ -1,8 +1,11 @@
 #pragma once
 
 #include "Core.hpp"
-#include "Core/Containers/Array.hpp"
-#include "Core/Containers/String/String.hpp"
+#include "Core/Containers/String.hpp"
+
+// Temporary
+// Ilya do the work please :D
+#include <functional>
 
 enum class EventType
 {

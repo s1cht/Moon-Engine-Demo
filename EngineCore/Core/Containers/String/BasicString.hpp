@@ -1,11 +1,13 @@
 ﻿#pragma once
 
 #include "Core.hpp"
+#include "StringShared.hpp"
+//#include "Core/Containers/Bitset.hpp"
 #include "Core/Memory/Memory.hpp"
 #include "Core/Memory/Allocators/Allocator.hpp"
-#include "Core/Containers/String/StringShared.hpp"
-#include "Core/Utils/Logging/Logger.hpp"
+#include "Core/Utility/Logging/Logger.hpp"
 
+// Temporary
 #include <bitset>
 
 #define STR_RESIZE_MULTIPLYER 2
@@ -850,7 +852,7 @@ namespace ME::Core
 
 	typedef PString<char8> UTF8String;
 	typedef PString<wchar> WideString;
-	typedef UTF8String String;
+	typedef UTF8String String;	
 
 	// WideString conversion functions
 

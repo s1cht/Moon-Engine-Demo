@@ -2,7 +2,7 @@
 
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanRenderAPI.hpp"
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render

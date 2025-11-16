@@ -1,11 +1,10 @@
 ﻿#pragma once
-
 #include <Core.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/Pipeline.h"
-#include "Renderer/Base/RenderPass.h"
-#include "Renderer/Base/Texture.h"
+#include "Renderer/Base/Pipeline.hpp"
+#include "Renderer/Base/RenderPass.hpp"
+#include "Renderer/Base/Texture.hpp"
 
 namespace ME::Render
 {

@@ -288,7 +288,7 @@ namespace ME::Core::Math
 		else
 		{
 			// Gimbal lock
-			yaw = (a31 < 0 ? +PI / 2.0f : -PI / 2.0f);
+			yaw = (a31 < 0 ? + static_cast<float32>(PI) / 2.0f : -static_cast<float32>(PI) / 2.0f);
 			pitch = std::atan2(-a12, a22);
 			roll = 0.0f;
 		}

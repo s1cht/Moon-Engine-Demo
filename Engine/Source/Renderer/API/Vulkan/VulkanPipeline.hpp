@@ -1,9 +1,8 @@
 ﻿#pragma once
-
 #include <Core.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/Pipeline.h"
+#include "Renderer/Base/Pipeline.hpp"
 
 namespace ME::Render
 {
@@ -16,8 +15,8 @@ namespace ME::Render
 	public:
 		void Shutdown() override;
 
-		void SetViewports(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Containers::Array<ME::Render::ViewportSpecification> specifications) override;
-		void SetScissors(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Containers::Array<ME::Core::Math::Rect2D> scissors) override;
+		void SetViewports(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Array<ME::Render::ViewportSpecification> specifications) override;
+		void SetScissors(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Array<ME::Core::Math::Rect2D> scissors) override;
         void SetConstants(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ShaderStage shaderStage, void* constants,
 			SIZE_T constantsSize) override;
 
@@ -33,8 +32,8 @@ namespace ME::Render
 	private:
 		void Init();
 
-		ME::Core::Containers::Array<VkPipelineShaderStageCreateInfo> FormatPipelineShaderStageCI();
-		ME::Core::Containers::Array<VkPushConstantRange> FormatPushConstantRange();
+		ME::Core::Array<VkPipelineShaderStageCreateInfo> FormatPipelineShaderStageCI();
+		ME::Core::Array<VkPushConstantRange> FormatPushConstantRange();
 		void CreatePipelineLayout();
 		void CreateGraphicsPipeline();
 		void CreateComputePipeline();

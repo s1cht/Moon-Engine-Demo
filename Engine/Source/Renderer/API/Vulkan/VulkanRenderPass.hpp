@@ -3,11 +3,11 @@
 #include <Core.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/RenderPass.h"
+#include "Renderer/Base/RenderPass.hpp"
 
 namespace ME::Render
 {
-	class MEAPI VulkanRenderPass : public RenderPass
+	class MEAPI VulkanRenderPass final : public RenderPass
 	{
 	public:
 		VulkanRenderPass(RenderPassSpecification& specification);
@@ -25,8 +25,11 @@ namespace ME::Render
 	private:
 		void Init(RenderPassSpecification& specification);
 
-	private:
-		VkRenderPass m_Pass;
+    public:
+		const RenderPassSpecification& GetSpecification() const override { return m_Specification; };
 
+    private:
+		VkRenderPass m_Pass;
+		RenderPassSpecification m_Specification;
 	};
 }

@@ -35,6 +35,6 @@ namespace ME::Core::IO
 		}
 	}
 
-	Containers::Array<DirectoryStorage::Directory*> DirectoryStorage::s_Directories;
+    Array<DirectoryStorage::Directory*> DirectoryStorage::s_Directories;
 
 }

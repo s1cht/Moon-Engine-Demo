@@ -56,8 +56,8 @@ struct BaseTypes
 	*/
 
 	typedef char8_t						char8;			// 1. (Check "CHARACTERS" reference)
-	typedef uint16						char16;			// 2. (Check "CHARACTERS" reference)
-	typedef uint32						char32;			// 3. (Check "CHARACTERS" reference)
+	typedef char16_t					char16;			// 2. (Check "CHARACTERS" reference)
+	typedef char32_t					char32;			// 3. (Check "CHARACTERS" reference)
 	
 	typedef char						asciichar;		// 4. (Check "CHARACTERS" reference)
 	typedef wchar_t						wchar;			// 5. (Check "CHARACTERS" reference)

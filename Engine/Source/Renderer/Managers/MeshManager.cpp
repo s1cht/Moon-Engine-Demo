@@ -1,6 +1,6 @@
 ﻿#include "MeshManager.hpp"
 
-#include "Renderer/RenderCommand.h"
+#include "Renderer/RenderCommand.hpp"
 
 namespace ME::Render::Manager
 {
@@ -19,6 +19,8 @@ namespace ME::Render::Manager
 
     void MeshManager::Init(const MeshMemoryPoolInfo& info) noexcept
     {
+        m_UsingMeshlets = info.UsingMeshlets;
+
         Core::Memory::BuddyAllocatorSpecification vertexSpecs = {};
         vertexSpecs.MinBlockSize = ME_MESH_MNG_MIN_SIZE;
         vertexSpecs.TotalSize = info.VertexMemoryPoolSize;
@@ -31,6 +33,7 @@ namespace ME::Render::Manager
         meshletSpecs.MinBlockSize = ME_MESH_MNG_MIN_SIZE;
         meshletSpecs.TotalSize = info.MeshletMemoryPoolSize;
 
+        m_MaxMeshCount = ME_MESH_MNG_MAX_MESH_COUNT;
 
         m_VertexAllocator = ME::Core::Memory::MakeScope<Core::Memory::BuddyAllocator>();
         m_IndexAllocator = ME::Core::Memory::MakeScope<Core::Memory::BuddyAllocator>();
@@ -55,78 +58,76 @@ namespace ME::Render::Manager
             return;
         }
 
-        ResourceBinding commonBinding = {};
-        commonBinding.MaxSize = 1;
-        commonBinding.Stage = ShaderStage::Vertex | ShaderStage::Mesh | ShaderStage::Task;
-        commonBinding.Type = ResourceType::StorageBuffer;
-
         m_SetLayout = ResourceLayout(5);
         m_SetLayout.Clear();
 
         // Vertices
-        m_SetLayout.EmplaceBack(commonBinding);
+        m_SetLayout.EmplaceBack(info.BindingInfo);
         // Indices
-        m_SetLayout.EmplaceBack(commonBinding);
+        m_SetLayout.EmplaceBack(info.BindingInfo);
         // Meshlets
-        m_SetLayout.EmplaceBack(commonBinding);
+        m_SetLayout.EmplaceBack(info.BindingInfo);
         // Mesh boxes
-        m_SetLayout.EmplaceBack(commonBinding);
+        m_SetLayout.EmplaceBack(info.BindingInfo);
         // Draw info
-        m_SetLayout.EmplaceBack(commonBinding);
+        m_SetLayout.EmplaceBack(info.BindingInfo);
 
         uint32 setIndex = Render::RenderCommand::GetResourceHandler()->CreateResourceSet(m_SetLayout);
 
         VertexBufferSpecification vertexMemPoolSpecs = {};
         vertexMemPoolSpecs.Set = 0;
         vertexMemPoolSpecs.Binding = 0;
-        vertexMemPoolSpecs.ResourceBinding = commonBinding;
+        vertexMemPoolSpecs.ResourceBinding = info.BindingInfo;
         vertexMemPoolSpecs.SetIndex = setIndex;
         vertexMemPoolSpecs.Size = info.VertexMemoryPoolSize;
         vertexMemPoolSpecs.DebugName = "Vertex memory pool";
 
         IndexBufferSpecification indexMemPoolSpecs = {};
-        vertexMemPoolSpecs.Set = 0;
-        vertexMemPoolSpecs.Binding = 1;
-        vertexMemPoolSpecs.ResourceBinding = commonBinding;
-        vertexMemPoolSpecs.SetIndex = setIndex;
+        indexMemPoolSpecs.Set = 0;
+        indexMemPoolSpecs.Binding = 1;
+        indexMemPoolSpecs.ResourceBinding = info.BindingInfo;
+        indexMemPoolSpecs.SetIndex = setIndex;
         indexMemPoolSpecs.IndexCount = info.IndexMemoryPoolSize / 4;
         indexMemPoolSpecs.DebugName = "Index memory pool";
 
         StorageBufferSpecification meshletBufferSpecs = {};
-        vertexMemPoolSpecs.Set = 0;
-        vertexMemPoolSpecs.Binding = 2;
-        vertexMemPoolSpecs.ResourceBinding = commonBinding;
-        vertexMemPoolSpecs.SetIndex = setIndex;
-        vertexMemPoolSpecs.Size = sizeof(ME::Assets::Meshlet) * ME_MESH_MNG_MESHLET_BUFFER_SIZE;
+        meshletBufferSpecs.Set = 0;
+        meshletBufferSpecs.Binding = 2;
+        meshletBufferSpecs.ResourceBinding = info.BindingInfo;
+        meshletBufferSpecs.SetIndex = setIndex;
+        meshletBufferSpecs.Size = ME_MESH_MNG_MESHLET_BUFFER_SIZE;
         meshletBufferSpecs.MemoryType = MemoryType::VRAM;
         meshletBufferSpecs.DebugName = "Meshlet buffer";
 
         StorageBufferSpecification meshBoxSpecs = {};
         meshBoxSpecs.Set = 0;
         meshBoxSpecs.Binding = 3;
-        meshBoxSpecs.ResourceBinding = commonBinding;
+        meshBoxSpecs.ResourceBinding = info.BindingInfo;
         meshBoxSpecs.SetIndex = setIndex;
-        meshBoxSpecs.Size = sizeof(ME::Assets::MeshBox) * ME_MESH_MNG_MAX_MESH_COUNT;
+        meshBoxSpecs.Size = sizeof(ME::Assets::BoundingBox) * ME_MESH_MNG_MAX_MESH_COUNT;
         meshBoxSpecs.MemoryType = MemoryType::VRAM;
         meshBoxSpecs.DebugName = "Mesh box buffer";
 
         StorageBufferSpecification drawInputSpecs = {};
         drawInputSpecs.Set = 0;
         drawInputSpecs.Binding = 4;
-        drawInputSpecs.ResourceBinding = commonBinding;
+        drawInputSpecs.ResourceBinding = info.BindingInfo;
         drawInputSpecs.SetIndex = setIndex;
-        drawInputSpecs.Size = sizeof(ME::Assets::DrawIndirectIndexedMesh) * ME_MESH_MNG_MAX_MESH_COUNT;
+        drawInputSpecs.Size = sizeof(ME::Assets::DrawMeshData) * ME_MESH_MNG_MAX_MESH_COUNT;
         drawInputSpecs.MemoryType = MemoryType::VRAM;
         drawInputSpecs.DebugName = "Draw input buffer";
 
         m_VertexBuffer = ME::Render::VertexBuffer::Create(vertexMemPoolSpecs);
         m_IndexBuffer = ME::Render::IndexBuffer::Create(indexMemPoolSpecs);
+        m_MeshletBuffer = ME::Render::StorageBuffer::Create(meshletBufferSpecs);
+        m_MeshBoxBuffer = ME::Render::StorageBuffer::Create(meshBoxSpecs);
+        m_DrawBuffer = ME::Render::StorageBuffer::Create(drawInputSpecs);
 
-        m_MeshBoxes = ME::Core::Containers::Array<ME::Assets::MeshBox>();
-        m_MeshBoxes.Reserve(ME_MESH_MNG_MIN_SIZE);
+        m_MeshBoxes = ME::Core::Array<ME::Assets::BoundingBox>();
+        m_MeshBoxes.Reserve(ME_MESH_MNG_MAX_MESH_COUNT);
 
-        m_DrawData = ME::Core::Containers::Array<ME::Assets::DrawIndirectIndexedMesh>();
-        m_DrawData.Reserve(ME_MESH_MNG_MIN_SIZE);
+        m_DrawData = ME::Core::Array<ME::Assets::DrawMeshData>();
+        m_DrawData.Reserve(ME_MESH_MNG_MAX_MESH_COUNT);
         
         m_MeshBoxBuffer = Render::StorageBuffer::Create(meshBoxSpecs);
         
@@ -212,30 +213,54 @@ namespace ME::Render::Manager
             return false;
         }
 
-        Core::Memory::OAllocation meshletAlloc = MeshletMalloc(mesh->GetMeshlets().Size() * sizeof(ME::Assets::Meshlet));
-        if (meshletAlloc == nullptr)
+        Core::Memory::OAllocation meshletAlloc = nullptr;
+        if (m_UsingMeshlets)
         {
-            MeshletFree(meshletAlloc);
-            return false;
+            meshletAlloc = MeshletMalloc(mesh->GetMeshlets().Size() * sizeof(ME::Assets::Meshlet));
+            if (meshletAlloc == nullptr)
+            {
+                MeshletFree(meshletAlloc);
+                return false;
+            }
         }
 
         mesh->SetVertexAllocation(vertexAlloc);
-        mesh->SetIndexAllocation(indexAlloc);
-        mesh->SetMeshletAllocation(meshletAlloc);
-
         m_VertexBuffer->SetData(mesh->GetVertices().Data(), vertexAlloc->Size, vertexAlloc->Offset);
+
+        mesh->SetIndexAllocation(indexAlloc);
         m_IndexBuffer->SetData(mesh->GetIndices().Data(), mesh->GetIndices().Size(), indexAlloc->Offset / sizeof(uint32));
-        m_MeshletBuffer->SetData(mesh->GetMeshlets().Data(), mesh->GetMeshlets().Size() * sizeof(ME::Assets::Meshlet), meshletAlloc->Offset);
 
-        ME::Assets::DrawIndirectIndexedMesh drawData = mesh->GetDrawData();
-        SIZE_T drawOffset = m_DrawData.Size() * sizeof(ME::Assets::DrawIndirectIndexedMesh);
-        m_DrawData.EmplaceBack(drawData);
-        m_DrawBuffer->SetData(&drawData, sizeof(ME::Assets::DrawIndirectIndexedMesh), drawOffset);
+        mesh->SetMeshletAllocation(meshletAlloc);
+        if (m_UsingMeshlets)
+            m_MeshletBuffer->SetData(mesh->GetMeshlets().Data(), mesh->GetMeshlets().Size() * sizeof(ME::Assets::Meshlet), meshletAlloc->Offset);
 
-        ME::Assets::MeshBox meshBox = mesh->GetMeshBox();
-        SIZE_T meshBoxOffset = m_MeshBoxes.Size() * sizeof(ME::Assets::MeshBox);
-        m_MeshBoxes.EmplaceBack(meshBox);
-        m_MeshBoxBuffer->SetData(&meshBox, sizeof(ME::Assets::MeshBox), meshBoxOffset);
+        ME::Assets::DrawMeshData drawData = mesh->GetDrawData();
+        drawData.VertexCount = static_cast<uint32>(vertexAlloc->Size / sizeof(ME::Assets::Vertex));
+        drawData.VertexOffset = static_cast<uint32>(vertexAlloc->Offset / sizeof(ME::Assets::Vertex));
+        drawData.IndexCount = static_cast<uint32>(indexAlloc->Size / sizeof(uint32));
+        drawData.IndexOffset = static_cast<uint32>(indexAlloc->Offset / sizeof(uint32));
+
+        if (m_UsingMeshlets)
+        {
+            drawData.MeshletCount = static_cast<uint32>(meshletAlloc->Size / sizeof(ME::Assets::Meshlet));
+            drawData.MeshletOffset = static_cast<uint32>(meshletAlloc->Offset / sizeof(ME::Assets::Meshlet));
+        }
+        else
+        {
+            drawData.MeshletCount = 0;
+            drawData.MeshletOffset = 0;
+        }
+
+        mesh->SetDrawData(drawData);
+
+        SIZE_T drawOffset = meshId * sizeof(ME::Assets::DrawMeshData);
+        m_DrawData[meshId] = drawData;
+        m_DrawBuffer->SetData(&drawData, sizeof(ME::Assets::DrawMeshData), drawOffset);
+
+        ME::Assets::BoundingBox meshBox = mesh->GetMeshBox();
+        SIZE_T meshBoxOffset = meshId * sizeof(ME::Assets::BoundingBox);
+        m_MeshBoxes[meshId] = meshBox;
+        m_MeshBoxBuffer->SetData(&meshBox, sizeof(ME::Assets::BoundingBox), meshBoxOffset);
 
         return true;
     }
@@ -259,7 +284,7 @@ namespace ME::Render::Manager
             mesh->SetIndexAllocation(nullptr);
         }
 
-        if (indexAlloc)
+        if (meshletAlloc)
         {
             m_MeshletAllocator->Free(meshletAlloc);
             mesh->SetMeshletAllocation(nullptr);
@@ -311,10 +336,7 @@ namespace ME::Render::Manager
         Core::Memory::OAllocation alloc = nullptr;
         Core::Memory::BuddyAllocatorErrors result = m_MeshletAllocator->Allocate(alloc, size);
         if (result != Core::Memory::BuddyAllocatorErrors::Success)
-        {
-            ME_ERROR("Can't allocate memory in meshlet buffer! Error: {}", static_cast<uint32>(result));
-            return nullptr;
-        }
+            ME_WARN("Can't allocate memory in meshlet buffer! Error: {}", static_cast<uint32>(result));
         return alloc;
     }
 

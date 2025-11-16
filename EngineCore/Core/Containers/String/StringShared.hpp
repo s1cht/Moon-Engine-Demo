@@ -1,11 +1,10 @@
 #pragma once
-
-#include "Core.hpp"
+#include "Core/Types.hpp"
 
 namespace ME::Core
 {
 	template<typename T>
-	SIZE_T GetStringSize(const T* str)
+	constexpr SIZE_T GetStringSize(const T* str)
 	{
 		SIZE_T size = 0;
 		while (*str != 0)

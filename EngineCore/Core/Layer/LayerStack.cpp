@@ -18,7 +18,7 @@ namespace ME::Core
 	}
 
 	void LayerStack::PushLayer(Layer* layer)
-	{	
+	{
 		m_Layers.Emplace(m_Layers.Begin() + m_LayerInsertIndex, layer);
 		m_LayerInsertIndex++;
 	}

@@ -1,24 +1,21 @@
 #pragma once
-
-#include "Renderer/Assets/Mesh.hpp"
-#include "Utility/AssetLoader.h"
-
 #include <Core.hpp>
-#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Utility/Logging/Logger.hpp>
 #include <Core/Memory/Memory.hpp>
-#include <Core/Containers/Array.hpp>
-#include <Core/Containers/String/String.hpp>
+#include <Core/Containers/String.hpp>
 
-#include "Renderer/Base/Texture.h"
+#include "Renderer/Base/Texture.hpp"
+#include "Renderer/Assets/Mesh.hpp"
+#include "Utility/AssetLoader.hpp"
 
 namespace ME::Manager
 {
 	class MEAPI AssetManager
 	{
 	public:
-		AssetManager();
+		AssetManager() = default;
 		AssetManager(const AssetManager&) = delete;
-		~AssetManager();
+		~AssetManager() = default;
 
 	public:
 		bool LoadAsset(const ME::Core::String& path, bool centered = false);
@@ -37,11 +34,8 @@ namespace ME::Manager
 		ME::Utility::AssetFileFormats GetExtension(const ME::Core::String& path) const;
 
 	private:
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
-		ME::Core::Containers::Array<ME::Core::Memory::Reference<Assets::Image>> m_Images;
-		//Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
-		//Pawn::Core::Containers::Array<Pawn::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
-
+		ME::Core::Array<ME::Core::Memory::Reference<Assets::Mesh>> m_Meshes;
+		ME::Core::Array<ME::Core::Memory::Reference<Assets::Image>> m_Images;
 	};
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "Core.hpp"
-#include "Core/Misc/Time.hpp"
+#include "Core/Time.hpp"
 
 namespace ME::Core::Clock
 {
@@ -12,8 +12,6 @@ namespace ME::Core::Clock
 	public:
 		uint64 GetTicks() const override;
 		uint64 GetFrequency() const override;
-			
-	private:
-		LARGE_INTEGER m_Frequency;
+
 	};
 }

@@ -1,18 +1,14 @@
 #include <imgui.h>
-
-#include "Win32Window.h"
-#include "Win32Platform.h"
-
-#include "Input/Input.h"
-
-#include "Events/WindowEvents.h"
-#include "Events/KeyEvents.h"
-#include "Events/MouseEvents.h"
-
 #include <Core.hpp>
-#include <Core/Utils/Logging/Logger.hpp>
-#include <Core/Containers/String/String.hpp>
-#include <Core/Utils/Benchmark/Benchmark.hpp>
+#include <Core/Utility/Logging/Logger.hpp>
+#include <Core/Containers/String.hpp>
+
+#include "Win32Window.hpp"
+#include "Win32Platform.hpp"
+#include "Input/Input.hpp"
+#include "Input/Keyboard/KeyEvents.hpp"
+#include "Input/Mouse/MouseEvents.hpp"
+#include "Platform/Base/WindowEvents.hpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -282,7 +278,6 @@ namespace ME
 				Input::InputController::Get().GetMouse().SetMiddleButtonPressed(true);
 				break;
 			}
-
 
 			//case WM_INPUT:
 			//{

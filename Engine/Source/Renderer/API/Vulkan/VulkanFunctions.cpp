@@ -145,8 +145,18 @@ namespace ME::Render
 			    return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 			case ImageLayout::ColorAttachment:
 			    return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			case ImageLayout::DepthAttachment:
+				return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+			case ImageLayout::StencilAttachment:
+				return VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL;
 			case ImageLayout::DepthStencilAttachment:
-			    return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+			    return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			case ImageLayout::DepthReadOnly:
+				return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL;
+			case ImageLayout::StencilReadOnly:
+				return VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL;
+			case ImageLayout::DepthStencilReadOnly:
+				return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 			case ImageLayout::ShaderReadOnly:
 			    return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			case ImageLayout::TransferSrc:
@@ -613,6 +623,10 @@ namespace ME::Render
 			flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
 		if (static_cast<int32>(stage & ShaderStage::Pixel) != 0)
 			flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+		if (static_cast<int32>(stage & ShaderStage::Mesh) != 0)
+			flags |= VK_SHADER_STAGE_MESH_BIT_EXT;
+		if (static_cast<int32>(stage & ShaderStage::Task) != 0)
+			flags |= VK_SHADER_STAGE_TASK_BIT_EXT;
 
 		return flags;
 	}

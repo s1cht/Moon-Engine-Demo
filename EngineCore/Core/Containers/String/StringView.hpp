@@ -1,6 +1,6 @@
 #pragma once
-
-#include "Core/Utils/Logging/Logger.hpp"
+#include "Core/Memory/Allocators/Allocator.hpp"
+#include "Core/Utility/Logging/Logger.hpp"
 #include "Core/Containers/String/StringShared.hpp"
 
 namespace ME::Core
@@ -17,63 +17,68 @@ namespace ME::Core
 		using RefType = const DataType&;
 
 	public:
-		PStringView() : m_Data(nullptr), m_Size(0) {}
+		constexpr PStringView() : m_Data(nullptr), m_Size(0) {}
 
-		PStringView(const asciichar* data)
+		constexpr PStringView(const asciichar* data)
 			: m_Data(CONVERT_TEXT_UTF8(data)), m_Size(data ? GetStringSize(CONVERT_TEXT_UTF8(data)) : 0)
 	    {
             static_assert(sizeof(DataType) == 1, "This constructor is available for only UTF8 string!");
 		}
 
-		PStringView(const asciichar* data, SIZE_T size)
+		constexpr PStringView(const asciichar* data, SIZE_T size)
 			: m_Data(data), m_Size(data ? GetStringSize(data) : 0)
 	    {
             static_assert(sizeof(DataType) == 1, "This constructor is available for only UTF8 string!");
 		}
 
-		PStringView(PtrType data)
-			: m_Data(data), m_Size(data ? GetStringSize(data) : 0) {
-		}
+		constexpr PStringView(PtrType data)
+			: m_Data(data), m_Size(data ? GetStringSize(data) : 0)
+	    {}
 
-		PStringView(PtrType data, SIZE_T size)
-			: m_Data(data), m_Size(size) {
-		}
+		constexpr PStringView(PtrType data, SIZE_T size)
+			: m_Data(data), m_Size(size)
+	    {}
 
 		template<SIZE_T initSize, class allocator>
 		PStringView(const PString<DataType, allocator>& str)
-			: m_Data(str.GetString()), m_Size(str.GetSize()) {
-		}
+			: m_Data(str.GetString()), m_Size(str.GetSize())
+	    {}
 
-		PStringView(const PStringView& other)
-			: m_Data(other.m_Data), m_Size(other.m_Size) {
-		}
+		constexpr PStringView(const PStringView& other)
+			: m_Data(other.m_Data), m_Size(other.m_Size)
+	    {}
 
 	public:
-		inline SIZE_T Size() const noexcept { return m_Size; }
-		inline PtrType String() const noexcept { return m_Data; }
+		inline constexpr SIZE_T Size() const noexcept { return m_Size; }
+		inline constexpr PtrType String() const noexcept { return m_Data; }
 
-		PtrType begin() const { return m_Data; }
-		PtrType end() const { return m_Data + m_Size; }
+		constexpr PtrType begin() const { return m_Data; }
+		constexpr PtrType end() const { return m_Data + m_Size; }
 
-		RefType operator[](SIZE_T index) const
+		constexpr RefType operator[](SIZE_T index) const
 		{
-			ME_CORE_ASSERT(index < m_Size, "Index out of range in StringView!");
 			return m_Data[index];
 		}
 
-		bool operator==(const DataType* str) const
+		constexpr bool operator==(const DataType* str) const
 		{
 			if (m_Size != GetStringSize(str)) return false;
-			return memcmp(m_Data, str, m_Size * sizeof(DataType)) == 0;
+			for (size_t i = 0; i < m_Size; ++i)
+				if (m_Data[i] != str[i]) 
+					return false;
+			return true;
 		}
 
-		bool operator==(const PStringView& other) const
+		constexpr bool operator==(const PStringView& other) const
 		{
 			if (m_Size != other.m_Size) return false;
-			return memcmp(m_Data, other.m_Data, m_Size * sizeof(DataType)) == 0;
+			for (size_t i = 0; i < m_Size; ++i)
+				if (m_Data[i] != other.m_Data[i])
+					return false;
+			return true;
 		}
 
-		bool operator!=(const PStringView& other) const
+		constexpr bool operator!=(const PStringView& other) const
 		{
 			return !(*this == other);
 		}

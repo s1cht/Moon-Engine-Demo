@@ -1,7 +1,7 @@
 ﻿#include "ShaderCompiler.hpp"
 
 #include <xxhash.h>
-#include <Core/Utils/Logging/Logger.hpp>
+#include <Core/Utility/Logging/Logger.hpp>
 
 #define CONCAT_TARGET_PROFILE(profile, version) profile version
 #define SC_ARG(x) L"-" ## x
@@ -12,7 +12,7 @@ namespace ME::Utility
 {
 	ShaderCompiler::ShaderCompiler()
 	{
-		m_Utils = nullptr;
+		m_Utility = nullptr;
 		m_Compiler = nullptr;
 		m_IncludeHandler = nullptr;
 		m_DebugInfo = false;
@@ -27,18 +27,18 @@ namespace ME::Utility
 	bool ShaderCompiler::InitCompiler()
 	{
 		if (m_CompilerWorks) return true;
-        IDxcUtils* utils = nullptr;
+        IDxcUtils* Utility = nullptr;
 		IDxcCompiler3* compiler = nullptr;
 		IDxcIncludeHandler* includeHandler = nullptr;
 
-		HRESULT result = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
+		HRESULT result = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&Utility));
 		if (FAILED(result))
 		{
-            ME_ASSERT(false, "Shader compiler: failed to create DXC utils! DXC error: {0}", static_cast<uint32>(result));
+            ME_ASSERT(false, "Shader compiler: failed to create DXC Utility! DXC error: {0}", static_cast<uint32>(result));
 			ShutdownCompiler();
 			return false;
 		}
-		m_Utils.reset(utils);
+		m_Utility.reset(Utility);
 
 		result = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
 		if (FAILED(result))
@@ -49,7 +49,7 @@ namespace ME::Utility
 		}
 		m_Compiler.reset(compiler);
 
-		result = m_Utils->CreateDefaultIncludeHandler(&includeHandler);
+		result = m_Utility->CreateDefaultIncludeHandler(&includeHandler);
 		if (FAILED(result))
 		{
             ME_ASSERT(false, "Shader compiler: failed to create DXC include handler! DXC error: {0}", static_cast<uint32>(result));
@@ -68,7 +68,7 @@ namespace ME::Utility
 	void ShaderCompiler::ShutdownCompiler()
 	{
 		if (!m_CompilerWorks) return;
-		m_Utils.reset(nullptr);
+		m_Utility.reset(nullptr);
 		m_IncludeHandler.reset(nullptr);
 		m_Compiler.reset(nullptr);
 		spvContextDestroy(m_SpvContext);
@@ -86,10 +86,10 @@ namespace ME::Utility
 		IDxcResult* dxcResult = nullptr;
 		IDxcBlob* code = nullptr;
 
-		ME::Core::Containers::Array<LPCWSTR> arguments = {};
+		ME::Core::Array<LPCWSTR> arguments = {};
 
 		codePage = DXC_CP_ACP;
-		HRESULT result = m_Utils->LoadFile(specification.Path.String(), &codePage, &sourceBlob);
+		HRESULT result = m_Utility->LoadFile(specification.Path.String(), &codePage, &sourceBlob);
 		if (FAILED(result))
 		{
 			compResult.Result = ShaderCompilationError::Failed;
@@ -128,6 +128,7 @@ namespace ME::Utility
 		{
 			arguments.EmplaceBack(SC_ARG("spirv"));
 			arguments.EmplaceBack(SC_ARG("fspv-target-env=universal1.5"));
+			arguments.EmplaceBack(SC_ARG("fvk-use-scalar-layout"));
 			arguments.EmplaceBack(SC_ARG("fvk-use-dx-layout"));
 			arguments.EmplaceBack(SC_ARG("fspv-reflect"));
 		}
@@ -173,7 +174,7 @@ namespace ME::Utility
 		buffer.Ptr = sourceBlob->GetBufferPointer();
 		buffer.Size = sourceBlob->GetBufferSize();
 
-		result = m_Compiler->Compile(&buffer, arguments.Data(), arguments.Size(), m_IncludeHandler.get(), IID_PPV_ARGS(&dxcResult));
+		result = m_Compiler->Compile(&buffer, arguments.Data(), static_cast<uint32>(arguments.Size()), m_IncludeHandler.get(), IID_PPV_ARGS(&dxcResult));
 		if (SUCCEEDED(result))
 			dxcResult->GetStatus(&result);
 
@@ -258,6 +259,7 @@ namespace ME::Utility
 			case ShaderOptimizationParameter::Level1: return SC_ARG("O1");
 			case ShaderOptimizationParameter::Level2: return SC_ARG("O2");
 			case ShaderOptimizationParameter::Level3: return SC_ARG("O3");
+			default: return SC_ARG("Od");
 		}
 	}
 
@@ -273,7 +275,8 @@ namespace ME::Utility
                                               SPV_BINARY_TO_TEXT_OPTION_COMMENT |
                                               SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES |
                                               SPV_BINARY_TO_TEXT_OPTION_SHOW_BYTE_OFFSET |
-                                              SPV_BINARY_TO_TEXT_OPTION_NESTED_INDENT,
+                                              SPV_BINARY_TO_TEXT_OPTION_NESTED_INDENT | 
+                                              SPV_BINARY_TO_TEXT_OPTION_REORDER_BLOCKS,
                                               &disassembly, &diagnostics);
 		if (result != SPV_SUCCESS || disassembly->length <= 0)
 		{

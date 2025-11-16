@@ -82,7 +82,6 @@ namespace ME::Core::Math
 		static PMatrix4x4 FromPerspectiveView(float32 fov, float32 aspect, float32 _near, float32 _far);
 		static PMatrix4x4 FromOrthographicView(float32 left, float32 right, float32 bottom, float32 top, float32 _near, float32 _far);
 		static PMatrix4x4 LookAt(const Vector3<float32>& eye, const Vector3<float32>& target, const Vector3<float32>& up);
-
 	};
 
 	PMatrix4x4 operator*(const float32& scalar, const PMatrix4x4& mat);

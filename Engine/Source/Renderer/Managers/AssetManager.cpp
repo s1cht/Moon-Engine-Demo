@@ -1,37 +1,17 @@
 #include "AssetManager.h"
 #include <Core/Algorithm.hpp>
 
-#include "Renderer/Assets/Image.h"
+#include "Renderer/Assets/Image.hpp"
 
 namespace ME::Manager
 {
-	AssetManager::AssetManager()
-	{
-	}
-
-	AssetManager::~AssetManager()
-	{
-	}
-
 	bool AssetManager::LoadAsset(const ME::Core::String& path, bool centered)
 	{
-		ME::Utility::AssetFileFormats fileFormat;
-		ME::Utility::AssetLoadResult assetLoadResult;
+        ME::Utility::AssetFileFormats fileFormat = GetExtension(path);
+		ME::Utility::AssetLoadResult assetLoadResult = ME::Utility::AssetLoader::Load(path, centered, fileFormat);
 
-		fileFormat = GetExtension(path);
-		assetLoadResult = ME::Utility::AssetLoader::Load(path, centered, fileFormat);
-
-		if (assetLoadResult.Meshes.Size() > 0)
-		{
-			for (auto mesh = assetLoadResult.Meshes.Begin(); mesh != assetLoadResult.Meshes.End(); ++mesh)
-				m_Meshes.EmplaceBack(std::move((*mesh)));
-		}
-		if (assetLoadResult.Images.Size() > 0)
-		{
-			for (auto image = assetLoadResult.Images.Begin(); image != assetLoadResult.Images.End(); ++image)
-				m_Images.EmplaceBack(std::move((*image)));
-		}
-
+		m_Meshes.Append(assetLoadResult.Meshes);
+		m_Images.Append(assetLoadResult.Images);
 
 		return true;
 	}
@@ -60,13 +40,9 @@ namespace ME::Manager
 
 	ME::Core::Memory::Reference<ME::Assets::Mesh> AssetManager::GetMesh(const ME::Core::String& meshName)
 	{
-		for (const auto& mesh : m_Meshes)
-		{
+		for (auto& mesh : m_Meshes)
 			if (mesh->GetGroupName() == meshName)
-			{
 				return mesh;
-			}
-		}
 		return nullptr;
 	}
 

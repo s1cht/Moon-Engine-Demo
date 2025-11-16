@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 #include "Core/Events/Event.hpp"
-#include "Core/Containers/String/String.hpp"
+#include "Core/Containers/String.hpp"
 
 namespace ME::Render
 {
@@ -30,7 +30,6 @@ namespace ME::Core
 
 	protected:
 		ME::Core::String m_DebugName;
-
 	};
 
 }

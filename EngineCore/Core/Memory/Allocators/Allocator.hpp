@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Core/Types.hpp"
 
 namespace ME::Core::Memory
@@ -25,7 +24,7 @@ namespace ME::Core::Memory
 
 		void Deallocate(T* ptr, SIZE_T n)
 		{
-			::operator delete(ptr, std::align_val_t{ alignof(T) });
+			::operator delete(ptr, n * sizeof(T), std::align_val_t{ alignof(T) });
 		}
 
 		template <typename U>

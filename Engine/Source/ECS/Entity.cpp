@@ -1,19 +1,22 @@
 #include "Entity.hpp"
+#include "ECS/Managers/EntityManager.hpp"
+#include "Managers/ComponentManager.hpp"
 
 namespace ME::ECS
 {
-    Entity::Entity(uint64 id)
-        : m_EntityId(id)
+    Entity::Entity()
+        : m_EntityId(ENT_NIL), m_RelatedWorld() {}
+
+    Entity::Entity(ME::Core::Memory::WeakReference<World> relatedWorld, uint64 id)
+        : m_EntityId(id), m_RelatedWorld(relatedWorld) {}
+
+    Entity::~Entity()
     {
+        Destroy();
     }
 
     bool Entity::operator<(const Entity& other) const noexcept
     {
         return m_EntityId < other.GetID();
-    }
-
-    Entity Entity::Create()
-    {
-        return Entity(ComponentManager::Get().GetEntityID());
     }
 }

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Core.hpp>
-#include "Camera.h"
+#include "Camera.hpp"
 
-namespace ME::Render::Camera
+namespace ME::Render
 {
-	class MEAPI PerspectiveCamera : public Camera
+	class MEAPI PerspectiveCamera final : public Camera
 	{
 	public:
 		PerspectiveCamera();
@@ -15,6 +15,15 @@ namespace ME::Render::Camera
 
 	public:
 		void Update() override;
+		bool BufferUpdateRequired() const override
+		{
+			return m_BufferUpdateRequired;
+		}
+
+		void BufferUpdated() override
+		{
+			m_BufferUpdateRequired = false;
+		}
 
 	public:
 		void SetFOV(uint32 fov) override
@@ -44,6 +53,7 @@ namespace ME::Render::Camera
 	    inline void SetTransform(const ME::Core::Math::Transform& transform) override
 		{
 		    m_Transform = transform;
+			m_BufferUpdateRequired = true;
 		}
 
 		inline void SetPosition(const ME::Core::Math::Vector3D& position) override
@@ -75,7 +85,6 @@ namespace ME::Render::Camera
 		inline const ME::Core::Math::Vector3D& GetPosition() const override { return m_Transform.Position(); }
 		inline const ME::Core::Math::Matrix4x4& GetViewMatrix() const override { return m_Transform.Matrix(); }
 		inline const ME::Core::Math::Matrix4x4& GetProjectionMatrix() const override { return m_ProjectionMatrix; }
-		inline const ME::Core::Math::Matrix4x4& GetProjViewMatrix() const override { return m_ProjViewMatrix; }
 
     private:
 		uint32 m_FOV;
@@ -91,11 +100,10 @@ namespace ME::Render::Camera
 
 	private:
 		ME::Core::Math::Matrix4x4 m_ProjectionMatrix;
-		ME::Core::Math::Matrix4x4 m_ProjViewMatrix;
 
 		bool m_UpdateQueued;
 		bool m_ProjectionMatrixUpdateQueued;
-
+		bool m_BufferUpdateRequired;
+		bool m_TransformUpdated;
 	};
-
 }

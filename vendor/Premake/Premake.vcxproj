@@ -95,6 +95,7 @@
     <None Include="..\..\Misc\CloneBinaries\CloneBinaries.lua" />
     <None Include="..\..\Sandbox\Sandbox.lua" />
     <None Include="..\..\Tests\CoreTest\CoreTest.lua" />
+    <None Include="..\..\bin\Debug-windows-x86_64\Sandbox\assets\Assets.lua" />
     <None Include="..\..\premake5.lua" />
     <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.0\spirv.lua" />
     <None Include="..\DXC\external\SPIRV-Headers\include\spirv\1.1\spirv.lua" />
