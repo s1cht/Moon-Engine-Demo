@@ -8,14 +8,14 @@
 
 namespace ME::Render
 {
-	Core::Memory::Reference<Render::RenderPass> RenderPass::CreateVulkanRenderPass(RenderPassSpecification& specification)
+	Core::Memory::Reference<Render::RenderPass> RenderPass::CreateVulkan(const RenderPassSpecification& specification)
 	{
-		auto object = Core::Memory::Reference<Render::RenderPass>(new VulkanRenderPass(specification));
+		auto object = Core::Memory::MakeReference<VulkanRenderPass>(specification);
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
-	VulkanRenderPass::VulkanRenderPass(RenderPassSpecification& specification)
+	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& specification)
 		: m_Specification(specification)
 	{
 		Init(specification);
@@ -35,30 +35,42 @@ namespace ME::Render
 		}
 	}
 
-	void VulkanRenderPass::Begin(CommandBuffer* buffer, RenderPassBeginInfo& beginInfo)
+	void VulkanRenderPass::Begin(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, RenderPassBeginInfo& beginInfo)
 	{
 		VulkanCommandBuffer* cmdBuf = buffer->As<VulkanCommandBuffer>();
+
+		Core::Array<VkClearValue> clearValues(beginInfo.ClearValues.Size());
+	    for (uint32 i = 0; i < beginInfo.ClearValues.Size(); i++)
+		{
+			if (beginInfo.ClearValues[i].UsingDepth)
+			{
+				clearValues[i].depthStencil.depth = beginInfo.ClearValues[i].DepthClearValue.Depth;
+				clearValues[i].depthStencil.stencil = beginInfo.ClearValues[i].DepthClearValue.Stencil;
+				continue;
+			}
+	        clearValues[i].color = reinterpret_cast<VkClearColorValue&&>(beginInfo.ClearValues[i].ColorClearValue);
+		}
 
 		VkRenderPassBeginInfo vkBeginInfo = {};
 		vkBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		vkBeginInfo.renderPass = m_Pass;
-		vkBeginInfo.clearValueCount = (uint32)beginInfo.ClearValues.Size();
-		vkBeginInfo.pClearValues = reinterpret_cast<const VkClearValue*>(beginInfo.ClearValues.Data());
+		vkBeginInfo.clearValueCount = static_cast<uint32>(clearValues.Size());
+		vkBeginInfo.pClearValues = clearValues.Data();
 		vkBeginInfo.framebuffer = beginInfo.Framebuffer->As<VulkanFramebuffer>()->GetFramebuffer();
 		vkBeginInfo.renderArea.offset.x = beginInfo.RenderArea.Offset.x;
 		vkBeginInfo.renderArea.offset.y = beginInfo.RenderArea.Offset.y;
-		vkBeginInfo.renderArea.extent.height = beginInfo.RenderArea.Extent.x;
-		vkBeginInfo.renderArea.extent.width = beginInfo.RenderArea.Extent.y;
+		vkBeginInfo.renderArea.extent.width = beginInfo.RenderArea.Extent.x;
+		vkBeginInfo.renderArea.extent.height = beginInfo.RenderArea.Extent.y;
 
 		vkCmdBeginRenderPass(cmdBuf->GetCommandBuffer(), &vkBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
 
-	void VulkanRenderPass::End(CommandBuffer* buffer)
+	void VulkanRenderPass::End(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer)
 	{
 		vkCmdEndRenderPass(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
 	}
 
-	void VulkanRenderPass::Init(RenderPassSpecification& specification)
+	void VulkanRenderPass::Init(const RenderPassSpecification& specification)
 	{
 		VkResult result;
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
@@ -68,7 +80,7 @@ namespace ME::Render
 
 		for (auto& attachment : specification.AttachmentSpecs)
 		{
-			VkAttachmentDescription desc{};
+			VkAttachmentDescription desc = {};
 			desc.format = ME::Render::ConvertFormatVulkan(attachment.AttachmentFormat);
 			desc.initialLayout = ME::Render::ConvertImageLayoutVulkan(attachment.InitialLayout);
 			desc.finalLayout = ME::Render::ConvertImageLayoutVulkan(attachment.FinalLayout);
@@ -81,8 +93,8 @@ namespace ME::Render
 
 			attachmentDescriptions.EmplaceBack(desc);
 
-			VkAttachmentReference ref{};
-			ref.attachment = static_cast<uint32_t>(globalAttachmentReferences.Size());
+			VkAttachmentReference ref = {};
+			ref.attachment = static_cast<uint32>(globalAttachmentReferences.Size());
 			ref.layout = (attachment.IsDepth || attachment.IsStencil)
 				? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 				: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -118,12 +130,12 @@ namespace ME::Render
 			depthStencilAttachmentRefs.PushBack(depthRef);
 
 			VkSubpassDescription subpassDesc{};
-			subpassDesc.pipelineBindPoint = ME::Render::ConvertPipelineBindPointVulkan(subpass.PipelineBindPoint);
-			subpassDesc.colorAttachmentCount = (uint32)colorAttachmentRefsList.Back().Size();
-			subpassDesc.pColorAttachments = colorAttachmentRefsList.Back().Data();
-			subpassDesc.inputAttachmentCount = (uint32)inputAttachmentRefsList.Back().Size();
-			subpassDesc.pInputAttachments = inputAttachmentRefsList.Back().Data();
-			subpassDesc.pDepthStencilAttachment = (subpass.DepthStencilAttachmentRef != ~0u) ? &depthStencilAttachmentRefs.Back() : nullptr;
+			subpassDesc.pipelineBindPoint			= ME::Render::ConvertPipelineBindPointVulkan(subpass.PipelineBindPoint);
+			subpassDesc.colorAttachmentCount		= static_cast<uint32>(colorAttachmentRefsList.Back().Size());
+			subpassDesc.pColorAttachments			= colorAttachmentRefsList.Back().Data();
+			subpassDesc.inputAttachmentCount		= static_cast<uint32>(inputAttachmentRefsList.Back().Size());
+			subpassDesc.pInputAttachments			= inputAttachmentRefsList.Back().Data();
+			subpassDesc.pDepthStencilAttachment		= (subpass.DepthStencilAttachmentRef != ~0u) ? &depthStencilAttachmentRefs.Back() : nullptr;
 
 			subpassDescriptions.EmplaceBack(subpassDesc);
 		}
@@ -145,11 +157,11 @@ namespace ME::Render
 
 		VkRenderPassCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		createInfo.attachmentCount = (uint32)attachmentDescriptions.Size();
+		createInfo.attachmentCount = static_cast<uint32>(attachmentDescriptions.Size());
 		createInfo.pAttachments = attachmentDescriptions.Data();
-		createInfo.subpassCount = (uint32)subpassDescriptions.Size();
+		createInfo.subpassCount = static_cast<uint32>(subpassDescriptions.Size());
 		createInfo.pSubpasses = subpassDescriptions.Data();
-		createInfo.dependencyCount = (uint32)subpassDependencies.Size();
+		createInfo.dependencyCount = static_cast<uint32>(subpassDependencies.Size());
 		createInfo.pDependencies = subpassDependencies.Data();
 
 		result = vkCreateRenderPass(render->GetDevice(), &createInfo, nullptr, &m_Pass);

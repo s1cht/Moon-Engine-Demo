@@ -2,41 +2,58 @@
 
 #include <Core.hpp>
 #include "Renderer/Base/Buffer.hpp"
+#include "Renderer/Base/Texture.hpp"
 #include "Renderer/Base/Framebuffer.hpp"
 
 // R - stands for ring
 namespace ME::Render
 {
-	class MEAPI RFramebuffer
+    struct RFramebufferSpecification : FramebufferSpecification
+    {
+		ME::Core::Array<ME::Core::Memory::Reference<Render::RTexture2D>> RAttachments;
+    };
+
+	class MEAPI RingBuffer
 	{
 	public:
-		RFramebuffer(const FramebufferSpecification& specification);
-		~RFramebuffer();
+		RingBuffer() : m_CurrentBuffer(0) {}
+		virtual ~RingBuffer() = default;
+
+	    uint32 GetCurrentBuffer() const { return m_CurrentBuffer; }
+
+	protected:
+		uint32 m_CurrentBuffer;
+	};
+
+	class MEAPI RFramebuffer final : public RingBuffer
+	{
+	public:
+		RFramebuffer(const RFramebufferSpecification& specification);
+		~RFramebuffer() override;
 
 	public:
 		inline ME::Core::Memory::Reference<Render::Framebuffer> AcquireNextBuffer();
 		void Validate();
-		void RecreateBuffers(const FramebufferSpecification& specification);
+		void RecreateBuffers(const RFramebufferSpecification& specification);
 		void Shutdown();
 
 	public:
-		static ME::Core::Memory::Reference<Render::RFramebuffer> Create(const FramebufferSpecification& specification);
+		static ME::Core::Memory::Reference<Render::RFramebuffer> Create(const RFramebufferSpecification& specification);
 
 	private:
 		void Init();
 
 	private:
-		uint32 m_CurrentBuffer;
 		ME::Core::Array<ME::Core::Memory::Reference<Render::Framebuffer>> m_Buffers;
 
-		FramebufferSpecification m_Specification;
+		RFramebufferSpecification m_Specification;
 	};
 
-	class MEAPI RUniform
+	class MEAPI RUniform final : public RingBuffer
 	{
 	public:
 		RUniform(const UniformSpecification& specification);
-		~RUniform();
+		~RUniform() override;
 
 	public:
 		inline ME::Core::Memory::Reference<Render::Uniform> AcquireNextBuffer();
@@ -49,17 +66,16 @@ namespace ME::Render
 		void Init();
 
 	private:
-		uint32 m_CurrentBuffer;
 		ME::Core::Array<ME::Core::Memory::Reference<Render::Uniform>> m_Buffers;
 
 		UniformSpecification m_Specification;
 	};
 
-	class MEAPI RStorageBuffer
+	class MEAPI RStorageBuffer final : public RingBuffer
 	{
 	public:
 		RStorageBuffer(const StorageBufferSpecification& specification);
-		~RStorageBuffer();
+		~RStorageBuffer() override;
 
 	public:
 		inline ME::Core::Memory::Reference<Render::StorageBuffer> AcquireNextBuffer();
@@ -72,17 +88,16 @@ namespace ME::Render
 		void Init();
 
 	private:
-		uint32 m_CurrentBuffer;
 		ME::Core::Array<ME::Core::Memory::Reference<Render::StorageBuffer>> m_Buffers;
 
 		StorageBufferSpecification m_Specification;
 	};
 
-	class MEAPI RIndirectBuffer
+	class MEAPI RIndirectBuffer final : public RingBuffer
 	{
 	public:
 		RIndirectBuffer(const IndirectBufferSpecification& specification);
-		~RIndirectBuffer();
+		~RIndirectBuffer() override;
 
 	public:
 		inline ME::Core::Memory::Reference<Render::IndirectBuffer> AcquireNextBuffer();
@@ -95,17 +110,16 @@ namespace ME::Render
 		void Init();
 
 	private:
-		uint32 m_CurrentBuffer;
 		ME::Core::Array<ME::Core::Memory::Reference<Render::IndirectBuffer>> m_Buffers;
 
 		IndirectBufferSpecification m_Specification;
 	};
 
-	class MEAPI RTexture2D
+	class MEAPI RTexture2D final : public RingBuffer
 	{
 	public:
 		RTexture2D(const Texture2DSpecification& specification);
-		~RTexture2D();
+		~RTexture2D() override;
 
 	public:
 		inline ME::Core::Memory::Reference<Render::Texture2D> AcquireNextTexture();
@@ -121,7 +135,6 @@ namespace ME::Render
 		void Init();
 
 	private:
-		uint32 m_CurrentBuffer;
 		ME::Core::Array<ME::Core::Memory::Reference<Render::Texture2D>> m_Textures;
 
 		Texture2DSpecification m_Specification;

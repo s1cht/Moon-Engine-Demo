@@ -1,12 +1,13 @@
 #pragma once
 #include <Core.hpp>
+#include <Core/Math/Math.hpp>
+#include <Core/Math/Rect2D.hpp>
+#include <Core/Containers/Array.hpp>
 
-#include "Renderer/Base/RenderPass.hpp"
+#include "RenderCore.hpp"
 
 namespace ME::Render
 {
-	class RenderPass;
-
 	struct FramebufferSpecification
 	{
 		Core::Memory::Reference<Render::RenderPass> RenderPass;
@@ -21,9 +22,10 @@ namespace ME::Render
 		virtual inline const FramebufferSpecification& GetSpecification() const = 0;
 
 	public:
-		static ME::Core::Memory::Reference<Render::Framebuffer> Create(FramebufferSpecification& specification);
-		static ME::Core::Memory::Reference<Render::Framebuffer> CreateVulkanFramebuffer(FramebufferSpecification& specification);
+		static ME::Core::Memory::Reference<Render::Framebuffer> Create(const FramebufferSpecification& specification);
 
+	private:
+	    static ME::Core::Memory::Reference<Render::Framebuffer> CreateVulkan(const FramebufferSpecification& specification);
 	};
 }
 

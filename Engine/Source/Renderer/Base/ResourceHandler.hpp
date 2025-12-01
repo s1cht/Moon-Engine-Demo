@@ -1,34 +1,6 @@
 ﻿#pragma once
-#include "RenderObject.hpp"
+#include "RenderCore.hpp"
 #include "Shader.hpp"
-
-namespace ME::Render
-{
-    struct BarrierInfo;
-    class IndexBuffer;
-}
-
-namespace ME::Render
-{
-    class VertexBuffer;
-}
-
-namespace ME::Render
-{
-    class IndirectBuffer;
-}
-
-namespace ME::Render
-{
-    class Texture;
-    class Texture1D;
-	class Texture2D;
-	class Texture3D;
-	class Uniform;
-	class StorageBuffer;
-	class CommandBuffer;
-	class Pipeline;
-}
 
 namespace ME::Render
 {
@@ -56,17 +28,11 @@ namespace ME::Render
 		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::IndirectBuffer> buffer) = 0;
 		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::VertexBuffer> buffer) = 0;
 		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::IndexBuffer> buffer) = 0;
-		virtual void WriteTexture() = 0;
-
-	    virtual void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture1D> texture) = 0;
-		virtual void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture2D> texture) = 0;
-		virtual void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture3D> texture) = 0;
-
-	    virtual void ClearTextureQueue() = 0;
+		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::Texture1D> texture) = 0;
+		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::Texture2D> texture) = 0;
+		virtual void WriteResource(ME::Core::Memory::Reference<ME::Render::Texture3D> texture) = 0;
 
 	    virtual void BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, uint32 set, uint32 setIndex) = 0;
-		virtual void BindTexture(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline,
-			uint32 set, uint32 setIndex) = 0;
 
 	    virtual void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, BarrierInfo src, BarrierInfo dst) = 0;
 		virtual void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, const ME::Core::Memory::Reference<Render::IndexBuffer>& buffer, BarrierInfo src, BarrierInfo dst) = 0;
@@ -83,6 +49,5 @@ namespace ME::Render
 
 	private:
 		static ME::Core::Memory::Reference<ME::Render::ResourceHandler> CreateVulkan(uint32 bufferCount);
-
 	};
 }

@@ -2,6 +2,7 @@
 #include "VulkanRenderAPI.hpp"
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanPipeline.hpp"
+#include "VulkanResourceHandler.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -9,7 +10,7 @@ namespace ME::Render
 {
 	ME::Core::Memory::Reference<Uniform> Uniform::CreateVulkan(const UniformSpecification& specification)
 	{
-		auto object = ME::Core::Memory::Reference<VulkanUniform>(new VulkanUniform(specification));
+		auto object = ME::Core::Memory::MakeReference<VulkanUniform>(specification);
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
@@ -146,6 +147,23 @@ namespace ME::Render
 			0, nullptr);
 
 		vkCmdFillBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_Buffer, 0, m_Specification.Size, 0);
+    }
+
+    void VulkanUniform::Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer,
+        ME::Core::Memory::Reference<Pipeline> pipeline)
+    {
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BindResourceSet(commandBuffer, pipeline, m_Specification.Set, m_ResourceIndex);
+    }
+
+    void VulkanUniform::Write()
+    {
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
+    }
+
+    void VulkanUniform::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
+        BarrierInfo dst)
+    {
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BufferBarrier(commandBuffer, m_Buffer, src, dst);
     }
 
     void VulkanUniform::Shutdown()

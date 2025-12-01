@@ -21,11 +21,20 @@ public:																					\
 private:																				\
     returnType methodName ## Impl(argumentDefinitions)
 
-
 namespace ME::Render
 {
 	constexpr uint32 PRIMARY_PIPELINE_X_THREAD_COUNT = 32;
 	constexpr uint32 PRIMARY_PIPELINE_Y_THREAD_COUNT = 4;
+
+	constexpr uint32 VERTEX_SET = 0;
+	constexpr uint32 CAMERA_SET = 1;
+	constexpr uint32 MESH_TRANSFORM_SET = 2;
+	constexpr uint32 FRUSTUM_CULLING_SET = 3;
+	constexpr uint32 GBUFFER_SET = 4;
+	constexpr uint32 IMGUI_FRAME_SET = 0;
+
+	constexpr char8 ME_RENDER_PRIMARY_PIPELINE_NAME[] = TEXT("Primary");
+	constexpr char8 ME_RENDER_MERGE_PIPELINE_NAME[] = TEXT("Merge");
 
 	class MEAPI Renderer
 	{
@@ -101,17 +110,25 @@ namespace ME::Render
 	private:
 		void ProcessQueuedMeshes();
 		void AcquireNewBuffers();
+		void MergeStage();
 
 	private:
-		ME::Core::Memory::Reference<ME::Render::Pipeline> m_PrimaryPipeline;
 		ME::Core::Memory::Reference<ME::Render::Pipeline> m_FrustumCullPipeline;
-		ME::Core::Memory::Reference<ME::Render::RenderPass> m_PrimaryRenderPass;
-		ME::Core::Memory::Reference<ME::Render::RenderPass> m_InitRenderPass;
+		// G-Pass
+		ME::Core::Memory::Reference<ME::Render::RenderPass> m_GPass;
+		ME::Core::Memory::Reference<ME::Render::RFramebuffer> m_GFramebuffer;
+		ME::Core::Memory::Reference<ME::Render::Pipeline> m_GeometryPipeline;
+		// Merge
+		ME::Core::Memory::Reference<ME::Render::RenderPass> m_MergePass;
+		ME::Core::Memory::Reference<ME::Render::Pipeline> m_MergePipeline;
 		ME::Render::VertexBufferLayout m_VertexInputFormat;
 
 	private:
 	    // Buffers
-		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_DepthBuffer;
+		// G-Buffers
+	    ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gBaseColor;
+		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gNormal;
+		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gDepth;
 
 	    ME::Core::Memory::Reference<ME::Render::RUniform> m_CameraBuffer;
 		ME::Core::Memory::Reference<ME::Render::RUniform> m_CameraFrustumBuffer;
@@ -124,8 +141,12 @@ namespace ME::Render
 		ME::Core::Memory::Reference<ME::Render::RIndirectBuffer> m_OutputMeshInfos;
 		ME::Core::Memory::Reference<ME::Render::RIndirectBuffer> m_OutputMeshInfoCount;
 
+	    uint32 m_ImguiSet;
+
 	private:
 		ME::Core::Memory::Reference<ME::Render::CommandBuffer> m_CurrentCommandBuffer;
+
+		ME::Core::Memory::Reference<ME::Render::Framebuffer> m_CurrentGFramebuffer;
 
 		ME::Core::Memory::Reference<ME::Render::Uniform> m_CurrentCameraBuffer;
 		ME::Core::Memory::Reference<ME::Render::Uniform> m_CurrentCameraFrustumBuffer;
@@ -141,7 +162,6 @@ namespace ME::Render
 	private:
 	    ME::Core::UnorderedMap<uint64, MeshInfos> m_QueuedMeshes;
 	    ME::Core::Array<DrawIndirectIndexedData> m_DrawIndirectData;
-
 	};
 }
 

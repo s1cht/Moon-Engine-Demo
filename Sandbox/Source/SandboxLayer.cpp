@@ -8,6 +8,7 @@ using namespace ME;
 SandboxLayer::SandboxLayer()
 	: Layer(TEXT("Example"))
 {
+	m_DWorld = ME::Application::GetWorld()->Create<ME::Music>();
 	m_Block = ME::Application::GetWorld()->Create<ME::Block>();
 	m_Camera = ME::Application::GetWorld()->Create<ME::PerspectiveCamera>();
 }
@@ -28,6 +29,12 @@ void SandboxLayer::OnAttach()
 	meshComp.ShadowsVisible = false;
 	meshComp.Mesh = Manager::AssetManager::Get().GetMesh("Flashlight");
 	meshComp.Mesh->Load();
+
+	Components::AudioComponent& music = m_DWorld->Audio();
+	ME::Audio::AudioSpecification specs = {};
+	specs.AudioFile = Manager::AssetManager::Get().GetAudioFile("dWorld.wav");
+	music.Audio = ME::Audio::Audio::Create(specs);
+	music.Audio->SetVolume(0.1f);
 }
 
 void SandboxLayer::OnUpdate(float64 deltaTime)
@@ -48,11 +55,13 @@ void SandboxLayer::OnEvent(Core::Event& event)
 void SandboxLayer::OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext)
 {
 	Components::CameraComponent& cameraComp = m_Camera->Camera();
-
+	Components::AudioComponent& music = m_DWorld->Audio();
 	ImGui::SetCurrentContext(dllContext);
 
-	ImGui::Begin("CameraProps");
+	static bool IsPlaying = false;
+	static bool fired = false;
 
+	ImGui::Begin("CameraProps");
 	ImGui::Text("%.3f, %.3f, %.3f, %.3f", 
 		cameraComp.Camera->GetViewMatrix().Matrix[0][0],
 		cameraComp.Camera->GetViewMatrix().Matrix[0][1],
@@ -78,6 +87,22 @@ void SandboxLayer::OnImGuiRender(float64 deltaTime, ImGuiContext* dllContext)
 		cameraComp.Camera->GetViewMatrix().Matrix[3][3]
 	);
 	ImGui::End();
+
+	ImGui::Begin("Music");
+	if (ImGui::Checkbox("Enable music", &IsPlaying))
+		fired = true;
+
+	ImGui::End();
+
+	if (fired)
+	{
+		if (IsPlaying)
+			music.Audio->Play();
+		else
+			music.Audio->Stop();
+
+		fired = false;
+	}
 }
 
 //bool OnKeyInputStartedEvent(ME::Events::KeyInputStartedEvent& event)

@@ -1,18 +1,11 @@
 ﻿#pragma once
-
 #include <Core.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/RenderObject.hpp"
+#include "Renderer/Base/RenderCore.hpp"
 #include "Renderer/Base/ResourceHandler.hpp"
 #include "Renderer/Base/Shader.hpp"
 #include "Renderer/Base/Texture.hpp"
-
-namespace ME::Render
-{
-    class StorageBuffer;
-	class Uniform;
-}
 
 namespace ME::Render
 {
@@ -64,20 +57,14 @@ namespace ME::Render
 		void WriteResource(ME::Core::Memory::Reference<ME::Render::IndirectBuffer> buffer) override;
 		void WriteResource(ME::Core::Memory::Reference<ME::Render::VertexBuffer> buffer) override;
 		void WriteResource(ME::Core::Memory::Reference<ME::Render::IndexBuffer> buffer) override;
-		void WriteTexture() override;
-
-	    void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture1D> texture) override;
-		void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture2D> texture) override;
-		void QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture3D> texture) override;
-
-		void ClearTextureQueue() override;
+		void WriteResource(ME::Core::Memory::Reference<ME::Render::Texture1D> texture) override;
+		void WriteResource(ME::Core::Memory::Reference<ME::Render::Texture2D> texture) override;
+		void WriteResource(ME::Core::Memory::Reference<ME::Render::Texture3D> texture) override;
 
 		void BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline,
 			uint32 set, uint32 setIndex) override;
-		void BindTexture(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline,
-			uint32 set, uint32 setIndex) override;
 
-		void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+	    void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 			const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, BarrierInfo src,
 			BarrierInfo dst) override;
 		void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
@@ -104,6 +91,23 @@ namespace ME::Render
 			BarrierInfo dst) override;
 
 	public:
+		void WriteResource(VulkanTexture1D* texture);
+		void WriteResource(VulkanTexture2D* texture);
+		void WriteResource(VulkanTexture3D* texture);
+		void WriteResource(VulkanUniform* buffer);
+		void WriteResource(VulkanIndexBuffer* buffer);
+		void WriteResource(VulkanVertexBuffer* buffer);
+		void WriteResource(VulkanIndirectBuffer* buffer);
+		void WriteResource(VulkanStorageBuffer* buffer);
+
+		void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			VkBuffer buffer, BarrierInfo src,
+			BarrierInfo dst);
+		void TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			VkImage image, const TextureSpecification& specs, BarrierInfo src,
+			BarrierInfo dst);
+
+	public:
 		VkDescriptorPool GetDescriptorPool() const { return m_DescriptorPool; }
 
 	public:
@@ -127,12 +131,5 @@ namespace ME::Render
 	private:
 		ME::Core::Array<DescriptorSetLayoutPair> m_Layouts;
 		uint32 m_BufferCount;
-
-	private:
-		ME::Core::Array<VkDescriptorImageInfo> m_QueuedImages;
-		ME::Core::Array<VkDescriptorImageInfo> m_QueuedSamplers;
-		bool m_WritingTextures;
-		uint32 m_CurrentTextureSet;
-		
 	};
 }

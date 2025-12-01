@@ -27,7 +27,7 @@ BOOL WINAPI TerminationHandler(DWORD signal)
 
 int main(int32 argc, const asciichar** argv)
 {
-	system("chcp 65001");
+ 	system("chcp 65001");
 	system("cls");
 	SetConsoleCtrlHandler(TerminationHandler, TRUE);
 

@@ -2,6 +2,7 @@
 
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanRenderAPI.hpp"
+#include "VulkanResourceHandler.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -9,7 +10,7 @@ namespace ME::Render
 {
     ME::Core::Memory::Reference<ME::Render::IndirectBuffer> IndirectBuffer::CreateVulkan(const IndirectBufferSpecification& specification)
     {
-        auto object = ME::Core::Memory::Reference<Render::VulkanIndirectBuffer>(new VulkanIndirectBuffer(specification));
+        auto object = ME::Core::Memory::MakeReference<VulkanIndirectBuffer>(specification);
         RenderResourcesTracker::Get().AddItem(object);
         return object;
     }
@@ -93,6 +94,23 @@ namespace ME::Render
 
         // Then delete old buffer
         vmaDestroyBuffer(RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), oldBuffer, oldAlloc);
+    }
+
+    void VulkanIndirectBuffer::Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer,
+        ME::Core::Memory::Reference<Pipeline> pipeline)
+    {
+        RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BindResourceSet(commandBuffer, pipeline, m_Specification.Set, m_ResourceIndex);
+    }
+
+    void VulkanIndirectBuffer::Write()
+    {
+        RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
+    }
+
+    void VulkanIndirectBuffer::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
+        BarrierInfo dst)
+    {
+        RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BufferBarrier(commandBuffer, m_Buffer, src, dst);
     }
 
     void VulkanIndirectBuffer::Clear()

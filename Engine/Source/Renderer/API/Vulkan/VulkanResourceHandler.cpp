@@ -6,7 +6,9 @@
 #include "VulkanIndirectBuffer.hpp"
 #include "VulkanRenderAPI.hpp"
 #include "VulkanStorageBuffer.hpp"
-#include "VulkanTexture.hpp"
+#include "VulkanTexture1D.hpp"
+#include "VulkanTexture2D.hpp"
+#include "VulkanTexture3D.hpp"
 #include "VulkanUniform.hpp"
 #include "VulkanVertexBuffer.hpp"
 #include "Renderer/RenderCommand.hpp"
@@ -267,8 +269,64 @@ namespace ME::Render
 			nullptr);
     }
 
-	void VulkanResourceHandler::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
-		const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, BarrierInfo src, BarrierInfo dst)
+    void VulkanResourceHandler::WriteResource(ME::Core::Memory::Reference<ME::Render::Texture1D> texture)
+    {
+		VkDescriptorImageInfo textureInfo = {};
+		textureInfo.imageLayout = ConvertImageLayoutVulkan(texture->GetSpecification().Layout);
+		textureInfo.imageView = texture->As<VulkanTexture1D>()->GetImageView();
+		textureInfo.sampler = texture->As<VulkanTexture1D>()->GetSampler();
+
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[texture->GetSpecification().SetIndex].Set;
+		writeDesc.dstBinding = texture->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = nullptr;
+		writeDesc.pImageInfo = &textureInfo;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
+
+    void VulkanResourceHandler::WriteResource(ME::Core::Memory::Reference<ME::Render::Texture2D> texture)
+    {
+		VkDescriptorImageInfo textureInfo = {};
+		textureInfo.imageLayout = ConvertImageLayoutVulkan(texture->GetSpecification().Layout);
+		textureInfo.imageView = texture->As<VulkanTexture2D>()->GetImageView();
+		textureInfo.sampler = texture->As<VulkanTexture2D>()->GetSampler();
+
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[texture->GetSpecification().SetIndex].Set;
+		writeDesc.dstBinding = texture->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = nullptr;
+		writeDesc.pImageInfo = &textureInfo;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
+
+    void VulkanResourceHandler::WriteResource(ME::Core::Memory::Reference<ME::Render::Texture3D> texture)
+    {
+    }
+
+    void VulkanResourceHandler::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+                                              const ME::Core::Memory::Reference<Render::VertexBuffer>& buffer, BarrierInfo src, BarrierInfo dst)
 	{
 		VkBufferMemoryBarrier bufferBarrier = {};
 		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -382,6 +440,35 @@ namespace ME::Render
 	void VulkanResourceHandler::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 		const ME::Core::Memory::Reference<Render::Texture1D>& texture, BarrierInfo src, BarrierInfo dst)
 	{
+		Texture1DSpecification texSpecs = texture->As<VulkanTexture1D>()->GetSpecification();
+
+		VkImageSubresourceRange range = {};
+		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (texSpecs.IsDepth)  range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (texSpecs.IsStencil) range.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		range.baseMipLevel = 0;
+		range.baseArrayLayer = 0;
+		range.levelCount = texSpecs.MipLevels;
+		range.layerCount = texSpecs.CubeMapCount > 0 ? 6 * texSpecs.CubeMapCount : 1;
+
+		VkImageMemoryBarrier textureBarrier = {};
+		textureBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		textureBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		textureBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		textureBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		textureBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		textureBarrier.image = texture->As<VulkanTexture1D>()->GetImage();
+		textureBarrier.subresourceRange = range;
+		textureBarrier.oldLayout = ConvertImageLayoutVulkan(src.Layout);
+		textureBarrier.newLayout = ConvertImageLayoutVulkan(dst.Layout);
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &textureBarrier);
 	}
 
 	void VulkanResourceHandler::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
@@ -421,146 +508,302 @@ namespace ME::Render
 	void VulkanResourceHandler::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 		const ME::Core::Memory::Reference<Render::Texture3D>& texture, BarrierInfo src, BarrierInfo dst)
 	{
+		Texture3DSpecification texSpecs = texture->As<VulkanTexture3D>()->GetSpecification();
 
+		VkImageSubresourceRange range = {};
+		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (texSpecs.IsDepth)  range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (texSpecs.IsStencil) range.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		range.baseMipLevel = 0;
+		range.baseArrayLayer = 0;
+		range.levelCount = texSpecs.MipLevels;
+		range.layerCount = texSpecs.CubeMapCount > 0 ? 6 * texSpecs.CubeMapCount : 1;
+
+		VkImageMemoryBarrier textureBarrier = {};
+		textureBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		textureBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		textureBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		textureBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		textureBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		textureBarrier.image = texture->As<VulkanTexture3D>()->GetImage();
+		textureBarrier.subresourceRange = range;
+		textureBarrier.oldLayout = ConvertImageLayoutVulkan(src.Layout);
+		textureBarrier.newLayout = ConvertImageLayoutVulkan(dst.Layout);
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &textureBarrier);
 	}
 
-    void VulkanResourceHandler::QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture1D> texture)
-	{
-		if (!texture->Loaded())
-		{
-			ME_ERROR("Trying to queue a texture that isn't loaded! Texture: {0}", texture->GetDebugName());
-			return;
-		}
-
-		if (m_WritingTextures == true)
-		{
-			if (texture->GetSet() != m_CurrentTextureSet) return;
-		}
-		else
-		{
-			m_CurrentTextureSet = texture->GetSet();
-			m_WritingTextures = true;
-		}
-
-		VkDescriptorImageInfo image = {};
-		image.imageView = texture->As<VulkanTexture2D>()->GetImageView();
-		image.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
-
-		VkDescriptorImageInfo sampler = {};
-		sampler.sampler = texture->As<VulkanTexture2D>()->GetSampler();
-
-		m_QueuedImages.EmplaceBack(image);
-		m_QueuedSamplers.EmplaceBack(sampler);
-	}
-
-	void VulkanResourceHandler::QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture2D> texture)
-	{
-		if (!texture->Loaded())
-		{
-			ME_ERROR("Trying to queue a texture that isn't loaded! Texture: {0}", texture->GetDebugName());
-            return;
-		}
-
-		if (m_WritingTextures == true)
-		{
-			if (texture->GetSet() != m_CurrentTextureSet) return;
-		}
-		else
-		{
-			m_CurrentTextureSet = texture->GetSet();
-			m_WritingTextures = true;
-		}
-
-		VkDescriptorImageInfo image = {};
-		image.imageView = texture->As<VulkanTexture2D>()->GetImageView();
-		image.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
-
-		VkDescriptorImageInfo sampler = {};
-		sampler.sampler = texture->As<VulkanTexture2D>()->GetSampler();
-
-		m_QueuedImages.EmplaceBack(image);
-		m_QueuedSamplers.EmplaceBack(sampler);
-	}
-
-	void VulkanResourceHandler::QueueTexture(ME::Core::Memory::Reference<ME::Render::Texture3D> texture)
-	{
-		if (!texture->Loaded())
-		{
-			ME_ERROR("Trying to queue a texture that isn't loaded! Texture: {0}", texture->GetDebugName());
-			return;
-		}
-
-		if (m_WritingTextures == true)
-		{
-			if (texture->GetSet() != m_CurrentTextureSet) return;
-		}
-		else
-		{
-			m_CurrentTextureSet = texture->GetSet();
-			m_WritingTextures = true;
-		}
-
-		VkDescriptorImageInfo image = {};
-		image.imageView = texture->As<VulkanTexture2D>()->GetImageView();
-		image.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
-
-		VkDescriptorImageInfo sampler = {};
-		sampler.sampler = texture->As<VulkanTexture2D>()->GetSampler();
-
-		m_QueuedImages.EmplaceBack(image);
-		m_QueuedSamplers.EmplaceBack(sampler);
-	}
-
-    void VulkanResourceHandler::ClearTextureQueue()
+    void VulkanResourceHandler::WriteResource(VulkanTexture1D* texture)
     {
-        m_QueuedImages.Clear();
-        m_QueuedSamplers.Clear();
-        m_WritingTextures = false;
+		VkDescriptorImageInfo textureInfo = {};
+		textureInfo.imageLayout = ConvertImageLayoutVulkan(texture->GetSpecification().Layout);
+		textureInfo.imageView = texture->GetImageView();
+		textureInfo.sampler = texture->GetSampler();
+
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[texture->GetSpecification().SetIndex].Set;
+		writeDesc.dstBinding = texture->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = nullptr;
+		writeDesc.pImageInfo = &textureInfo;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
     }
 
-    void VulkanResourceHandler::WriteTexture()
-	{
-		if (m_WritingTextures == false)
-		{
-            ME_WARN("Not writing any textures!");
-			return;
-		}
+    void VulkanResourceHandler::WriteResource(VulkanTexture2D* texture)
+    {
+		VkDescriptorImageInfo textureInfo = {};
+		textureInfo.imageLayout = ConvertImageLayoutVulkan(texture->GetSpecification().Layout);
+		textureInfo.imageView = texture->GetImageView();
+		textureInfo.sampler = texture->GetSampler();
 
-		VkWriteDescriptorSet descs[2] = {};
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[texture->GetSpecification().SetIndex].Set;
+		writeDesc.dstBinding = texture->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = nullptr;
+		writeDesc.pImageInfo = &textureInfo;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
 
-		descs[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descs[0].dstSet = m_TextureSets[m_CurrentTextureSet].Set;
-		descs[0].dstBinding = 0;
-		descs[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		descs[0].dstArrayElement = 0;
-		descs[0].descriptorCount = static_cast<uint32>(m_QueuedImages.Size());
-		descs[0].pBufferInfo = nullptr;
-		descs[0].pImageInfo = m_QueuedImages.Data();
-		descs[0].pTexelBufferView = nullptr;
-		descs[0].pNext = nullptr;
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
 
-		descs[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descs[1].dstSet = m_TextureSets[m_CurrentTextureSet].Set;
-		descs[1].dstBinding = 1;
-		descs[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-		descs[1].dstArrayElement = 0;
-		descs[1].descriptorCount = static_cast<uint32>(m_QueuedSamplers.Size());
-		descs[1].pBufferInfo = nullptr;
-		descs[1].pImageInfo = m_QueuedSamplers.Data();
-		descs[1].pTexelBufferView = nullptr;
-		descs[1].pNext = nullptr;
+    void VulkanResourceHandler::WriteResource(VulkanTexture3D* texture)
+    {
+		VkDescriptorImageInfo textureInfo = {};
+		textureInfo.imageLayout = ConvertImageLayoutVulkan(texture->GetSpecification().Layout);
+		textureInfo.imageView = texture->GetImageView();
+		textureInfo.sampler = texture->GetSampler();
 
-		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), 2, descs, 0, nullptr);
-	}
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[texture->GetSpecification().SetIndex].Set;
+		writeDesc.dstBinding = texture->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = nullptr;
+		writeDesc.pImageInfo = &textureInfo;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
 
-	void VulkanResourceHandler::BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, uint32 set, uint32 setIndex)
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
+
+    void VulkanResourceHandler::WriteResource(VulkanUniform* buffer)
+    {
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = buffer->GetBuffer();
+		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
+		bufferInfo.offset = 0;
+
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
+		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = &bufferInfo;
+		writeDesc.pImageInfo = nullptr;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
+
+    void VulkanResourceHandler::WriteResource(VulkanIndexBuffer* buffer)
+    {
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = buffer->GetBuffer();
+		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetCount() * sizeof(uint32));
+		bufferInfo.offset = 0;
+
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
+		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = &bufferInfo;
+		writeDesc.pImageInfo = nullptr;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
+
+    void VulkanResourceHandler::WriteResource(VulkanVertexBuffer* buffer)
+    {
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = buffer->GetBuffer();
+		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
+		bufferInfo.offset = 0;
+
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
+		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = &bufferInfo;
+		writeDesc.pImageInfo = nullptr;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
+
+    void VulkanResourceHandler::WriteResource(VulkanIndirectBuffer* buffer)
+    {
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = buffer->As<VulkanIndirectBuffer>()->GetBuffer();
+		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
+		bufferInfo.offset = 0;
+
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
+		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = &bufferInfo;
+		writeDesc.pImageInfo = nullptr;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
+
+    void VulkanResourceHandler::WriteResource(VulkanStorageBuffer* buffer)
+    {
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = buffer->As<VulkanStorageBuffer>()->GetBuffer();
+		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
+		bufferInfo.offset = 0;
+
+		VkWriteDescriptorSet writeDesc = {};
+		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
+		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		writeDesc.dstArrayElement = 0;
+		writeDesc.descriptorCount = 1;
+		writeDesc.pBufferInfo = &bufferInfo;
+		writeDesc.pImageInfo = nullptr;
+		writeDesc.pTexelBufferView = nullptr;
+		writeDesc.pNext = nullptr;
+
+		vkUpdateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
+			1,
+			&writeDesc,
+			0,
+			nullptr);
+    }
+
+    void VulkanResourceHandler::BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        VkBuffer buffer, BarrierInfo src, BarrierInfo dst)
+    {
+		VkBufferMemoryBarrier bufferBarrier = {};
+		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		bufferBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		bufferBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		bufferBarrier.buffer = buffer;
+		bufferBarrier.offset = 0;
+		bufferBarrier.size = VK_WHOLE_SIZE;
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			1, &bufferBarrier,
+			0, nullptr);
+    }
+
+    void VulkanResourceHandler::TextureBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        VkImage image, const TextureSpecification& specs, BarrierInfo src, BarrierInfo dst)
+    {
+		VkImageSubresourceRange range = {};
+		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (specs.IsDepth)  range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (specs.IsStencil) range.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		range.baseMipLevel = 0;
+		range.baseArrayLayer = 0;
+		range.levelCount = specs.MipLevels;
+		range.layerCount = specs.CubeMapCount > 0 ? 6 * specs.CubeMapCount : 1;
+
+		VkImageMemoryBarrier textureBarrier = {};
+		textureBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		textureBarrier.srcAccessMask = ConvertAccessFlagsVulkan(src.Access);
+		textureBarrier.dstAccessMask = ConvertAccessFlagsVulkan(dst.Access);
+		textureBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		textureBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		textureBarrier.image = image;
+		textureBarrier.subresourceRange = range;
+		textureBarrier.oldLayout = ConvertImageLayoutVulkan(src.Layout);
+		textureBarrier.newLayout = ConvertImageLayoutVulkan(dst.Layout);
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			ConvertPipelineStageFlagsVulkan(src.PipelineStage),
+			ConvertPipelineStageFlagsVulkan(dst.PipelineStage),
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &textureBarrier);
+    }
+
+    void VulkanResourceHandler::BindResourceSet(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, uint32 set, uint32 setIndex)
 	{
 		vkCmdBindDescriptorSets(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), pipeline->As<VulkanPipeline>()->GetPipelineBindPoint(), pipeline->As<VulkanPipeline>()->GetPipelineLayout(), set, 1, &m_Sets[setIndex].Set, 0, nullptr);
-	}
-
-	void VulkanResourceHandler::BindTexture(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Render::Pipeline> pipeline, uint32 set, uint32 setIndex)
-	{
-		vkCmdBindDescriptorSets(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), pipeline->As<VulkanPipeline>()->GetPipelineBindPoint(), pipeline->As<VulkanPipeline>()->GetPipelineLayout(), set, 1, &m_TextureSets[setIndex].Set, 0, nullptr);
 	}
 
 	ME::Core::Array<VkDescriptorSetLayout> VulkanResourceHandler::GetDescriptorSetLayouts(ME::Core::Array<uint32> layouts) const
@@ -608,15 +851,25 @@ namespace ME::Render
 		ME::Core::Array<VkDescriptorSetLayoutBinding> bindings;
 		ME::Core::Array<VkDescriptorBindingFlags> bindFlags;
 
-		for (uint32 u = 0; u < layout.Layout.Size(); u++)
+		uint32 binding = 0;
+		for (ResourceLayout::Iterator it = layout.Layout.Begin(); it != layout.Layout.End(); ++it)
 		{
 			VkDescriptorSetLayoutBinding vkBinding = {};
-			vkBinding.binding = u;
-			vkBinding.descriptorType = ConvertResourceTypeVulkan(layout.Layout[u].Type);
-			vkBinding.stageFlags = ConvertShaderStageVulkan(layout.Layout[u].Stage);
+			vkBinding.binding = binding;
+		    vkBinding.stageFlags = ConvertShaderStageVulkan(it->Stage);
+			vkBinding.descriptorType = ConvertResourceTypeVulkan(it->Type);
+		    if (it->Combined && (it->Type == ResourceType::Texture1D || it->Type == ResourceType::Texture2D || it->Type == ResourceType::Texture3D))
+			    if ((it + 1)->Type == ResourceType::Sampler)
+			    {
+					vkBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					++it;
+			    }
+
 			vkBinding.descriptorCount = 1;
-			bindings.EmplaceBack(vkBinding);
+
+		    bindings.EmplaceBack(vkBinding);
 			bindFlags.EmplaceBack(bindingFlags);
+		    binding++;
 		}
 
 		VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = {};

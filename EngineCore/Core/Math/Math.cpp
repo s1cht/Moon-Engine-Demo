@@ -104,7 +104,7 @@ namespace ME::Core::Math
 		return LERP(a, b, d);
 	}
 
-	float32 ToDegrees(float32 radians)
+    float32 ToDegrees(float32 radians)
 	{
 		return static_cast<float32>(ToDegrees(static_cast<float64>(radians)));
 	}

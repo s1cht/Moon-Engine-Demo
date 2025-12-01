@@ -13,7 +13,7 @@ namespace ME::Render
 		return ME::Core::Memory::MakeReference<Render::RIndirectBuffer>(specification);
 	}
 
-	ME::Core::Memory::Reference<Render::RFramebuffer> RFramebuffer::Create(const FramebufferSpecification& specification)
+	ME::Core::Memory::Reference<Render::RFramebuffer> RFramebuffer::Create(const RFramebufferSpecification& specification)
 	{
 		return ME::Core::Memory::MakeReference<Render::RFramebuffer>(specification);
 	}
@@ -23,17 +23,18 @@ namespace ME::Render
 		return ME::Core::Memory::MakeReference<Render::RStorageBuffer>(specification);
 	}
 
-	RFramebuffer::RFramebuffer(const FramebufferSpecification& specification)
-		: m_CurrentBuffer(0), m_Specification(specification)
+	RFramebuffer::RFramebuffer(const RFramebufferSpecification& specification)
+		: m_Specification(specification)
 	{
 		Init();
 	}
 
-	RFramebuffer::~RFramebuffer()
-	{
-	}
+    RFramebuffer::~RFramebuffer()
+    {
+		Shutdown();
+    }
 
-	ME::Core::Memory::Reference<Render::Framebuffer> RFramebuffer::AcquireNextBuffer()
+    ME::Core::Memory::Reference<Render::Framebuffer> RFramebuffer::AcquireNextBuffer()
 	{
 		m_CurrentBuffer = (m_CurrentBuffer + 1) % RenderCommand::Get()->GetSwapChain()->GetFrameCount();
 		return m_Buffers[m_CurrentBuffer];
@@ -46,15 +47,22 @@ namespace ME::Render
 		RecreateBuffers(m_Specification);
 	}
 
-	void RFramebuffer::RecreateBuffers(const FramebufferSpecification& specification)
+	void RFramebuffer::RecreateBuffers(const RFramebufferSpecification& specification)
 	{
 		Shutdown();
 		m_Specification = specification;
 		m_CurrentBuffer = 0;
 
-		for (uint32 i = 0; i < RenderCommand::Get()->GetSwapChain()->GetFrameCount(); i++)
+		for (uint32 frameIndex = 0; frameIndex < RenderCommand::Get()->GetSwapChain()->GetFrameCount(); frameIndex++)
 		{
-			m_Buffers.PushBack(Render::Framebuffer::Create(m_Specification));
+			Render::FramebufferSpecification framebufferSpecification = {};
+			framebufferSpecification.Attachments = {};
+			for (auto& attachment : m_Specification.RAttachments)
+				framebufferSpecification.Attachments.EmplaceBack(attachment->GetTextures()[frameIndex]);
+			framebufferSpecification.Layers = m_Specification.Layers;
+			framebufferSpecification.RenderPass = m_Specification.RenderPass;
+			framebufferSpecification.Resolution = m_Specification.Resolution;
+			m_Buffers.PushBack(Render::Framebuffer::Create(framebufferSpecification));
 		}
 	}
 
@@ -62,23 +70,28 @@ namespace ME::Render
 	{
 		if (!m_Buffers.Empty()) return;
 		for (auto buffer : m_Buffers)
-		{
 			buffer->Shutdown();
-		}
 		m_Buffers.Clear();
 	}
 
 	void RFramebuffer::Init()
 	{
 		uint32 frameCount = RenderCommand::Get()->GetSwapChain()->GetFrameCount();
-		for (uint32 i = 0; i < frameCount; i++)
+		for (uint32 frameIndex = 0; frameIndex < frameCount; frameIndex++)
 		{
-			m_Buffers.PushBack(Render::Framebuffer::Create(m_Specification));
+			Render::FramebufferSpecification framebufferSpecification = {};
+			framebufferSpecification.Attachments = {};
+			for (auto& attachment : m_Specification.RAttachments)
+				framebufferSpecification.Attachments.EmplaceBack(attachment->GetTextures()[frameIndex]);
+			framebufferSpecification.Layers = m_Specification.Layers;
+			framebufferSpecification.RenderPass = m_Specification.RenderPass;
+			framebufferSpecification.Resolution = m_Specification.Resolution;
+			m_Buffers.PushBack(Render::Framebuffer::Create(framebufferSpecification));
 		}
 	}
 
 	RUniform::RUniform(const UniformSpecification& specification)
-		: m_CurrentBuffer(0), m_Specification(specification)
+		: m_Specification(specification)
 	{
 		Init();
 	}
@@ -117,7 +130,7 @@ namespace ME::Render
 	}
 
 	RStorageBuffer::RStorageBuffer(const StorageBufferSpecification& specification)
-		: m_CurrentBuffer(0), m_Specification(specification)
+		: m_Specification(specification)
 	{
 		Init();
 	}
@@ -156,7 +169,7 @@ namespace ME::Render
 	}
 
 	RIndirectBuffer::RIndirectBuffer(const IndirectBufferSpecification& specification)
-		: m_CurrentBuffer(0), m_Specification(specification)
+		: m_Specification(specification)
 	{
 		Init();
 	}
@@ -195,7 +208,7 @@ namespace ME::Render
 	}
 
     RTexture2D::RTexture2D(const Texture2DSpecification& specification)
-		: m_CurrentBuffer(0), m_Specification(specification)
+		: m_Specification(specification)
     {
 		Init();
     }

@@ -5,6 +5,7 @@
 
 namespace ME 
 {
+#if defined(PLATFORM_WINDOWS)
 	class MEAPI Win32Window : public Window
 	{
 	public:
@@ -33,5 +34,5 @@ namespace ME
 		HWND m_Window;
 
 	};
-
+#endif
 }

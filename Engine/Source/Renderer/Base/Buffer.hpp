@@ -17,7 +17,6 @@
 #include "Renderer/Base/Pipeline.hpp"
 #include "Renderer/Base/Shader.hpp"
 
-
 // This macro contains definitions and implementations of these methods and members:
 //
 // Members:
@@ -29,8 +28,6 @@
 // 3. Create()
 // and Create"API" (for API object creation)
 // 
-
-
 #define ME_BUFFER_TEMPLATE(bufferType, specsType)																\
 public:																											\
     bufferType(specsType specs) : Buffer(specs.DebugName), m_Specification(std::move(specs)) {}					\
@@ -42,18 +39,13 @@ protected:																										\
 public:																											\
     static ME::Core::Memory::Reference<ME::Render::bufferType> Create(const specsType& specification);			\
 private:																										\
-    static ME::Core::Memory::Reference<ME::Render::bufferType> CreateVulkan(const specsType& specification);	\
+    static ME::Core::Memory::Reference<ME::Render::bufferType> CreateVulkan(const specsType& specification)		\
 
-#define ME_BUFFER_SET																					\
+#define ME_BUFFER_SET()																							\
     public: inline void ChangeSet(uint32 set) final { m_Specification.Set = set; }			
 
 namespace ME::Render
 {
-	enum class MemoryType : uint8
-	{
-		VRAM, RAM
-	};
-
     #pragma region Specifications
 
 	struct BufferSpecification
@@ -96,10 +88,10 @@ namespace ME::Render
 
     // Buffer abstract class
 	// Contains primary methods
-	class MEAPI Buffer : public RenderObject
+	class MEAPI Buffer : public RenderMemoryObject
 	{
 	public:
-		Buffer(const ME::Core::String& debugName) : m_DebugName(debugName) {}
+		Buffer(ME::Core::String debugName) : m_DebugName(std::move(debugName)) {}
 
 		virtual void ChangeSet(uint32 set) = 0;
 
@@ -124,14 +116,14 @@ namespace ME::Render
 	class MEAPI VertexBuffer : public Buffer
 	{
 	    ME_BUFFER_TEMPLATE(VertexBuffer, VertexBufferSpecification);
-		ME_BUFFER_SET;
+		ME_BUFFER_SET()
 	};
 
 	// Index buffer abstract class
 	class MEAPI IndexBuffer : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(IndexBuffer, IndexBufferSpecification);
-		ME_BUFFER_SET;
+		ME_BUFFER_SET()
 
 	public:
 		// Overriding every unsupported method
@@ -143,33 +135,34 @@ namespace ME::Render
 
 		virtual void SetData(uint32* indices, SIZE_T indexCount, SIZE_T offset = 0) = 0;
 		virtual void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, uint32* indices, SIZE_T indexCount, SIZE_T offset = 0) = 0;
-
-		virtual void Resize(SIZE_T indexCount) = 0;
 	};
 
 	// Uniform abstract class
 	class MEAPI Uniform : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(Uniform, UniformSpecification);
-	    ME_BUFFER_SET;
+	    ME_BUFFER_SET()
 	};
 
 	// Storage buffer abstract class
 	class MEAPI StorageBuffer : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(StorageBuffer, StorageBufferSpecification);
-		ME_BUFFER_SET;
+		ME_BUFFER_SET()
 	};
 
 	// Indirect buffer abstract class
 	class MEAPI IndirectBuffer : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(IndirectBuffer, IndirectBufferSpecification);
-		ME_BUFFER_SET;
+		ME_BUFFER_SET()
 
 	public:
 		// Do nothing for SetData
 		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size, SIZE_T offset) final {}
-		void SetData(void* data, SIZE_T size, SIZE_T offset) final {};
+		void SetData(void* data, SIZE_T size, SIZE_T offset) final {}
 	};
 }
+
+#undef ME_BUFFER_TEMPLATE
+#undef ME_BUFFER_SET

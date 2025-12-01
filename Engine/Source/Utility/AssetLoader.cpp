@@ -12,6 +12,9 @@
 
 #define SIGN(p1, p2, p3) (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x)* (p1.y - p3.y)
 
+#define FourCC(C1, C2, C3, C4) \
+    (static_cast<uint32>(C4) << 24) | (static_cast<uint32>(C3) << 16) | (static_cast<uint32>(C2) << 8) | (static_cast<uint32>(C1))
+
 namespace ME::Utility
 {
 	constexpr const char8* DefaultMeshName = TEXT("unnamed");
@@ -165,6 +168,8 @@ namespace ME::Utility
 				return LoadOBJ(filePath.String(), centered);
 			case AssetFileFormats::TRG:
 				return LoadTGA(filePath.String());
+		    case AssetFileFormats::WAV:
+			    return LoadWAV(filePath.String());
 			default:
 				ME_ERROR("Unsupported asset format!: {}", static_cast<uint32>(format));
 				return AssetLoadResult();
@@ -234,6 +239,10 @@ namespace ME::Utility
 					mesh->SetGroupName(meshName);
 					result.Meshes.EmplaceBack(mesh);
 
+					ME_INFO("Mesh vertex count: {}", vertices.Size());
+					ME_INFO("Mesh indices count: {}", indices.Size());
+					ME_INFO("Mesh vertexToIndex size: {}", vertexToIndex.Size());
+
 					vertices.Clear();
 					indices.Clear();
 					meshName.Clear();
@@ -254,8 +263,6 @@ namespace ME::Utility
 				position.X = static_cast<float32>(Core::StringToFloat(values[0], nullptr));
 				position.Y = static_cast<float32>(Core::StringToFloat(values[1], nullptr));
 				position.Z = static_cast<float32>(Core::StringToFloat(values[2], nullptr));
-				// W is ignored
-
 				positions.EmplaceBack(position);
 			}
 			else if (token == TEXT("vt"))
@@ -265,7 +272,6 @@ namespace ME::Utility
 				LocalFunctions::Split(value, values, TEXT(" "));
 				coords.X = static_cast<float32>(Core::StringToFloat(values[0], nullptr));
 				coords.Y = static_cast<float32>(Core::StringToFloat(values[1], nullptr));
-
 				uvCoords.EmplaceBack(coords);
 			}
 			else if (token == TEXT("vn"))
@@ -276,7 +282,6 @@ namespace ME::Utility
 				normal.X = static_cast<float32>(Core::StringToFloat(values[0], nullptr));
 				normal.Y = static_cast<float32>(Core::StringToFloat(values[1], nullptr));
 				normal.Z = static_cast<float32>(Core::StringToFloat(values[2], nullptr));
-
 				normals.EmplaceBack(normal);
 			}
 			else if (token == TEXT("vp")) continue;
@@ -287,6 +292,7 @@ namespace ME::Utility
 				if (values.Size() < 3)
 					continue;
 
+				faceIndices.Clear();
 				faceVertices.Clear();
 
 				for (const Core::String& val : values)
@@ -308,7 +314,7 @@ namespace ME::Utility
 				    for (const Assets::Vertex& vertex : faceVertices)
 				    {
 						if (vertexToIndex.Contains(vertex))
-							indices.EmplaceBack(vertexToIndex[vertex]);
+							indices.EmplaceBack(vertexToIndex.At(vertex));
 						else
 						{
 							uint32 index = static_cast<uint32>(vertices.Size());
@@ -328,7 +334,7 @@ namespace ME::Utility
 					Assets::Vertex vertex = faceVertices[localIndex];
 
 					if (vertexToIndex.Contains(vertex))
-						indices.EmplaceBack(vertexToIndex[vertex]);
+						indices.EmplaceBack(vertexToIndex.At(vertex));
 					else
 					{
 						uint32 index = static_cast<uint32>(vertices.Size());
@@ -439,8 +445,104 @@ namespace ME::Utility
 		return result;
 	}
 
+    AssetLoadResult AssetLoader::LoadWAV(const char8* filePath)
+    {
+		if (!ME::Core::IO::PFileExists(filePath))
+		{
+			ME_ERROR("File {0} not found!", CONVERT_TEXT(filePath));
+			return {};
+		}
 
-	ME::Core::Math::Vector3D32 AssetLoader::CalculateNormal(const ME::Core::Array<Assets::Vertex>& vertices)
+		auto file = ME::Core::IO::POpenFile(filePath);
+		if (!file || !file->IsOpen())
+		{
+			ME_ERROR("File is not opened! Error: {0}",
+				file ? static_cast<uint32>(file->GetFileLastError()) : 0);
+			return {};
+		}
+
+		WAVHeader header = {};
+		Assets::AudioFile audioFile = {};
+
+		uint32 chunk = 0;
+		uint32 chunkSize = 0;
+		uint8 dump[8];
+	    while (!file->Eof())
+		{
+			if (!file->ReadBinary(&chunk, 4))
+			    break;
+	        switch (chunk)
+            {
+				case FourCC('R', 'I', 'F', 'F'):
+                {
+                    // File size
+			        file->ReadBinary(&header.FileSize, sizeof(uint32));
+			        file->ReadBinary(&header.FileFormat, sizeof(uint32));
+					break;
+                }
+				case FourCC('f', 'm', 't', 0x20):
+				{
+                    // Chunk size
+			        file->ReadBinary(&chunkSize, sizeof(uint32));
+
+				    // fmt chunk data
+			        file->ReadBinary(&header.AudioFormat,	sizeof(uint16));
+			        file->ReadBinary(&header.NbrChannels,	sizeof(uint16));
+			        file->ReadBinary(&header.Frequency,		sizeof(uint32));
+			        file->ReadBinary(&header.BytePerSec,	sizeof(uint32));
+			        file->ReadBinary(&header.BytePerBloc,	sizeof(uint16));
+			        file->ReadBinary(&header.BitsPerSample,	sizeof(uint16));
+					if (header.AudioFormat != WAVE_FORMAT_PCM)
+					{
+						file->ReadBinary(&header.cbSize,	sizeof(uint16));
+						if (header.cbSize == 22)
+						{
+							file->ReadBinary(&header.wValidBitsPerSample, sizeof(uint16));
+							file->ReadBinary(&header.dwChannelMask, sizeof(uint32));
+							file->ReadBinary(header.SubFormat, sizeof(uint8) * 16);
+						}
+					}
+                    break;
+				}
+				case FourCC('d', 'a', 't', 'a'):
+				{
+					file->ReadBinary(&header.DataSize, sizeof(uint32));
+					header.Data = new uint8[header.DataSize];
+					file->ReadBinary(header.Data, header.DataSize);
+					if (header.DataSize % 2 != 0)
+					    file->ReadBinary(dump, sizeof(uint8));
+					break;
+				}
+				case FourCC('f', 'a', 'c', 't'):
+				{
+					file->ReadBinary(&chunkSize, sizeof(uint32));
+					break;
+				}
+				default:
+                {
+					file->ReadBinary(&chunkSize, sizeof(uint32));
+					file->Seek(file->Tell() + chunkSize);
+                }   
+            }
+		}
+
+		audioFile.Format = Assets::AudioFormat::WAV;
+		audioFile.AudioInfo.Frequency = header.Frequency;
+		audioFile.AudioInfo.BitPerSample = header.BitsPerSample;
+		audioFile.AudioInfo.ChannelCount = header.NbrChannels;
+		audioFile.AudioInfo.Length = static_cast<float32>(header.DataSize) / static_cast<float32>(header.BytePerSec);
+		audioFile.AudioInfo.SampleCount = header.DataSize / (header.NbrChannels * header.BitsPerSample / 8);
+		audioFile.Data = header.Data;
+		audioFile.Size = header.DataSize;
+
+		AssetLoadResult result = {};
+		result.Audio = audioFile;
+
+        return result;
+    }
+
+
+    ME::Core::Math::Vector3D32 AssetLoader::CalculateNormal(const ME::Core::Array<Assets::Vertex>& vertices)
 	{
 		ME::Core::Math::Vector3D32 normal(0.0f, 0.0f, 0.0f);
 
@@ -524,6 +626,18 @@ namespace ME::Utility
 	void AssetLoader::Triangulate(const ME::Core::Array<Assets::Vertex>& vertices,
 		ME::Core::Array<uint32>& indicesOut)
 	{
+		if (vertices.Size() == 4)
+		{
+			indicesOut.EmplaceBack(0);
+			indicesOut.EmplaceBack(1);
+			indicesOut.EmplaceBack(2);
+
+			indicesOut.EmplaceBack(0);
+			indicesOut.EmplaceBack(2);
+			indicesOut.EmplaceBack(3);
+			return;
+		}
+
 		Core::Array<ME::Core::Math::Vector2D32> projected;
 		ProjectTo2D(vertices, projected);
 
@@ -553,9 +667,7 @@ namespace ME::Utility
 			}
 
 			if (!earFound)
-			{
 				break;
-			}
 		}
 
 		if (idx.Size() == 3)

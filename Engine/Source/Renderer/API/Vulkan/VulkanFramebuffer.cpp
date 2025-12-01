@@ -2,15 +2,15 @@
 
 #include "VulkanRenderAPI.hpp"
 #include "VulkanRenderPass.hpp"
-#include "VulkanTexture.hpp"
+#include "VulkanTexture2D.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<Render::Framebuffer>  Framebuffer::CreateVulkanFramebuffer(FramebufferSpecification& specification)
+	ME::Core::Memory::Reference<Render::Framebuffer>  Framebuffer::CreateVulkan(const FramebufferSpecification& specification)
 	{
-		auto object = ME::Core::Memory::Reference<Render::Framebuffer>(new VulkanFramebuffer(specification));
+		auto object = ME::Core::Memory::MakeReference<VulkanFramebuffer>(specification);
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
@@ -56,5 +56,4 @@ namespace ME::Render
 		if (ME_VK_FAILED(result))
 			ME_ASSERT(false, "Vulkan framebuffer: framebuffer creation failed! Error: {0}", static_cast<uint32>(result));
 	}
-
 }

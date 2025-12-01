@@ -2,12 +2,10 @@
 #include <Core.hpp>
 
 #include "Vulkan.hpp"
-#include "Renderer/Base/Pipeline.hpp"
-#include "Renderer/Base/RenderPass.hpp"
-#include "Renderer/Base/Texture.hpp"
 
 namespace ME::Render
 {
+	constexpr MEAPI VkFormat ConvertShaderTypeVulkan(ShaderType type);
 	constexpr MEAPI VkFormat ConvertFormatVulkan(ME::Render::Format format);
 	constexpr MEAPI VkImageLayout ConvertImageLayoutVulkan(ME::Render::ImageLayout layout);
 	constexpr MEAPI VkAttachmentLoadOp ConvertAttachmentLoadOperationVulkan(ME::Render::LoadOperation operation);
@@ -25,6 +23,7 @@ namespace ME::Render
 	constexpr MEAPI VkShaderStageFlags ConvertShaderStageVulkan(ME::Render::ShaderStage stage);
 	constexpr MEAPI VkShaderStageFlags ConvertImageUsageFlagsVulkan(ME::Render::ImageUsageFlags usage);
 	constexpr MEAPI VkFilter ConvertSamplerFilterVulkan(ME::Render::SamplerFilter filter);
+	constexpr MEAPI VkStencilOp ConvertStencilOperationVulkan(ME::Render::StencilOperation operation);
 
 	constexpr MEAPI ME::Render::Format ConvertFormatEngine(VkFormat format);
 	constexpr MEAPI ME::Render::ImageLayout ConvertImageLayoutEngine(VkImageLayout layout);

@@ -26,7 +26,6 @@ namespace ME::Render
 
 	private:
 		VkCommandBuffer m_Buffer;
-
 	};
 }
 	

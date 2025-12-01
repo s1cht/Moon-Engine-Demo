@@ -12,6 +12,14 @@ namespace ME::Core::Math
 		T y;
 	};
 
+	template<typename T>
+	struct Resolution3D
+	{
+		T x;
+		T y;
+		T z;
+	};
+
 	struct Rect2D
 	{
 		Resolution2D<int32> Offset;

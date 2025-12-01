@@ -341,6 +341,13 @@ namespace ME::Core
 		}
 
 	public:
+		inline ValueType& At(const KeyType& key)
+		{
+			Iterator it = PFind(key);
+			ME_ASSERT(it != End(), "Key not found in UnorderedMap");
+			return it->Value2;
+		}
+
 		inline void Insert(const KeyType& key, const ValueType& value)
 		{
 			PInsert(key, value);

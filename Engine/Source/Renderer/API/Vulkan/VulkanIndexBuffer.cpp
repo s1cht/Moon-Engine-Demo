@@ -2,6 +2,7 @@
 
 #include "VulkanRenderAPI.hpp"
 #include "VulkanCommandBuffer.hpp"
+#include "VulkanResourceHandler.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -9,7 +10,7 @@ namespace ME::Render
 {
 	ME::Core::Memory::Reference<ME::Render::IndexBuffer> IndexBuffer::CreateVulkan(const IndexBufferSpecification& specification)
 	{
-		auto object = ME::Core::Memory::Reference<Render::IndexBuffer>(new VulkanIndexBuffer(specification));
+		auto object = ME::Core::Memory::MakeReference<VulkanIndexBuffer>(specification);
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
@@ -191,7 +192,29 @@ namespace ME::Render
 		}
 	}
 
-	void VulkanIndexBuffer::Init(const IndexBufferSpecification& specification)
+    void VulkanIndexBuffer::Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, uint32 offset)
+	{
+		RenderCommand::Get()->As<VulkanRenderAPI>()->BindIndexBuffer(commandBuffer, m_Buffer, offset);
+	}
+
+    void VulkanIndexBuffer::Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer,
+                                 ME::Core::Memory::Reference<Pipeline> pipeline)
+    {
+		RenderCommand::GetResourceHandler()->BindResourceSet(commandBuffer, pipeline, m_Specification.Set, m_ResourceIndex);
+    }
+
+    void VulkanIndexBuffer::Write()
+    {
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
+    }
+
+    void VulkanIndexBuffer::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
+        BarrierInfo dst)
+    {
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BufferBarrier(commandBuffer, m_Buffer, src, dst);
+    }
+
+    void VulkanIndexBuffer::Init(const IndexBufferSpecification& specification)
 	{
 		VkResult result = CreateBuffer();
 		if (ME_VK_FAILED(result))

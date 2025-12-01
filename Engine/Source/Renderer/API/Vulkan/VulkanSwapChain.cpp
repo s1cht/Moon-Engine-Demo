@@ -2,15 +2,15 @@
 #include "Application/Application.hpp"
 #include "VulkanRenderAPI.hpp"
 #include "VulkanFunctions.hpp"
-#include "VulkanTexture.hpp"
+#include "VulkanTexture2D.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<SwapChain> SwapChain::CreateVulkanSwapChain(int32& result)
+	ME::Core::Memory::Reference<SwapChain> SwapChain::CreateVulkan(int32& result)
 	{
-		return ME::Core::Memory::Reference<SwapChain>(new VulkanSwapChain(result));
+		return ME::Core::Memory::Reference<VulkanSwapChain>(new VulkanSwapChain(result));
 	}
 
 	VulkanSwapChain::VulkanSwapChain(int32& result)

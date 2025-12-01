@@ -8,13 +8,16 @@
 #include "EngineDefines.hpp"
 #include "VulkanFunctions.hpp"
 #include "VulkanCommandBuffer.hpp"
+#include "VulkanSwapChain.hpp"
 #include "VulkanFramebuffer.hpp"
 #include "VulkanIndexBuffer.hpp"
 #include "VulkanIndirectBuffer.hpp"
 #include "VulkanRenderPass.hpp"
 #include "VulkanResourceHandler.hpp"
 #include "VulkanStorageBuffer.hpp"
-#include "VulkanTexture.hpp"
+#include "VulkanTexture1D.hpp"
+#include "VulkanTexture2D.hpp"
+#include "VulkanTexture3D.hpp"
 #include "VulkanUniform.hpp"
 #include "VulkanVertexBuffer.hpp"
 #include "Renderer/Base/Buffer.hpp"
@@ -46,7 +49,7 @@ namespace ME::Render
     {
         int32 result = 0;
 
-        m_SwapChain = ME::Core::Memory::Reference<VulkanSwapChain>(new VulkanSwapChain(result));
+        m_SwapChain = SwapChain::Create(result);
         if (ME_VK_FAILED(result))
         {
             ME_ASSERT("Vulkan device creation failed! Error: {0}", result);
@@ -187,9 +190,9 @@ namespace ME::Render
     {
     }
 
-    void VulkanRenderAPI::Draw(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 vertexCount, uint32 instanceCount)
+    void VulkanRenderAPI::Draw(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance)
     {
-        vkCmdDraw(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, 0, 0);
+        vkCmdDraw(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
     void VulkanRenderAPI::DrawIndexed(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 indexCount, uint32 index)
@@ -389,60 +392,12 @@ namespace ME::Render
                                       ME::Core::Memory::Reference<Render::Pipeline> pipeline,
                                       ME::Core::Memory::Reference<ME::Render::Texture2D> texture, uint32 set)
     {
-        m_ResourceHandler->BindTexture(commandBuffer, pipeline, set, texture->GetSet());
+        m_ResourceHandler->BindResourceSet(commandBuffer, pipeline, set, texture->GetSpecification().SetIndex);
     }
 
     void VulkanRenderAPI::OnWindowEvent(int32 x, int32 y)
     {
         Resize(x, y);
-    }
-
-    void VulkanRenderAPI::BeginRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Render::RenderPassBeginInfo& info)
-    {
-        ME::Core::Array<VkClearValue> clearValues;
-
-        for (SIZE_T i = 0; i < info.ClearValues.Size(); i++)
-        {
-            VkClearValue clearValue = {};
-            if (info.ClearValues[i].UsingDepth)
-            {
-                clearValue.depthStencil.depth = info.ClearValues[i].DepthClearValue.Depth;
-                clearValue.depthStencil.stencil = info.ClearValues[i].DepthClearValue.Stencil;
-                clearValues.EmplaceBack(clearValue);
-                continue;
-            }
-
-            clearValue.color.float32[0] = info.ClearValues[i].ColorClearValue.XYZW[0];
-            clearValue.color.float32[1] = info.ClearValues[i].ColorClearValue.XYZW[1];
-            clearValue.color.float32[2] = info.ClearValues[i].ColorClearValue.XYZW[2];
-            clearValue.color.float32[3] = info.ClearValues[i].ColorClearValue.XYZW[3];
-
-            clearValues.EmplaceBack(clearValue);
-        }
-
-        VkRenderPassBeginInfo beginInfo = {};
-        beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        beginInfo.renderArea = VkRect2D{
-            {
-                info.RenderArea.Offset.x,
-                info.RenderArea.Offset.y
-            },
-            {
-                info.RenderArea.Extent.x,
-                info.RenderArea.Extent.y
-            }
-        };
-        beginInfo.clearValueCount = static_cast<uint32>(clearValues.Size());
-        beginInfo.pClearValues = clearValues.Data();
-        beginInfo.framebuffer = info.Framebuffer->As<VulkanFramebuffer>()->GetFramebuffer();
-        beginInfo.renderPass = info.RenderPass->As<VulkanRenderPass>()->GetRenderPass();
-
-        vkCmdBeginRenderPass(buffer->As<ME::Render::VulkanCommandBuffer>()->GetCommandBuffer(), &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    }
-
-    void VulkanRenderAPI::EndRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer)
-    {
-        vkCmdEndRenderPass(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
     }
 
     ME::Core::Memory::Reference<ME::Render::CommandBuffer> VulkanRenderAPI::GetAvailableCommandBuffer()
@@ -766,6 +721,7 @@ namespace ME::Render
         features.fillModeNonSolid = true;
         features.depthClamp = true;
     	features.depthBiasClamp = true;
+        features.depthBounds = true;
         features.sampleRateShading = true;
 
         VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures = {};
@@ -792,6 +748,10 @@ namespace ME::Render
         vk12Features.runtimeDescriptorArray = true;
         vk12Features.drawIndirectCount = true;
         vk12Features.pNext = &vk13Features;
+
+        VkPhysicalDeviceVulkan11Features vk11Features = {};
+        vk11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+        vk11Features.pNext = &vk12Features;
 
         ME::Core::Array<const char*> layers = {};
         for (const ME::Core::StringView& layer : m_DeviceLayers)
@@ -1204,7 +1164,70 @@ namespace ME::Render
         }
     }
 
-	VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderAPI::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+    Render::VulkanResourceHandler* VulkanRenderAPI::GetVulkanResourceHandler()
+    {
+        return m_ResourceHandler->As<VulkanResourceHandler>();
+    }
+
+    Render::VulkanSwapChain* VulkanRenderAPI::GetVulkanSwapChain()
+    {
+        return m_SwapChain->As<VulkanSwapChain>();
+    }
+
+    void VulkanRenderAPI::Write(ME::Render::VulkanUniform* buffer) const
+    {
+        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
+    }
+
+    void VulkanRenderAPI::Write(ME::Render::VulkanStorageBuffer* buffer) const
+    {
+        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
+    }
+
+    void VulkanRenderAPI::Write(ME::Render::VulkanIndexBuffer* buffer) const
+    {
+        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
+    }
+
+    void VulkanRenderAPI::Write(ME::Render::VulkanVertexBuffer* buffer) const
+    {
+        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
+    }
+
+    void VulkanRenderAPI::Write(ME::Render::VulkanIndirectBuffer* buffer) const
+    {
+        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
+    }
+
+    void VulkanRenderAPI::Write(ME::Render::VulkanTexture1D* texture) const
+    {
+        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(texture);
+    }
+
+    void VulkanRenderAPI::Write(ME::Render::VulkanTexture2D* texture) const
+    {
+        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(texture);
+    }
+
+    void VulkanRenderAPI::Write(ME::Render::VulkanTexture3D* texture) const
+    {
+        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(texture);
+    }
+
+    void VulkanRenderAPI::BindIndexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        VkBuffer buffer, uint32 offset)
+    {
+        vkCmdBindIndexBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), buffer, offset, VK_INDEX_TYPE_UINT32);
+    }
+
+    void VulkanRenderAPI::BindVertexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+        VkBuffer buffer, uint32 offset)
+    {
+        VkDeviceSize vkOffset = offset;
+        vkCmdBindVertexBuffers(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, 1, &buffer, &vkOffset);
+    }
+
+    VkBool32 VKAPI_CALL VulkanRenderAPI::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 	{
         switch (messageSeverity)
         {

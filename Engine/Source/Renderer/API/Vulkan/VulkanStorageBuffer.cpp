@@ -1,15 +1,16 @@
 ﻿#include "VulkanStorageBuffer.hpp"
-#include "VulkanCommandBuffer.hpp"
 #include "VulkanRenderAPI.hpp"
+#include "VulkanCommandBuffer.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
+#include "VulkanResourceHandler.hpp"
 
 namespace ME::Render
 {
     ME::Core::Memory::Reference<StorageBuffer> StorageBuffer::CreateVulkan(
         const StorageBufferSpecification& specification)
     {
-        auto object = ME::Core::Memory::Reference<VulkanStorageBuffer>(new VulkanStorageBuffer(specification));
+        auto object = ME::Core::Memory::MakeReference<VulkanStorageBuffer>(specification);
         RenderResourcesTracker::Get().AddItem(object);
         return object;
     }
@@ -163,6 +164,23 @@ namespace ME::Render
             0, nullptr);
 
         vkCmdFillBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_Buffer, 0, m_Specification.Size, 0);
+    }
+
+    void VulkanStorageBuffer::Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer,
+        ME::Core::Memory::Reference<Pipeline> pipeline)
+    {
+        RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BindResourceSet(commandBuffer, pipeline, m_Specification.Set, m_ResourceIndex);
+    }
+
+    void VulkanStorageBuffer::Write()
+    {
+        RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
+    }
+
+    void VulkanStorageBuffer::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
+        BarrierInfo dst)
+    {
+        RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BufferBarrier(commandBuffer, m_Buffer, src, dst);
     }
 
     void VulkanStorageBuffer::Init()

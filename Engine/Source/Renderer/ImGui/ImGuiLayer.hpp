@@ -35,13 +35,11 @@ namespace ME::Render::ImGui
 		void Render(const ME::Core::Memory::Reference<ME::Render::CommandBuffer>& commandBuffer);
 		void CreateRenderResources();
 
-
 	private:
 		ImGuiContext* m_ImGuiContext;
 
 	private:
-		ME::Core::Memory::Reference<ME::Render::RFramebuffer> m_Framebuffer;
-		ME::Core::Memory::Reference<ME::Render::RenderPass> m_RenderPass;
+		ME::Core::Memory::Reference<ME::Render::RenderPass> m_Pass;
 		ME::Core::Memory::Reference<ME::Render::ResourceHandler> m_ResourceHandler;
 
 	private:

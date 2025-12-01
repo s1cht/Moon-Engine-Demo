@@ -8,7 +8,7 @@ namespace ME::Render
         switch (RenderAPI::API renderAPI = Renderer::GetRenderAPI())
         {
             case ME::Render::RenderAPI::API::Vulkan:
-                return CreateVulkanPipeline(specification);
+                return CreateVulkan(specification);
             default:
             {
                 ME_ASSERT(false, "Pipeline: Requested creation with unsupported API! {0}", static_cast<int32>(renderAPI));

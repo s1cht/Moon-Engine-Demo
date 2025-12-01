@@ -8,10 +8,12 @@
 #include "Core/Math/Quaternion.hpp"
 #include "Core/Math/Matrix3x3.hpp"
 #include "Core/Math/Matrix4x4.hpp"
+#include "Core/Algorithm.hpp"
 
 namespace ME::Core::Math
 {
-	constexpr const float64 P_PI = PI;
+	constexpr const float64 Pi = PI;
+	constexpr const float64 Epsilon = 2.2204460492503131e-016;
 
 	// Vector2
 	typedef Vector2<float32> Vector2D32;
@@ -41,6 +43,12 @@ namespace ME::Core::Math
 
 	inline COREAPI float64 Lerp(float64 a, float64 b, float64 d);
 	inline COREAPI float32 Lerp(float32 a, float32 b, float32 d);
+
+	template<typename T>
+	T Clamp(T min, T max, T val)
+	{
+		return Algorithm::Max(min, Algorithm::Min(val, max));
+	}
 
 	inline COREAPI float32 ToDegrees(float32 radians);
 	inline COREAPI float64 ToDegrees(float64 radians);

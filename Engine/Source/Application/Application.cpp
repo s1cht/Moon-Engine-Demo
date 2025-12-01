@@ -10,6 +10,7 @@
 #include <Core/Platform/Base/IO.hpp>
 #include <Core/Time.hpp>
 
+#include "Framework/Components/AudioComponent.hpp"
 #include "Framework/Components/CameraComponent.hpp"
 #include "Framework/Components/InputComponent.hpp"
 #include "Renderer/Renderer.hpp"
@@ -22,9 +23,8 @@
 
 namespace ME
 {
-	using namespace std::chrono_literals;
 
-	Application* Application::s_Instance;
+    Application* Application::s_Instance;
 	bool Application::s_ShutdownRequested;
 
 	Application::Application(ApplicationProperties props)
@@ -86,6 +86,7 @@ namespace ME
 		m_World->RegisterComponent<Components::TransformComponent>();
 		m_World->RegisterComponent<Components::CameraComponent>();
 		m_World->RegisterComponent<Components::InputComponent>();
+		m_World->RegisterComponent<Components::AudioComponent>();
 
 		Render::Manager::MeshMemoryPoolInfo meshPoolInfo = {};
 		meshPoolInfo.VertexMemoryPoolSize = ME_MESH_MNG_VERT_BUFFER_SIZE;
@@ -94,6 +95,8 @@ namespace ME
 		meshPoolInfo.BindingInfo = commonBinding;
 
 		Render::Manager::MeshManager::Get().Init(meshPoolInfo);
+
+		m_AudioEngine = Audio::AudioEngine::Create();
 
 		LoadAssets();
 

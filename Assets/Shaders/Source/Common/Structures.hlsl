@@ -1,6 +1,11 @@
 // Buffer structures
 #include "Globals.hlsl"
 
+#define COMBINED_SAMPLER
+#ifdef __spirv__
+    #define COMBINED_SAMPLER [[vk::combinedImageSampler]]
+#endif
+
 #pragma pack_matrix(row_major)
 
 struct BoundingBox
