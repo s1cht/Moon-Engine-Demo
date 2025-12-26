@@ -43,6 +43,8 @@ namespace ME::Render
 		{
 			ME::Core::Math::Matrix4x4 View;
 			ME::Core::Math::Matrix4x4 Proj;
+			ME::Core::Math::Matrix4x4 InvertedView;
+			ME::Core::Math::Matrix4x4 InvertedProj;
 		};
 
 		struct MeshShadingInfo
@@ -125,9 +127,14 @@ namespace ME::Render
 
 	private:
 	    // Buffers
+		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_Frames;
+		
 		// G-Buffers
 	    ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gBaseColor;
 		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gNormal;
+		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gWorldPosition;
+		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gEmissive;
+		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gSpecular;
 		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gDepth;
 
 	    ME::Core::Memory::Reference<ME::Render::RUniform> m_CameraBuffer;
@@ -145,6 +152,8 @@ namespace ME::Render
 
 	private:
 		ME::Core::Memory::Reference<ME::Render::CommandBuffer> m_CurrentCommandBuffer;
+
+		ME::Core::Memory::Reference<ME::Render::Framebuffer> m_CurrentFFramebuffer;
 
 		ME::Core::Memory::Reference<ME::Render::Framebuffer> m_CurrentGFramebuffer;
 

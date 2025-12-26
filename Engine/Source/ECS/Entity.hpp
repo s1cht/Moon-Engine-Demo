@@ -6,19 +6,24 @@
 #include "Component.hpp"
 #include "Managers/ECSLimits.hpp"
 
-#define ME_ENT_DEFAULT(entityClassName)                                                             \
+#define ME_ENTITY_DEFAULT(entityClassName)                                                             \
 public: entityClassName()                                                                           \
     : Entity() {}                                                                                   \
 public: entityClassName(ME::Core::Memory::WeakReference<ME::ECS::World> relatedWorld, uint64 id)    \
-    : Entity(relatedWorld, id) {}                                                                   \
-private:
+    : Entity(relatedWorld, id)                                                                      \
+    {                                                                                               \
+        SetType(ME::ECS::EntityManager::GetEntityType<entityClassName>());                          \
+    }                                                                   
                                         
-#define ME_ENT_CONSTRUCTOR(entityClassName, .../*arguments*/) entityClassName(ME::Core::Memory::WeakReference<World> relatedWorld, uint64 id, __VA_ARGS__) : Entity(relatedWorld, uint64 id)
-#define ME_ENTITY_INHERIT(entityClassName)  public ME::ECS::Entity
+#define ME_ENTITY_CONSTRUCTOR(entityClassName, .../*arguments*/) entityClassName(ME::Core::Memory::WeakReference<World> relatedWorld, uint64 id, __VA_ARGS__) : Entity(relatedWorld, uint64 id)
+#define ME_ENTITY_INHERIT()  public ME::ECS::Entity
+#define ME_ENTITY_TYPE(entityClassName) SetType(ME::ECS::EntityManager::GetEntityType<entityClassName>()) 
 
 namespace ME::ECS
 {
     class World;
+
+    using EntityType = uint64;
 
     class MEAPI Entity
     {
@@ -72,8 +77,21 @@ namespace ME::ECS
             return m_EntityId;
         }
 
+        ME_NODISCARD EntityType GetType() const
+        {
+            return m_EntityType;
+        }
+
+    protected:
+        void SetType(EntityType typeId)
+        {
+            if (m_EntityType != ~0ull) return;
+            m_EntityType = typeId;
+        }
+
     private:
         uint64 m_EntityId;
+        EntityType m_EntityType;
         ME::Core::Memory::WeakReference<World> m_RelatedWorld;
     };
 }

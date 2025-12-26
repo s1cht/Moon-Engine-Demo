@@ -78,8 +78,8 @@ namespace ME::Assets
 
     void Mesh::CalculateMeshBox()
     {
-		ME::Core::Math::Vector3D32 min = ME::Core::Math::Vector3D32(0);
-		ME::Core::Math::Vector3D32 max = ME::Core::Math::Vector3D32(0);
+		ME::Core::Math::Vector3D32 min = ME::Core::Math::Vector3D32(0.f);
+		ME::Core::Math::Vector3D32 max = ME::Core::Math::Vector3D32(0.f);
         for (const auto& vertex : m_Vertices)
         {
             if (vertex.Position.X < min.X)

@@ -127,6 +127,7 @@ namespace ME::Utility
 		static AssetLoadResult LoadWAV(const char8* filePath);
 
 	private:
+		static void GenerateTangents(const ME::Core::Array<uint32>& indices, ME::Core::Array<Assets::Vertex>& vertices);
 		static ME::Core::Math::Vector3D32 CalculateNormal(const ME::Core::Array<Assets::Vertex>& vertices);
 		static void ProjectTo2D(const ME::Core::Array<Assets::Vertex>& vertices, ME::Core::Array<ME::Core::Math::Vector2D32>& out2D);
 		static bool IsPointInTriangle(const ME::Core::Math::Vector2D32& pt, const ME::Core::Math::Vector2D32& a, const ME::Core::Math::Vector2D32& b, const ME::Core::Math::Vector2D32& c);

@@ -5,10 +5,9 @@
 
 namespace ME
 {
-    class Music : ME_ENTITY_INHERIT(Music)
+    class Music : ME_ENTITY_INHERIT()
     {
-        ME_ENT_DEFAULT(Music)
-
+        ME_ENTITY_DEFAULT(Music)
     public:
         ~Music() override = default;
 

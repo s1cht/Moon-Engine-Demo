@@ -1,14 +1,9 @@
 #pragma once 
-
-#include "Core.hpp"
-#include "Core/Math/MathMacros.hpp"
+#include "Core/Math/MathCore.hpp"
 #include "Core/Math/Vector2.hpp"
 
 namespace ME::Core::Math
 {
-	template<typename T>
-	struct Vector2;
-
 	template<typename T>
 	struct Vector3
 	{
@@ -30,11 +25,15 @@ namespace ME::Core::Math
 		COREAPI static const Vector3 BackwardVector;
 		COREAPI static const Vector3 RightVector;
 		COREAPI static const Vector3 LeftVector;
+		COREAPI static const Vector3 XAxis;
+		COREAPI static const Vector3 YAxis;
+		COREAPI static const Vector3 ZAxis;
 
 	public:
 		inline Vector3();
 		explicit Vector3(T scalar);
 		inline Vector3(T _x, T _y, T _z);
+		inline Vector3(T vector[3]);
 		inline Vector3(const Vector2<T>& vec, T _z);
 		inline Vector3(const Vector3& otherVec);
 		inline Vector3(Vector3&& otherVec) noexcept;
@@ -103,7 +102,10 @@ namespace ME::Core::Math
 	template<typename T>
 	inline Vector3<T>::Vector3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
 
-	template<typename T>
+    template <typename T>
+    Vector3<T>::Vector3(T vector[3]) : x(vector[0]), y(vector[1]), z(vector[2]) {}
+
+    template<typename T>
 	inline Vector3<T>::Vector3(const Vector2<T>& vec, T _z) : x(vec.x), y(vec.y), z(_z) {}
 
 	template<typename T>
@@ -236,7 +238,7 @@ namespace ME::Core::Math
 	template<typename U>
 	inline Vector3<T>& Vector3<T>::operator/=(U scalar)
 	{
-		if (scalar == 0) return *this = Vector3<T>(0);
+		if (scalar == 0) return *this = Vector3<T>(0.f);
 		x = static_cast<T>(x / scalar);
 		y = static_cast<T>(y / scalar);
 		z = static_cast<T>(z / scalar);

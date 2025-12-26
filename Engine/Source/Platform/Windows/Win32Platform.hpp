@@ -6,7 +6,11 @@
 	#define ME_WND_CLASSNAME "PEngineWindow"
 #endif
 
+
 #ifdef PLATFORM_WINDOWS
+    #define near
+    #define far
+    
     #include <initguid.h>
 
     // Graphics APIs
@@ -20,4 +24,6 @@
 
 	#define D3D_COMPILE_STANDARD_FILE_INCLUDE ((ID3DInclude*)(UINT_PTR)1)
 
+    #undef near
+    #undef far
 #endif

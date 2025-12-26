@@ -6,7 +6,7 @@
     #define COMBINED_SAMPLER [[vk::combinedImageSampler]]
 #endif
 
-#pragma pack_matrix(row_major)
+#define MATRIX_ORDER column_major
 
 struct BoundingBox
 {
@@ -24,8 +24,9 @@ struct BoundingSphere
 struct Vertex
 {
     float3 Position;
-    float2 TextureCoordinates;
     float3 Normal;
+	float4 Tangent;
+    float2 TextureCoordinates;
 };
 
 struct Meshlet
@@ -41,7 +42,7 @@ struct Meshlet
 
 struct MeshMatrix
 {
-    row_major float4x4 Matrix;
+    MATRIX_ORDER float4x4 Matrix;
 };
 
 struct DrawIndirectCommand
@@ -81,8 +82,10 @@ struct Frustum
 
 struct CameraData
 {
-    row_major float4x4 ViewMatrix;
-    row_major float4x4 ProjectionMatrix;
+    MATRIX_ORDER float4x4 ViewMatrix;
+    MATRIX_ORDER float4x4 ProjectionMatrix;
+    MATRIX_ORDER float4x4 InvertedViewMatrix;
+	MATRIX_ORDER float4x4 InvertedProjectionMatrix;
 };
 
 struct LightData

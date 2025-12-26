@@ -211,11 +211,11 @@ namespace ME::Render::ImGui
 		beginInfo.RenderArea.Offset = { 0,0 };
 		beginInfo.RenderArea.Extent = Render::RenderCommand::Get()->GetSwapChain()->GetExtent();
 
-		//m_Pass->Begin(commandBuffer, beginInfo);
-		//
-		//ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
-		//
-		//m_Pass->End(commandBuffer);
+		m_Pass->Begin(commandBuffer, beginInfo);
+		
+		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
+		
+		m_Pass->End(commandBuffer);
 	}
 
 	void ImGuiLayer::CreateRenderResources()
@@ -230,26 +230,21 @@ namespace ME::Render::ImGui
 		attachmentSpecs.FinalLayout = ImageLayout::Present;
 		attachmentSpecs.SampleCount = SampleCount::Count1;
 
-		SubpassDependency dependency1 = {};
-		dependency1.SubpassSrc = ~0u;
-		dependency1.SubpassDst = 0;
-		dependency1.AccessFlagsSrc = AccessFlags::MemoryRead;
-		dependency1.AccessFlagsDst = AccessFlags::ColorAttachmentWrite |
-			AccessFlags::ColorAttachmentRead |
-			AccessFlags::DepthStencilRead |
-			AccessFlags::DepthStencilWrite;
-		dependency1.PipelineStageFlagsSrc = PipelineStageFlags::BottomOfPipe;
-		dependency1.PipelineStageFlagsDst = PipelineStageFlags::ColorAttachmentOutput |
-			PipelineStageFlags::EarlyFragmentTests |
-			PipelineStageFlags::LateFragmentTests;
+		SubpassDependency dep1 = {};
+		dep1.SubpassSrc = ~0u;
+		dep1.SubpassDst = 0;
+		dep1.AccessFlagsSrc = AccessFlags::None;
+		dep1.AccessFlagsDst = AccessFlags::ColorAttachmentWrite;
+		dep1.PipelineStageFlagsSrc = PipelineStageFlags::ColorAttachmentOutput;
+		dep1.PipelineStageFlagsDst = PipelineStageFlags::ColorAttachmentOutput;
 
-		SubpassDependency dependency2 = {};
-		dependency2.SubpassSrc = dependency1.SubpassDst;
-		dependency2.SubpassDst = dependency1.SubpassSrc;
-		dependency2.AccessFlagsSrc = dependency1.AccessFlagsDst;
-		dependency2.AccessFlagsDst = dependency1.AccessFlagsSrc;
-		dependency2.PipelineStageFlagsSrc = dependency1.PipelineStageFlagsDst;
-		dependency2.PipelineStageFlagsDst = dependency1.PipelineStageFlagsSrc;
+		SubpassDependency dep2 = {};
+		dep2.SubpassSrc = 0;
+		dep2.SubpassDst = ~0u;
+		dep2.AccessFlagsSrc = AccessFlags::ColorAttachmentWrite;
+		dep2.AccessFlagsDst = AccessFlags::ColorAttachmentWrite;
+		dep2.PipelineStageFlagsSrc = PipelineStageFlags::ColorAttachmentOutput;
+		dep2.PipelineStageFlagsDst = PipelineStageFlags::ColorAttachmentOutput;
 
 		SubpassSpecification subpass = {};
 		subpass.ColorAttachmentRefs = { 0 };
@@ -260,7 +255,7 @@ namespace ME::Render::ImGui
 		Render::RenderPassSpecification rpSpecs = Renderer::GetRenderPass()->GetSpecification();
 		rpSpecs.AttachmentSpecs = { attachmentSpecs };
 		rpSpecs.SubpassSpecs = { subpass };
-		rpSpecs.SubpassDependencies = { dependency1, dependency2 };
+		rpSpecs.SubpassDependencies = { dep1, dep2 };
 		rpSpecs.DebugName = TEXT("ImGui render pass");
 		m_Pass = Render::RenderPass::Create(rpSpecs);
 	}

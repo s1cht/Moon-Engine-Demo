@@ -8,6 +8,7 @@ bin-int
 **.vcxproj.user
 **.vcxproj.filters
 **.sln
+**.cap
 *Makefile
 /Misc/BuildDXC/Testing/Temporary
 /Misc/BuildSPIRV-Tools/Testing/Temporary

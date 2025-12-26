@@ -23,20 +23,22 @@ Constants constants;
 void CullMesh(uint meshId, uint instanceId)
 {
     BoundingBox meshBox = MeshBoxes[meshId];
-	meshBox.Center = PositionToCameraCM(meshBox.Center, Camera.ProjectionMatrix, Camera.ViewMatrix, MeshTransforms[instanceId].Matrix);
+	float4 centerWorld = mul(MeshTransforms[instanceId].Matrix, float4(meshBox.Center, 1.f));
+	float3 centerView = mul(Camera.ViewMatrix, centerWorld).xyz;
     bool isVisible = true;
 
     for (int i = 0; i < 6 && isVisible; i++)
     {
         float3 planeNormal = Frustum.Planes[i].xyz;
-        float distanceFromPlane = dot(meshBox.Center, planeNormal);
+		float distanceFromPlane = dot(centerView, planeNormal);
 
         float absDiff = dot(abs(planeNormal), meshBox.Extents.xyz);
         if (distanceFromPlane + absDiff + Frustum.Planes[i].w < 0.f)
             isVisible = false;
     }
 
-	if (isVisible)
+//	if (isVisible)
+	if (true)
     {
         uint index;
         InterlockedAdd(OutputIndirectCountBuffer[0].Value, 1, index);

@@ -118,7 +118,43 @@ namespace ME::Render
 			Render::ShaderStage::Pixel |
 			Render::ShaderStage::Compute
 		);
-        // Depth wt combined sampler | Binding 2
+        // Position wt combined sampler | Binding 2
+		gBufferSet.EmplaceBack(
+			true,
+			Render::ResourceType::Texture2D,
+			Render::ShaderStage::Pixel |
+			Render::ShaderStage::Compute
+		);
+		gBufferSet.EmplaceBack(
+			Render::ResourceType::Sampler,
+			Render::ShaderStage::Pixel |
+			Render::ShaderStage::Compute
+		);
+		// WorldPosition wt combined sampler | Binding 3
+		gBufferSet.EmplaceBack(
+			true,
+			Render::ResourceType::Texture2D,
+			Render::ShaderStage::Pixel |
+			Render::ShaderStage::Compute
+		);
+		gBufferSet.EmplaceBack(
+			Render::ResourceType::Sampler,
+			Render::ShaderStage::Pixel |
+			Render::ShaderStage::Compute
+		);
+		// Specular wt combined sampler | Binding 4
+		gBufferSet.EmplaceBack(
+			true,
+			Render::ResourceType::Texture2D,
+			Render::ShaderStage::Pixel |
+			Render::ShaderStage::Compute
+		);
+		gBufferSet.EmplaceBack(
+			Render::ResourceType::Sampler,
+			Render::ShaderStage::Pixel |
+			Render::ShaderStage::Compute
+		);
+		// Depth wt combined sampler | Binding 5
 		gBufferSet.EmplaceBack(
 			true,
 			Render::ResourceType::Texture2D,
@@ -209,7 +245,7 @@ namespace ME::Render
 		gBaseColorSpecification.IsStencil = false;
 		gBaseColorSpecification.CubeMapCount = 0;
 		gBaseColorSpecification.DataSize = 0;
-		gBaseColorSpecification.DebugName = "G-Buffer: base color";
+		gBaseColorSpecification.DebugName = "G-Buffer: BaseColor";
 		gBaseColorSpecification.Format = Format::RGBA8_UNORM;
 		gBaseColorSpecification.Layout = ImageLayout::General;
 		gBaseColorSpecification.SampleCount = SampleCount::Count1;
@@ -231,7 +267,6 @@ namespace ME::Render
 		gNormalSpecification.IsStencil = false;
 		gNormalSpecification.CubeMapCount = 0;
 		gNormalSpecification.DataSize = 0;
-		gNormalSpecification.DebugName = "G-Buffer: normal";
 		gNormalSpecification.Format = Format::RGBA16_SFLOAT;
 		gNormalSpecification.Layout = ImageLayout::General;
 		gNormalSpecification.SampleCount = SampleCount::Count1;
@@ -241,12 +276,79 @@ namespace ME::Render
 		gNormalSpecification.MinFilter = SamplerFilter::Linear;
 		gNormalSpecification.MagFilter = SamplerFilter::Linear;
 		gNormalSpecification.Usage = ImageUsageFlags::ColorAttachment | ImageUsageFlags::Storage | ImageUsageFlags::Sampled;
+		gNormalSpecification.DebugName = "G-Buffer: Normal";
 		m_gNormal = RTexture2D::Create(gNormalSpecification);
+
+		Texture2DSpecification gWorldPositionBufferSpecification = {};
+		gWorldPositionBufferSpecification.SetIndex = gbufferSet;
+		gWorldPositionBufferSpecification.Set = GBUFFER_SET;
+		gWorldPositionBufferSpecification.Binding = 2;
+		gWorldPositionBufferSpecification.Data = nullptr;
+		gWorldPositionBufferSpecification.DataSize = 0;
+		gWorldPositionBufferSpecification.Resolution = RenderCommand::Get()->GetSwapChain()->GetExtent();
+		gWorldPositionBufferSpecification.IsDepth = false;
+		gWorldPositionBufferSpecification.IsStencil = false;
+		gWorldPositionBufferSpecification.Format = Format::RGBA16_SNORM;
+		gWorldPositionBufferSpecification.Layout = ImageLayout::General;
+		gWorldPositionBufferSpecification.CubeMapCount = 0;
+		gWorldPositionBufferSpecification.MipLevels = 1;
+		gWorldPositionBufferSpecification.EnableAnisotropy = false;
+		gWorldPositionBufferSpecification.MaxAnisotropy = 1;
+		gWorldPositionBufferSpecification.MinFilter = SamplerFilter::Linear;
+		gWorldPositionBufferSpecification.MagFilter = SamplerFilter::Linear;
+		gWorldPositionBufferSpecification.SampleCount = SampleCount::Count1;
+		gWorldPositionBufferSpecification.Usage = ImageUsageFlags::ColorAttachment | ImageUsageFlags::Sampled | ImageUsageFlags::TransferDst;
+		gWorldPositionBufferSpecification.DebugName = "G-Buffer: WorldPosition";
+		m_gWorldPosition = RTexture2D::Create(gWorldPositionBufferSpecification);
+
+		Texture2DSpecification gEmissiveBufferSpecification = {};
+		gEmissiveBufferSpecification.SetIndex = gbufferSet;
+		gEmissiveBufferSpecification.Set = GBUFFER_SET;
+		gEmissiveBufferSpecification.Binding = 3;
+		gEmissiveBufferSpecification.Data = nullptr;
+		gEmissiveBufferSpecification.DataSize = 0;
+		gEmissiveBufferSpecification.Resolution = RenderCommand::Get()->GetSwapChain()->GetExtent();
+		gEmissiveBufferSpecification.IsDepth = false;
+		gEmissiveBufferSpecification.IsStencil = false;
+		gEmissiveBufferSpecification.Format = Format::RGBA16_SNORM;
+		gEmissiveBufferSpecification.Layout = ImageLayout::General;
+		gEmissiveBufferSpecification.CubeMapCount = 0;
+		gEmissiveBufferSpecification.MipLevels = 1;
+		gEmissiveBufferSpecification.EnableAnisotropy = false;
+		gEmissiveBufferSpecification.MaxAnisotropy = 1;
+		gEmissiveBufferSpecification.MinFilter = SamplerFilter::Linear;
+		gEmissiveBufferSpecification.MagFilter = SamplerFilter::Linear;
+		gEmissiveBufferSpecification.SampleCount = SampleCount::Count1;
+		gEmissiveBufferSpecification.Usage = ImageUsageFlags::ColorAttachment | ImageUsageFlags::Sampled | ImageUsageFlags::TransferDst;
+		gEmissiveBufferSpecification.DebugName = "G-Buffer: Emissive";
+		m_gEmissive = RTexture2D::Create(gEmissiveBufferSpecification);
+
+		Texture2DSpecification gSpecularBufferSpecification = {};
+		gSpecularBufferSpecification.SetIndex = gbufferSet;
+		gSpecularBufferSpecification.Set = GBUFFER_SET;
+		gSpecularBufferSpecification.Binding = 4;
+		gSpecularBufferSpecification.Data = nullptr;
+		gSpecularBufferSpecification.DataSize = 0;
+		gSpecularBufferSpecification.Resolution = RenderCommand::Get()->GetSwapChain()->GetExtent();
+		gSpecularBufferSpecification.IsDepth = false;
+		gSpecularBufferSpecification.IsStencil = false;
+		gSpecularBufferSpecification.Format = Format::RGBA16_SNORM;
+		gSpecularBufferSpecification.Layout = ImageLayout::General;
+		gSpecularBufferSpecification.CubeMapCount = 0;
+		gSpecularBufferSpecification.MipLevels = 1;
+		gSpecularBufferSpecification.EnableAnisotropy = false;
+		gSpecularBufferSpecification.MaxAnisotropy = 1;
+		gSpecularBufferSpecification.MinFilter = SamplerFilter::Linear;
+		gSpecularBufferSpecification.MagFilter = SamplerFilter::Linear;
+		gSpecularBufferSpecification.SampleCount = SampleCount::Count1;
+		gSpecularBufferSpecification.Usage = ImageUsageFlags::ColorAttachment | ImageUsageFlags::Sampled | ImageUsageFlags::TransferDst;
+		gSpecularBufferSpecification.DebugName = "G-Buffer: Specular";
+		m_gSpecular = RTexture2D::Create(gSpecularBufferSpecification);
 
 		Texture2DSpecification gDepthBufferSpecification = {};
 		gDepthBufferSpecification.SetIndex = gbufferSet;
 		gDepthBufferSpecification.Set = GBUFFER_SET;
-		gDepthBufferSpecification.Binding = 2;
+		gDepthBufferSpecification.Binding = 5;
 		gDepthBufferSpecification.Data = nullptr;
 		gDepthBufferSpecification.DataSize = 0;
 		gDepthBufferSpecification.Resolution = RenderCommand::Get()->GetSwapChain()->GetExtent();
@@ -262,7 +364,7 @@ namespace ME::Render
 		gDepthBufferSpecification.MagFilter = SamplerFilter::Linear;
 		gDepthBufferSpecification.SampleCount = SampleCount::Count1;
 		gDepthBufferSpecification.Usage = ImageUsageFlags::DepthStencilAttachment | ImageUsageFlags::Sampled | ImageUsageFlags::TransferDst;
-		gDepthBufferSpecification.DebugName = "G-Buffer: depth";
+		gDepthBufferSpecification.DebugName = "G-Buffer: Depth";
 		m_gDepth = RTexture2D::Create(gDepthBufferSpecification);
 
 		int32 cameraSetId = RenderCommand::GetResourceHandler()->CreateResourceSet(primaryShaderGroup.ResourceLayout[CAMERA_SET]);
@@ -363,8 +465,9 @@ namespace ME::Render
 		m_VertexInputFormat = VertexBufferLayout(InputClassification::PerVertex,
 			{
 						{ ShaderType::Float3, "POSITION", 0, 0 },
-						{ ShaderType::Float2, "TCOORD", 1, 0 },
-						{ ShaderType::Float3, "NORMALPOS", 2, 0 }
+						{ ShaderType::Float3, "NORMALPOS", 1, 0 },
+						{ ShaderType::Float4, "POSITION", 2, 0 },
+						{ ShaderType::Float2, "TCOORD", 3, 0 },
 			});
 #pragma region Render pass
 		ME::Core::Array<ME::Core::Memory::Reference<Texture2D>> swapChainTextures = RenderCommand::Get()->GetSwapChain()->GetImages();
@@ -390,6 +493,36 @@ namespace ME::Render
 		normalAttachment.FinalLayout = ImageLayout::ShaderReadOnly;
 		normalAttachment.SampleCount = m_gNormal->GetSpecification().SampleCount;
 
+		AttachmentSpecification worldPositionAttachment = {};
+		worldPositionAttachment.IsDepth = false;
+		worldPositionAttachment.IsStencil = false;
+		worldPositionAttachment.AttachmentFormat = m_gWorldPosition->GetSpecification().Format;
+		worldPositionAttachment.LoadOp = LoadOperation::Clear;
+		worldPositionAttachment.StoreOp = StoreOperation::Store;
+		worldPositionAttachment.InitialLayout = ImageLayout::Undefined;
+		worldPositionAttachment.FinalLayout = ImageLayout::ShaderReadOnly;
+		worldPositionAttachment.SampleCount = m_gWorldPosition->GetSpecification().SampleCount;
+
+		AttachmentSpecification emissiveAttachment = {};
+		emissiveAttachment.IsDepth = false;
+		emissiveAttachment.IsStencil = false;
+		emissiveAttachment.AttachmentFormat = m_gEmissive->GetSpecification().Format;
+		emissiveAttachment.LoadOp = LoadOperation::Clear;
+		emissiveAttachment.StoreOp = StoreOperation::Store;
+		emissiveAttachment.InitialLayout = ImageLayout::Undefined;
+		emissiveAttachment.FinalLayout = ImageLayout::ShaderReadOnly;
+		emissiveAttachment.SampleCount = m_gEmissive->GetSpecification().SampleCount;
+
+		AttachmentSpecification specularAttachment = {};
+		specularAttachment.IsDepth = false;
+		specularAttachment.IsStencil = false;
+		specularAttachment.AttachmentFormat = m_gSpecular->GetSpecification().Format;
+		specularAttachment.LoadOp = LoadOperation::Clear;
+		specularAttachment.StoreOp = StoreOperation::Store;
+		specularAttachment.InitialLayout = ImageLayout::Undefined;
+		specularAttachment.FinalLayout = ImageLayout::ShaderReadOnly;
+		specularAttachment.SampleCount = m_gSpecular->GetSpecification().SampleCount;
+
 		AttachmentSpecification depthSpecs = {};
 		depthSpecs.IsDepth = true;
 		depthSpecs.IsStencil = false;
@@ -402,11 +535,14 @@ namespace ME::Render
 
 		attachments.EmplaceBack(baseColorAttachment);
 		attachments.EmplaceBack(normalAttachment);
+		attachments.EmplaceBack(worldPositionAttachment);
+		attachments.EmplaceBack(emissiveAttachment);
+		attachments.EmplaceBack(specularAttachment);
 		attachments.EmplaceBack(depthSpecs);
 
 		SubpassSpecification subpass = {};
-		subpass.ColorAttachmentRefs = { 0, 1 };
-		subpass.DepthStencilAttachmentRef = 2;
+		subpass.ColorAttachmentRefs = { 0, 1, 2, 3, 4 };
+		subpass.DepthStencilAttachmentRef = 5;
 		subpass.PipelineBindPoint = PipelineBindPoint::Graphics;
 
 		SubpassDependency gPassDep1 = {};
@@ -439,7 +575,7 @@ namespace ME::Render
 		m_GPass = RenderPass::Create(gPassSpecs);
 
 		RFramebufferSpecification framebufferSpecification = {};
-		framebufferSpecification.RAttachments = { m_gBaseColor, m_gNormal, m_gDepth };
+		framebufferSpecification.RAttachments = { m_gBaseColor, m_gNormal, m_gWorldPosition, m_gEmissive, m_gSpecular, m_gDepth };
 		framebufferSpecification.Layers = 1;
 		framebufferSpecification.RenderPass = m_GPass;
 		framebufferSpecification.Resolution = gBaseColorSpecification.Resolution;
@@ -454,7 +590,7 @@ namespace ME::Render
 		presentSpecs.LoadOp = LoadOperation::Clear;
 		presentSpecs.StoreOp = StoreOperation::Store;
 		presentSpecs.InitialLayout = ImageLayout::Undefined;
-		presentSpecs.FinalLayout = ImageLayout::Present;
+		presentSpecs.FinalLayout = ImageLayout::ColorAttachment;
 		presentSpecs.SampleCount = SampleCount::Count1;
 
 		SubpassSpecification mergeSubpass = {};
@@ -474,9 +610,9 @@ namespace ME::Render
 		mergeDep2.SubpassSrc = 0;
 		mergeDep2.SubpassDst = ~0u;
 		mergeDep2.AccessFlagsSrc = AccessFlags::ColorAttachmentWrite;
-		mergeDep2.AccessFlagsDst = AccessFlags::MemoryRead;
+		mergeDep2.AccessFlagsDst = AccessFlags::ColorAttachmentWrite;	
 		mergeDep2.PipelineStageFlagsSrc = PipelineStageFlags::ColorAttachmentOutput;
-		mergeDep2.PipelineStageFlagsDst = PipelineStageFlags::BottomOfPipe;
+		mergeDep2.PipelineStageFlagsDst = PipelineStageFlags::ColorAttachmentOutput;
 
 		RenderPassSpecification mergePassSpecs = {};
 		mergePassSpecs.AttachmentSpecs = { presentSpecs };
@@ -521,12 +657,15 @@ namespace ME::Render
 			dsSpec.BackFace = dsSpec.FrontFace;
 		    dsSpec.DepthBoundsEnabled = true;
 		    dsSpec.MaxDepthBounds = 1.0f;
-			dsSpec.MinDepthBounds = 0.f;
+			dsSpec.MinDepthBounds = -1.0f;
 
 			ColorBlendingSpecification cbSpec = {};
 			cbSpec.Attachments = {
 				{ false, false  },
-			    { false, false  }
+			    { false, false  },
+			    { false, false  },
+			    { false, false  },
+			    { false, false  },
 			};
 			cbSpec.BlendConstants = { 0.f, 0.f, 0.f, 0.f };
 			cbSpec.LogicOperation = LogicOperation::None;
@@ -632,8 +771,12 @@ namespace ME::Render
 		// Updating camera if required
 		if (camera->BufferUpdateRequired())
 		{
-			CameraData data = CameraData(camera->GetViewMatrix(), camera->GetProjectionMatrix());
-			ME::Core::Math::Frustum frustum = ME::Core::Math::ExtractFrustumFromMatrix(camera->GetProjectionMatrix() * camera->GetViewMatrix());
+			CameraData data = CameraData { camera->GetView(),
+			    camera->GetProjection(),
+				camera->GetView().Invert(),
+			    camera->GetProjection().Invert()
+			};
+			ME::Core::Math::Frustum frustum = ME::Core::Math::ExtractFrustumFromMatrix(camera->GetView() * camera->GetProjection());
 			m_CurrentCameraBuffer->SetData(m_CurrentCommandBuffer, &data, sizeof(CameraData), 0);
 			m_CurrentCameraFrustumBuffer->SetData(m_CurrentCommandBuffer, &frustum, sizeof(ME::Core::Math::Frustum), 0);
 		}
@@ -682,7 +825,7 @@ namespace ME::Render
 
 		if (m_QueuedMeshes.Contains(meshComponent.Mesh->GetMeshID()))
 		{
-			m_QueuedMeshes[meshComponent.Mesh->GetMeshID()].Transforms.EmplaceBack(transformComponent.Transform.Matrix());
+			m_QueuedMeshes[meshComponent.Mesh->GetMeshID()].Transforms.EmplaceBack(transformComponent.Transform.Matrix().Transpose());
 			m_QueuedMeshes[meshComponent.Mesh->GetMeshID()].MeshRenderingInfos.EmplaceBack(renderingInfo);
 			m_QueuedMeshes[meshComponent.Mesh->GetMeshID()].MeshIDs.EmplaceBack(static_cast<uint32>(meshComponent.Mesh->GetMeshID()));
 			m_QueuedMeshes[meshComponent.Mesh->GetMeshID()].Data.instanceCount++;
@@ -783,15 +926,13 @@ namespace ME::Render
 
 		Render::ClearValue clrVal = {};
 		clrVal.ColorClearValue = Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f);
-		Render::ClearValue zeroVal = {};
-		zeroVal.ColorClearValue = Core::Math::Vector4D32(0.f, 0.f, 0.f, 0.f);
 		Render::ClearValue depthClrVal = {};
 		depthClrVal.UsingDepth = true;
 		depthClrVal.DepthClearValue = { .Depth = 1.f, .Stencil = 0 };
 
 		Render::RenderPassBeginInfo beginInfo = {};
 		beginInfo.Framebuffer = m_CurrentGFramebuffer;
-		beginInfo.ClearValues = { clrVal, zeroVal, depthClrVal };
+		beginInfo.ClearValues = { clrVal, clrVal, clrVal, clrVal, clrVal, depthClrVal };
 		beginInfo.RenderArea.Offset = { 0,0 };
 		beginInfo.RenderArea.Extent = Render::RenderCommand::Get()->GetSwapChain()->GetExtent();
 

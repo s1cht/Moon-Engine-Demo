@@ -84,9 +84,7 @@ namespace ME
 	private:
 		static Application* s_Instance;
 		static bool s_ShutdownRequested;
-	}
-	;
+	};
 	// Must be defined in client
 	Application* CreateApplication();
-	
 }

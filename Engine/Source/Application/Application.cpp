@@ -11,8 +11,9 @@
 #include <Core/Time.hpp>
 
 #include "Framework/Components/AudioComponent.hpp"
-#include "Framework/Components/CameraComponent.hpp"
 #include "Framework/Components/InputComponent.hpp"
+#include "Framework/Components/CameraComponent.hpp"
+#include "Framework/Entities/Camera.hpp"
 #include "Renderer/Renderer.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/Managers/ShaderManager.hpp"
@@ -134,13 +135,13 @@ namespace ME
 
 			Render::Renderer::BeginFrame();
 
-			auto entsWithCamera = m_World->View<Components::CameraComponent>();
-			if (!entsWithCamera.Empty())
+			ME::Core::Array<ME::Core::Memory::Reference<ECS::Entity>> cameras = m_World->GetEntitiesWhichAre<ME::EditorCamera>();
+			if (!cameras.Empty())
 			{
-				Components::CameraComponent& camera = entsWithCamera[0]->GetComponent<Components::CameraComponent>();
 			    auto entsWithMesh = m_World->View<Components::TransformComponent, Components::MeshComponent>();
+				ME::Core::Memory::Reference<ME::Render::Camera> camera = std::static_pointer_cast<ME::EditorCamera>(cameras[0]);
 
-			    Render::Renderer::BeginScene(camera.Camera);
+			    Render::Renderer::BeginScene(camera);
 				for (const auto& entity : entsWithMesh)
 				{
 					Components::MeshComponent mesh = entity->GetComponent<Components::MeshComponent>();

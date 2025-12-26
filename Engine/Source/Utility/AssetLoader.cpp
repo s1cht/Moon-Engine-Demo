@@ -234,14 +234,11 @@ namespace ME::Utility
 			{
 				if (!indices.Empty() && !vertices.Empty())
 				{
+					GenerateTangents(indices, vertices);
 					mesh = ME::Render::Manager::MeshManager::Get().CreateMesh();
-					mesh->UpdateMeshInfo(vertices, indices);
+				    mesh->UpdateMeshInfo(vertices, indices);
 					mesh->SetGroupName(meshName);
 					result.Meshes.EmplaceBack(mesh);
-
-					ME_INFO("Mesh vertex count: {}", vertices.Size());
-					ME_INFO("Mesh indices count: {}", indices.Size());
-					ME_INFO("Mesh vertexToIndex size: {}", vertexToIndex.Size());
 
 					vertices.Clear();
 					indices.Clear();
@@ -302,7 +299,7 @@ namespace ME::Utility
 					Assets::Vertex vertex;
 					vertex.Position = LocalFunctions::FindElement(positions, faceValues[0]);
 					if (faceValues.Size() > 1 && !faceValues[1].Empty())
-						vertex.TextureCoords = LocalFunctions::FindElement(uvCoords, faceValues[1]);
+						vertex.TextureCoordinates = LocalFunctions::FindElement(uvCoords, faceValues[1]);
 					if (faceValues.Size() > 2 && !faceValues[2].Empty())
 						vertex.Normal = LocalFunctions::FindElement(normals, faceValues[2]);
 
@@ -349,15 +346,15 @@ namespace ME::Utility
 		}
 		if (!indices.Empty() && !vertices.Empty())
 		{
+			GenerateTangents(indices, vertices);
 			mesh = ME::Render::Manager::MeshManager::Get().CreateMesh();
 			mesh->UpdateMeshInfo(vertices, indices);
 			mesh->SetGroupName(meshName);
 			result.Meshes.EmplaceBack(mesh);
 		}
 
-		if (centered) {
+		if (centered)
 			LocalFunctions::CenterMeshGroup(result.Meshes);
-		}
 
 		file->Close();
 		return result;
@@ -541,6 +538,64 @@ namespace ME::Utility
         return result;
     }
 
+    void AssetLoader::GenerateTangents(const ME::Core::Array<uint32>& indices,
+        ME::Core::Array<Assets::Vertex>& vertices)
+    {
+		ME::Core::Array<Core::Math::Vector3D32> tangent1(vertices.Size() * 2);
+		Core::Math::Vector3D32* tangent2 = tangent1.Data() + vertices.Size();
+
+		memset(tangent1.Data(), 0, tangent1.Size() * sizeof(Core::Math::Vector3D));
+
+	    for (uint32 i = 0; i < indices.Size() / 3; ++i)
+		{
+			uint32 firstIndex = i * 3;
+			uint32 index1 = indices[firstIndex];
+			uint32 index2 = indices[firstIndex + 1];
+			uint32 index3 = indices[firstIndex + 2];
+
+			const Core::Math::Vector3D32& position1 = vertices[index1].Position;
+			const Core::Math::Vector3D32& position2 = vertices[index2].Position;
+			const Core::Math::Vector3D32& position3 = vertices[index3].Position;
+
+			const Core::Math::Vector2D32 texPos1 = vertices[index1].TextureCoordinates;
+			const Core::Math::Vector2D32 texPos2 = vertices[index2].TextureCoordinates;
+			const Core::Math::Vector2D32 texPos3 = vertices[index3].TextureCoordinates;
+
+			float32 x1 = position2.x - position1.x;
+			float32 x2 = position3.x - position1.x;
+			float32 y1 = position2.y - position1.y;
+			float32 y2 = position3.y - position1.y;
+			float32 z1 = position2.z - position1.z;
+			float32 z2 = position3.z - position1.z;
+
+			float32 s1 = texPos2.x - texPos1.x;
+			float32 s2 = texPos3.x - texPos1.x;
+			float32 t1 = texPos2.y - texPos1.y;
+			float32 t2 = texPos3.y - texPos1.y;
+
+			float32 r = 1.f / (s1 * t2 - s2 * t1);
+			Core::Math::Vector3D32 sDir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+			Core::Math::Vector3D32 tDir((s2 * x2 - s2 * x1) * r, (s2 * y2 - s2 * y1) * r, (s2 * z2 - s2 * z1) * r);
+
+			tangent1[index1] += sDir;
+			tangent1[index1] += sDir;
+			tangent1[index3] += sDir;
+
+	        tangent2[index1] += tDir;
+			tangent2[index2] += tDir;
+			tangent2[index3] += tDir;
+		}
+
+		for (uint32 i = 0; i < vertices.Size(); ++i)
+		{
+			const Core::Math::Vector3D32& normal = vertices[i].Normal;
+			const Core::Math::Vector3D32& tan = tangent1[i];
+
+			vertices[i].Tangent = Core::Math::Vector4D32((tan - normal * normal.Dot(tan)).Normalize(),
+				normal.Cross(tan).Dot(tangent2[i]) < 0.f ? -1.f : 1.f
+			);
+		}
+    }
 
     ME::Core::Math::Vector3D32 AssetLoader::CalculateNormal(const ME::Core::Array<Assets::Vertex>& vertices)
 	{

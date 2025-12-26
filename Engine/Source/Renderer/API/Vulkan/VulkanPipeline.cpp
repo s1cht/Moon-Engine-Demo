@@ -246,35 +246,42 @@ namespace ME::Render
 
 		ME::Core::Array<VkPipelineShaderStageCreateInfo> shaderStage = FormatPipelineShaderStageCI();
 
-		VkVertexInputBindingDescription visBindingDesc = {};
-		visBindingDesc.binding = 0;
-		visBindingDesc.stride = m_Specification.BufferLayout.GetStride();
-		switch (m_Specification.BufferLayout.GetInputClassification())
-		{
-		    case InputClassification::PerVertex: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; break;
-		    case InputClassification::PerInstance: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE; break;
-		    case InputClassification::None: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; ME_WARN("Vulkan pipeline: InputClassification::None is used! Using VK_VERTEX_INPUT_RATE_VERTEX instead."); break;
-		}
-
 		ME::Core::Array<VkVertexInputAttributeDescription> visAttributeDesc = {};
+		ME::Core::Array<VkVertexInputBindingDescription> visBindingDescs = {};
+		uint32 MaxBinding = 0;
 
 		for (const auto& element : m_Specification.BufferLayout.GetElements())
 		{
 			VkVertexInputAttributeDescription desc = {};
 			desc.location = element.SemanticIndex;
-			desc.format = static_cast<VkFormat>(ConvertShaderTypeVulkan(element.Type));
+			desc.format = ConvertShaderTypeVulkan(element.Type);
 			desc.binding = element.InputSlot;
 			desc.offset = static_cast<uint32>(element.Offset);
-
 			visAttributeDesc.EmplaceBack(desc);
+
+		    MaxBinding = ME::Core::Algorithm::Max(MaxBinding, desc.binding);
+		}
+
+		for (uint32 i = 0; i <= MaxBinding; ++i)
+		{
+			VkVertexInputBindingDescription visBindingDesc = {};
+			visBindingDesc.binding = i;
+			visBindingDesc.stride = m_Specification.BufferLayout.GetStride();
+			switch (m_Specification.BufferLayout.GetInputClassification())
+			{
+				case InputClassification::PerVertex: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; break;
+				case InputClassification::PerInstance: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE; break;
+				case InputClassification::None: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; ME_WARN("Vulkan pipeline: InputClassification::None is used! Using VK_VERTEX_INPUT_RATE_VERTEX instead."); break;
+			}
+			visBindingDescs.EmplaceBack(visBindingDesc);
 		}
 
 		VkPipelineVertexInputStateCreateInfo visCreateInfo = {};
-		visCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		visCreateInfo.pVertexBindingDescriptions		= &visBindingDesc;
-		visCreateInfo.vertexBindingDescriptionCount		= 1;
-		visCreateInfo.pVertexAttributeDescriptions		= visAttributeDesc.Data();
+		visCreateInfo.sType								= VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		visCreateInfo.vertexBindingDescriptionCount		= static_cast<uint32>(visBindingDescs.Size());
+		visCreateInfo.pVertexBindingDescriptions		= visBindingDescs.Data();
 		visCreateInfo.vertexAttributeDescriptionCount	= static_cast<uint32>(visAttributeDesc.Size());
+		visCreateInfo.pVertexAttributeDescriptions		= visAttributeDesc.Data();
 
 		VkPipelineInputAssemblyStateCreateInfo iasCreateInfo = {};
 		iasCreateInfo.sType						= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

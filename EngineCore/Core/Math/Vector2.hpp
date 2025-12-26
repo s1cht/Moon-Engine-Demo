@@ -1,8 +1,5 @@
 #pragma once
-
-#include "Core.hpp"
-#include "Core/Math/MathMacros.hpp"
-#include "Core/Utility/Logging/Logger.hpp"
+#include "Core/Math/MathCore.hpp"
 
 namespace ME::Core::Math
 {
@@ -25,6 +22,8 @@ namespace ME::Core::Math
 		COREAPI static const Vector2 DownVector;
 		COREAPI static const Vector2 LeftVector;
 		COREAPI static const Vector2 RightVector;
+		COREAPI static const Vector2 XAxis;
+		COREAPI static const Vector2 YAxis;
 
 	public:
 		inline Vector2();

@@ -6,87 +6,105 @@ namespace ME::Core::Math
 	// Vector2 statics // ---------------------------------------
 	///////////////////// ---------------------------------------
 	
-	template<> const Vector2<float32> Vector2<float32>::ZeroVector(0);
+	template<> const Vector2<float32> Vector2<float32>::ZeroVector(0.f);
 	template<> const Vector2<float32> Vector2<float32>::UpVector(0, 1);
 	template<> const Vector2<float32> Vector2<float32>::DownVector(0, -1);
 	template<> const Vector2<float32> Vector2<float32>::RightVector(1, 0);
 	template<> const Vector2<float32> Vector2<float32>::LeftVector(-1, 0);
+	template<> const Vector2<float32> Vector2<float32>::XAxis(1, 0);
+	template<> const Vector2<float32> Vector2<float32>::YAxis(0, 1);
 
-	template<> const Vector2<float64> Vector2<float64>::ZeroVector(0);
+	template<> const Vector2<float64> Vector2<float64>::ZeroVector(0.f);
 	template<> const Vector2<float64> Vector2<float64>::UpVector(0, 1);
 	template<> const Vector2<float64> Vector2<float64>::DownVector(0, -1);
 	template<> const Vector2<float64> Vector2<float64>::RightVector(1, 0);
 	template<> const Vector2<float64> Vector2<float64>::LeftVector(-1, 0);
+	template<> const Vector2<float64> Vector2<float64>::XAxis(1, 0);
+	template<> const Vector2<float64> Vector2<float64>::YAxis(0, 1);
 
 	///////////////////// ---------------------------------------
 	// Vector3 statics // ---------------------------------------
 	///////////////////// ---------------------------------------
 
-	template<> const Vector3<float32> Vector3<float32>::ZeroVector(0); 
-	template<> const Vector3<float32> Vector3<float32>::UpVector(0, 1, 0);
-	template<> const Vector3<float32> Vector3<float32>::DownVector(0, -1, 0);
+	template<> const Vector3<float32> Vector3<float32>::ZeroVector(0.f); 
+	template<> const Vector3<float32> Vector3<float32>::UpVector(0, -1, 0);
+	template<> const Vector3<float32> Vector3<float32>::DownVector(0, 1, 0);
 	template<> const Vector3<float32> Vector3<float32>::RightVector(1, 0, 0);
 	template<> const Vector3<float32> Vector3<float32>::LeftVector(-1, 0, 0);
-	template<> const Vector3<float32> Vector3<float32>::ForwardVector(0, 0, 1);
-	template<> const Vector3<float32> Vector3<float32>::BackwardVector(0, 0,-1);
+	template<> const Vector3<float32> Vector3<float32>::ForwardVector(0, 0, -1);
+	template<> const Vector3<float32> Vector3<float32>::BackwardVector(0, 0,1);
+	template<> const Vector3<float32> Vector3<float32>::XAxis(1, 0, 0);
+	template<> const Vector3<float32> Vector3<float32>::YAxis(0, 1, 0);
+	template<> const Vector3<float32> Vector3<float32>::ZAxis(0, 0, 1);
 
-	template<> const Vector3<float64> Vector3<float64>::ZeroVector(0);
-	template<> const Vector3<float64> Vector3<float64>::UpVector(0, 1, 0);
-	template<> const Vector3<float64> Vector3<float64>::DownVector(0, -1, 0);
+	template<> const Vector3<float64> Vector3<float64>::ZeroVector(0.f);
+	template<> const Vector3<float64> Vector3<float64>::UpVector(0, -1, 0);
+	template<> const Vector3<float64> Vector3<float64>::DownVector(0, 1, 0);
 	template<> const Vector3<float64> Vector3<float64>::RightVector(1, 0, 0);
 	template<> const Vector3<float64> Vector3<float64>::LeftVector(-1, 0, 0);
-	template<> const Vector3<float64> Vector3<float64>::ForwardVector(0, 0, 1);
-	template<> const Vector3<float64> Vector3<float64>::BackwardVector(0, 0, -1);
+	template<> const Vector3<float64> Vector3<float64>::ForwardVector(0, 0, -1);
+	template<> const Vector3<float64> Vector3<float64>::BackwardVector(0, 0, 1);
+	template<> const Vector3<float64> Vector3<float64>::XAxis(1, 0, 0);
+	template<> const Vector3<float64> Vector3<float64>::YAxis(0, 1, 0);
+	template<> const Vector3<float64> Vector3<float64>::ZAxis(0, 0, 1);
 
 	///////////////////// ---------------------------------------
 	// Vector4 statics // ---------------------------------------
 	///////////////////// ---------------------------------------
 	
-	template<> const Vector4<float32> Vector4<float32>::ZeroVector(0);
+	template<> const Vector4<float32> Vector4<float32>::ZeroVector(0.f);
 	template<> const Vector4<float32> Vector4<float32>::OneVector(1);
+	template<> const Vector4<float32> Vector4<float32>::XAxis(1, 0, 0, 0);
+	template<> const Vector4<float32> Vector4<float32>::YAxis(0, 1, 0, 0);
+	template<> const Vector4<float32> Vector4<float32>::ZAxis(0,0,1,0);
+	template<> const Vector4<float32> Vector4<float32>::WAxis(0, 0, 0, 1);
 
-	template<> const Vector4<float64> Vector4<float64>::ZeroVector(0);
+	template<> const Vector4<float64> Vector4<float64>::ZeroVector(0.f);
 	template<> const Vector4<float64> Vector4<float64>::OneVector(1);
+	template<> const Vector4<float64> Vector4<float64>::XAxis(1, 0, 0, 0);
+	template<> const Vector4<float64> Vector4<float64>::YAxis(0, 1, 0, 0);
+	template<> const Vector4<float64> Vector4<float64>::ZAxis(0, 0, 1, 0);
+	template<> const Vector4<float64> Vector4<float64>::WAxis(0, 0, 0, 1);
 
     Frustum ExtractFrustumFromMatrix(const Matrix4x4& vpMatrix)
     {
 		Frustum frustum = {};
 
 		// left
-		frustum.Planes[0].x = vpMatrix.a[0][3] + vpMatrix.a[0][0];
-		frustum.Planes[0].y = vpMatrix.a[1][3] + vpMatrix.a[1][0];
-		frustum.Planes[0].z = vpMatrix.a[2][3] + vpMatrix.a[2][0];
-		frustum.Planes[0].w = vpMatrix.a[3][3] + vpMatrix.a[3][0];
+		frustum.Planes[0].x = vpMatrix.m[3][0] + vpMatrix.m[0][0];
+		frustum.Planes[0].y = vpMatrix.m[3][1] + vpMatrix.m[0][1];
+		frustum.Planes[0].z = vpMatrix.m[3][2] + vpMatrix.m[0][2];
+		frustum.Planes[0].w = vpMatrix.m[3][3] + vpMatrix.m[0][3];
 
 		// right
-		frustum.Planes[1].x = vpMatrix.a[0][3] - vpMatrix.a[0][0];
-		frustum.Planes[1].y = vpMatrix.a[1][3] - vpMatrix.a[1][0];
-		frustum.Planes[1].z = vpMatrix.a[2][3] - vpMatrix.a[2][0];
-		frustum.Planes[1].w = vpMatrix.a[3][3] - vpMatrix.a[3][0];
+		frustum.Planes[1].x = vpMatrix.m[3][0] - vpMatrix.m[0][0];
+		frustum.Planes[1].y = vpMatrix.m[3][1] - vpMatrix.m[0][1];
+		frustum.Planes[1].z = vpMatrix.m[3][2] - vpMatrix.m[0][2];
+		frustum.Planes[1].w = vpMatrix.m[3][3] - vpMatrix.m[0][3];
 
 		// bottom
-		frustum.Planes[2].x = vpMatrix.a[0][3] + vpMatrix.a[0][1];
-		frustum.Planes[2].y = vpMatrix.a[1][3] + vpMatrix.a[1][1];
-		frustum.Planes[2].z = vpMatrix.a[2][3] + vpMatrix.a[2][1];
-		frustum.Planes[2].w = vpMatrix.a[3][3] + vpMatrix.a[3][1];
+		frustum.Planes[2].x = vpMatrix.m[3][0] + vpMatrix.m[1][0];
+		frustum.Planes[2].y = vpMatrix.m[3][1] + vpMatrix.m[1][1];
+		frustum.Planes[2].z = vpMatrix.m[3][2] + vpMatrix.m[1][2];
+		frustum.Planes[2].w = vpMatrix.m[3][3] + vpMatrix.m[1][3];
 
 		// top
-		frustum.Planes[3].x = vpMatrix.a[0][3] - vpMatrix.a[0][1];
-		frustum.Planes[3].y = vpMatrix.a[1][3] - vpMatrix.a[1][1];
-		frustum.Planes[3].z = vpMatrix.a[2][3] - vpMatrix.a[2][1];
-		frustum.Planes[3].w = vpMatrix.a[3][3] - vpMatrix.a[3][1];
+		frustum.Planes[3].x = vpMatrix.m[3][0] - vpMatrix.m[1][0];
+		frustum.Planes[3].y = vpMatrix.m[3][1] - vpMatrix.m[1][1];
+		frustum.Planes[3].z = vpMatrix.m[3][2] - vpMatrix.m[1][2];
+		frustum.Planes[3].w = vpMatrix.m[3][3] - vpMatrix.m[1][3];
 
 		// near
-		frustum.Planes[4].x = vpMatrix.a[0][3] + vpMatrix.a[0][2];
-		frustum.Planes[4].y = vpMatrix.a[1][3] + vpMatrix.a[1][2];
-		frustum.Planes[4].z = vpMatrix.a[2][3] + vpMatrix.a[2][2];
-		frustum.Planes[4].w = vpMatrix.a[3][3] + vpMatrix.a[3][2];
+		frustum.Planes[4].x = vpMatrix.m[2][0];
+		frustum.Planes[4].y = vpMatrix.m[2][1];
+		frustum.Planes[4].z = vpMatrix.m[2][2];
+		frustum.Planes[4].w = vpMatrix.m[2][3];
 
 		// far
-		frustum.Planes[5].x = vpMatrix.a[0][3] - vpMatrix.a[0][2];
-		frustum.Planes[5].y = vpMatrix.a[1][3] - vpMatrix.a[1][2];
-		frustum.Planes[5].z = vpMatrix.a[2][3] - vpMatrix.a[2][2];
-		frustum.Planes[5].w = vpMatrix.a[3][3] - vpMatrix.a[3][2];
+		frustum.Planes[5].x = vpMatrix.m[3][0] - vpMatrix.m[2][0];
+		frustum.Planes[5].y = vpMatrix.m[3][1] - vpMatrix.m[2][1];
+		frustum.Planes[5].z = vpMatrix.m[3][2] - vpMatrix.m[2][2];
+		frustum.Planes[5].w = vpMatrix.m[3][3] - vpMatrix.m[2][3];
 
 		// normalize all planes
 		for (uint8 i = 0; i < 6; i++)

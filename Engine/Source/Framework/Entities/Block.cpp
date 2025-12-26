@@ -9,11 +9,11 @@ namespace ME
 
     inline void Block::SetSize(Core::Math::Vector3D size)
     {
-        Transform().Transform = Core::Math::Transform::FromScale(size);
+        Transform().Transform.SetScale(size);
     }
 
     inline void Block::SetOrientation(Core::Math::Vector3D orientation)
     {
-        Transform().Transform = Core::Math::Transform::FromScale(orientation);
+        Transform().Transform.SetRotation(orientation);
     }
 }
