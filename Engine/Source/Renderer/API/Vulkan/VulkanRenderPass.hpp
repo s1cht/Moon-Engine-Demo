@@ -10,23 +10,23 @@ namespace ME::Render
 	class MEAPI VulkanRenderPass final : public RenderPass
 	{
 	public:
-		VulkanRenderPass(RenderPassSpecification& specification);
+		VulkanRenderPass(const RenderPassSpecification& specification);
 		~VulkanRenderPass() override;
 
 	public:
 		void Shutdown() override;
 
-		void Begin(CommandBuffer* buffer, RenderPassBeginInfo& beginInfo) override;
-		void End(CommandBuffer* buffer) override;
+		void Begin(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, RenderPassBeginInfo& beginInfo) override;
+		void End(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) override;
 
 	public:
-		inline VkRenderPass GetRenderPass() { return m_Pass; };
+		inline VkRenderPass GetRenderPass() { return m_Pass; }
 
 	private:
-		void Init(RenderPassSpecification& specification);
+		void Init(const RenderPassSpecification& specification);
 
     public:
-		const RenderPassSpecification& GetSpecification() const override { return m_Specification; };
+		const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 
     private:
 		VkRenderPass m_Pass;

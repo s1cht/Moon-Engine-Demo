@@ -17,7 +17,7 @@ namespace ME::Render
 
 		void SetViewports(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Array<ME::Render::ViewportSpecification> specifications) override;
 		void SetScissors(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Array<ME::Core::Math::Rect2D> scissors) override;
-        void SetConstants(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ShaderStage shaderStage, void* constants,
+		void SetConstants(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ShaderStage shaderStage, void* constants,
 			SIZE_T constantsSize) override;
 
 		void Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) override;
@@ -32,8 +32,8 @@ namespace ME::Render
 	private:
 		void Init();
 
-		ME::Core::Array<VkPipelineShaderStageCreateInfo> FormatPipelineShaderStageCI();
-		ME::Core::Array<VkPushConstantRange> FormatPushConstantRange();
+		ME::Core::Array<VkPipelineShaderStageCreateInfo> FormatPipelineShaderStageCI() const;
+		ME::Core::Array<VkPushConstantRange> FormatPushConstantRange() const;
 		void CreatePipelineLayout();
 		void CreateGraphicsPipeline();
 		void CreateComputePipeline();
@@ -45,6 +45,5 @@ namespace ME::Render
 
 	private:
 		PipelineSpecification m_Specification;
-
 	};
 }

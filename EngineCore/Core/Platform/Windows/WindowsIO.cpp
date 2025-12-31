@@ -430,7 +430,7 @@ namespace ME::Core::IO
 		}
 	}
 
-	bool WindowsFile::ReadBinary(void* data, SIZE_T& size)
+	bool WindowsFile::ReadBinary(void* data, const SIZE_T& size)
 	{
 		if (!m_Opened)
 		{
@@ -450,10 +450,10 @@ namespace ME::Core::IO
 
 		if (bytesRead != size)
 		{
-			ME_WARN("Partially read the file! Requested size: {0}, got from file: {1}", bytesRead, size);
+			ME_WARN("Partially read the file! Requested size: {0}, got from file: {1}", size, bytesRead);
 			m_LastError = IOError::PartialRead;
 			m_EOF = true;
-			return true;
+			return false;
 		}
 
 		m_LastError = IOError::OK;

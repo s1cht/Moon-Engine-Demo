@@ -1,14 +1,11 @@
 #pragma once
-
 #include <Core.hpp>
 #include <Core/Memory/Memory.hpp>
 #include <Core/Platform/Base/IO.hpp>
 #include <Core/Containers/Array.hpp>
 
 #include "Vulkan.hpp"
-#include "VulkanResourceHandler.hpp"
 #include "Renderer/Base/RenderAPI.hpp"
-#include "VulkanSwapChain.hpp"
 
 namespace ME::Render
 {
@@ -17,7 +14,7 @@ namespace ME::Render
 
 namespace ME::Render
 {
-	enum class VulkanErrors : int32
+	enum class VulkanErrors : uint8
 	{
 		Success = 0,
 		// Renderer
@@ -54,7 +51,7 @@ namespace ME::Render
 		void Present() override;
 		void Clear(ME::Core::Math::Vector4D32 color) override;
 
-	    void Draw(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 vertexCount, uint32 instanceCount) override;
+	    void Draw(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance) override;
 		void DrawIndexed(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 indexCount, uint32 index) override;
 		void DrawIndexedIndirect(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 			const ME::Core::Memory::Reference<Render::IndirectBuffer>& buffer, SIZE_T offset,
@@ -113,9 +110,6 @@ namespace ME::Render
 
 		void OnWindowEvent(int32 x, int32 y) override;
 
-		void BeginRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Render::RenderPassBeginInfo& info) override;
-		void EndRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) override;
-
 		ME::Core::Memory::Reference<ME::Render::CommandBuffer> GetAvailableCommandBuffer() override;
 
 		ME::Core::Memory::Reference<ME::Render::CommandBuffer> GetSingleUseCommandBuffer() override;
@@ -132,16 +126,31 @@ namespace ME::Render
 		inline VkInstance GetInstance() const { return m_Instance; }
 		inline VkSurfaceKHR GetSurface() const { return m_Surface; }
 		inline VkPhysicalDevice GetPhysicalDevice() const { return m_PhysicalDevices[m_SelectedPhysicalDevice]; }
-		inline int32 GetPresentQueueFamily() const { return m_PresentQueueFamily; }
-		inline int32 GetGraphicsQueueFamily() const { return m_PresentQueueFamily; }
+		inline uint32 GetPresentQueueFamily() const { return m_PresentQueueFamily; }
+		inline uint32 GetGraphicsQueueFamily() const { return m_PresentQueueFamily; }
 		inline VkDevice GetDevice() const { return m_Device; }
 		inline VkQueue GetPresentQueue() const { return m_PresentQueue; }
 		inline VkQueue GetGraphicsQueue() const { return m_GraphicsQueue; }
 		inline VkCommandPool GetCommandPool() const { return m_GraphicsCommandPool; }
 		inline VmaAllocator GetAllocator() const { return m_Allocator; }
 
-		inline Render::VulkanResourceHandler* GetVulkanResourceHandler() { return m_ResourceHandler->As<VulkanResourceHandler>(); }
-		inline Render::VulkanSwapChain* GetVulkanSwapChain() { return m_SwapChain->As<VulkanSwapChain>(); }
+		inline Render::VulkanResourceHandler* GetVulkanResourceHandler();
+		inline Render::VulkanSwapChain* GetVulkanSwapChain();
+
+    public:
+		inline void Write(ME::Render::VulkanUniform* buffer) const;
+		inline void Write(ME::Render::VulkanStorageBuffer* buffer) const;
+		inline void Write(ME::Render::VulkanIndexBuffer* buffer) const;
+		inline void Write(ME::Render::VulkanVertexBuffer* buffer) const;
+		inline void Write(ME::Render::VulkanIndirectBuffer* buffer) const;
+		inline void Write(ME::Render::VulkanTexture1D* texture) const;
+		inline void Write(ME::Render::VulkanTexture2D* texture) const;
+		inline void Write(ME::Render::VulkanTexture3D* texture) const;
+
+		inline void BindIndexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			VkBuffer buffer, uint32 offset);
+		inline void BindVertexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
+			VkBuffer buffer, uint32 offset);
 
 	private:
 		static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
@@ -224,6 +233,5 @@ namespace ME::Render
 
 	private:
 		VkDebugUtilsMessengerEXT m_ValidationLayer;
-
 	};
 }

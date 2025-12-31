@@ -1,5 +1,6 @@
 #include "WindowsTime.hpp"
 
+#ifdef PLATFORM_WINDOWS
 namespace ME::Core::Clock
 {
 	WindowsTimeSource::WindowsTimeSource()
@@ -20,12 +21,11 @@ namespace ME::Core::Clock
 		return static_cast<uint64>(frequency.QuadPart);
 	}
 
-#ifdef PLATFORM_WINDOWS
 
 	Memory::Scope<TimeSource> TimeSource::Create()
 	{
 		return Memory::Scope<TimeSource>(new WindowsTimeSource());
 	}
 
-#endif
 }
+#endif

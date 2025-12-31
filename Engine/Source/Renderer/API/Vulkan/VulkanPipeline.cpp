@@ -10,9 +10,9 @@
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<Pipeline> Pipeline::CreateVulkanPipeline(const PipelineSpecification& specification)
+	ME::Core::Memory::Reference<Pipeline> Pipeline::CreateVulkan(const PipelineSpecification& specification)
 	{
-		auto object = ME::Core::Memory::Reference<Pipeline>(new VulkanPipeline(specification));
+		auto object = ME::Core::Memory::MakeReference<VulkanPipeline>(specification);
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
@@ -104,7 +104,7 @@ namespace ME::Render
 		}	
 	}
 
-	ME::Core::Array<VkPipelineShaderStageCreateInfo> VulkanPipeline::FormatPipelineShaderStageCI()
+	ME::Core::Array<VkPipelineShaderStageCreateInfo> VulkanPipeline::FormatPipelineShaderStageCI() const
 	{
 		ME::Core::Array<VkPipelineShaderStageCreateInfo> shaderStages(5);
 
@@ -180,7 +180,7 @@ namespace ME::Render
 		return shaderStages;
 	}
 
-    ME::Core::Array<VkPushConstantRange> VulkanPipeline::FormatPushConstantRange()
+    ME::Core::Array<VkPushConstantRange> VulkanPipeline::FormatPushConstantRange() const
     {
 		ME::Core::Array<VkPushConstantRange> ranges = {};
 
@@ -210,7 +210,7 @@ namespace ME::Render
 		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		createInfo.setLayoutCount = layouts.Empty() ? 1 : static_cast<uint32>(layouts.Size());
 		createInfo.pSetLayouts = layouts.Empty() ? nullptr : layouts.Data();
-		createInfo.pushConstantRangeCount = constants.Empty() ? 1 : static_cast<uint32>(constants.Size());
+		createInfo.pushConstantRangeCount = constants.Empty() ? 0 : static_cast<uint32>(constants.Size());
 		createInfo.pPushConstantRanges = constants.Empty() ? nullptr : constants.Data();
 
 		VkResult result = vkCreatePipelineLayout(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_PipelineLayout);
@@ -246,152 +246,171 @@ namespace ME::Render
 
 		ME::Core::Array<VkPipelineShaderStageCreateInfo> shaderStage = FormatPipelineShaderStageCI();
 
-		VkVertexInputBindingDescription visBindingDesc = {};
-		visBindingDesc.binding = 0;
-		visBindingDesc.stride = m_Specification.BufferLayout.GetStride();
-		switch (m_Specification.BufferLayout.GetInputClassification())
-		{
-		case InputClassification::PerVertex: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; break;
-		case InputClassification::PerInstance: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE; break;
-		case InputClassification::None: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; ME_WARN("Vulkan pipeline: InputClassification::None is used! Using VK_VERTEX_INPUT_RATE_VERTEX instead."); break;
-		}
-
 		ME::Core::Array<VkVertexInputAttributeDescription> visAttributeDesc = {};
+		ME::Core::Array<VkVertexInputBindingDescription> visBindingDescs = {};
+		uint32 MaxBinding = 0;
 
 		for (const auto& element : m_Specification.BufferLayout.GetElements())
 		{
 			VkVertexInputAttributeDescription desc = {};
 			desc.location = element.SemanticIndex;
-			desc.format = static_cast<VkFormat>(ConvertShaderTypeVulkan(element.Type));
+			desc.format = ConvertShaderTypeVulkan(element.Type);
 			desc.binding = element.InputSlot;
 			desc.offset = static_cast<uint32>(element.Offset);
-
 			visAttributeDesc.EmplaceBack(desc);
+
+		    MaxBinding = ME::Core::Algorithm::Max(MaxBinding, desc.binding);
+		}
+
+		for (uint32 i = 0; i <= MaxBinding; ++i)
+		{
+			VkVertexInputBindingDescription visBindingDesc = {};
+			visBindingDesc.binding = i;
+			visBindingDesc.stride = m_Specification.BufferLayout.GetStride();
+			switch (m_Specification.BufferLayout.GetInputClassification())
+			{
+				case InputClassification::PerVertex: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; break;
+				case InputClassification::PerInstance: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE; break;
+				case InputClassification::None: visBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; ME_WARN("Vulkan pipeline: InputClassification::None is used! Using VK_VERTEX_INPUT_RATE_VERTEX instead."); break;
+			}
+			visBindingDescs.EmplaceBack(visBindingDesc);
 		}
 
 		VkPipelineVertexInputStateCreateInfo visCreateInfo = {};
-		visCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		visCreateInfo.pVertexBindingDescriptions = &visBindingDesc;
-		visCreateInfo.vertexBindingDescriptionCount = 1;
-		visCreateInfo.pVertexAttributeDescriptions = visAttributeDesc.Data();
-		visCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32>(visAttributeDesc.Size());
+		visCreateInfo.sType								= VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		visCreateInfo.vertexBindingDescriptionCount		= static_cast<uint32>(visBindingDescs.Size());
+		visCreateInfo.pVertexBindingDescriptions		= visBindingDescs.Data();
+		visCreateInfo.vertexAttributeDescriptionCount	= static_cast<uint32>(visAttributeDesc.Size());
+		visCreateInfo.pVertexAttributeDescriptions		= visAttributeDesc.Data();
 
 		VkPipelineInputAssemblyStateCreateInfo iasCreateInfo = {};
-		iasCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		iasCreateInfo.topology = ConvertPrimitiveTopologyVulkan(m_Specification.InputAssembly.Topology);
-		iasCreateInfo.primitiveRestartEnable = m_Specification.InputAssembly.PrimitiveRestart;
+		iasCreateInfo.sType						= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		iasCreateInfo.topology					= ConvertPrimitiveTopologyVulkan(m_Specification.InputAssembly.Topology);
+		iasCreateInfo.primitiveRestartEnable	= m_Specification.InputAssembly.PrimitiveRestart;
 		
 		VkPipelineTessellationStateCreateInfo tsCreateInfo = {};
-		tsCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-		tsCreateInfo.patchControlPoints = m_Specification.InputAssembly.Topology == PrimitiveTopology::PatchList ? m_Specification.PatchControlPoints : 0;
+		tsCreateInfo.sType						= VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+		tsCreateInfo.patchControlPoints			= m_Specification.InputAssembly.Topology == PrimitiveTopology::PatchList ? m_Specification.PatchControlPoints : 0;
 
 		VkPipelineViewportStateCreateInfo vsCreateInfo = {};
-		vsCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		vsCreateInfo.scissorCount = 0;
-		vsCreateInfo.pScissors = nullptr;
-		vsCreateInfo.viewportCount = 0;
-		vsCreateInfo.pViewports = nullptr;
+		vsCreateInfo.sType						= VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		vsCreateInfo.scissorCount				= 0;
+		vsCreateInfo.pScissors					= nullptr;
+		vsCreateInfo.viewportCount				= 0;
+		vsCreateInfo.pViewports					= nullptr;
 
 		VkPipelineRasterizationStateCreateInfo rsCreateInfo = {};
-		rsCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		rsCreateInfo.rasterizerDiscardEnable = m_Specification.Rasterization.DiscardEnabled;
-		rsCreateInfo.depthBiasEnable = m_Specification.Rasterization.DepthBiasEnabled;
-		rsCreateInfo.depthBiasConstantFactor = m_Specification.Rasterization.DepthBiasEnabled ? m_Specification.Rasterization.DepthBiasConstantFactor : 1.f;
-		rsCreateInfo.depthBiasClamp = m_Specification.Rasterization.DepthBiasEnabled ? m_Specification.Rasterization.DepthBiasClamp : 0.f;
-		rsCreateInfo.depthBiasSlopeFactor = m_Specification.Rasterization.DepthBiasEnabled ? m_Specification.Rasterization.DepthBiasSlopeFactor : 0.f;
-		rsCreateInfo.depthClampEnable = m_Specification.Rasterization.DepthClampEnabled;
-		rsCreateInfo.frontFace = m_Specification.Rasterization.FrontCounterClockwise ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE;
-		rsCreateInfo.lineWidth = m_Specification.Rasterization.LineWidth;
-		rsCreateInfo.polygonMode = ConvertRasterizerFillVulkan(m_Specification.Rasterization.Fill);
-		rsCreateInfo.cullMode = ConvertRasterizerCullVulkan(m_Specification.Rasterization.Cull);
+		rsCreateInfo.sType						= VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		rsCreateInfo.rasterizerDiscardEnable	= m_Specification.Rasterization.DiscardEnabled;
+		rsCreateInfo.depthBiasEnable			= m_Specification.Rasterization.DepthBiasEnabled;
+		rsCreateInfo.depthBiasConstantFactor	= m_Specification.Rasterization.DepthBiasEnabled ? m_Specification.Rasterization.DepthBiasConstantFactor : 1.f;
+		rsCreateInfo.depthBiasClamp				= m_Specification.Rasterization.DepthBiasEnabled ? m_Specification.Rasterization.DepthBiasClamp : 0.f;
+		rsCreateInfo.depthBiasSlopeFactor		= m_Specification.Rasterization.DepthBiasEnabled ? m_Specification.Rasterization.DepthBiasSlopeFactor : 0.f;
+		rsCreateInfo.depthClampEnable			= m_Specification.Rasterization.DepthClampEnabled;
+		rsCreateInfo.frontFace					= m_Specification.Rasterization.FrontCounterClockwise ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE;
+		rsCreateInfo.lineWidth					= m_Specification.Rasterization.LineWidth;
+		rsCreateInfo.polygonMode				= ConvertRasterizerFillVulkan(m_Specification.Rasterization.Fill);
+		rsCreateInfo.cullMode					= ConvertRasterizerCullVulkan(m_Specification.Rasterization.Cull);
 
 		VkPipelineMultisampleStateCreateInfo msCreateInfo = {};
-		msCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		msCreateInfo.sampleShadingEnable = m_Specification.Multisampling.EnableSampleShading;
-		msCreateInfo.minSampleShading = m_Specification.Multisampling.MinSampleShading;
-		msCreateInfo.alphaToOneEnable = m_Specification.Multisampling.AlphaToOne;
-		msCreateInfo.alphaToCoverageEnable = m_Specification.Multisampling.AlphaToCoverage;
-		msCreateInfo.rasterizationSamples = ConvertSampleCountVulkan(m_Specification.Multisampling.Samples);
-		msCreateInfo.pSampleMask = nullptr;
+		msCreateInfo.sType						= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		msCreateInfo.sampleShadingEnable		= m_Specification.Multisampling.EnableSampleShading;
+		msCreateInfo.minSampleShading			= m_Specification.Multisampling.MinSampleShading;
+		msCreateInfo.alphaToOneEnable			= m_Specification.Multisampling.AlphaToOne;
+		msCreateInfo.alphaToCoverageEnable		= m_Specification.Multisampling.AlphaToCoverage;
+		msCreateInfo.rasterizationSamples		= ConvertSampleCountVulkan(m_Specification.Multisampling.Samples);
+		msCreateInfo.pSampleMask				= nullptr;
 
 		VkPipelineDepthStencilStateCreateInfo dssCreateInfo = {};
-		dssCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		dssCreateInfo.depthBoundsTestEnable = false;
-		dssCreateInfo.depthCompareOp = ConvertDepthComparisonVulkan(m_Specification.DepthStencil.DepthFunction);
-		dssCreateInfo.depthTestEnable = m_Specification.DepthStencil.DepthEnabled;
-		dssCreateInfo.depthWriteEnable = m_Specification.DepthStencil.DepthEnabled;
-		dssCreateInfo.stencilTestEnable = m_Specification.DepthStencil.StencilEnabled;
-		dssCreateInfo.front.compareMask = 0xff;
-		dssCreateInfo.front.writeMask = 0xff;
-		dssCreateInfo.front.reference = 0;
-		dssCreateInfo.front.failOp = VK_STENCIL_OP_KEEP;
-		dssCreateInfo.front.depthFailOp = m_Specification.DepthStencil.StencilEnabled ? VK_STENCIL_OP_INCREMENT_AND_CLAMP : VK_STENCIL_OP_KEEP;
-		dssCreateInfo.front.passOp = VK_STENCIL_OP_KEEP;
-		dssCreateInfo.front.compareOp = m_Specification.DepthStencil.StencilEnabled ? VK_COMPARE_OP_ALWAYS : VK_COMPARE_OP_NEVER;
-		dssCreateInfo.back = dssCreateInfo.front;
-		dssCreateInfo.minDepthBounds = m_Specification.DepthStencil.MinDepthBounds;
-		dssCreateInfo.maxDepthBounds = m_Specification.DepthStencil.MaxDepthBounds;
+		dssCreateInfo.sType						= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		dssCreateInfo.depthCompareOp			= ConvertDepthComparisonVulkan(m_Specification.DepthStencil.DepthFunction);
+		dssCreateInfo.depthTestEnable			= m_Specification.DepthStencil.DepthEnabled;
+		dssCreateInfo.depthWriteEnable			= m_Specification.DepthStencil.DepthWriteEnabled;
+		dssCreateInfo.stencilTestEnable			= m_Specification.DepthStencil.StencilEnabled;
+
+		if (dssCreateInfo.stencilTestEnable)
+		{
+			dssCreateInfo.front.failOp				= ConvertStencilOperationVulkan(m_Specification.DepthStencil.FrontFace.FailOp);
+			dssCreateInfo.front.passOp				= ConvertStencilOperationVulkan(m_Specification.DepthStencil.FrontFace.PassOp);
+			dssCreateInfo.front.depthFailOp			= ConvertStencilOperationVulkan(m_Specification.DepthStencil.FrontFace.DepthFailOp);
+			dssCreateInfo.front.compareOp			= ConvertDepthComparisonVulkan(m_Specification.DepthStencil.FrontFace.CompareOp);
+			dssCreateInfo.front.compareMask			= m_Specification.DepthStencil.FrontFace.CompareMask;
+			dssCreateInfo.front.writeMask			= m_Specification.DepthStencil.FrontFace.WriteMask;
+			dssCreateInfo.front.reference			= m_Specification.DepthStencil.FrontFace.Reference;
+
+			dssCreateInfo.back.failOp				= ConvertStencilOperationVulkan(m_Specification.DepthStencil.BackFace.FailOp);
+			dssCreateInfo.back.passOp				= ConvertStencilOperationVulkan(m_Specification.DepthStencil.BackFace.PassOp);
+			dssCreateInfo.back.depthFailOp			= ConvertStencilOperationVulkan(m_Specification.DepthStencil.BackFace.DepthFailOp);
+			dssCreateInfo.back.compareOp			= ConvertDepthComparisonVulkan(m_Specification.DepthStencil.BackFace.CompareOp);
+			dssCreateInfo.back.compareMask			= m_Specification.DepthStencil.BackFace.CompareMask;
+			dssCreateInfo.back.writeMask			= m_Specification.DepthStencil.BackFace.WriteMask;
+			dssCreateInfo.back.reference			= m_Specification.DepthStencil.BackFace.Reference;
+		}
+
+		dssCreateInfo.depthBoundsTestEnable		= m_Specification.DepthStencil.DepthBoundsEnabled;
+		dssCreateInfo.minDepthBounds			= m_Specification.DepthStencil.MinDepthBounds;
+		dssCreateInfo.maxDepthBounds			= m_Specification.DepthStencil.MaxDepthBounds;
 
 		ME::Core::Array<VkPipelineColorBlendAttachmentState> cbsAttachments(m_Specification.ColorBlending.Attachments.Size());
 
 		for (uint32 i = 0; i < m_Specification.ColorBlending.Attachments.Size(); i++)
 		{
-			cbsAttachments[i].blendEnable = m_Specification.ColorBlending.Attachments[i].EnableBlend;
-			cbsAttachments[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			cbsAttachments[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			cbsAttachments[i].colorBlendOp = VK_BLEND_OP_ADD;
-			cbsAttachments[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			cbsAttachments[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			cbsAttachments[i].alphaBlendOp = VK_BLEND_OP_ADD;
-			cbsAttachments[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | (m_Specification.ColorBlending.Attachments[i].EnableAlphaMask ? VK_COLOR_COMPONENT_A_BIT : 0);
+			cbsAttachments[i].blendEnable			= m_Specification.ColorBlending.Attachments[i].EnableBlend;
+			cbsAttachments[i].srcColorBlendFactor	= VK_BLEND_FACTOR_SRC_ALPHA;
+			cbsAttachments[i].dstColorBlendFactor	= VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			cbsAttachments[i].colorBlendOp			= VK_BLEND_OP_ADD;
+			cbsAttachments[i].srcAlphaBlendFactor	= VK_BLEND_FACTOR_ONE;
+			cbsAttachments[i].dstAlphaBlendFactor	= VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			cbsAttachments[i].alphaBlendOp			= VK_BLEND_OP_ADD;
+			cbsAttachments[i].colorWriteMask		= VK_COLOR_COMPONENT_R_BIT | 
+				VK_COLOR_COMPONENT_G_BIT | 
+				VK_COLOR_COMPONENT_B_BIT | 
+				(m_Specification.ColorBlending.Attachments[i].EnableAlphaMask ? VK_COLOR_COMPONENT_A_BIT : 0);
 		}
 
 		VkPipelineColorBlendStateCreateInfo cbsCreateInfo = {};
-		cbsCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		cbsCreateInfo.attachmentCount = static_cast<uint32>(cbsAttachments.Size());
-		cbsCreateInfo.pAttachments = cbsAttachments.Data();
-		cbsCreateInfo.blendConstants[0] = m_Specification.ColorBlending.BlendConstants.X;
-		cbsCreateInfo.blendConstants[1] = m_Specification.ColorBlending.BlendConstants.Y;
-		cbsCreateInfo.blendConstants[2] = m_Specification.ColorBlending.BlendConstants.Z;
-		cbsCreateInfo.blendConstants[3] = m_Specification.ColorBlending.BlendConstants.W;
-		cbsCreateInfo.logicOpEnable = m_Specification.ColorBlending.LogicOperation != LogicOperation::None;
-		cbsCreateInfo.logicOp = ConvertLogicOperationVulkan(m_Specification.ColorBlending.LogicOperation);
+		cbsCreateInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		cbsCreateInfo.attachmentCount		= static_cast<uint32>(cbsAttachments.Size());
+		cbsCreateInfo.pAttachments			= cbsAttachments.Data();
+		cbsCreateInfo.blendConstants[0]		= m_Specification.ColorBlending.BlendConstants.X;
+		cbsCreateInfo.blendConstants[1]		= m_Specification.ColorBlending.BlendConstants.Y;
+		cbsCreateInfo.blendConstants[2]		= m_Specification.ColorBlending.BlendConstants.Z;
+		cbsCreateInfo.blendConstants[3]		= m_Specification.ColorBlending.BlendConstants.W;
+		cbsCreateInfo.logicOpEnable			= m_Specification.ColorBlending.LogicOperation != LogicOperation::None;
+		cbsCreateInfo.logicOp				= ConvertLogicOperationVulkan(m_Specification.ColorBlending.LogicOperation);
 
 		ME::Core::Array<VkDynamicState> dynamicStates = {
 			VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
 			VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
-			VK_DYNAMIC_STATE_STENCIL_REFERENCE,
 		};
 
 		VkPipelineDynamicStateCreateInfo dsCreateInfo = {};	
-		dsCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dsCreateInfo.dynamicStateCount = static_cast<uint32>(dynamicStates.Size());
-		dsCreateInfo.pDynamicStates = dynamicStates.Data();
+		dsCreateInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		dsCreateInfo.dynamicStateCount		= static_cast<uint32>(dynamicStates.Size());
+		dsCreateInfo.pDynamicStates			= dynamicStates.Data();
 
 		VkGraphicsPipelineCreateInfo createInfo = {};
-		createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		createInfo.renderPass = m_Specification.RenderPass->As<VulkanRenderPass>()->GetRenderPass();
-		createInfo.subpass = m_Specification.Subpass;
-		createInfo.pStages = shaderStage.Data();
-		createInfo.stageCount = static_cast<uint32>(shaderStage.Size());
-		createInfo.pVertexInputState = m_Specification.Shaders.UsesMeshPipeline ? nullptr : &visCreateInfo;
-		createInfo.pInputAssemblyState = m_Specification.Shaders.UsesMeshPipeline ? nullptr : &iasCreateInfo;
-		createInfo.pTessellationState = &tsCreateInfo;
-		createInfo.pViewportState = &vsCreateInfo;
-		createInfo.pRasterizationState = &rsCreateInfo;
-		createInfo.pMultisampleState = &msCreateInfo;
-		createInfo.pDepthStencilState = &dssCreateInfo;
-		createInfo.pColorBlendState = &cbsCreateInfo;
-		createInfo.pDynamicState = &dsCreateInfo;
-		createInfo.basePipelineHandle = m_Specification.BasePipeline ? m_Specification.BasePipeline->As<VulkanPipeline>()->GetPipeline() : nullptr;
-		createInfo.basePipelineIndex = -1;
-		createInfo.layout = m_PipelineLayout;
+		createInfo.sType					= VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		createInfo.renderPass				= m_Specification.RenderPass->As<VulkanRenderPass>()->GetRenderPass();
+		createInfo.subpass					= m_Specification.Subpass;
+		createInfo.pStages					= shaderStage.Data();
+		createInfo.stageCount				= static_cast<uint32>(shaderStage.Size());
+		createInfo.pVertexInputState		= m_Specification.Shaders.UsesMeshPipeline ? nullptr : &visCreateInfo;
+		createInfo.pInputAssemblyState		= m_Specification.Shaders.UsesMeshPipeline ? nullptr : &iasCreateInfo;
+		createInfo.pTessellationState		= &tsCreateInfo;
+		createInfo.pViewportState			= &vsCreateInfo;
+		createInfo.pRasterizationState		= &rsCreateInfo;
+		createInfo.pMultisampleState		= &msCreateInfo;
+		createInfo.pDepthStencilState		= &dssCreateInfo;
+		createInfo.pColorBlendState			= &cbsCreateInfo;
+		createInfo.pDynamicState			= &dsCreateInfo;
+		createInfo.basePipelineHandle		= m_Specification.BasePipeline ? m_Specification.BasePipeline->As<VulkanPipeline>()->GetPipeline() : nullptr;
+		createInfo.basePipelineIndex		= -1;
+		createInfo.layout					= m_PipelineLayout;
 
 		result = vkCreateGraphicsPipelines(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), nullptr, 1, &createInfo, nullptr, &m_Pipeline);
 
 		if (ME_VK_FAILED(result))
-		{
 			ME_CORE_ASSERT(false, "Vulkan: pipeline creation failed! Error: {0}", static_cast<int32>(result));
-		}
 	}
 }

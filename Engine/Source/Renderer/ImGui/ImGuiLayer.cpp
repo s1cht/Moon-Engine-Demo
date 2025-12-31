@@ -7,6 +7,7 @@
 #include "Renderer/API/Vulkan/VulkanCommandBuffer.hpp"
 #include "Renderer/API/Vulkan/VulkanRenderAPI.hpp"
 #include "Renderer/API/Vulkan/VulkanRenderPass.hpp"
+#include "Renderer/API/Vulkan/VulkanResourceHandler.hpp"
 
 namespace ME::Render::ImGui
 {
@@ -61,7 +62,7 @@ namespace ME::Render::ImGui
 				info.Queue = RenderCommand::Get()->As<VulkanRenderAPI>()->GetGraphicsQueue();
 				info.DescriptorPool = m_ResourceHandler->As<VulkanResourceHandler>()->GetDescriptorPool();
 				info.Allocator = nullptr;
-				info.RenderPass = m_RenderPass->As<VulkanRenderPass>()->GetRenderPass();
+				info.RenderPass = m_Pass->As<VulkanRenderPass>()->GetRenderPass();
 				info.Subpass = 0;
 				info.ImageCount = 2;
 				info.MinImageCount = 2;
@@ -118,6 +119,7 @@ namespace ME::Render::ImGui
 			::ImGui::Text("%.7f", deltaTime);
 			::ImGui::Text("A FPS: %d", ME::Core::Clock::Time::GetAverageFPS());
 			::ImGui::Text("I FPS: %d", ME::Core::Clock::Time::GetInstantFPS());
+			::ImGui::Text("67");
 		}
 		::ImGui::End();
 	}
@@ -175,7 +177,7 @@ namespace ME::Render::ImGui
 		case RenderAPI::API::Vulkan:
 		{
 			ImGui_ImplVulkan_Shutdown();
-			m_RenderPass->Shutdown();
+			m_Pass->Shutdown();
 			m_ResourceHandler->Shutdown();
 			break;
 		}
@@ -203,46 +205,59 @@ namespace ME::Render::ImGui
 		clrVal.ColorClearValue = Core::Math::Vector4D32(0.f, 0.f, 0.f, 1.f);
 
 		Render::RenderPassBeginInfo beginInfo = {};
-		beginInfo.RenderPass = m_RenderPass;
-		beginInfo.Framebuffer = Render::RenderCommand::GetAvailableFramebuffer();
+		beginInfo.Framebuffer = RenderCommand::GetAvailableFramebuffer();
 		beginInfo.ClearValues = { clrVal };
 		beginInfo.RenderArea = {};
 		beginInfo.RenderArea.Offset = { 0,0 };
 		beginInfo.RenderArea.Extent = Render::RenderCommand::Get()->GetSwapChain()->GetExtent();
 
-		Render::RenderCommand::BeginRenderPass(commandBuffer, beginInfo);
-
+		m_Pass->Begin(commandBuffer, beginInfo);
+		
 		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
-
-		Render::RenderCommand::EndRenderPass(commandBuffer);
+		
+		m_Pass->End(commandBuffer);
 	}
 
 	void ImGuiLayer::CreateRenderResources()
 	{
-		AttachmentSpecification attachmentSpecs = {};
+	    AttachmentSpecification attachmentSpecs = {};
 		attachmentSpecs.IsStencil = false;
 		attachmentSpecs.IsDepth = false;
-		attachmentSpecs.AttachmentFormat = Renderer::GetRenderPass()->GetSpecification().AttachmentSpecs[0].AttachmentFormat;
+		attachmentSpecs.AttachmentFormat = RenderCommand::GetAvailableFramebuffer()->GetSpecification().Attachments[0]->GetSpecification().Format;
 		attachmentSpecs.LoadOp = LoadOperation::Load;
 		attachmentSpecs.StoreOp = StoreOperation::Store;
 		attachmentSpecs.InitialLayout = ImageLayout::ColorAttachment;
 		attachmentSpecs.FinalLayout = ImageLayout::Present;
 		attachmentSpecs.SampleCount = SampleCount::Count1;
 
-		AttachmentSpecification depthSpecs = {};
-		depthSpecs.IsStencil = true;
-		depthSpecs.IsDepth = true;
-		depthSpecs.AttachmentFormat = Renderer::GetRenderPass()->GetSpecification().AttachmentSpecs[1].AttachmentFormat;
-		depthSpecs.LoadOp = LoadOperation::DontCare;
-		depthSpecs.StoreOp = StoreOperation::DontCare;
-		depthSpecs.InitialLayout = ImageLayout::DepthStencilAttachment;
-		depthSpecs.FinalLayout = ImageLayout::DepthStencilAttachment;
-		depthSpecs.SampleCount = Renderer::GetRenderPass()->GetSpecification().AttachmentSpecs[1].SampleCount;
+		SubpassDependency dep1 = {};
+		dep1.SubpassSrc = ~0u;
+		dep1.SubpassDst = 0;
+		dep1.AccessFlagsSrc = AccessFlags::None;
+		dep1.AccessFlagsDst = AccessFlags::ColorAttachmentWrite;
+		dep1.PipelineStageFlagsSrc = PipelineStageFlags::ColorAttachmentOutput;
+		dep1.PipelineStageFlagsDst = PipelineStageFlags::ColorAttachmentOutput;
+
+		SubpassDependency dep2 = {};
+		dep2.SubpassSrc = 0;
+		dep2.SubpassDst = ~0u;
+		dep2.AccessFlagsSrc = AccessFlags::ColorAttachmentWrite;
+		dep2.AccessFlagsDst = AccessFlags::ColorAttachmentWrite;
+		dep2.PipelineStageFlagsSrc = PipelineStageFlags::ColorAttachmentOutput;
+		dep2.PipelineStageFlagsDst = PipelineStageFlags::ColorAttachmentOutput;
+
+		SubpassSpecification subpass = {};
+		subpass.ColorAttachmentRefs = { 0 };
+		subpass.DepthStencilAttachmentRef = ~0u;
+		subpass.InputAttachmentRefs = {};
+		subpass.PipelineBindPoint = PipelineBindPoint::Graphics;
 
 		Render::RenderPassSpecification rpSpecs = Renderer::GetRenderPass()->GetSpecification();
-		rpSpecs.AttachmentSpecs = { attachmentSpecs, depthSpecs };
-		rpSpecs.DebugName = "ImGui render pass";
-		m_RenderPass = Render::RenderPass::Create(rpSpecs);
+		rpSpecs.AttachmentSpecs = { attachmentSpecs };
+		rpSpecs.SubpassSpecs = { subpass };
+		rpSpecs.SubpassDependencies = { dep1, dep2 };
+		rpSpecs.DebugName = TEXT("ImGui render pass");
+		m_Pass = Render::RenderPass::Create(rpSpecs);
 	}
 
 	void ImGuiLayer::PostRender()

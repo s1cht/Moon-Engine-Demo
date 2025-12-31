@@ -6,10 +6,9 @@
 
 namespace ME
 {
-    class MEAPI Block : ME_ENTITY_INHERIT(Block)
+    class MEAPI Block : ME_ENTITY_INHERIT()
     {
-        ME_ENT_DEFAULT(Block)
-
+        ME_ENTITY_DEFAULT(Block)
     public:
         ~Block() override = default;
         

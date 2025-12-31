@@ -27,7 +27,9 @@ ME::Application* ME::CreateApplication()
 		// Flashlight mesh
 	    Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::String(TEXT("assets/Meshes/flashlight.obj")),
 		// Stone texture
-	    Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::String(TEXT("assets/Images/stone01.tga"))
+	    Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::String(TEXT("assets/Images/stone01.tga")),
+		// Dystopian World OST
+	    Core::IO::DirectoryStorage::GetDirectory(TEXT("ProgramPath")) + Core::String(TEXT("assets/Audio/dWorld.wav"))
     };
 
 	AppProps.ShaderPaths = {};

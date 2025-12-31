@@ -6,9 +6,9 @@
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<Render::CommandBuffer> CommandBuffer::CreateVulkanCommandBuffer()
+	ME::Core::Memory::Reference<Render::CommandBuffer> CommandBuffer::CreateVulkan()
 	{
-		auto object = ME::Core::Memory::Reference<Render::CommandBuffer>(new VulkanCommandBuffer());
+		auto object = ME::Core::Memory::MakeReference<VulkanCommandBuffer>();
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
@@ -20,11 +20,17 @@ namespace ME::Render
 
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
+		Shutdown();
 	}
 
 	void VulkanCommandBuffer::Shutdown()
 	{
-		m_Buffer = nullptr;
+		VulkanRenderAPI* render = RenderCommand::Get()->As<VulkanRenderAPI>();
+		if (m_Buffer != nullptr)
+		{
+			vkFreeCommandBuffers(render->GetDevice(), render->GetCommandPool(), 1, &m_Buffer);
+		    m_Buffer = nullptr;
+		}
 	}
 
 	void VulkanCommandBuffer::Record()
@@ -60,10 +66,5 @@ namespace ME::Render
 		VkResult result = vkAllocateCommandBuffers(render->GetDevice(), &info, &m_Buffer);
 		if (ME_VK_FAILED(result))
             ME_ASSERT(false, "Vulkan command buffer allocation failed! Error: {0}", static_cast<int32>(result));
-
-		return;
 	}
-
-
-
 }

@@ -11,27 +11,7 @@
 
 namespace ME::Render
 {
-	class CommandBuffer;
-	class Framebuffer;
-}
-
-namespace ME::Render
-{
-	enum class StoreOperation : uint8
-	{
-		None = 0,
-		DontCare,
-		Store,
-	};
-
-	enum class LoadOperation : uint8
-	{
-		None = 0,
-		DontCare,
-		Load, Clear,
-	};
-
-	struct MEAPI AttachmentSpecification
+	struct AttachmentSpecification
 	{
 		ME::Render::Format AttachmentFormat;
 		ME::Render::StoreOperation StoreOp;
@@ -43,7 +23,7 @@ namespace ME::Render
 		bool IsStencil;
 	};
 
-	struct MEAPI SubpassSpecification
+	struct SubpassSpecification
 	{
 		ME::Render::PipelineBindPoint PipelineBindPoint;
 		ME::Core::Array<uint64> InputAttachmentRefs;
@@ -51,7 +31,7 @@ namespace ME::Render
 		uint64 DepthStencilAttachmentRef;
 	};
 
-	struct MEAPI SubpassDependency
+	struct SubpassDependency
 	{
 		uint32 SubpassSrc;
 		uint32 SubpassDst;
@@ -61,7 +41,7 @@ namespace ME::Render
 		AccessFlags AccessFlagsDst;
 	};
 
-	struct MEAPI RenderPassSpecification
+	struct RenderPassSpecification
 	{
 		ME::Core::Array<AttachmentSpecification> AttachmentSpecs;
 		ME::Core::Array<SubpassSpecification> SubpassSpecs;
@@ -85,7 +65,6 @@ namespace ME::Render
 	struct RenderPassBeginInfo
 	{
 		ME::Core::Memory::Reference<Framebuffer> Framebuffer;
-		ME::Core::Memory::Reference<Render::RenderPass> RenderPass;
 		ME::Core::Math::Rect2D RenderArea;
 		ME::Core::Array<ME::Render::ClearValue> ClearValues;
 	};
@@ -93,17 +72,15 @@ namespace ME::Render
 	class MEAPI RenderPass : public RenderObject
 	{
 	public:
-		virtual void Begin(ME::Render::CommandBuffer* buffer, RenderPassBeginInfo& beginInfo) = 0;
-		virtual void End(ME::Render::CommandBuffer* buffer) = 0;
+		virtual void Begin(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, RenderPassBeginInfo& beginInfo) = 0;
+		virtual void End(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) = 0;
 
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
 
 	public:
-		static Core::Memory::Reference<Render::RenderPass> Create(RenderPassSpecification& specification);
+		static Core::Memory::Reference<Render::RenderPass> Create(const RenderPassSpecification& specification);
 
 	private:
-		static Core::Memory::Reference<Render::RenderPass> CreateVulkanRenderPass(RenderPassSpecification& specification);
-		
+		static Core::Memory::Reference<Render::RenderPass> CreateVulkan(const RenderPassSpecification& specification);
 	};
-
 }

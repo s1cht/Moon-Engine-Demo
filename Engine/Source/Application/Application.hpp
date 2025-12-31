@@ -4,6 +4,7 @@
 #include <Core/Events/Event.hpp>
 #include <Core/Memory/Memory.hpp>
 
+#include "Audio/AudioEngine.hpp"
 #include "ECS/World.hpp"
 #include "Input/Input.hpp"
 #include "Platform/Platform.hpp"
@@ -38,8 +39,10 @@ namespace ME
 	public:
 		static Application& Get() { return *s_Instance; }
 		static ME::Core::Memory::Reference<ME::ECS::World> GetWorld() { return Get().m_World; }
+		static Render::ImGui::ImGuiLayer* GetImguiLayer() { return Get().m_ImGuiLayer; }
 		static const ApplicationData& GetAppData() { return Get().m_AppData; }
 		static Window* GetWindow() { return Get().m_Window.get(); }
+		static ME::Core::Memory::Scope<ME::Audio::AudioEngine>& GetAudioEngine() { return Get().m_AudioEngine; }
 
 		static void Run() { Get().RunImpl(); }
 	    static void RequestShutdown() { s_ShutdownRequested = true; }
@@ -71,6 +74,7 @@ namespace ME
 
 	private:
 		ME::Core::Memory::Scope<Window> m_Window;
+		ME::Core::Memory::Scope<Audio::AudioEngine> m_AudioEngine;
 		Render::ImGui::ImGuiLayer* m_ImGuiLayer;
 
 	private:
@@ -80,9 +84,7 @@ namespace ME
 	private:
 		static Application* s_Instance;
 		static bool s_ShutdownRequested;
-	}
-	;
+	};
 	// Must be defined in client
 	Application* CreateApplication();
-	
 }

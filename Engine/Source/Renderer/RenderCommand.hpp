@@ -119,19 +119,14 @@ namespace ME::Render
 		}
 
 	public:
-		CmdBufFunction(BeginRenderPass, ME::Render::RenderPassBeginInfo& info)
-		CmdBufFunctionImpl(BeginRenderPass, info)
-
-		CmdBuffFunctionNA(EndRenderPass)
-
 		CmdBufFunction(BindResourceSet, ME::Core::Memory::Reference<Render::Pipeline> pipeline, ME::Core::Memory::Reference<ME::Render::Buffer> buffer)
 		CmdBufFunctionImpl(BindResourceSet, pipeline, buffer)
 
 		CmdBufFunction(BindTexture, ME::Core::Memory::Reference<Render::Pipeline> pipeline, ME::Core::Memory::Reference<ME::Render::Texture2D> texture, uint32 set)
 		CmdBufFunctionImpl(BindTexture, pipeline, texture, set)
 
-		CmdBufFunction(Draw, uint32 vertexCount, uint32 instanceCount)
-		CmdBufFunctionImpl(Draw, vertexCount, instanceCount)
+		CmdBufFunction(Draw, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance)
+		CmdBufFunctionImpl(Draw, vertexCount, instanceCount, firstVertex, firstInstance)
 
 		CmdBufFunction(DrawIndexed, uint32 indexCount, uint32 index)
 		CmdBufFunctionImpl(DrawIndexed, indexCount, index)

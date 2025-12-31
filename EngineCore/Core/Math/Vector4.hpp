@@ -1,18 +1,10 @@
 #pragma once 
-
-#include "Core.hpp"
-#include "Core/Math/MathMacros.hpp"
+#include "Core/Math/MathCore.hpp"
 #include "Core/Math/Vector2.hpp"
 #include "Core/Math/Vector3.hpp"
 
 namespace ME::Core::Math
 {
-	template<typename T>
-	struct Vector2;
-
-	template<typename T>
-	struct Vector3;
-
 	template<typename T>
 	struct Vector4
 	{
@@ -28,22 +20,20 @@ namespace ME::Core::Math
 
 	public:
 		COREAPI static const Vector4<T> ZeroVector;
-
 		COREAPI static const Vector4<T> OneVector;
+		COREAPI static const Vector4<T> XAxis;
+		COREAPI static const Vector4<T> YAxis;
+		COREAPI static const Vector4<T> ZAxis;
+		COREAPI static const Vector4<T> WAxis;
 
 	public:
 		Vector4();
-
 		inline Vector4(T scalar);
-
 		inline Vector4(T _x, T _y, T _z, T _w);
-
+		inline Vector4(T vector[4]);
 		inline Vector4(const Vector2<T>& xy, const Vector2<T>& xw);
-
 		inline Vector4(const Vector3<T>& vec, T _w);
-
 		inline Vector4(const Vector4& otherVec);
-
 		inline Vector4(Vector4&& otherVec) noexcept;
 
 	public:
@@ -113,7 +103,10 @@ namespace ME::Core::Math
 	template<typename T>
 	Vector4<T>::Vector4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w) {}
 
-	template<typename T>
+    template <typename T>
+    Vector4<T>::Vector4(T vector[4]) : x(vector[0]), y(vector[1]), z(vector[2]), w(vector[3]) {}
+
+    template<typename T>
 	Vector4<T>::Vector4(const Vector2<T>& xy, const Vector2<T>& zw)
 		: x(xy.x), y(xy.y), z(zw.x), w(zw.y) {
 	}
@@ -259,7 +252,7 @@ namespace ME::Core::Math
 	template<typename U>
 	inline Vector4<T>& Vector4<T>::operator/=(U scalar)
 	{
-		if (scalar == 0) return *this = Vector4<T>(0);
+		if (scalar == 0) return *this = Vector4<T>(0.f);
 		x = static_cast<T>(x / scalar);
 		y = static_cast<T>(y / scalar);
 		z = static_cast<T>(z / scalar);

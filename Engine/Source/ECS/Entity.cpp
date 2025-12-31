@@ -8,7 +8,7 @@ namespace ME::ECS
         : m_EntityId(ENT_NIL), m_RelatedWorld() {}
 
     Entity::Entity(ME::Core::Memory::WeakReference<World> relatedWorld, uint64 id)
-        : m_EntityId(id), m_RelatedWorld(relatedWorld) {}
+        : m_EntityId(id), m_RelatedWorld(relatedWorld), m_EntityType(~0ull) {}
 
     Entity::~Entity()
     {

@@ -154,6 +154,20 @@ namespace ME::ECS
             return entities;
         }
 
+
+        template<typename T>
+        ME::Core::Array<ME::Core::Memory::Reference<Entity>> GetEntitiesWhichAre()
+        {
+            static_assert(std::is_base_of_v<ME::ECS::Entity, T>, "Can't use non-entity type in GetEntitiesWhichAre() method!");
+            ME::Core::Array<ME::Core::Memory::Reference<Entity>> entities = {};
+            ME::ECS::EntityType requiredType = ME::ECS::EntityManager::GetEntityType<T>();
+            
+            for (const auto& entityPack : m_EntityManager->GetEntities())
+                if (entityPack.Value2.Entity->GetType() == requiredType)
+                    entities.EmplaceBack(entityPack.Value2.Entity);
+            return entities;
+        }
+
     private:
         ME::Core::Memory::Scope<ComponentManager> m_ComponentManager;
         ME::Core::Memory::Scope<EntityManager> m_EntityManager;

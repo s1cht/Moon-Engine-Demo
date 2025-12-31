@@ -2,6 +2,7 @@
 #include "Core.hpp"
 #include "Core/Time.hpp"
 
+#ifdef PLATFORM_WINDOWS
 namespace ME::Core::Clock
 {
 	class COREAPI WindowsTimeSource : public TimeSource
@@ -15,3 +16,4 @@ namespace ME::Core::Clock
 
 	};
 }
+#endif

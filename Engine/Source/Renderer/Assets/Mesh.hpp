@@ -11,12 +11,13 @@ namespace ME::Assets
 	struct Vertex
 	{
 		ME::Core::Math::Vector3D32 Position;
-		ME::Core::Math::Vector2D32 TextureCoords;
 		ME::Core::Math::Vector3D32 Normal;
+		ME::Core::Math::Vector4D32 Tangent;
+		ME::Core::Math::Vector2D32 TextureCoordinates;
 
 		inline bool operator==(const Vertex& other) const {
 			return Position == other.Position &&
-				TextureCoords == other.TextureCoords &&
+				TextureCoordinates == other.TextureCoordinates &&
 				Normal == other.Normal;
 		}
 	};
@@ -132,4 +133,4 @@ namespace ME::Assets
 	};
 }
 
-ME_FMT_FORMATTER(ME::Assets::Vertex, "Position: {}; TextureCoords: {}; Normal: {}", ME_FMT_FORMATTER_VALUE(Position), ME_FMT_FORMATTER_VALUE(TextureCoords), ME_FMT_FORMATTER_VALUE(Normal));
+ME_FMT_FORMATTER(ME::Assets::Vertex, "Position: {}; TextureCoordinates: {}; Normal: {}", ME_FMT_FORMATTER_VALUE(Position), ME_FMT_FORMATTER_VALUE(TextureCoordinates), ME_FMT_FORMATTER_VALUE(Normal));

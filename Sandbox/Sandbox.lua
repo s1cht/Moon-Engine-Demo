@@ -1,5 +1,4 @@
 	project "Sandbox"
-		location "Sandbox"
 		kind "ConsoleApp"
 		language "C++"
 		cppdialect "C++23"
@@ -15,6 +14,7 @@
 		files 
 		{
 			"Source/**.h",
+			"Source/**.hpp",
 			"Source/**.cpp",
 			"Source/**.cppm",
 		}

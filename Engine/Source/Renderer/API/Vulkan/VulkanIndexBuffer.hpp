@@ -30,6 +30,14 @@ namespace ME::Render
 
 		void Shutdown() override;
 
+		void Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, uint32 offset) override;
+		void Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer,
+			ME::Core::Memory::Reference<Pipeline> pipeline) override;
+
+		void Write() override;
+
+		void Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src, BarrierInfo dst) override;
+
 		inline SIZE_T GetCount() const override { return m_Specification.IndexCount; }
 
 		inline void UpdateResourceSet(uint32 setIndex) override { m_ResourceIndex = setIndex; };

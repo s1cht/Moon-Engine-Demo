@@ -1,7 +1,7 @@
 ﻿#pragma once
-
 #include <Core.hpp>
-#include "RenderObject.hpp"
+
+#include "RenderCore.hpp"
 
 namespace ME::Render
 {
@@ -16,7 +16,7 @@ namespace ME::Render
 		static ME::Core::Memory::Reference<Render::CommandBuffer> CreateCommandBuffer();
 
 	private:
-		static ME::Core::Memory::Reference<Render::CommandBuffer> CreateVulkanCommandBuffer();
+		static ME::Core::Memory::Reference<Render::CommandBuffer> CreateVulkan();
 
 	};
 }

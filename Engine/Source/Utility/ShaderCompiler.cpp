@@ -128,7 +128,6 @@ namespace ME::Utility
 		{
 			arguments.EmplaceBack(SC_ARG("spirv"));
 			arguments.EmplaceBack(SC_ARG("fspv-target-env=universal1.5"));
-			arguments.EmplaceBack(SC_ARG("fvk-use-scalar-layout"));
 			arguments.EmplaceBack(SC_ARG("fvk-use-dx-layout"));
 			arguments.EmplaceBack(SC_ARG("fspv-reflect"));
 		}

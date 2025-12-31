@@ -1,6 +1,7 @@
 ﻿#include "VulkanVertexBuffer.hpp"
 #include "VulkanRenderAPI.hpp"
 #include "VulkanCommandBuffer.hpp"
+#include "VulkanResourceHandler.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/RenderResourcesTracker.hpp"
 
@@ -8,7 +9,7 @@ namespace ME::Render
 {
 	ME::Core::Memory::Reference<ME::Render::VertexBuffer> VertexBuffer::CreateVulkan(const VertexBufferSpecification& specification)
 	{
-		auto object = ME::Core::Memory::Reference<Render::VertexBuffer>(new VulkanVertexBuffer(specification));
+		auto object = ME::Core::Memory::MakeReference<VulkanVertexBuffer>(specification);
 		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
@@ -24,12 +25,6 @@ namespace ME::Render
 	{
 		Shutdown();
 	}
-
-	//void VulkanVertexBuffer::Bind(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer)
-	//{
-	//	VkDeviceSize offset = 0;
-	//	vkCmdBindVertexBuffers(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, 1, &m_Buffer, &offset);
-	//}
 
 	void VulkanVertexBuffer::SetData(void* data, SIZE_T size, SIZE_T offset)
 	{
@@ -69,8 +64,8 @@ namespace ME::Render
 
 		VkBufferMemoryBarrier barrier = {};
 		barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-		barrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.buffer = m_Buffer;
@@ -176,7 +171,28 @@ namespace ME::Render
 		vkCmdFillBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_Buffer, 0, m_Specification.Size, 0);
 	}
 
-	void VulkanVertexBuffer::Shutdown()
+    void VulkanVertexBuffer::Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, uint32 offset)
+    {
+		RenderCommand::Get()->As<VulkanRenderAPI>()->BindVertexBuffer(commandBuffer, m_Buffer, offset);
+    }
+
+    void VulkanVertexBuffer::Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Pipeline> pipeline)
+    {
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BindResourceSet(commandBuffer, pipeline, m_Specification.Set, m_ResourceIndex);
+    }
+
+    void VulkanVertexBuffer::Write()
+    {
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
+    }
+
+    void VulkanVertexBuffer::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
+        BarrierInfo dst)
+    {
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BufferBarrier(commandBuffer, m_Buffer, src, dst);
+    }
+
+    void VulkanVertexBuffer::Shutdown()
 	{
 		if (m_StagingBuffer)
 		{

@@ -14,7 +14,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace ME
 {
-	Window* Window::Create(WindowProperties properties)
+#if defined(PLATFORM_WINDOWS)
+    Window* Window::Create(WindowProperties properties)
 	{
 		return new Win32Window(properties);
 	}
@@ -300,4 +301,5 @@ namespace ME
 
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
+#endif
 }

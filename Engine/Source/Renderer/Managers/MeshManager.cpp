@@ -199,7 +199,7 @@ namespace ME::Render::Manager
         if (m_MeshBoxes.Size() >= m_MaxMeshCount) return false;
 
         ME::Core::Memory::Reference<ME::Assets::Mesh>& mesh = m_Meshes[meshId];
-        Core::Memory::OAllocation vertexAlloc = VertexMalloc(mesh->GetVertices().Size());
+        Core::Memory::OAllocation vertexAlloc = VertexMalloc(mesh->GetVertices().Size() * sizeof(Assets::Vertex));
         if (vertexAlloc == nullptr)
         {
             VertexFree(vertexAlloc);

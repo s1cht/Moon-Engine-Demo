@@ -12,6 +12,8 @@ namespace ME::Manager
 
 		m_Meshes.Append(assetLoadResult.Meshes);
 		m_Images.Append(assetLoadResult.Images);
+		if (assetLoadResult.Audio.Data != nullptr)
+			m_AudioFiles.Insert(GetFileName(path), assetLoadResult.Audio);
 
 		return true;
 	}
@@ -34,11 +36,29 @@ namespace ME::Manager
 			return ME::Utility::AssetFileFormats::OBJ;
 		else if (result == TEXT(".tga"))
 			return ME::Utility::AssetFileFormats::TRG;
-		else
+		else if (result == TEXT(".wav"))
+			return ME::Utility::AssetFileFormats::WAV;
+	    else
 			return ME::Utility::AssetFileFormats::None;
 	}
 
-	ME::Core::Memory::Reference<ME::Assets::Mesh> AssetManager::GetMesh(const ME::Core::String& meshName)
+	ME::Core::String AssetManager::GetFileName(const ME::Core::String& path) const
+    {
+		ME::Core::String result = TEXT("");
+
+		for (SIZE_T i = path.Size() - 1; i >= 0; --i)
+		{
+			if (path[i] == TEXT('\\') || path[i] == TEXT('/'))
+			{
+				for (SIZE_T u = i + 1; u < path.Size(); u++)
+					result += path[u];
+				break;
+			}
+		}
+	    return result;
+    }
+
+    ME::Core::Memory::Reference<ME::Assets::Mesh> AssetManager::GetMesh(const ME::Core::String& meshName)
 	{
 		for (auto& mesh : m_Meshes)
 			if (mesh->GetGroupName() == meshName)
@@ -57,4 +77,11 @@ namespace ME::Manager
 		}
 		return nullptr;
 	}
+
+    Assets::AudioFile AssetManager::GetAudioFile(const ME::Core::String& audioFile)
+    {
+		if (!m_AudioFiles.Contains(audioFile))
+			return {};
+	    return m_AudioFiles[audioFile];
+    }
 }

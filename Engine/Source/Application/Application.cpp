@@ -10,8 +10,10 @@
 #include <Core/Platform/Base/IO.hpp>
 #include <Core/Time.hpp>
 
-#include "Framework/Components/CameraComponent.hpp"
+#include "Framework/Components/AudioComponent.hpp"
 #include "Framework/Components/InputComponent.hpp"
+#include "Framework/Components/CameraComponent.hpp"
+#include "Framework/Entities/Camera.hpp"
 #include "Renderer/Renderer.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/Managers/ShaderManager.hpp"
@@ -22,9 +24,8 @@
 
 namespace ME
 {
-	using namespace std::chrono_literals;
 
-	Application* Application::s_Instance;
+    Application* Application::s_Instance;
 	bool Application::s_ShutdownRequested;
 
 	Application::Application(ApplicationProperties props)
@@ -86,6 +87,7 @@ namespace ME
 		m_World->RegisterComponent<Components::TransformComponent>();
 		m_World->RegisterComponent<Components::CameraComponent>();
 		m_World->RegisterComponent<Components::InputComponent>();
+		m_World->RegisterComponent<Components::AudioComponent>();
 
 		Render::Manager::MeshMemoryPoolInfo meshPoolInfo = {};
 		meshPoolInfo.VertexMemoryPoolSize = ME_MESH_MNG_VERT_BUFFER_SIZE;
@@ -94,6 +96,8 @@ namespace ME
 		meshPoolInfo.BindingInfo = commonBinding;
 
 		Render::Manager::MeshManager::Get().Init(meshPoolInfo);
+
+		m_AudioEngine = Audio::AudioEngine::Create();
 
 		LoadAssets();
 
@@ -131,13 +135,13 @@ namespace ME
 
 			Render::Renderer::BeginFrame();
 
-			auto entsWithCamera = m_World->View<Components::CameraComponent>();
-			if (!entsWithCamera.Empty())
+			ME::Core::Array<ME::Core::Memory::Reference<ECS::Entity>> cameras = m_World->GetEntitiesWhichAre<ME::EditorCamera>();
+			if (!cameras.Empty())
 			{
-				Components::CameraComponent& camera = entsWithCamera[0]->GetComponent<Components::CameraComponent>();
 			    auto entsWithMesh = m_World->View<Components::TransformComponent, Components::MeshComponent>();
+				ME::Core::Memory::Reference<ME::Render::Camera> camera = std::static_pointer_cast<ME::EditorCamera>(cameras[0]);
 
-			    Render::Renderer::BeginScene(camera.Camera);
+			    Render::Renderer::BeginScene(camera);
 				for (const auto& entity : entsWithMesh)
 				{
 					Components::MeshComponent mesh = entity->GetComponent<Components::MeshComponent>();

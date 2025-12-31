@@ -8,14 +8,20 @@
 #include <queue>
 #include <bitset>
 
-#include "Core/Containers/Array.hpp"
+#include <Core/Containers/Array.hpp>
+#include <Core/Containers/Map.hpp>
+#include <Core/TypeID.hpp>
 #include "ECS/Entity.hpp"
 #include "ECSLimits.hpp"
-#include "Core/Containers/Map.hpp"
 
 namespace ME::ECS
 {
     using Signature = std::bitset<ME_MAX_COMPONENT_COUNT>;
+
+    namespace Helper
+    {
+        using EntityTypeIDGenerator = Core::TypeIDGenerator<EntityType, ME_MAX_COMPONENT_COUNT>;
+    }
 
     struct EntityPack
     {
@@ -99,10 +105,24 @@ namespace ME::ECS
                     vfptrs.Value2.vfptrs.OnDestroy();
         }
 
+        ME::Core::Map<uint64, EntityPack>& GetEntities()
+        {
+            return m_Entities;
+        };
+
+    public:
+        template <typename T>
+        static EntityType GetEntityType()
+        {
+            static_assert(std::is_base_of_v<ME::ECS::Entity, T>, "Can't use non-entity type in GetEntityType() method!");
+            static EntityType typeID = Helper::EntityTypeIDGenerator::ID<T>();
+            return typeID;
+        }
+
     private:
         std::queue<uint64> m_AvailableEntityIDs;
         ME::Core::Array<Signature> m_Signatures;
-        Core::Map<uint64, EntityPack> m_Entities;
+        ME::Core::Map<uint64, EntityPack> m_Entities;
         ME::Core::Atomic_uint64 m_EntityCount;
     };
 }

@@ -3,36 +3,18 @@
 #include <Core.hpp>
 #include <Core/Math/Math.hpp>
 
+#include "RenderCore.hpp"
+
 #include "ResourceHandler.hpp"
 #include "Renderer/Base/Framebuffer.hpp"
 #include "Renderer/Base/CommandBuffer.hpp"
 
 namespace ME::Render
 {
-    class RTexture2D;
-    class Buffer;
-}
-
-namespace ME::Render
-{
-    class IndirectBuffer;
-    class SwapChain;
-	struct RenderPassBeginInfo;
-
-	struct DrawIndirectIndexedData
-	{
-		uint32 indexCount;
-		uint32 instanceCount;
-		uint32 firstIndex;
-		uint32 vertexOffset;
-		uint32 firstInstance;
-	};
-
 	struct BarrierInfo
 	{
 		Render::AccessFlags Access;
 		Render::PipelineStageFlags PipelineStage;
-		// For texture barrier
 	    Render::ImageLayout Layout = ImageLayout::Undefined;
 	};
 
@@ -50,10 +32,8 @@ namespace ME::Render
 	public:
 		virtual void NewFrame() = 0;
 		virtual void EndFrame() = 0;
-		virtual void BeginRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Render::RenderPassBeginInfo& info) = 0;
-		virtual void EndRenderPass(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) = 0;
 
-		virtual void Draw(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 vertexCount, uint32 instanceCount) = 0;
+		virtual void Draw(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance) = 0;
 		virtual void DrawIndexed(ME::Core::Memory::Reference<Render::CommandBuffer> buffer, uint32 indexCount, uint32 index) = 0;
 		virtual void DrawIndexedIndirect(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 			const ME::Core::Memory::Reference<Render::IndirectBuffer>& buffer, SIZE_T offset, 
@@ -115,15 +95,15 @@ namespace ME::Render
 
 		static ME::Core::Memory::Reference<RenderAPI> Create();
 
-	protected:
+	private:
 		inline static ME::Core::Memory::Reference<RenderAPI> CreateVulkan();
-		inline static ME::Core::Memory::Reference<RenderAPI> CreateDirectX12();
-#ifdef ME_MACOS
+#if defined (PLARFORM_WINDOWS)
+	    inline static ME::Core::Memory::Reference<RenderAPI> CreateDirectX12();
+#elseif defined(PLATFORM_MACOS)
 		inline static ME::Core::Memory::Reference<RenderAPI> CreateMetal();
 #endif
 
 	private:
 		static API s_API;
-
 	};
 }

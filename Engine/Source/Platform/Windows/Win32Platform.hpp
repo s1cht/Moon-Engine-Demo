@@ -6,13 +6,24 @@
 	#define ME_WND_CLASSNAME "PEngineWindow"
 #endif
 
+
 #ifdef PLATFORM_WINDOWS
-	#include <d3d9.h>
-	#include <d3d11.h>
+    #define near
+    #define far
+    
+    #include <initguid.h>
+
+    // Graphics APIs
 	#include <d3d12.h>
 	#include <dxgi1_2.h>
-	#include <d3dcompiler.h>
+
+    // Audio API
+    #include <xaudio2.h>
+    #include <xaudio2fx.h>
+    #include <mmdeviceapi.h>
 
 	#define D3D_COMPILE_STANDARD_FILE_INCLUDE ((ID3DInclude*)(UINT_PTR)1)
 
+    #undef near
+    #undef far
 #endif

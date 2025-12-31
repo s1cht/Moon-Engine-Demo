@@ -7,7 +7,7 @@
 
 namespace ME::Render
 {
-	ME::Core::Memory::Reference<Shader> Shader::CreateVulkanShader(const ShaderSpecification& specification)
+	ME::Core::Memory::Reference<Shader> Shader::CreateVulkan(const ShaderSpecification& specification)
 	{
 		auto object = ME::Core::Memory::MakeReference<Render::VulkanShader>(specification);
 		RenderResourcesTracker::Get().AddItem(object);
@@ -58,30 +58,5 @@ namespace ME::Render
 	{
 		for (uint32 i = 0; i < m_Specification.Layouts.Size(); i++)
 			m_Layouts.EmplaceBack(RenderCommand::Get()->As<VulkanRenderAPI>()->GetVulkanResourceHandler()->CreateLayout(m_Specification.Layouts[i]));
-	}
-
-	uint32 ConvertShaderTypeVulkan(ShaderType type)
-	{
-		switch (type)
-		{
-			case ME::Render::ShaderType::Float: return VK_FORMAT_R32_SFLOAT;
-			case ME::Render::ShaderType::Float2: return VK_FORMAT_R32G32_SFLOAT;
-			case ME::Render::ShaderType::Float3: return VK_FORMAT_R32G32B32_SFLOAT;
-			case ME::Render::ShaderType::Float4: return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case ME::Render::ShaderType::Int: return VK_FORMAT_R32_SINT;
-			case ME::Render::ShaderType::Int2: return VK_FORMAT_R32G32_SINT;
-			case ME::Render::ShaderType::Int3: return VK_FORMAT_R32G32B32_SINT;
-			case ME::Render::ShaderType::Int4: return VK_FORMAT_R32G32B32A32_SINT;
-			case ME::Render::ShaderType::Bool: return VK_FORMAT_R8_UINT;
-			case ME::Render::ShaderType::Uint: return VK_FORMAT_R32_UINT;
-			case ME::Render::ShaderType::Uint2: return VK_FORMAT_R32G32_UINT;
-			case ME::Render::ShaderType::Uint3: return VK_FORMAT_R32G32B32_UINT;
-			case ME::Render::ShaderType::Uint4: return VK_FORMAT_R32G32B32A32_UINT;
-			default:
-			{
-				ME_ASSERT(false, "Vulkan: ShaderTypeConversion: Shader type None can't be converted!");
-				return VK_FORMAT_UNDEFINED;
-			}
-		}
 	}
 }

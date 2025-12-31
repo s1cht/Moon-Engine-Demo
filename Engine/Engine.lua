@@ -75,6 +75,8 @@ project "Engine"
 			"d3d11",
 			"d3d12",
 			"dxgi",
+			"Xaudio2",
+			"strmiids",
 		}
 
 	filter "system:linux"

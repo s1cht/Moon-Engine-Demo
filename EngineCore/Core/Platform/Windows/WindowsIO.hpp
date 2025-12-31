@@ -24,7 +24,7 @@ namespace ME::Core::IO
 
 		bool Read(String& output, StringReadMode mode) override;
 		String ReadAll() override;
-		bool ReadBinary(void* data, SIZE_T& size) override;
+		bool ReadBinary(void* data, const SIZE_T& size) override;
 
 	    bool Write(const String& input) override;
 		bool RawWrite(void* input, SIZE_T size) override;

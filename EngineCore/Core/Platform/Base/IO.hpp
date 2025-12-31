@@ -55,7 +55,7 @@ namespace ME::Core::IO
 
 		virtual bool Read(ME::Core::String& output, StringReadMode mode) = 0;
 		virtual ME::Core::String ReadAll() = 0;
-		virtual bool ReadBinary(void* data, SIZE_T& size) = 0;
+		virtual bool ReadBinary(void* data, const SIZE_T& size) = 0;
 
 		virtual bool Write(const ME::Core::String& input) = 0;
 		virtual bool RawWrite(void* input, SIZE_T size) = 0;
