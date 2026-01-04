@@ -12,21 +12,50 @@ namespace ME::Render
 	{
 	public:
 		VulkanTexture1D(const Texture1DSpecification& specification);
-
 		~VulkanTexture1D() override;
 
 	public:
 		void Shutdown() override;
 
 		void SetData(void* data, SIZE_T size) override;
-		inline ME::Core::StringView GetTexturePath() override { return m_Path; }
 		inline uint32 GetResolution() const override { return m_Specification.Resolution; }
 
 		void Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, uint32 offset) override {}
 		void Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer,
 			ME::Core::Memory::Reference<Pipeline> pipeline) override;
 
-	    void Write() override;
+		/**
+		 * Write texture to a resource set
+		 */
+		void Write() override;
+
+		/**
+		 * Write texture to a resource set
+		 * @param offset Ignored
+		 */
+		void Write(SIZE_T offset) override;
+
+		/**
+		 * Write texture to a resource set
+		 * @param offset Ignored
+		 * @param binding Custom binding
+		 */
+		void Write(SIZE_T offset, uint32 binding) override;
+
+		/**
+		 * Write texture to a resource set
+		 * @param size Ignored
+		 * @param offset Ignored
+		 */
+		void Write(SIZE_T size, SIZE_T offset) override;
+
+		/**
+		 * Write texture to a resource set
+		 * @param size Ignored
+		 * @param offset Ignored
+		 * @param binding Custom binding
+		 */
+		void Write(SIZE_T size, SIZE_T offset, uint32 binding) override;
 
 		void Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src, BarrierInfo dst) override;
 
@@ -37,7 +66,6 @@ namespace ME::Render
 
 	private:
 		void Init();
-		void Init(VkImage image);
 
 		VkResult CreateImage();
 		VkResult CreateImageView();
@@ -51,8 +79,5 @@ namespace ME::Render
 		VmaAllocation m_Allocation;
 
 		VkFormat m_ImageFormat;
-
-	private:
-		ME::Core::String m_Path;
 	};
 }

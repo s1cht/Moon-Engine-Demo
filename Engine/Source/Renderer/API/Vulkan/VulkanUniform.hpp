@@ -25,6 +25,10 @@ namespace ME::Render
 		void SetData(void* data, SIZE_T size, SIZE_T offset) override;
 		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size, SIZE_T offset) override;
 
+		MappedBufferData Map() override;
+		void Unmap() override;
+
+
         void Resize(SIZE_T size) override;
 
         void Clear() override;
@@ -33,7 +37,38 @@ namespace ME::Render
 		void Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, uint32 offset) override {}
 		void Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Pipeline> pipeline) override;
 
+		/**
+		 * Write buffer to a resource set
+		 */
 		void Write() override;
+
+		/**
+		 * Write buffer part to a resource set
+		 * @param offset Offset of writable part
+		 */
+		void Write(SIZE_T offset) override;
+
+		/**
+		 * Write buffer part to a resource set
+		 * @param offset Offset of writable part
+		 * @param binding Custom binding
+		 */
+		void Write(SIZE_T offset, uint32 binding) override;
+
+		/**
+		 * Write buffer part to a resource set
+		 * @param size Size of writable part
+		 * @param offset Offset of writable part
+		 */
+		void Write(SIZE_T size, SIZE_T offset) override;
+
+		/**
+		 * Write buffer part to a resource set
+		 * @param size Size of writable part
+		 * @param offset Offset of writable part
+		 * @param binding Custom binding
+		 */
+		void Write(SIZE_T size, SIZE_T offset, uint32 binding) override;
 
 		void Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src, BarrierInfo dst) override;
 

@@ -5,14 +5,13 @@
 #include "VulkanFunctions.hpp"
 #include "VulkanResourceHandler.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
 	ME::Core::Memory::Reference<Texture2D> Texture2D::CreateVulkan(const Texture2DSpecification& specification)
 	{
 		auto object = ME::Core::Memory::MakeReference<VulkanTexture2D>(specification);
-		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
@@ -67,56 +66,108 @@ namespace ME::Render
 		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BindResourceSet(commandBuffer, pipeline, m_Specification.Set, m_Specification.SetIndex);
     }
 
+	void VulkanTexture2D::Write()
+	{
+		Write(0, 0, m_Specification.Binding);
+	}
+
+	void VulkanTexture2D::Write(SIZE_T offset)
+	{
+		Write(0, 0, m_Specification.Binding);
+	}
+
+	void VulkanTexture2D::Write(SIZE_T offset, uint32 binding)
+	{
+		Write(0, 0, binding);
+	}
+
+	void VulkanTexture2D::Write(SIZE_T size, SIZE_T offset)
+	{
+		Write(0, 0, m_Specification.Binding);
+	}
+
+	void VulkanTexture2D::Write(SIZE_T size, SIZE_T offset, uint32 binding)
+	{
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this, binding);
+	}
+
     void VulkanTexture2D::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
         BarrierInfo dst)
     {
 		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->TextureBarrier(commandBuffer, m_Image, GetBaseSpecification(), src, dst);
     }
 
-    void VulkanTexture2D::Write()
-    {
-		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
-    }
-
-    void VulkanTexture2D::Init()
+	void VulkanTexture2D::Init()
 	{
+		m_DebugName = m_Specification.DebugName;
 		m_ImageFormat = ME::Render::ConvertFormatVulkan(m_Specification.Format);
 
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		VkResult result = CreateImage();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan Texture2D: failed to create image!: Error: {0}", static_cast<uint32>(result));
-			Shutdown();
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture2D", "Failed to create image! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+		    Shutdown();
 			return;
 		}
+		render->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Image), VK_OBJECT_TYPE_IMAGE);
 
 		result = UpdateImage(m_Specification.Data, m_Specification.DataSize);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan Texture2D: failed to update image data!: Error: {0}", static_cast<uint32>(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture2D", "Failed to update image! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+		    Shutdown();
 			return;
 		}
 
 		result = CreateImageView();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan Texture2D: failed to create image view!: Error: {0}", static_cast<uint32>(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture2D", "Failed to create image view! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+			Shutdown();
 			return;
 		}
+		render->NameVulkanObject(m_DebugName + TEXT(" View"), ME_VK_TO_UINT_HANDLE(m_ImageView), VK_OBJECT_TYPE_IMAGE_VIEW);
 
 		result = CreateSampler();
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(false, "Vulkan Texture2D: failed to create sampler!: Error: {0}", static_cast<uint32>(result));
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture2D", "Failed to create sampler! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+			return;
+		}
+		render->NameVulkanObject(m_DebugName + TEXT(" Sampler"), ME_VK_TO_UINT_HANDLE(m_Sampler), VK_OBJECT_TYPE_SAMPLER);
 	}
 	
 	void VulkanTexture2D::Init(VkImage image)
 	{
+		m_DebugName = m_Specification.DebugName;
         m_Image = image;
 		m_ImageFormat = ME::Render::ConvertFormatVulkan(m_Specification.Format);
-
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		VkResult result = CreateImageView();
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(false, "Vulkan Texture2D: failed to create image view!: Error: {0}", static_cast<uint32>(result));
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture2D", "Failed to create image view! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+			return;
+		}
+		render->NameVulkanObject(m_DebugName + TEXT(" View"), ME_VK_TO_UINT_HANDLE(m_ImageView), VK_OBJECT_TYPE_IMAGE_VIEW);
+
+		result = CreateSampler();
+		if (ME_VK_FAILED(result))
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture2D", "Failed to create sampler! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+			return;
+		}
+		render->NameVulkanObject(m_DebugName + TEXT(" Sampler"), ME_VK_TO_UINT_HANDLE(m_Sampler), VK_OBJECT_TYPE_SAMPLER);
 	}
 
 	VkResult VulkanTexture2D::CreateImage()

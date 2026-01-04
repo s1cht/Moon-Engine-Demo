@@ -4,14 +4,13 @@
 #include "VulkanRenderAPI.hpp"
 #include "VulkanResourceHandler.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
     ME::Core::Memory::Reference<ME::Render::IndirectBuffer> IndirectBuffer::CreateVulkan(const IndirectBufferSpecification& specification)
     {
         auto object = ME::Core::Memory::MakeReference<VulkanIndirectBuffer>(specification);
-        RenderResourcesTracker::Get().AddItem(object);
         return object;
     }
 
@@ -94,6 +93,7 @@ namespace ME::Render
 
         // Then delete old buffer
         vmaDestroyBuffer(RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), oldBuffer, oldAlloc);
+        render->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Buffer), VK_OBJECT_TYPE_BUFFER);
     }
 
     void VulkanIndirectBuffer::Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer,
@@ -104,7 +104,27 @@ namespace ME::Render
 
     void VulkanIndirectBuffer::Write()
     {
-        RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
+        Write(m_Specification.Size, 0, m_Specification.Binding);
+    }
+
+    void VulkanIndirectBuffer::Write(SIZE_T offset)
+    {
+        Write(m_Specification.Size, offset, m_Specification.Binding);
+    }
+
+    void VulkanIndirectBuffer::Write(SIZE_T offset, uint32 binding)
+    {
+        Write(m_Specification.Size, offset, binding);
+    }
+
+    void VulkanIndirectBuffer::Write(SIZE_T size, SIZE_T offset)
+    {
+        Write(size, offset, m_Specification.Binding);
+    }
+
+    void VulkanIndirectBuffer::Write(SIZE_T size, SIZE_T offset, uint32 binding)
+    {
+        RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this, size, offset, binding);
     }
 
     void VulkanIndirectBuffer::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
@@ -144,12 +164,16 @@ namespace ME::Render
 
     void VulkanIndirectBuffer::Init()
     {
+        m_DebugName = m_Specification.DebugName;
+        VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
         VkResult result = CreateBuffer();
         if (ME_VK_FAILED(result))
         {
-            ME_ASSERT(false, "Vulkan: indirect buffer's \"{0}\" creation failed! Error: {1}", m_DebugName, static_cast<int32>(result));
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("IndirectBuffer", "Failed to create buffer! Error code: {1}"),
+                m_DebugName, static_cast<uint32>(result));
             Shutdown();
         }
+        render->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Buffer), VK_OBJECT_TYPE_BUFFER);
     }
 
     VkResult VulkanIndirectBuffer::CreateBuffer()

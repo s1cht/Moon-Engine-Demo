@@ -86,44 +86,53 @@ namespace ME::Render
 
     #pragma endregion
 
+	struct MappedBufferData
+	{
+		void* Data;
+		SIZE_T Size;
+	};
+
     // Buffer abstract class
 	// Contains primary methods
 	class MEAPI Buffer : public RenderMemoryObject
 	{
 	public:
-		Buffer(ME::Core::String debugName) : m_DebugName(std::move(debugName)) {}
+        virtual ~Buffer() = default;
+        Buffer(const ME::Core::String& debugName) { m_DebugName = debugName; }
 
 		virtual void ChangeSet(uint32 set) = 0;
 
 	    virtual void SetData(void* data, SIZE_T size, SIZE_T offset = 0) = 0;
 		virtual void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size, SIZE_T offset = 0) = 0;
 
+		virtual MappedBufferData Map() = 0;
+		virtual void Unmap() = 0;
+
 		virtual void Resize(SIZE_T size) = 0;
 
-		virtual void Clear() = 0;
+		virtual void Clear() = 0;	
 		virtual void Clear(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer) = 0;
 
 		virtual inline void UpdateResourceSet(uint32 setIndex) = 0;
 	    virtual inline uint32 GetResourceSet() const = 0;
 
 		virtual inline const BufferSpecification& GetBaseSpecification() const = 0;
-
-	protected:
-		ME::Core::String m_DebugName;
 	};
 
 	// Vertex buffer abstract class
 	class MEAPI VertexBuffer : public Buffer
 	{
 	    ME_BUFFER_TEMPLATE(VertexBuffer, VertexBufferSpecification);
-		ME_BUFFER_SET()
+		ME_BUFFER_SET();
+	    ME_RENDER_OBJECT_TYPE(VertexBuffer);
 	};
 
 	// Index buffer abstract class
 	class MEAPI IndexBuffer : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(IndexBuffer, IndexBufferSpecification);
-		ME_BUFFER_SET()
+		ME_BUFFER_SET();
+		ME_RENDER_OBJECT_TYPE(IndexBuffer);
 
 	public:
 		// Overriding every unsupported method
@@ -141,26 +150,31 @@ namespace ME::Render
 	class MEAPI Uniform : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(Uniform, UniformSpecification);
-	    ME_BUFFER_SET()
+		ME_BUFFER_SET();
+		ME_RENDER_OBJECT_TYPE(Uniform);
 	};
 
 	// Storage buffer abstract class
 	class MEAPI StorageBuffer : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(StorageBuffer, StorageBufferSpecification);
-		ME_BUFFER_SET()
+		ME_BUFFER_SET();
+		ME_RENDER_OBJECT_TYPE(StorageBuffer);
 	};
 
 	// Indirect buffer abstract class
 	class MEAPI IndirectBuffer : public Buffer
 	{
 		ME_BUFFER_TEMPLATE(IndirectBuffer, IndirectBufferSpecification);
-		ME_BUFFER_SET()
-
+		ME_BUFFER_SET();
+		ME_RENDER_OBJECT_TYPE(IndirectBuffer);
 	public:
 		// Do nothing for SetData
 		void SetData(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, void* data, SIZE_T size, SIZE_T offset) final {}
 		void SetData(void* data, SIZE_T size, SIZE_T offset) final {}
+
+		MappedBufferData Map() final { return MappedBufferData{ .Data = nullptr, .Size = 0 }; }
+		void Unmap() final {}
 	};
 }
 

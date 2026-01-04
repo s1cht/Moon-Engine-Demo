@@ -7,6 +7,8 @@
 #include "Framework/Entities/Block.hpp"
 #include "Framework/Entities/Camera.hpp"
 #include "Framework/Entities/Music.hpp"
+#include "Framework/Entities/PointLight.hpp"
+#include "Framework/Entities/SpotLight.hpp"
 
 class SandboxLayer : public ME::Core::Layer
 {
@@ -25,6 +27,8 @@ private:
 	float32 m_CameraSpeed = 0.01f;
 
 	ME::Core::Memory::Reference<ME::Block> m_Block;
+	ME::Core::Memory::Reference<ME::PointLight> m_Light;
 	ME::Core::Memory::Reference<ME::Music> m_DWorld;
 	ME::Core::Memory::Reference<ME::EditorCamera> m_Camera;
+	ME::Core::Memory::Reference<ME::SpotLight> m_SpotLight;
 };

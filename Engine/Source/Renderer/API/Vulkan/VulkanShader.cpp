@@ -3,14 +3,13 @@
 #include "VulkanRenderAPI.hpp"
 #include "VulkanFunctions.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
 	ME::Core::Memory::Reference<Shader> Shader::CreateVulkan(const ShaderSpecification& specification)
 	{
 		auto object = ME::Core::Memory::MakeReference<Render::VulkanShader>(specification);
-		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
@@ -42,6 +41,8 @@ namespace ME::Render
 
 	void VulkanShader::Init()
 	{
+		m_DebugName = m_Specification.DebugName;
+
 		VkShaderModuleCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = m_Specification.CompiledShader.Size;
@@ -50,6 +51,8 @@ namespace ME::Render
 		VkResult result = vkCreateShaderModule(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_Shader);
 		if (ME_VK_FAILED(result))
 			ME_ASSERT("Vulkan shader: failed to create shader! Error: {0}", static_cast<uint32>(result));
+
+		Render::RenderCommand::Get()->As<VulkanRenderAPI>()->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Shader), VK_OBJECT_TYPE_SHADER_MODULE);
 
 		CreateDescriptorSetLayout();
 	}

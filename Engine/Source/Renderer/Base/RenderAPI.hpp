@@ -20,6 +20,8 @@ namespace ME::Render
 
 	class MEAPI RenderAPI : public RenderObject
 	{
+		ME_RENDER_OBJECT_TYPE(RenderAPI);
+
 	public:
 		enum class API : uint8
 		{
@@ -89,6 +91,7 @@ namespace ME::Render
 		virtual void CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass,
 			const ME::Core::Array<ME::Core::Memory::Reference<Render::RTexture2D>>& attachments) = 0;
 
+		ME_NODISCARD virtual void YieldUntilIdle() = 0;
 	public:
 		inline static void SetRendererAPI(API api) { s_API = api; }
 		inline static API GetRendererAPI() { return s_API; }

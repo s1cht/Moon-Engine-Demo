@@ -13,12 +13,13 @@
 #include "Framework/Components/AudioComponent.hpp"
 #include "Framework/Components/InputComponent.hpp"
 #include "Framework/Components/CameraComponent.hpp"
+#include "Framework/Components/LightComponent.hpp"
 #include "Framework/Entities/Camera.hpp"
 #include "Renderer/Renderer.hpp"
 #include "Renderer/RenderCommand.hpp"
 #include "Renderer/Managers/ShaderManager.hpp"
 #include "Renderer/Managers/MeshManager.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 #include "Renderer/Managers/AssetManager.h"
 #include "Utility/AssetLoader.hpp"
 
@@ -88,6 +89,7 @@ namespace ME
 		m_World->RegisterComponent<Components::CameraComponent>();
 		m_World->RegisterComponent<Components::InputComponent>();
 		m_World->RegisterComponent<Components::AudioComponent>();
+		m_World->RegisterComponent<Components::LightComponent>(10000);
 
 		Render::Manager::MeshMemoryPoolInfo meshPoolInfo = {};
 		meshPoolInfo.VertexMemoryPoolSize = ME_MESH_MNG_VERT_BUFFER_SIZE;
@@ -109,10 +111,10 @@ namespace ME
 
 	Application::~Application()
 	{
-		m_ImGuiLayer->Shutdown();
-		ME::Render::Manager::ShaderManager::Get().Shutdown();
-		Render::RenderResourcesTracker::Get().ShutdownAll();
+		m_LayerStack.Shutdown();
 		Render::Renderer::Shutdown();
+		ME::Render::Manager::ShaderManager::Get().Shutdown();
+		m_World->Shutdown();
 		s_ShutdownRequested = false;
 	}
 

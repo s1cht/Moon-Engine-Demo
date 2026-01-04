@@ -4,7 +4,7 @@
 #include "Base/RenderAPI.hpp"
 #include "Base/Pipeline.hpp"
 #include "Base/RingBuffer.hpp"
-#include "Camera/Camera.hpp"
+#include "Camera.hpp"
 #include "Framework/Components/MeshComponent.hpp"
 #include "Framework/Components/TransformComponent.hpp"
 
@@ -27,19 +27,22 @@ namespace ME::Render
 	constexpr uint32 PRIMARY_PIPELINE_Y_THREAD_COUNT = 4;
 
 	constexpr uint32 VERTEX_SET = 0;
+	constexpr uint32 LIGHT_SET = 0;
 	constexpr uint32 CAMERA_SET = 1;
 	constexpr uint32 MESH_TRANSFORM_SET = 2;
 	constexpr uint32 FRUSTUM_CULLING_SET = 3;
 	constexpr uint32 GBUFFER_SET = 4;
+	constexpr uint32 FRAME_SET = 5;
 	constexpr uint32 IMGUI_FRAME_SET = 0;
 
 	constexpr char8 ME_RENDER_PRIMARY_PIPELINE_NAME[] = TEXT("Primary");
+	constexpr char8 ME_RENDER_LIGHT_PIPELINE_NAME[] = TEXT("Light");
 	constexpr char8 ME_RENDER_MERGE_PIPELINE_NAME[] = TEXT("Merge");
 
 	class MEAPI Renderer
 	{
     private:
-		struct CameraData
+		struct alignas(16) CameraData
 		{
 			ME::Core::Math::Matrix4x4 View;
 			ME::Core::Math::Matrix4x4 Proj;
@@ -47,31 +50,46 @@ namespace ME::Render
 			ME::Core::Math::Matrix4x4 InvertedProj;
 		};
 
-		struct MeshShadingInfo
+		struct alignas(16) MeshShadingInfo
 		{
 			float32 Opacity;
-			bool ShadowsVisible;
+			uint32 ShadowsVisible;
+			uint32 Padding[2];
 		};
 
-		struct MeshConstants
+		struct alignas(16) MeshConstants
 		{
 			uint32 MeshID;
+			uint32 Padding[3];
 		};
 
-	    struct MeshInfos
+	    struct alignas(16) MeshInfos
 		{
 			ME::Core::Array<MeshShadingInfo> MeshRenderingInfos;
 			ME::Core::Array<ME::Core::Math::Matrix4x4> Transforms;
 			ME::Core::Array<uint32> MeshIDs;
 			MeshConstants MeshInfo;
 			DrawIndirectIndexedData Data;
+			uint32 Padding[3];
 		};
 
-		struct PrimaryPipelinePushConstants
+		struct alignas(16) GeometryPipelineConstants
 		{
 			uint32 InstanceCount;
 			uint32 CurrentMeshID;
 		    uint32 Padding[2];
+		};
+
+		struct alignas(16) LightPipelineConstants
+		{
+			uint32 MaxCount;
+			uint32 DirectionalLightCount;
+			uint32 PointLightCount;
+			uint32 SpotLightCount;
+			Core::Math::Vector3D CameraPosition;
+			uint32 Padding1;
+			Core::Math::Vector3D WarmColor;
+			uint32 Padding2;
 		};
 
 	public:
@@ -112,6 +130,7 @@ namespace ME::Render
 	private:
 		void ProcessQueuedMeshes();
 		void AcquireNewBuffers();
+		void LightStage();
 		void MergeStage();
 
 	private:
@@ -120,15 +139,19 @@ namespace ME::Render
 		ME::Core::Memory::Reference<ME::Render::RenderPass> m_GPass;
 		ME::Core::Memory::Reference<ME::Render::RFramebuffer> m_GFramebuffer;
 		ME::Core::Memory::Reference<ME::Render::Pipeline> m_GeometryPipeline;
-		// Merge
+		
+	    // Light
+		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_Frames;
+		ME::Core::Memory::Reference<ME::Render::RFramebuffer> m_LightFramebuffer;
+		ME::Core::Memory::Reference<ME::Render::RenderPass> m_LightPass;
+		ME::Core::Memory::Reference<ME::Render::Pipeline> m_LightPipeline;
+	    
+	    // Merge
 		ME::Core::Memory::Reference<ME::Render::RenderPass> m_MergePass;
 		ME::Core::Memory::Reference<ME::Render::Pipeline> m_MergePipeline;
 		ME::Render::VertexBufferLayout m_VertexInputFormat;
 
 	private:
-	    // Buffers
-		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_Frames;
-		
 		// G-Buffers
 	    ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gBaseColor;
 		ME::Core::Memory::Reference<ME::Render::RTexture2D> m_gNormal;
@@ -153,8 +176,8 @@ namespace ME::Render
 	private:
 		ME::Core::Memory::Reference<ME::Render::CommandBuffer> m_CurrentCommandBuffer;
 
-		ME::Core::Memory::Reference<ME::Render::Framebuffer> m_CurrentFFramebuffer;
-
+		ME::Core::Memory::Reference<ME::Render::Framebuffer> m_CurrentLightFramebuffer;
+		
 		ME::Core::Memory::Reference<ME::Render::Framebuffer> m_CurrentGFramebuffer;
 
 		ME::Core::Memory::Reference<ME::Render::Uniform> m_CurrentCameraBuffer;
@@ -167,6 +190,8 @@ namespace ME::Render
 		ME::Core::Memory::Reference<ME::Render::StorageBuffer> m_CurrentInputMeshInfos;
 		ME::Core::Memory::Reference<ME::Render::IndirectBuffer> m_CurrentOutputMeshInfos;
 		ME::Core::Memory::Reference<ME::Render::IndirectBuffer> m_CurrentOutputMeshInfoCount;
+
+		ME::Core::Memory::WeakReference<ME::Render::Camera> m_CurrentCamera;
 
 	private:
 	    ME::Core::UnorderedMap<uint64, MeshInfos> m_QueuedMeshes;

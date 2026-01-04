@@ -4,21 +4,20 @@
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanFramebuffer.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
 	Core::Memory::Reference<Render::RenderPass> RenderPass::CreateVulkan(const RenderPassSpecification& specification)
 	{
 		auto object = Core::Memory::MakeReference<VulkanRenderPass>(specification);
-		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& specification)
 		: m_Specification(specification)
 	{
-		Init(specification);
+		Init();
 	}
 
 	VulkanRenderPass::~VulkanRenderPass()
@@ -70,15 +69,17 @@ namespace ME::Render
 		vkCmdEndRenderPass(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
 	}
 
-	void VulkanRenderPass::Init(const RenderPassSpecification& specification)
+	void VulkanRenderPass::Init()
 	{
+		m_DebugName = m_Specification.DebugName;
+
 		VkResult result;
 		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 
 		ME::Core::Array<VkAttachmentDescription> attachmentDescriptions;
 		ME::Core::Array<VkAttachmentReference> globalAttachmentReferences;
 
-		for (auto& attachment : specification.AttachmentSpecs)
+		for (auto& attachment : m_Specification.AttachmentSpecs)
 		{
 			VkAttachmentDescription desc = {};
 			desc.format = ME::Render::ConvertFormatVulkan(attachment.AttachmentFormat);
@@ -108,7 +109,7 @@ namespace ME::Render
 
 		ME::Core::Array<VkSubpassDescription> subpassDescriptions;
 
-		for (const auto& subpass : specification.SubpassSpecs)
+		for (const auto& subpass : m_Specification.SubpassSpecs)
 		{
 			colorAttachmentRefsList.EmplaceBack();
 			inputAttachmentRefsList.EmplaceBack();
@@ -141,7 +142,7 @@ namespace ME::Render
 		}
 
 		ME::Core::Array<VkSubpassDependency> subpassDependencies;
-		for (auto& dep : specification.SubpassDependencies)
+		for (auto& dep : m_Specification.SubpassDependencies)
 		{
 			VkSubpassDependency vkDep = {};
 			vkDep.srcSubpass = dep.SubpassSrc;
@@ -166,8 +167,12 @@ namespace ME::Render
 
 		result = vkCreateRenderPass(render->GetDevice(), &createInfo, nullptr, &m_Pass);
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(false, "Vulkan render pass: failed to create render pass! Error {0}", static_cast<int32>(result));
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("RenderPass", "Failed to create render pass. Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+		}
+
+		render->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Pass), VK_OBJECT_TYPE_RENDER_PASS);
 	}
-
-
 }

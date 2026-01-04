@@ -4,14 +4,13 @@
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanResourceHandler.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
 	ME::Core::Memory::Reference<ME::Render::IndexBuffer> IndexBuffer::CreateVulkan(const IndexBufferSpecification& specification)
 	{
 		auto object = ME::Core::Memory::MakeReference<VulkanIndexBuffer>(specification);
-		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
@@ -21,7 +20,7 @@ namespace ME::Render
         m_StagingBuffer(nullptr), m_StagingAllocation(nullptr),
 		m_ResourceIndex(m_Specification.SetIndex)
 	{
-		Init(specification);
+		Init();
 	}
 
 	VulkanIndexBuffer::~VulkanIndexBuffer()
@@ -46,7 +45,8 @@ namespace ME::Render
 		VkResult result = vmaMapMemory(render->GetAllocator(), m_StagingAllocation, &bufferData);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan: data mapping in index buffer \"{0}\" failed! Error: {1}", m_DebugName, static_cast<int32>(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("IndexBuffer", "Failed to map data! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
 			Shutdown();
 		}
 
@@ -57,8 +57,9 @@ namespace ME::Render
 		result = vmaFlushAllocation(render->GetAllocator(), m_StagingAllocation, sizeof(uint32) * offset, sizeof(uint32) * indexCount);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan: allocation flushing in index buffer \"{0}\" failed! Error: {1}", m_DebugName, static_cast<int32>(result));
-			Shutdown();
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("IndexBuffer", "Failed to flush allocation! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+		    Shutdown();
 		}
 
 		bufferCopy = { sizeof(uint32) * offset, sizeof(uint32) * offset, sizeof(uint32) * m_Specification.IndexCount };
@@ -81,6 +82,61 @@ namespace ME::Render
 			0, nullptr, 
 			1, &barrier,
 			0, nullptr);
+	}
+
+	MappedBufferData VulkanIndexBuffer::Map()
+	{
+		MappedBufferData data = {};
+		data.Data = nullptr;
+		data.Size = 0;
+
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
+		VkResult result = vmaMapMemory(render->GetAllocator(), m_StagingAllocation, &data.Data);
+		if (ME_VK_FAILED(result))
+		    ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("IndexBuffer", "Failed to map! Error code: {1}"),
+			    m_DebugName, static_cast<uint32>(result));
+	    else
+			data.Size = sizeof(uint32) * m_Specification.IndexCount;
+
+		return data;
+	}
+
+	void VulkanIndexBuffer::Unmap()
+	{
+		ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer = RenderCommand::Get()->GetSingleUseCommandBuffer();
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
+		vmaUnmapMemory(render->GetAllocator(), m_StagingAllocation);
+
+		VkResult result = vmaFlushAllocation(render->GetAllocator(), m_StagingAllocation, 0, sizeof(uint32) * m_Specification.IndexCount);
+		if (ME_VK_FAILED(result))
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("IndexBuffer", "Failed to flush allocation! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+		}
+
+		VkBufferCopy bufferCopy = { 0, 0, sizeof(uint32) * m_Specification.IndexCount };
+
+		vkCmdCopyBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_StagingBuffer, m_Buffer, 1, &bufferCopy);
+
+		VkBufferMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.buffer = m_Buffer;
+		barrier.offset = 0;
+		barrier.size = m_Specification.IndexCount * sizeof(uint32);
+
+		vkCmdPipelineBarrier(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+			0,
+			0, nullptr,
+			1, &barrier,
+			0, nullptr);
+
+		Render::RenderCommand::Get()->SubmitAndFreeSingleUseCommandBuffer(commandBuffer);
 	}
 
 	void VulkanIndexBuffer::Resize(SIZE_T indexCount)
@@ -141,10 +197,12 @@ namespace ME::Render
 
 		// Then delete old buffer
 		vmaDestroyBuffer(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), oldBuffer, oldAlloc);
+		render->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Buffer), VK_OBJECT_TYPE_BUFFER);
 
 		// Recreate staging buffer
 		vmaDestroyBuffer(RenderCommand::Get()->As<VulkanRenderAPI>()->GetAllocator(), m_StagingBuffer, m_StagingAllocation);
 		CreateStagingBuffer();
+		render->NameVulkanObject(m_DebugName + TEXT(" Staging"), ME_VK_TO_UINT_HANDLE(m_StagingBuffer), VK_OBJECT_TYPE_BUFFER);
 	}
 
 	void VulkanIndexBuffer::Clear()
@@ -203,10 +261,30 @@ namespace ME::Render
 		RenderCommand::GetResourceHandler()->BindResourceSet(commandBuffer, pipeline, m_Specification.Set, m_ResourceIndex);
     }
 
-    void VulkanIndexBuffer::Write()
-    {
-		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
-    }
+	void VulkanIndexBuffer::Write()
+	{
+		Write(m_Specification.IndexCount, 0, m_Specification.Binding);
+	}
+
+	void VulkanIndexBuffer::Write(SIZE_T offset)
+	{
+		Write(m_Specification.IndexCount, offset, m_Specification.Binding);
+	}
+
+	void VulkanIndexBuffer::Write(SIZE_T offset, uint32 binding)
+	{
+		Write(m_Specification.IndexCount, offset, binding);
+	}
+
+	void VulkanIndexBuffer::Write(SIZE_T size, SIZE_T offset)
+	{
+		Write(size, offset, m_Specification.Binding);
+	}
+
+	void VulkanIndexBuffer::Write(SIZE_T size, SIZE_T offset, uint32 binding)
+	{
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this, size, offset, binding);
+	}
 
     void VulkanIndexBuffer::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
         BarrierInfo dst)
@@ -214,21 +292,27 @@ namespace ME::Render
 		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->BufferBarrier(commandBuffer, m_Buffer, src, dst);
     }
 
-    void VulkanIndexBuffer::Init(const IndexBufferSpecification& specification)
+    void VulkanIndexBuffer::Init()
 	{
+		m_DebugName = m_Specification.DebugName;
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		VkResult result = CreateBuffer();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan: index buffer \"{0}\" creation failed! Error: {1}", m_DebugName, static_cast<int32>(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("IndexBuffer", "Failed to create buffer! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
 			Shutdown();
 		}
+		render->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Buffer), VK_OBJECT_TYPE_BUFFER);
 
 		result = CreateStagingBuffer();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan: staging buffer in index buffer \"{0}\" failed! Error: {1}", m_DebugName, static_cast<int32>(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("IndexBuffer", "Failed to create staging buffer! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
 			Shutdown();
 		}
+		render->NameVulkanObject(m_DebugName + TEXT(" Staging"), ME_VK_TO_UINT_HANDLE(m_StagingBuffer), VK_OBJECT_TYPE_BUFFER);
 	}
 
 	VkResult VulkanIndexBuffer::CreateBuffer()

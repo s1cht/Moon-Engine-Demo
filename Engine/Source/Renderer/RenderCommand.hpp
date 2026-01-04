@@ -1,10 +1,12 @@
 #pragma once
 #include <Core.hpp>
 
+#include "RenderResourceTracker.hpp"
 #include "Base/RenderAPI.hpp"
 #include "Base/SwapChain.hpp"
 #include "Base/Framebuffer.hpp"
 #include "Base/CommandBuffer.hpp"
+#include "Managers/LightManager.hpp"
 
 #define CmdBufFunction(name, ...)																				\
     inline static void name(ME::Core::Memory::Reference<ME::Render::CommandBuffer> commandBuffer, __VA_ARGS__)
@@ -21,13 +23,17 @@
 
 namespace ME::Render
 {
-    class RTexture2D;
-
     class MEAPI RenderCommand
 	{
 	public:
 		static bool Init();
 		static void Shutdown();
+
+    public:
+		static void RenderObjectCreated(ME::Core::Memory::Reference<RenderObject> object)
+		{
+			s_ResourceTracker.Add(object);
+		}
 
 	public:
 		static ME::Core::Memory::Reference<RenderAPI> Get()
@@ -38,6 +44,11 @@ namespace ME::Render
 		inline static ME::Core::Memory::Reference<ME::Render::ResourceHandler> GetResourceHandler()
 		{
 			return s_Renderer->GetResourceHandler();
+		}
+
+		static  ME::Core::Memory::Reference<LightManager> GetLightManager()
+		{
+			return s_LightManager;
 		}
 
 		inline static ME::Core::Memory::Reference<ME::Render::Framebuffer> GetAvailableFramebuffer()
@@ -180,7 +191,8 @@ namespace ME::Render
 
 	private:
 		static ME::Core::Memory::Reference<RenderAPI> s_Renderer;
-
+		static ME::Core::Memory::Reference<LightManager> s_LightManager;
+		static RenderResourceTracker s_ResourceTracker;
 	};
 
 }

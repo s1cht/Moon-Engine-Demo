@@ -8,7 +8,7 @@ namespace ME::Components
 {
     struct MEAPI TransformComponent : ECS::Components::Component
     {
-        ME_COMPONENT_INIT(TransformComponent),
+        ME_COMPONENT_CONSTRUCTOR(TransformComponent),
             Transform(Core::Math::Transform()) {}
         ~TransformComponent() override = default;
 

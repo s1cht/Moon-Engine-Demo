@@ -8,8 +8,7 @@ namespace ME::Render
 	{
 		switch (s_API)
 		{
-			case ME::Render::RenderAPI::API::Vulkan:
-				return CreateVulkan();
+			case ME::Render::RenderAPI::API::Vulkan: return CreateVulkan();
             default:
 		    {
                 ME_ASSERT(0, "Requested creation of a unsupported renderer! {0}", static_cast<int32>(s_API));
@@ -17,5 +16,4 @@ namespace ME::Render
 			}
 		}
 	}
-
 }

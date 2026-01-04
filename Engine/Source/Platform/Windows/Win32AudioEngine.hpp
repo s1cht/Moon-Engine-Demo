@@ -7,6 +7,31 @@ namespace ME::Audio
 #if defined(PLATFORM_WINDOWS)
     class MEAPI Win32AudioEngine : public AudioEngine
     {
+        struct ComDeleter
+        {
+            constexpr void operator()(IUnknown* ptr) const noexcept
+            {
+                ptr->Release();
+                ptr = nullptr;
+            }
+        };
+
+        struct VoiceDeleter
+        {
+            constexpr void operator()(IXAudio2Voice* ptr) const noexcept
+            {
+                ptr->DestroyVoice();
+                ptr = nullptr;
+            }
+        };
+
+    public:
+        template <typename T>
+        using COMPtr = ME::Core::Memory::Scope<T, ComDeleter>;
+
+        template <typename T>
+        using VoicePtr = ME::Core::Memory::Scope<T, VoiceDeleter>;
+
     public:
         Win32AudioEngine();
         ~Win32AudioEngine() override;
@@ -23,15 +48,16 @@ namespace ME::Audio
         const AudioDevice& GetSelectedInputDevice() const override;
 
     public:
-        ME::Core::Memory::Scope<IXAudio2>& GetAudioEngine() { return m_Engine; }
+        COMPtr<IXAudio2>& GetAudioEngine() { return m_Engine; }
 
     private:
         void SelectDefaultDevice();
 
     private:
-        ME::Core::Memory::Scope<IXAudio2> m_Engine;
-        ME::Core::Memory::Scope<IXAudio2MasteringVoice> m_Device;
-        ME::Core::Memory::Scope<IMMDeviceEnumerator> m_Devices;
+        COMPtr<IXAudio2> m_Engine;
+        COMPtr<IMMDeviceEnumerator> m_Devices;
+
+        VoicePtr<IXAudio2MasteringVoice> m_Device;
         AudioDevice m_SelectedOutputDevice;
 
     };

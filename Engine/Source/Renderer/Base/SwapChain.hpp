@@ -15,6 +15,8 @@ namespace ME::Render
 {
 	class MEAPI SwapChain : public RenderObject
 	{
+		ME_RENDER_OBJECT_TYPE(SwapChain);
+
 	public:
 		virtual void Resize(uint32 x, uint32 y) = 0;
 		virtual void SetFullscreen(bool fullscreen) = 0;

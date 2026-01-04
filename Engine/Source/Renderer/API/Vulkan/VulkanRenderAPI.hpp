@@ -122,6 +122,8 @@ namespace ME::Render
 		inline ME::Core::Memory::Reference<Render::SwapChain> GetSwapChain() override { return m_SwapChain; }
 		inline ME::Core::Memory::Reference<Render::ResourceHandler> GetResourceHandler() override { return m_ResourceHandler; }
 
+		ME_NODISCARD void YieldUntilIdle() override;
+
 	public:
 		inline VkInstance GetInstance() const { return m_Instance; }
 		inline VkSurfaceKHR GetSurface() const { return m_Surface; }
@@ -138,26 +140,10 @@ namespace ME::Render
 		inline Render::VulkanSwapChain* GetVulkanSwapChain();
 
     public:
-		inline void Write(ME::Render::VulkanUniform* buffer) const;
-		inline void Write(ME::Render::VulkanStorageBuffer* buffer) const;
-		inline void Write(ME::Render::VulkanIndexBuffer* buffer) const;
-		inline void Write(ME::Render::VulkanVertexBuffer* buffer) const;
-		inline void Write(ME::Render::VulkanIndirectBuffer* buffer) const;
-		inline void Write(ME::Render::VulkanTexture1D* texture) const;
-		inline void Write(ME::Render::VulkanTexture2D* texture) const;
-		inline void Write(ME::Render::VulkanTexture3D* texture) const;
-
 		inline void BindIndexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 			VkBuffer buffer, uint32 offset);
 		inline void BindVertexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 			VkBuffer buffer, uint32 offset);
-
-	private:
-		static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-			VkDebugUtilsMessageTypeFlagsEXT messageType,
-			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-			void* pUserData);
 
 	private:
 		int32 Init();
@@ -165,13 +151,11 @@ namespace ME::Render
 	private:
 		int32 CreateAllocator(const uint32& apiVersion);
 		int32 CreateInstance(const uint32& apiVersion);
-		int32 CreateValidationLayer();
 		int32 CreateDevice();
 		int32 CreateWindowSurface();
 		int32 CreateCommandPool();
 
 	private:
-		void DestroyValidationLayer();
 		void DestroySynchronizationObjects();
 
 	private:
@@ -230,8 +214,34 @@ namespace ME::Render
 
 		ME::Core::Array<ME::Core::StringView> m_DeviceLayers;
 		ME::Core::Array<ME::Core::StringView> m_DeviceExtensions;
+	public:
+		/**
+		* Name a vulkan object for the debug purposes
+		* @param name Object name
+		* @param handle Object handle (pointer cast to uint64 )
+		* @param objectType Object type
+		*/
+	    void NameVulkanObject(ME::Core::String name, uint64 handle, VkObjectType objectType);
+
+#if defined(ME_DEBUG) || defined(ME_RELEASE)
+	public:
 
 	private:
+	    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+	        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	        VkDebugUtilsMessageTypeFlagsEXT messageType,
+	        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	        void* pUserData);
+
+		static ME::Core::String FormatObjectString(
+			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData);
+		
+	    int32 CreateValidationLayer();
+		void DestroyValidationLayer();
+
+	private:
+		PFN_vkSetDebugUtilsObjectNameEXT f_vkSetDebugUtilsObjectNameEXT;
 		VkDebugUtilsMessengerEXT m_ValidationLayer;
+#endif
 	};
 }

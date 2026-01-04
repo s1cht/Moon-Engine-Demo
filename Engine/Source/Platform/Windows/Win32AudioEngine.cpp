@@ -17,8 +17,11 @@ namespace ME::Audio
 
     Win32AudioEngine::~Win32AudioEngine()
     {
-        m_Devices->Release();
-        m_Engine->Release();
+        if (!m_Engine) return;
+        m_Engine->StopEngine();
+        m_Devices.reset();
+        m_Device.reset();
+        m_Engine.reset();
     }
 
     void Win32AudioEngine::Init()

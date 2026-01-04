@@ -50,7 +50,6 @@ int main(int32 argc, const asciichar** argv)
 	app->Run();
 	delete app;
 
-
 	ME::Core::IO::DirectoryStorage::Shutdown();
 	ME::Core::Utility::Logger::Shutdown();
 	ME::Core::Clock::Time::Shutdown();

@@ -487,8 +487,8 @@ namespace ME::Core
 				{
 					for (SIZE_T i = 0; i < elementsToMove; i++)
 					{
-						newBlock[i] = std::move(m_Data[i]);
-						m_Allocator.Destroy(&m_Data[i]);
+						new (&newBlock[i]) DataType(std::move(m_Data[i]));
+						m_Data[i].~DataType();
 					}
 				}
 

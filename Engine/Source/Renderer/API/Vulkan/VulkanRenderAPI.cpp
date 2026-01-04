@@ -12,8 +12,10 @@
 #include "VulkanFramebuffer.hpp"
 #include "VulkanIndexBuffer.hpp"
 #include "VulkanIndirectBuffer.hpp"
+#include "VulkanPipeline.hpp"
 #include "VulkanRenderPass.hpp"
 #include "VulkanResourceHandler.hpp"
+#include "VulkanShader.hpp"
 #include "VulkanStorageBuffer.hpp"
 #include "VulkanTexture1D.hpp"
 #include "VulkanTexture2D.hpp"
@@ -21,7 +23,22 @@
 #include "VulkanUniform.hpp"
 #include "VulkanVertexBuffer.hpp"
 #include "Renderer/Base/Buffer.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
+
+#if defined(ME_DEBUG) || defined(ME_RELEASE)
+    #define DEBUG_NAME_DEF  VkDebugUtilsObjectNameInfoEXT nameInfo = {};                            \
+                            nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;    \
+                            nameInfo.pNext = nullptr;
+    
+    #define DEBUG_NAME_OBJ(type, name, ptr, resultVar)                                      \
+                            nameInfo.objectType = type;                                     \
+                            nameInfo.objectHandle = uint64(ptr);                            \
+                            nameInfo.pObjectName = name;                                    \
+                            resultVar = f_vkSetDebugUtilsObjectNameEXT(m_Device, &nameInfo);
+#else
+    #define DEBUG_NAME_DEF
+    #define DEBUG_NAME_OBJ(type, name, ptr, resultVar)
+#endif
 
 namespace ME::Render
 {
@@ -57,7 +74,6 @@ namespace ME::Render
         }
         m_ResourceHandler = ME::Core::Memory::MakeReference<VulkanResourceHandler>(m_SwapChain->GetFrameCount());
         CreateFrameInfoObjects();
-
     }
 
     void VulkanRenderAPI::CreateFramebuffers(ME::Core::Memory::Reference<ME::Render::RenderPass> renderPass,
@@ -272,6 +288,11 @@ namespace ME::Render
         {
             m_GraphicsQueue = nullptr;
         }
+        if (m_Allocator != nullptr)
+        {
+            vmaDestroyAllocator(m_Allocator);
+            m_Allocator = nullptr;
+        }
         if (m_Device != nullptr)
         {
             vkDestroyDevice(m_Device, nullptr);
@@ -282,11 +303,13 @@ namespace ME::Render
             vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
             m_Surface = nullptr;
         }
+#if defined(ME_DEBUG) || defined(ME_RELEASE)
         if (m_ValidationLayer != nullptr)
         {
             DestroyValidationLayer();
             m_ValidationLayer = nullptr;
         }
+#endif
         if (m_Instance != nullptr)
         {
             vkDestroyInstance(m_Instance, nullptr);
@@ -441,6 +464,11 @@ namespace ME::Render
         return m_FrameInfos[m_SwapChain->GetFrameIndex()].Framebuffer;
     }
 
+    void VulkanRenderAPI::YieldUntilIdle()
+    {
+        vkDeviceWaitIdle(m_Device);
+    }
+
     void VulkanRenderAPI::Resize(uint32 x, uint32 y)
     {
         vkDeviceWaitIdle(m_Device);
@@ -466,8 +494,10 @@ namespace ME::Render
 
     int32 VulkanRenderAPI::Init()
     {
+        m_DebugName = "RenderAPI";
 	    uint32 unsupported = 0;
         int32 apiVersion = VK_API_VERSION_1_4;
+        DEBUG_NAME_DEF;
 
         m_Layers =
         {
@@ -501,21 +531,24 @@ namespace ME::Render
         bool supported = CheckLayerSupport(unsupported);
         if (supported != true)
         {
-            ME_ASSERT(false, "Vulkan: layers unsupported! Layer: {0}", unsupported);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Layer unsupported. Layer: {1}"),
+                "", unsupported);
             return ME_VK_RETURN_V(VulkanErrors::LayersUnsupported);
         }
 
         supported = CheckExtensionSupport(unsupported);
         if (supported != true)
         {
-            ME_ASSERT(false, "Vulkan: extensions unsupported! Extension: {0}", unsupported);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Extension unsupported. Extension: {1}"),
+                "", unsupported);
             return ME_VK_RETURN_V(VulkanErrors::ExtensionUnsupported);
         }
 
         int32 result = CreateInstance(apiVersion);
         if (ME_VK_FAILED(result))
         {
-            ME_ASSERT(false, "Vulkan instance creation failed! Error: {0}", result);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Failed to create instance. Error code: {1}"),
+                "", result);
             Shutdown();
             return ME_VK_RETURN_V(result);
         }
@@ -524,7 +557,8 @@ namespace ME::Render
         result = CreateValidationLayer();
         if (ME_VK_FAILED(result))
         {
-            ME_ASSERT(false, "Vulkan validation layer creation failed! Error: {0}", result);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Failed to create validation layer. Error code: {1}"),
+                "", result);
             Shutdown();
             return ME_VK_RETURN_V(result);
         }
@@ -533,7 +567,8 @@ namespace ME::Render
         result = CreateWindowSurface();
         if (ME_VK_FAILED(result))
         {
-            ME_ASSERT(false, "Vulkan window surface creation failed! Error: {0}", result);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Failed to create window surface. Error code: {1}"),
+                "", result);
             Shutdown();
             return ME_VK_RETURN_V(result);
         }
@@ -543,7 +578,8 @@ namespace ME::Render
 
         if (m_PhysicalDevices.Size() <= 0)
         {
-            ME_ASSERT(false, "Incompatible physical devices!");
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Physical devices are incompatible."),
+                "");
             Shutdown();
             return ME_VK_RETURN_V(VulkanErrors::IncompatiblePhysicalDevices);
         }
@@ -553,21 +589,24 @@ namespace ME::Render
         supported = CheckDeviceLayerSupport(unsupported);
         if (supported != true)
         {
-            ME_ASSERT(false, "Vulkan: physical device doesn't support layer: {0}!", unsupported);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Physical device layer unsupported. Layer: {1}"),
+                "", unsupported);
             return ME_VK_RETURN_V(VulkanErrors::DeviceLayersUnsupported);
         }
 
         supported = CheckDeviceExtensionSupport(unsupported);
         if (supported != true)
         {
-            ME_ASSERT(false, "Vulkan: physical device doesn't support extension: {0}", unsupported);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Physical device extension unsupported. Extension: {1}"),
+                "", unsupported);
             return ME_VK_RETURN_V(VulkanErrors::DeviceExtensionUnsupported);
         }
 
         result = PickQueueFamily();
         if (ME_VK_FAILED(result))
         {
-            ME_ASSERT(false, "Vulkan queue family pick failed!");
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Queue family selection failed. Error code: {1}"),
+                "", unsupported);
             Shutdown();
             return result;
         }
@@ -575,7 +614,8 @@ namespace ME::Render
         result = AcquireAllRequiredFunctions();
         if (AcquireAllRequiredFunctions())
         {
-            ME_ASSERT(false, "Vulkan required function is not present! Error: {0}", result);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Required function isn't listed. Error code: {1}"),
+                "", result);
             Shutdown();
             return result;
         }
@@ -583,23 +623,29 @@ namespace ME::Render
         result = CreateDevice();
         if (ME_VK_FAILED(result))
         {
-            ME_ASSERT(false, "Vulkan device creation failed! Error: {0}", result);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Failed to create logical device. Error code: {1}"),
+                "", result);
             Shutdown();
             return result;
         }
+        DEBUG_NAME_OBJ(VK_OBJECT_TYPE_INSTANCE, "Instance", m_Instance, result);
+        DEBUG_NAME_OBJ(VK_OBJECT_TYPE_DEVICE, "Device", m_Device, result);
 
         result = CreateCommandPool();
         if (ME_VK_FAILED(result))
         {
-            ME_ASSERT(false, "Vulkan: command pool creation failed! Error: {0}", result);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Failed to create command pool. Error code: {1}"),
+                "", result);
             Shutdown();
             return result;
         }
+        DEBUG_NAME_OBJ(VK_OBJECT_TYPE_COMMAND_POOL, "Command pool", m_GraphicsCommandPool, result);
 
         result = CreateAllocator(apiVersion);
         if (ME_VK_FAILED(result))
         {
-            ME_ASSERT(false, "Vulkan: VMA creation failed! Error: {0}", result);
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Initialization failed! Failed to create VMA. Error code: {1}"),
+                "", result);
             Shutdown();
             return result;
         }
@@ -676,22 +722,9 @@ namespace ME::Render
         return ME_VK_RETURN_V(vkCreateInstance(&instanceInfo, nullptr, &m_Instance));
     }
 
-    int32 VulkanRenderAPI::CreateValidationLayer()
-    {
-        auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-	        vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
-        if (func == nullptr)
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
+#if defined(ME_DEBUG) || defined(ME_RELEASE)
 
-        VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        createInfo.pfnUserCallback = DebugCallback;
-        createInfo.pUserData = nullptr;
-
-        return ME_VK_RETURN_V(func(m_Instance, &createInfo, nullptr, &m_ValidationLayer));
-    }
+#endif
 
     int32 VulkanRenderAPI::CreateDevice()
     {
@@ -812,14 +845,6 @@ namespace ME::Render
         VkResult result = vkCreateCommandPool(m_Device, &createInfo, nullptr, &m_GraphicsCommandPool);
 
         return ME_VK_RETURN_V(result);
-    }
-
-    void VulkanRenderAPI::DestroyValidationLayer()
-    {
-        auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
-	        m_Instance, "vkDestroyDebugUtilityMessengerEXT"));
-        if (func != nullptr)
-            func(m_Instance, m_ValidationLayer, nullptr);
     }
 
     void VulkanRenderAPI::DestroySynchronizationObjects()
@@ -1065,7 +1090,8 @@ namespace ME::Render
 
         if (m_GraphicsQueueFamily == static_cast<uint32>(-1) || m_PresentQueueFamily == static_cast<uint32>(-1))
         {
-            ME_ASSERT(false, "Vulkan: can't find queue family!");
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("API", "Requested queue family is not present!"),
+                "");
             return ME_VK_RETURN_V(VulkanErrors::QueueFamilyNotFound);
         }
 
@@ -1097,6 +1123,12 @@ namespace ME::Render
 
     int32 VulkanRenderAPI::AcquireAllRequiredFunctions()
     {
+#if defined(ME_DEBUG) || defined(ME_RELEASE)
+        f_vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(
+            m_Instance, "vkSetDebugUtilsObjectNameEXT"));
+        if (f_vkSetDebugUtilsObjectNameEXT == nullptr)
+            return ME_VK_RETURN_V(VulkanErrors::FunctionNotPresent);
+#endif
         f_vkCmdDrawMeshTasksEXT = reinterpret_cast<PFN_vkCmdDrawMeshTasksEXT>(vkGetInstanceProcAddr(
             m_Instance, "vkCmdDrawMeshTasksEXT"));
         if (f_vkCmdDrawMeshTasksEXT == nullptr)
@@ -1174,46 +1206,6 @@ namespace ME::Render
         return m_SwapChain->As<VulkanSwapChain>();
     }
 
-    void VulkanRenderAPI::Write(ME::Render::VulkanUniform* buffer) const
-    {
-        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
-    }
-
-    void VulkanRenderAPI::Write(ME::Render::VulkanStorageBuffer* buffer) const
-    {
-        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
-    }
-
-    void VulkanRenderAPI::Write(ME::Render::VulkanIndexBuffer* buffer) const
-    {
-        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
-    }
-
-    void VulkanRenderAPI::Write(ME::Render::VulkanVertexBuffer* buffer) const
-    {
-        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
-    }
-
-    void VulkanRenderAPI::Write(ME::Render::VulkanIndirectBuffer* buffer) const
-    {
-        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(buffer);
-    }
-
-    void VulkanRenderAPI::Write(ME::Render::VulkanTexture1D* texture) const
-    {
-        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(texture);
-    }
-
-    void VulkanRenderAPI::Write(ME::Render::VulkanTexture2D* texture) const
-    {
-        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(texture);
-    }
-
-    void VulkanRenderAPI::Write(ME::Render::VulkanTexture3D* texture) const
-    {
-        m_ResourceHandler->As<VulkanResourceHandler>()->WriteResource(texture);
-    }
-
     void VulkanRenderAPI::BindIndexBuffer(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
         VkBuffer buffer, uint32 offset)
     {
@@ -1227,42 +1219,75 @@ namespace ME::Render
         vkCmdBindVertexBuffers(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, 1, &buffer, &vkOffset);
     }
 
+#if defined(ME_DEBUG) || defined(ME_RELEASE)
+    void VulkanRenderAPI::NameVulkanObject(ME::Core::String name, uint64 handle, VkObjectType objectType)
+    {
+        VkDebugUtilsObjectNameInfoEXT nameInfo = {};
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = nullptr;
+        nameInfo.pObjectName = reinterpret_cast<const char*>(name.String());
+        nameInfo.objectType = objectType;
+        nameInfo.objectHandle = handle;
+        f_vkSetDebugUtilsObjectNameEXT(m_Device, &nameInfo);
+    }
+
     VkBool32 VKAPI_CALL VulkanRenderAPI::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 	{
         switch (messageSeverity)
         {
-            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-            {
-                ME_RENDER_TRACE("Message type: {1} Vulkan: \n\t{0}", pCallbackData->pMessage, VulkanMessageTypeToText(messageType));
-                break;
-            }
-            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-		    {
-                ME_RENDER_INFO("Message type: {1} Vulkan info: \n\t{0}", pCallbackData->pMessage, VulkanMessageTypeToText(messageType));
-		    	break;
-		    }
-            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-		    {
-                ME_RENDER_WARN("Message type: {1} Vulkan warning: \n\t{0}", pCallbackData->pMessage, VulkanMessageTypeToText(messageType));
-		    	break;
-		    }
-            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-		    {
-                ME_RENDER_ERROR("Message type: {1} Vulkan error: \n\t{0}", pCallbackData->pMessage, VulkanMessageTypeToText(messageType));
-		    	break;
-		    }
-            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-		    {
-                ME_RENDER_INFO("Message type: {1} Vulkan flag: \n\t{0}", pCallbackData->pMessage, (int32)messageType);
-		    	break;
-		    }
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+            ME_RENDER_TRACE("[Vulkan {0}{1}] {2:<64}",
+                VulkanMessageTypeToText(messageType), "",
+                pCallbackData->pMessage); break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+            ME_RENDER_INFO("[Vulkan {0}{1}] {2:<64}",
+                VulkanMessageTypeToText(messageType), " info",
+                pCallbackData->pMessage); break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+            ME_RENDER_WARN("[Vulkan {0}{1}] {2:<64}",
+                VulkanMessageTypeToText(messageType), " warning",
+                pCallbackData->pMessage); break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+            ME_RENDER_ERROR("[Vulkan {0}{1}] {2:<64}",
+                    VulkanMessageTypeToText(messageType), " error", 
+                    pCallbackData->pMessage); break;
             default:
-		    {
 		    	break;
-		    }
         }
 
         return VK_FALSE;
 	}
 
+    ME::Core::String VulkanRenderAPI::FormatObjectString(const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData)
+    {
+        return "";
+    }
+
+    int32 VulkanRenderAPI::CreateValidationLayer()
+    {
+        auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+            vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
+        if (func == nullptr)
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+
+        VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback = DebugCallback;
+        createInfo.pUserData = nullptr;
+
+        return ME_VK_RETURN_V(func(m_Instance, &createInfo, nullptr, &m_ValidationLayer));
+    }
+
+    void VulkanRenderAPI::DestroyValidationLayer()
+    {
+        auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
+            m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
+        if (func != nullptr)
+            func(m_Instance, m_ValidationLayer, nullptr);
+    }
+#else
+    void VulkanRenderAPI::NameVulkanObject(ME::Core::String name, uint64 handle, VkObjectType objectType) {}
+#endif 
 }

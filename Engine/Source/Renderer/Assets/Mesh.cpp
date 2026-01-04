@@ -9,7 +9,7 @@ namespace ME::Assets
 	ME::Assets::Mesh::Mesh()
 		: m_Loaded(false),
 		m_MeshId(~0u),
-		m_VertexAllocation(nullptr), m_IndexAllocation(nullptr),
+		m_VertexAllocation(nullptr), m_IndexAllocation(nullptr), m_MeshletAllocation(nullptr),
 		m_GroupName(TEXT("default")),
 		m_Vertices({}), m_Indices({})
 	{
@@ -18,7 +18,7 @@ namespace ME::Assets
 	ME::Assets::Mesh::Mesh(const ME::Core::String& groupName)
 		: m_Loaded(false),
         m_MeshId(~0u),
-        m_VertexAllocation(nullptr), m_IndexAllocation(nullptr),
+        m_VertexAllocation(nullptr), m_IndexAllocation(nullptr), m_MeshletAllocation(nullptr),
         m_GroupName(groupName),
         m_Vertices({}), m_Indices({})
 	{

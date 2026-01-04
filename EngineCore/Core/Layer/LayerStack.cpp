@@ -10,11 +10,7 @@ namespace ME::Core
 
 	LayerStack::~LayerStack()
 	{
-		for (Layer* layer : m_Layers)
-		{
-			layer->OnDetach();
-			delete layer;
-		}
+		Shutdown();
 	}
 
 	void LayerStack::PushLayer(Layer* layer)
@@ -44,4 +40,14 @@ namespace ME::Core
 		if (it != m_Layers.End())
 			m_Layers.Erase(it);
 	}
+
+    void LayerStack::Shutdown()
+    {
+		for (Layer* layer : m_Layers)
+		{
+			layer->OnDetach();
+			delete layer;
+		}
+		m_Layers.Clear();
+    }
 }

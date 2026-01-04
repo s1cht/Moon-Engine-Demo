@@ -8,44 +8,51 @@
 
 namespace ME::Assets
 {
-	struct Vertex
+	struct alignas(16) Vertex
 	{
 		ME::Core::Math::Vector3D32 Position;
+		uint32 Padding1;
 		ME::Core::Math::Vector3D32 Normal;
+		uint32 Padding2;
 		ME::Core::Math::Vector4D32 Tangent;
 		ME::Core::Math::Vector2D32 TextureCoordinates;
+		uint32 Padding3[2];
 
 		inline bool operator==(const Vertex& other) const {
 			return Position == other.Position &&
 				TextureCoordinates == other.TextureCoordinates &&
-				Normal == other.Normal;
+				Normal == other.Normal &&
+				Tangent == other.Tangent;
 		}
 	};
 
-	struct BoundingBox
+	struct alignas(16) BoundingBox
 	{
 		ME::Core::Math::Vector3D32 CenterPosition;
+		uint32 Padding1;
 		ME::Core::Math::Vector3D32 Extents;
+		uint32 Padding2;
 	};
 
-	struct BoundingSphere
+
+	struct alignas(16) BoundingSphere
 	{
 		ME::Core::Math::Vector3D32 CenterPosition;
 		float32 Radius;
 	};
 
-	struct Meshlet
+	struct alignas(16) Meshlet
 	{
 		uint32 VertexOffset;
 		uint32 IndexOffset;
 		uint32 VertexCount;
 		uint32 TriangleCount;
 		uint32 MeshId;
-		BoundingSphere BoundingSphere;
 	    uint32 Padding[3];
+		BoundingSphere BoundingSphere;
 	};
 
-	struct DrawMeshData
+	struct alignas(16) DrawMeshData
 	{
 		uint32 VertexOffset;
 		uint32 MeshletOffset;
@@ -56,6 +63,8 @@ namespace ME::Assets
 	    uint32 IndexCount;
 
 		uint32 MeshID;
+
+		uint32 Padding[1];
 	};
 
 	class MEAPI Mesh

@@ -71,6 +71,8 @@ namespace ME::Render
 
 	class MEAPI RenderPass : public RenderObject
 	{
+		ME_RENDER_OBJECT_TYPE(RenderPass);
+
 	public:
 		virtual void Begin(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, RenderPassBeginInfo& beginInfo) = 0;
 		virtual void End(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer) = 0;
