@@ -17,10 +17,13 @@ namespace ME::Render
 		ME::Render::CompiledShader CompiledShader;
 		ME::Render::ShaderStage Stage;
 		ME::Render::ResourceLayoutPack Layouts;
+		ME::Core::String DebugName;
 	};
 
 	class MEAPI Shader : public RenderObject
 	{
+		ME_RENDER_OBJECT_TYPE(Shader);
+
 	public:
 		virtual const ME::Render::ShaderSpecification& GetSpecification() const = 0;
 

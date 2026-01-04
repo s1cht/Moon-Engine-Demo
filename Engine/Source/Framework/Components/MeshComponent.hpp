@@ -6,12 +6,13 @@ namespace ME::Components
 {
     struct MEAPI MeshComponent : ECS::Components::Component
     {
-        ME_COMPONENT_INIT(MeshComponent) {}
+        ME_COMPONENT_CONSTRUCTOR(MeshComponent) {}
         ~MeshComponent() override = default;
 
         bool Visible = false;
         bool ShadowsVisible = true;
         float32 Opacity = 1.f;
+        
         ME::Core::Memory::Reference<ME::Assets::Mesh> Mesh = nullptr;
     };
 }

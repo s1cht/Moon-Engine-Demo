@@ -4,7 +4,7 @@
 #include "VulkanRenderAPI.hpp"
 #include "VulkanFunctions.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
@@ -46,7 +46,7 @@ namespace ME::Render
 			m_ImageView = nullptr;
 		}
 
-		if (m_Image != nullptr && m_Specification.bOwnsImage == true)
+		if (m_Image != nullptr)
 		{
 			vmaDestroyImage(render->GetAllocator(), m_Image, m_Allocation);
 			m_Image = VK_NULL_HANDLE;
@@ -61,7 +61,27 @@ namespace ME::Render
 
 	void VulkanTexture1D::Write()
 	{
-		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this);
+		Write(0, 0, m_Specification.Binding);
+	}
+
+	void VulkanTexture1D::Write(SIZE_T offset)
+	{
+		Write(0, 0, m_Specification.Binding);
+	}
+
+	void VulkanTexture1D::Write(SIZE_T offset, uint32 binding)
+	{
+		Write(0, 0, binding);
+	}
+
+	void VulkanTexture1D::Write(SIZE_T size, SIZE_T offset)
+	{
+		Write(0, 0, m_Specification.Binding);
+	}
+
+	void VulkanTexture1D::Write(SIZE_T size, SIZE_T offset, uint32 binding)
+	{
+		RenderCommand::GetResourceHandler()->As<VulkanResourceHandler>()->WriteResource(this, binding);
 	}
 
     void VulkanTexture1D::Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src,
@@ -73,44 +93,45 @@ namespace ME::Render
     void VulkanTexture1D::Init()
 	{
 		m_ImageFormat = ME::Render::ConvertFormatVulkan(m_Specification.Format);
-
+		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		VkResult result = CreateImage();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan Texture2D: failed to create image!: Error: {0}", static_cast<uint32>(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture1D", "Failed to create image! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
 			Shutdown();
 			return;
 		}
+		render->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Image), VK_OBJECT_TYPE_IMAGE);
 
 		result = UpdateImage(m_Specification.Data, m_Specification.DataSize);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan Texture2D: failed to update image data!: Error: {0}", static_cast<uint32>(result));
+            ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture1D", "Failed to update image! Error code: {1}"),
+                      m_DebugName, static_cast<uint32>(result));
+			Shutdown();
 			return;
 		}
 
 		result = CreateImageView();
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan Texture2D: failed to create image view!: Error: {0}", static_cast<uint32>(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture1D", "Failed to create image view! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+			Shutdown();
 			return;
 		}
+		render->NameVulkanObject(m_DebugName + TEXT(" View"), ME_VK_TO_UINT_HANDLE(m_ImageView), VK_OBJECT_TYPE_IMAGE_VIEW);
 
 		result = CreateSampler();
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(false, "Vulkan Texture2D: failed to create sampler!: Error: {0}", static_cast<uint32>(result));
-	}
-
-	void VulkanTexture1D::Init(VkImage image)
-	{
-		VkResult result;
-
-		m_Image = image;
-		m_ImageFormat = ME::Render::ConvertFormatVulkan(m_Specification.Format);
-
-		result = CreateImageView();
-		if (ME_VK_FAILED(result))
-			ME_ASSERT(false, "Vulkan Texture2D: failed to create image view!: Error: {0}", static_cast<uint32>(result));
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Texture1D", "Failed to create sampler! Error code: {1}"),
+				m_DebugName, static_cast<uint32>(result));
+		    Shutdown();
+			return;
+		}
+		render->NameVulkanObject(m_DebugName + TEXT(" Sampler"), ME_VK_TO_UINT_HANDLE(m_Sampler), VK_OBJECT_TYPE_SAMPLER);
 	}
 
 	VkResult VulkanTexture1D::CreateImage()

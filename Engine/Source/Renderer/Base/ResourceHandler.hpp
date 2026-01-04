@@ -6,6 +6,8 @@ namespace ME::Render
 {
 	class MEAPI ResourceHandler : public RenderObject
 	{
+		ME_RENDER_OBJECT_TYPE(ResourceHandler);
+
 	public:
 		virtual uint32 CreateLayout(const ME::Render::ResourceLayout& layout) = 0;
 

@@ -24,7 +24,7 @@ namespace ME::Render
 			case ME::Render::ShaderType::Uint4: return VK_FORMAT_R32G32B32A32_UINT;
 			default:
 			{
-				ME_ASSERT(false, "Vulkan: ShaderTypeConversion: Shader type None can't be converted!");
+				ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("ShaderTypeConversion", "Shader type None can't be converted!"));
 				return VK_FORMAT_UNDEFINED;
 			}
 		}
@@ -768,15 +768,15 @@ namespace ME::Render
 		switch (messageType)
 		{
 			case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
-				return "General";
+				return "general";
 			case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
-				return "Validation";
+				return "validation";
 			case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
-				return "Performance";
+				return "performance";
 			case VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT:
-				return "Device address binding";
+				return "device address binding";
 			default:
-				return "Unknown";
+				return "unknown";
 		}
 	}
 }

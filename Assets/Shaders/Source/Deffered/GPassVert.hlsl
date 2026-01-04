@@ -14,10 +14,15 @@ StructuredBuffer<uint> MeshIDs : register(t2, space2);
 
 struct VertexShaderInput
 {
-	float3 Position : POSITION0;
-	float3 Normal : NORMALPOS0;
-	float4 Tangent : POSITION1;
+    //w unused
+	float4 Position : POSITION0;
+    //w unused
+	float4 Normal : NORMALPOS0;
+
+	float4 Tangent : TANGENT0;
+        
 	float2 TextureCoordinates : TEXCOORD0;
+	float2 Padding : TEXCOORD1;
 };
 
 VertexShaderResult VSMain(
@@ -27,10 +32,10 @@ VertexShaderResult VSMain(
 {
 	VertexShaderResult result;
 	result.TexCoords = input.TextureCoordinates;
-	result.Normal = normalize(mul(input.Normal, (float3x3) MeshTransforms[instanceID].Matrix)); // v * M
-	result.Position = PositionToCameraCM(input.Position, Camera.ProjectionMatrix, Camera.ViewMatrix, MeshTransforms[instanceID].Matrix); // v * W * V * P
+	result.Normal = normalize(mul((float3x3) MeshTransforms[instanceID].Matrix, input.Normal.xyz)); // M * v
+	result.Position = PositionToCameraCM(input.Position.xyz, Camera.ProjectionMatrix, Camera.ViewMatrix, MeshTransforms[instanceID].Matrix); // P * V * M * v
 	result.Tangent = input.Tangent;
-	result.GlobalPosition = mul(float4(input.Position, 1.f), MeshTransforms[instanceID].Matrix); // v * M
+	result.GlobalPosition = mul(MeshTransforms[instanceID].Matrix, float4(input.Position.xyz, 1.f)); // M * v
 	result.MeshID = MeshIDs[instanceID];
 
 	return result;

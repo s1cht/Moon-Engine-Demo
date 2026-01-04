@@ -91,14 +91,14 @@ namespace ME::Render
 			BarrierInfo dst) override;
 
 	public:
-		void WriteResource(VulkanTexture1D* texture);
-		void WriteResource(VulkanTexture2D* texture);
-		void WriteResource(VulkanTexture3D* texture);
-		void WriteResource(VulkanUniform* buffer);
-		void WriteResource(VulkanIndexBuffer* buffer);
-		void WriteResource(VulkanVertexBuffer* buffer);
-		void WriteResource(VulkanIndirectBuffer* buffer);
-		void WriteResource(VulkanStorageBuffer* buffer);
+		void WriteResource(VulkanTexture1D* texture, uint32 binding);
+		void WriteResource(VulkanTexture2D* texture, uint32 binding);
+		void WriteResource(VulkanTexture3D* texture, uint32 binding);
+		void WriteResource(VulkanUniform* buffer, SIZE_T size, SIZE_T offset, uint32 binding);
+		void WriteResource(VulkanIndexBuffer* buffer, SIZE_T size, SIZE_T offset, uint32 binding);
+		void WriteResource(VulkanVertexBuffer* buffer, SIZE_T size, SIZE_T offset, uint32 binding);
+		void WriteResource(VulkanIndirectBuffer* buffer, SIZE_T size, SIZE_T offset, uint32 binding);
+		void WriteResource(VulkanStorageBuffer* buffer, SIZE_T size, SIZE_T offset, uint32 binding);
 
 		void BufferBarrier(ME::Core::Memory::Reference<Render::CommandBuffer> commandBuffer,
 			VkBuffer buffer, BarrierInfo src,

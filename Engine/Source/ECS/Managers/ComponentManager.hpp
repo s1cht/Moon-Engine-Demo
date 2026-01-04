@@ -8,7 +8,7 @@
 #include "ECS/Component.hpp"
 #include "ECSLimits.hpp"
 
-#define ME_COMPONENT_INIT(className) className() : Component(ME::ECS::ComponentManager::GetComponentType<className>())
+#define ME_COMPONENT_CONSTRUCTOR(className, ...) className(__VA_ARGS__) : Component(ME::ECS::ComponentManager::GetComponentType<className>())
 
 namespace ME::ECS
 {
@@ -31,7 +31,7 @@ namespace ME::ECS
         class ComponentArray : public IComponentArray
         {
         public:
-            ComponentArray() : m_ComponentArray(ME_MAX_ENTITY_COUNT), m_Size(0)
+            ComponentArray(uint64 maxCount) : m_ComponentArray(maxCount), m_Size(0)
             {
 
             }
@@ -39,6 +39,11 @@ namespace ME::ECS
             void InsertData(uint64 entity, T& component)
             {
                 ME_ASSERT(m_EntityToIndex.Find(entity) == m_EntityToIndex.End(), "Component added to same entity more than once.");
+                if (m_ComponentArray.Capacity() <= m_Size)
+                {
+                    ME_ERROR("Can't add component of type {} more than {}!", typeid(T).name(), m_ComponentArray.Capacity());
+                    return;
+                }
 
                 SIZE_T newIndex = m_Size;
                 m_EntityToIndex[entity] = newIndex;
@@ -113,7 +118,7 @@ namespace ME::ECS
     {
     public:
         template<typename T>
-        void RegisterComponent()
+        void RegisterComponent(uint64 maxCount)
         {
             ComponentType type = GetComponentType<T>();
             if (m_RegisteredComponents.Find(type) != m_RegisteredComponents.End())
@@ -121,7 +126,7 @@ namespace ME::ECS
 
             m_RegisteredComponents.Insert(type);
 
-            m_ComponentArrays.Insert(type, ME::Core::Memory::MakeReference<Helper::ComponentArray<T>>());
+            m_ComponentArrays.Insert(type, ME::Core::Memory::MakeReference<Helper::ComponentArray<T>>(maxCount));
         }
 
         template<typename T>
@@ -138,6 +143,15 @@ namespace ME::ECS
             static_assert(std::is_base_of_v<Components::Component, T>, "Can't use non-component type in HasComponent() method!");
             ComponentType type = GetComponentType<T>();
             T component = T();
+            GetComponentArray<T>()->InsertData(entityId, component);
+        }
+
+        template<typename T, typename... args>
+        void AddComponent(uint64 entityId, args&&... constructorArgs)
+        {
+            static_assert(std::is_base_of_v<Components::Component, T>, "Can't use non-component type in HasComponent() method!");
+            ComponentType type = GetComponentType<T>();
+            T component = T(std::forward<args>(constructorArgs)...);
             GetComponentArray<T>()->InsertData(entityId, component);
         }
 

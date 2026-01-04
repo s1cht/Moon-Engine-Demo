@@ -33,3 +33,12 @@ float4 PositionToCameraRM(float4 position, float4x4 projectionMatrix, float4x4 v
 	float4 result = mul(step2, projectionMatrix);
 	return result;
 }
+
+void ExtractColorAndEnabledFromColor3(in uint data, out float3 rgb, out bool enabled)
+{
+	rgb.r = float((data >> 24) & 0xFF) / 255.0;
+	rgb.g = float((data >> 16) & 0xFF) / 255.0;
+	rgb.b = float((data >> 8) & 0xFF) / 255.0;
+    
+	enabled = (data & 0xFF) != 0;
+}

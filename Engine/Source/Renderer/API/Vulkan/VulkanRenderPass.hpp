@@ -23,7 +23,7 @@ namespace ME::Render
 		inline VkRenderPass GetRenderPass() { return m_Pass; }
 
 	private:
-		void Init(const RenderPassSpecification& specification);
+		void Init();
 
     public:
 		const RenderPassSpecification& GetSpecification() const override { return m_Specification; }

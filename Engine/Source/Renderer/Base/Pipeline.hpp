@@ -99,6 +99,7 @@ namespace ME::Render
 		DepthStencilSpecification DepthStencil;
 		ColorBlendingSpecification ColorBlending;
 		ME::Core::Memory::Reference<Pipeline> BasePipeline;
+		ME::Core::String DebugName;
 	};
 
 	struct ViewportSpecification
@@ -113,6 +114,8 @@ namespace ME::Render
 
 	class MEAPI Pipeline : public RenderBindable
 	{
+		ME_RENDER_OBJECT_TYPE(Pipeline);
+
 	public:
 		virtual void SetViewports(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Array<ME::Render::ViewportSpecification> specifications) = 0;
 		virtual void SetScissors(ME::Core::Memory::Reference<ME::Render::CommandBuffer> buffer, ME::Core::Array<ME::Core::Math::Rect2D> scissors) = 0;

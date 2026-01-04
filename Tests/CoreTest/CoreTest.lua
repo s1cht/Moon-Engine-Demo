@@ -45,6 +45,7 @@ project "CoreTest"
 		buildoptions
 		{
 			"/utf-8",
+			"/Fo $(IntDir)%(RelativeDir)\\",
 		}
 
 	filter "action:clang*"

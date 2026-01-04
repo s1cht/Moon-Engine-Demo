@@ -5,6 +5,7 @@
 #include "Core/Math/Quaternion.hpp"
 #include "Core/Math/Matrix3x3.hpp"
 #include "Core/Math/Matrix4x4.hpp"
+#include "Core/Math/Color.hpp"
 #include "Core/Algorithm.hpp"
 
 namespace ME::Core::Math

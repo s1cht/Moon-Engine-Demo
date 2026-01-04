@@ -15,11 +15,11 @@ namespace ME::Render
 {
 	class VulkanRenderAPI;
 
-	class MEAPI VulkanSwapChain : public SwapChain
+	class MEAPI VulkanSwapChain  final: public SwapChain
 	{
 	public:
 		VulkanSwapChain(int32& result);
-		~VulkanSwapChain();
+		~VulkanSwapChain() override;
 
 	public:
 		void Shutdown() override;
@@ -79,6 +79,5 @@ namespace ME::Render
 		ME::Core::Array<ME::Core::Memory::Reference<ME::Render::Texture2D>> m_Images;
 
 		bool m_UpdateRequired;
-
 	};
 }

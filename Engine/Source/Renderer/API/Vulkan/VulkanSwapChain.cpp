@@ -4,7 +4,7 @@
 #include "VulkanFunctions.hpp"
 #include "VulkanTexture2D.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
@@ -14,7 +14,7 @@ namespace ME::Render
 	}
 
 	VulkanSwapChain::VulkanSwapChain(int32& result)
-		: m_SwapChain(nullptr), m_VSYNCEnabled(false), m_CurrentFrame(0), m_CurrentImage(0), m_UpdateRequired(false), m_Images({})
+		: m_VSYNCEnabled(false), m_SwapChain(nullptr), m_CurrentFrame(0), m_CurrentImage(0), m_Images({}), m_UpdateRequired(false)
 	{
 		result = Init();
 	}
@@ -60,7 +60,10 @@ namespace ME::Render
 			m_UpdateRequired = true;
 		}
 		else if (ME_VK_FAILED(result))
-			ME_ASSERT(false, "Failed to present! Error: {}", static_cast<int32>(result));
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("SwapChain", "Failed to present! Error code: {1}"),
+				"", static_cast<uint32>(result));
+		}
 		m_CurrentFrame = (m_CurrentFrame + 1) % m_Images.Size();
 	}
 
@@ -88,26 +91,23 @@ namespace ME::Render
 			return;
 		}
 
-		int32 result;
-		VkSwapchainKHR oldSwapChain;
-		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
+        VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		vkDeviceWaitIdle(render->GetDevice());
 
 		UpdateSwapExtent(x, y);
 
-		oldSwapChain = m_SwapChain;
+		VkSwapchainKHR oldSwapChain = m_SwapChain;
 		m_SwapChain = nullptr;
 
 		for (auto image : m_Images)
-		{
 			image->Shutdown();
-		}
 		m_Images.Clear();
 
-		result = CreateSwapChain(render, oldSwapChain);
+		int32 result = CreateSwapChain(render, oldSwapChain);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan swap chain: recreation failed! Error: {0}", result);
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("SwapChain", "Failed to recreate swap chain! Error code: {1}"),
+				"", static_cast<uint32>(result));
 			Shutdown();
 			return;
 		}
@@ -115,15 +115,14 @@ namespace ME::Render
 		result = CreateImages(render);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan swap chain: Image recreation failed! Error: {0}", result);
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("SwapChain", "Failed to recreate images! Error code: {1}"),
+				"", static_cast<uint32>(result));
 			Shutdown();
 			return;
 		}
 
 		if (oldSwapChain != nullptr)
-		{
 			vkDestroySwapchainKHR(Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), oldSwapChain, nullptr);
-		}
 
 		oldSwapChain = nullptr;
 	}
@@ -184,6 +183,8 @@ namespace ME::Render
 		specs.Layout = ImageLayout::Present;
 		specs.Resolution.x = m_Extent.x;
 		specs.Resolution.y = m_Extent.y;
+		specs.MagFilter = SamplerFilter::Linear;
+		specs.MinFilter = SamplerFilter::Linear;
 
 		uint32 count = 0;
 		vkGetSwapchainImagesKHR(renderer->GetDevice(), m_SwapChain, &count, nullptr);
@@ -193,8 +194,11 @@ namespace ME::Render
 
 		for (uint32 i = 0; i < count; i++)
 		{
-			specs.DebugName = "SwapChain image" + ME::Core::ToString(i);
-			m_Images.PushBack(ME::Core::Memory::Reference<Texture2D>(new VulkanTexture2D(swapChainImages[i], specs)));
+			specs.DebugName = "SwapChain image " + ME::Core::ToString(i);
+			ME::Core::Memory::Reference<VulkanTexture2D> texture = ME::Core::Memory::MakeReference<VulkanTexture2D>(swapChainImages[i], specs);
+		    m_Images.PushBack(texture);
+		    ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->NameVulkanObject(specs.DebugName, 
+				ME_VK_TO_UINT_HANDLE(texture->GetImage()), VK_OBJECT_TYPE_IMAGE);
 		}
 
 		return 0;
@@ -302,15 +306,16 @@ namespace ME::Render
 
 	int32 VulkanSwapChain::Init()
 	{
-		int32 result;
-		VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
+		m_DebugName = "Swap Chain";
+        VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		ME::Core::Array<VkSurfaceFormatKHR> formats;
 		ME::Core::Array<VkPresentModeKHR> presentModes;
 
-		result = uint32(SetDetails(render->GetPhysicalDevice(), render->GetSurface(), formats, presentModes));
+		int32 result = uint32(SetDetails(render->GetPhysicalDevice(), render->GetSurface(), formats, presentModes));
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan swap chain: Present modes or formats are empty! Error: {0}", result);
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("SwapChain", "Present modes or formats are empty! Error code: {1}"),
+				"", static_cast<uint32>(result));
 			return ME_VK_RETURN_V(VulkanErrors::PresentModesOrFormatsEmpty);
 		}
 
@@ -321,7 +326,8 @@ namespace ME::Render
 		result = CreateSwapChain(render, nullptr);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan swap chain: creation failed! Error: {0}", result);
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("SwapChain", "Failed to create swap chain! Error code: {1}"),
+				"", static_cast<uint32>(result));
 			Shutdown();
 			return ME_VK_RETURN_V(result);
 		}
@@ -331,7 +337,8 @@ namespace ME::Render
 		result = CreateImages(render);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan swap chain: Image recreation failed! Error: {0}", result);
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("SwapChain", "Failed to create images! Error code: {1}"),
+				"", static_cast<uint32>(result));
 			Shutdown();
 			return ME_VK_RETURN_V(result);
 		}

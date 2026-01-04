@@ -6,20 +6,19 @@
 #include "VulkanRenderPass.hpp"
 #include "VulkanShader.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
 	ME::Core::Memory::Reference<Pipeline> Pipeline::CreateVulkan(const PipelineSpecification& specification)
 	{
 		auto object = ME::Core::Memory::MakeReference<VulkanPipeline>(specification);
-		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& specification)
+	    : m_Specification(std::move(specification))
 	{
-		m_Specification = std::move(specification);
 		Init();
 	}
 
@@ -95,12 +94,13 @@ namespace ME::Render
 
 	void VulkanPipeline::Init()
 	{
+		m_DebugName = m_Specification.DebugName;
 		CreatePipelineLayout();
 		switch (m_Specification.Type)
 		{
 			case PipelineType::Compute: CreateComputePipeline(); m_PipelineBindPoint = VK_PIPELINE_BIND_POINT_COMPUTE; break;
 			case PipelineType::Graphics: CreateGraphicsPipeline(); m_PipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; break;
-			case PipelineType::None: ME_ASSERT(false, "Pipeline: Can't create pipeline with type None!"); break;
+			case PipelineType::None: ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Pipeline", "Pipeline creation with type \"PipelineType::None\" is prohibited!"), m_DebugName); break;
 		}	
 	}
 
@@ -215,7 +215,12 @@ namespace ME::Render
 
 		VkResult result = vkCreatePipelineLayout(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_PipelineLayout);
 		if (ME_VK_FAILED(result))
-			ME_CORE_ASSERT(false, "Vulkan: pipeline layout creation failed! Error: {0}", static_cast<int32>(result));
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Pipeline", "Pipeline layout creation failed! Error code: {1}"), m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+			return;
+		}
+		ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->NameVulkanObject(m_DebugName + TEXT(" Layout"), ME_VK_TO_UINT_HANDLE(m_PipelineLayout), VK_OBJECT_TYPE_PIPELINE_LAYOUT);
 	}
 
 	void VulkanPipeline::CreateComputePipeline()
@@ -237,7 +242,12 @@ namespace ME::Render
 		VkResult result = vkCreateComputePipelines(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(),
                                                    nullptr, 1, &createInfo, nullptr, &m_Pipeline);
 		if (ME_VK_FAILED(result))
-			ME_CORE_ASSERT(false, "Vulkan: pipeline creation failed! Error: {0}", static_cast<int32>(result));
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Pipeline", "Graphics pipeline creation failed! Error code: {1}"), m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+			return;
+		}
+		ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Pipeline), VK_OBJECT_TYPE_PIPELINE);
 	}
 
 	void VulkanPipeline::CreateGraphicsPipeline()
@@ -411,6 +421,11 @@ namespace ME::Render
 		result = vkCreateGraphicsPipelines(ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), nullptr, 1, &createInfo, nullptr, &m_Pipeline);
 
 		if (ME_VK_FAILED(result))
-			ME_CORE_ASSERT(false, "Vulkan: pipeline creation failed! Error: {0}", static_cast<int32>(result));
+		{
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Pipeline", "Graphics pipeline creation failed! Error code: {1}"), m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+		    return;
+		}
+		ME::Render::RenderCommand::Get()->As<VulkanRenderAPI>()->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Pipeline), VK_OBJECT_TYPE_PIPELINE);
 	}
 }

@@ -34,10 +34,18 @@ namespace ME::Render
 
 	void VulkanResourceHandler::Shutdown()
 	{
+		if (m_DescriptorPool == nullptr) return;
 		for (auto element : m_Layouts)
 		{
+			if (element.vkLayout == nullptr) continue;
 			vkDestroyDescriptorSetLayout(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), element.vkLayout, nullptr);
 			element.vkLayout = nullptr;
+		}
+		for (auto element : m_Sets)
+		{
+			if (element.Set == nullptr) continue;
+			vkFreeDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), m_DescriptorPool, 1, &element.Set);
+			element.Set = nullptr;
 		}
 		if (m_DescriptorPool != nullptr)
 		{
@@ -58,11 +66,14 @@ namespace ME::Render
 		int32 result = CreateDescriptorSetLayout(pair);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan: failed to create descriptor set layout! Error: {0}", result);
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("ResourceHandler", "Failed to create descriptor set layout! Error code: {1}"),
+				"", result);
 			return static_cast<uint32>(m_Layouts.Size());
 		}
 
 		m_Layouts.EmplaceBack(pair);
+
+		RenderCommand::Get()->As<VulkanRenderAPI>()->NameVulkanObject(ME::Core::String("Descriptor set layout ") + ME::Core::ToString(m_Layouts.Size()), ME_VK_TO_UINT_HANDLE(pair.vkLayout), VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT);
 
 		return static_cast<uint32>(m_Layouts.Size() - 1);
 	}
@@ -72,6 +83,8 @@ namespace ME::Render
 		VkDescriptorSet descSet = nullptr;
 		CreateDescriptorSet(layout, &descSet);
 		m_Sets.EmplaceBack(descSet);
+		RenderCommand::Get()->As<VulkanRenderAPI>()->NameVulkanObject(ME::Core::String("Descriptor set ") + ME::Core::ToString(m_Sets.Size()),
+			ME_VK_TO_UINT_HANDLE(descSet), VK_OBJECT_TYPE_DESCRIPTOR_SET);
 		return static_cast<uint32>(m_Sets.Size() - 1);
 	}
 
@@ -94,7 +107,7 @@ namespace ME::Render
 	{
 		if (layout == ~0u)
 		{
-			ME_ASSERT(layout != ~0u, "Can't find layout!");
+			ME_ASSERT(layout != ~0u, ME_VK_LOG_OUTPUT_FORMAT("ResourceHandler", "Can't find layout!"), "");
 			return ~0u;
 		}
 
@@ -539,17 +552,18 @@ namespace ME::Render
 			1, &textureBarrier);
 	}
 
-    void VulkanResourceHandler::WriteResource(VulkanTexture1D* texture)
+    void VulkanResourceHandler::WriteResource(VulkanTexture1D* texture, uint32 binding)
     {
 		VkDescriptorImageInfo textureInfo = {};
 		textureInfo.imageLayout = ConvertImageLayoutVulkan(texture->GetSpecification().Layout);
 		textureInfo.imageView = texture->GetImageView();
 		textureInfo.sampler = texture->GetSampler();
 
+		
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDesc.dstSet = m_Sets[texture->GetSpecification().SetIndex].Set;
-		writeDesc.dstBinding = texture->GetSpecification().Binding;
+		writeDesc.dstBinding = binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		writeDesc.dstArrayElement = 0;
 		writeDesc.descriptorCount = 1;
@@ -565,7 +579,7 @@ namespace ME::Render
 			nullptr);
     }
 
-    void VulkanResourceHandler::WriteResource(VulkanTexture2D* texture)
+    void VulkanResourceHandler::WriteResource(VulkanTexture2D* texture, uint32 binding)
     {
 		VkDescriptorImageInfo textureInfo = {};
 		textureInfo.imageLayout = ConvertImageLayoutVulkan(texture->GetSpecification().Layout);
@@ -575,7 +589,7 @@ namespace ME::Render
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDesc.dstSet = m_Sets[texture->GetSpecification().SetIndex].Set;
-		writeDesc.dstBinding = texture->GetSpecification().Binding;
+		writeDesc.dstBinding = binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		writeDesc.dstArrayElement = 0;
 		writeDesc.descriptorCount = 1;
@@ -591,7 +605,7 @@ namespace ME::Render
 			nullptr);
     }
 
-    void VulkanResourceHandler::WriteResource(VulkanTexture3D* texture)
+    void VulkanResourceHandler::WriteResource(VulkanTexture3D* texture, uint32 binding)
     {
 		VkDescriptorImageInfo textureInfo = {};
 		textureInfo.imageLayout = ConvertImageLayoutVulkan(texture->GetSpecification().Layout);
@@ -601,7 +615,7 @@ namespace ME::Render
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDesc.dstSet = m_Sets[texture->GetSpecification().SetIndex].Set;
-		writeDesc.dstBinding = texture->GetSpecification().Binding;
+		writeDesc.dstBinding = binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		writeDesc.dstArrayElement = 0;
 		writeDesc.descriptorCount = 1;
@@ -617,17 +631,17 @@ namespace ME::Render
 			nullptr);
     }
 
-    void VulkanResourceHandler::WriteResource(VulkanUniform* buffer)
+    void VulkanResourceHandler::WriteResource(VulkanUniform* buffer, SIZE_T size, SIZE_T offset, uint32 binding)
     {
 		VkDescriptorBufferInfo bufferInfo = {};
 		bufferInfo.buffer = buffer->GetBuffer();
-		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
-		bufferInfo.offset = 0;
+		bufferInfo.range = size;
+		bufferInfo.offset = offset;
 
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
-		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.dstBinding = binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		writeDesc.dstArrayElement = 0;
 		writeDesc.descriptorCount = 1;
@@ -643,17 +657,17 @@ namespace ME::Render
 			nullptr);
     }
 
-    void VulkanResourceHandler::WriteResource(VulkanIndexBuffer* buffer)
-    {
+    void VulkanResourceHandler::WriteResource(VulkanIndexBuffer* buffer, SIZE_T size, SIZE_T offset, uint32 binding)
+	{
 		VkDescriptorBufferInfo bufferInfo = {};
 		bufferInfo.buffer = buffer->GetBuffer();
-		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetCount() * sizeof(uint32));
-		bufferInfo.offset = 0;
+		bufferInfo.range = size * sizeof(uint32);
+		bufferInfo.offset = offset * sizeof(uint32);
 
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
-		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.dstBinding = binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		writeDesc.dstArrayElement = 0;
 		writeDesc.descriptorCount = 1;
@@ -667,19 +681,19 @@ namespace ME::Render
 			&writeDesc,
 			0,
 			nullptr);
-    }
+	}
 
-    void VulkanResourceHandler::WriteResource(VulkanVertexBuffer* buffer)
-    {
+	void VulkanResourceHandler::WriteResource(VulkanVertexBuffer* buffer, SIZE_T size, SIZE_T offset, uint32 binding)
+	{
 		VkDescriptorBufferInfo bufferInfo = {};
 		bufferInfo.buffer = buffer->GetBuffer();
-		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
-		bufferInfo.offset = 0;
+		bufferInfo.range = size;
+		bufferInfo.offset = offset;
 
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
-		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.dstBinding = binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		writeDesc.dstArrayElement = 0;
 		writeDesc.descriptorCount = 1;
@@ -693,19 +707,19 @@ namespace ME::Render
 			&writeDesc,
 			0,
 			nullptr);
-    }
+	}
 
-    void VulkanResourceHandler::WriteResource(VulkanIndirectBuffer* buffer)
-    {
+	void VulkanResourceHandler::WriteResource(VulkanIndirectBuffer* buffer, SIZE_T size, SIZE_T offset, uint32 binding)
+	{
 		VkDescriptorBufferInfo bufferInfo = {};
 		bufferInfo.buffer = buffer->As<VulkanIndirectBuffer>()->GetBuffer();
-		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
-		bufferInfo.offset = 0;
+		bufferInfo.range = size;
+		bufferInfo.offset = offset;
 
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
-		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.dstBinding = binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		writeDesc.dstArrayElement = 0;
 		writeDesc.descriptorCount = 1;
@@ -719,19 +733,19 @@ namespace ME::Render
 			&writeDesc,
 			0,
 			nullptr);
-    }
+	}
 
-    void VulkanResourceHandler::WriteResource(VulkanStorageBuffer* buffer)
+	void VulkanResourceHandler::WriteResource(VulkanStorageBuffer* buffer, SIZE_T size, SIZE_T offset, uint32 binding)
     {
 		VkDescriptorBufferInfo bufferInfo = {};
 		bufferInfo.buffer = buffer->As<VulkanStorageBuffer>()->GetBuffer();
-		bufferInfo.range = static_cast<VkDeviceSize>(buffer->GetSpecification().Size);
-		bufferInfo.offset = 0;
+		bufferInfo.range = size;
+		bufferInfo.offset = offset;
 
 		VkWriteDescriptorSet writeDesc = {};
 		writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDesc.dstSet = m_Sets[buffer->GetResourceSet()].Set;
-		writeDesc.dstBinding = buffer->GetSpecification().Binding;
+		writeDesc.dstBinding = binding;
 		writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		writeDesc.dstArrayElement = 0;
 		writeDesc.descriptorCount = 1;
@@ -835,7 +849,8 @@ namespace ME::Render
 		VkResult result = vkAllocateDescriptorSets(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &allocInfo, descriptor);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan: failed to allocate DescriptorSet! Error: {0}", ME_VK_RETURN_V(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("ResourceHandler", "Failed to allocate descriptor set! Error code: {1}"),
+				"", static_cast<uint32>(result));
 		}
 	}
 
@@ -890,6 +905,8 @@ namespace ME::Render
 
 	void VulkanResourceHandler::Init()
 	{
+		m_DebugName = "Resource handler";
+
 		ME::Core::Array<VkDescriptorPoolSize> poolSizes;
 		
 		VkDescriptorPoolSize poolSize = {};
@@ -926,12 +943,13 @@ namespace ME::Render
 		createInfo.poolSizeCount = static_cast<uint32>(poolSizes.Size());
 		createInfo.pPoolSizes = poolSizes.Data();
 		createInfo.maxSets = ME_VK_INITIAL_MAX_DESCRIPTOR_SETS;
-		createInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+		createInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
 		VkResult result = vkCreateDescriptorPool(RenderCommand::Get()->As<VulkanRenderAPI>()->GetDevice(), &createInfo, nullptr, &m_DescriptorPool);
 		if (ME_VK_FAILED(result))
 		{
-			ME_ASSERT(false, "Vulkan: Failed to create descriptor set pool! Error: {0}", ME_VK_RETURN_V(result));
+			ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("ResourceHandler", "Failed to create descriptor set pool! Error code: {1}"),
+				"", static_cast<uint32>(result));
 			Shutdown();
 		}
 	}

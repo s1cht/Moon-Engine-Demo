@@ -19,6 +19,9 @@ namespace ME::Core::Math
 	template<typename T>
 	struct Vector4;
 
+	struct Color3;
+	struct Color4;
+
 	class Transform;
 
 	template<typename T>

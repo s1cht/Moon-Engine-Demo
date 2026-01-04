@@ -2,7 +2,7 @@
 #include "ECS/World.hpp"
 #include "ECS/Entity.hpp"
 #include "Input/Input.hpp"
-#include "Renderer/Camera/Camera.hpp"
+#include "Renderer/Camera.hpp"
 
 namespace ME
 {

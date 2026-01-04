@@ -73,7 +73,7 @@ namespace ME::Render
 	class MEAPI Texture : public RenderMemoryObject
 	{
 	public:
-		Texture(ME::Core::String debugName) : m_DebugName(std::move(debugName)) {}
+		Texture(ME::Core::String debugName) { m_DebugName = std::move(debugName); }
 
 	public:
 		virtual void SetData(void* data, SIZE_T size) = 0;
@@ -82,18 +82,15 @@ namespace ME::Render
 		virtual void UpdateSet(uint32 set) = 0;
 		virtual void UpdateBinding(uint32 binding) = 0;
 
-		virtual ME::Core::StringView GetTexturePath() = 0;
-
 		virtual inline const TextureSpecification& GetBaseSpecification() const = 0;
-
-	protected:
-		ME::Core::String m_DebugName;
 	};
 
 	class MEAPI Texture1D : public Texture
 	{
 		ME_TEXTURE_TEMPLATE(Texture1D, Texture1DSpecification);
 		ME_TEXTURE_SET();
+
+		ME_RENDER_OBJECT_TYPE(Texture1D);
 
 	public:
 		virtual uint32 GetResolution() const = 0;
@@ -104,6 +101,8 @@ namespace ME::Render
 		ME_TEXTURE_TEMPLATE(Texture2D, Texture2DSpecification);
 		ME_TEXTURE_SET();
 
+		ME_RENDER_OBJECT_TYPE(Texture2D);
+
 	public:
 		virtual ME::Core::Math::Resolution2D<uint32> GetResolution() const = 0;
 	};
@@ -112,6 +111,8 @@ namespace ME::Render
 	{
 		ME_TEXTURE_TEMPLATE(Texture3D, Texture3DSpecification);
 		ME_TEXTURE_SET();
+
+		ME_RENDER_OBJECT_TYPE(Texture3D);
 
 	public:
 		virtual ME::Core::Math::Resolution3D<uint32> GetResolution() const = 0;

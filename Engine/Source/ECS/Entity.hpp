@@ -61,6 +61,9 @@ namespace ME::ECS
         template<typename T>
         void AddComponent() const;
 
+        template<typename T, typename... args>
+        void AddComponent(args&&... constructorArgs) const;
+
         template<typename T>
         ME_NODISCARD T& GetComponent() const;
 

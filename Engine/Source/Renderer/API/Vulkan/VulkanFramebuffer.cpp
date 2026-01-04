@@ -4,14 +4,13 @@
 #include "VulkanRenderPass.hpp"
 #include "VulkanTexture2D.hpp"
 #include "Renderer/RenderCommand.hpp"
-#include "Renderer/RenderResourcesTracker.hpp"
+
 
 namespace ME::Render
 {
 	ME::Core::Memory::Reference<Render::Framebuffer>  Framebuffer::CreateVulkan(const FramebufferSpecification& specification)
 	{
 		auto object = ME::Core::Memory::MakeReference<VulkanFramebuffer>(specification);
-		RenderResourcesTracker::Get().AddItem(object);
 		return object;
 	}
 
@@ -37,6 +36,8 @@ namespace ME::Render
 
 	void VulkanFramebuffer::Init()
 	{
+		m_DebugName = m_Specification.DebugName;
+
         VulkanRenderAPI* render = Render::RenderCommand::Get()->As<VulkanRenderAPI>();
 		ME::Core::Array<VkImageView> attachments;
 
@@ -54,6 +55,12 @@ namespace ME::Render
 
 		VkResult result = vkCreateFramebuffer(render->GetDevice(), &createInfo, nullptr, &m_Buffer);
 		if (ME_VK_FAILED(result))
-			ME_ASSERT(false, "Vulkan framebuffer: framebuffer creation failed! Error: {0}", static_cast<uint32>(result));
+		{
+		    ME_ASSERT(false, ME_VK_LOG_OUTPUT_FORMAT("Framebuffer", "Failed to create framebuffer! Error code: {1}"),
+			    m_DebugName, static_cast<uint32>(result));
+			Shutdown();
+			return;
+		}
+		render->NameVulkanObject(m_DebugName, ME_VK_TO_UINT_HANDLE(m_Buffer), VK_OBJECT_TYPE_FRAMEBUFFER);
 	}
 }

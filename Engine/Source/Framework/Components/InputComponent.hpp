@@ -6,7 +6,7 @@ namespace ME::Components
 {
     struct MEAPI InputComponent : ECS::Components::Component
     {    
-        ME_COMPONENT_INIT(InputComponent) {}
+        ME_COMPONENT_CONSTRUCTOR(InputComponent) {}
         ~InputComponent() override = default;
 
         void OnEvent(Core::Event& event) 

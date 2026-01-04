@@ -7,6 +7,7 @@ namespace ME::Render
 {
 	class MEAPI CommandBuffer : public RenderObject
 	{
+		ME_RENDER_OBJECT_TYPE(CommandBuffer);
 	public:
 		virtual void Record() = 0;
 		virtual void Finish() = 0;

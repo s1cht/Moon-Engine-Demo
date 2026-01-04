@@ -2,6 +2,8 @@
 #include "Win32Platform.hpp"
 #include "Audio/AudioEngine.hpp"
 
+#include "Win32AudioEngine.hpp"
+
 namespace ME::Audio
 {
 #if defined(PLATFORM_WINDOWS)
@@ -27,7 +29,7 @@ namespace ME::Audio
         uint32 GetSampleByTime(float32 time) const;
 
     private:
-        ME::Core::Memory::Scope<IXAudio2SourceVoice> m_Source;
+        Win32AudioEngine::VoicePtr<IXAudio2SourceVoice> m_Source;
         Assets::AudioFile m_AudioFile;
 
     private:

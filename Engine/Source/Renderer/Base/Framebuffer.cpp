@@ -1,19 +1,23 @@
 #include "Framebuffer.hpp"
+#include "Renderer/RenderCommand.hpp"
 #include "Renderer/Renderer.hpp"
 
 namespace  ME::Render
 {
-    Core::Memory::Reference<Render::Framebuffer> Framebuffer::Create(const FramebufferSpecification& specification)
+    Core::Memory::Reference<Render::Framebuffer> Framebuffer::Create(
+        const FramebufferSpecification& specification)
     {
-        switch (RenderAPI::API renderAPI = Renderer::GetRenderAPI())
+        ME::Core::Memory::Reference<ME::Render::Framebuffer> obj = nullptr;
+        switch (Renderer::GetRenderAPI())
         {
-            case ME::Render::RenderAPI::API::Vulkan:
-                return CreateVulkan(specification);
+            case ME::Render::RenderAPI::API::Vulkan: obj = CreateVulkan(specification); break;
             default:
             {
-                ME_ASSERT(false, "Framebuffer: Requested creation with unsupported API! {0}", static_cast<int32>(renderAPI));
+                ME_ASSERT(false, "Framebuffer: Requested creation with an unsupported API!");
                 return nullptr;
             }
         }
+        RenderCommand::RenderObjectCreated(obj);
+        return obj;
     }
 }

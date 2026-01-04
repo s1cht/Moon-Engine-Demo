@@ -7,7 +7,7 @@ namespace ME::Components
 {
     struct MEAPI AudioComponent : ECS::Components::Component
     {
-        ME_COMPONENT_INIT(AudioComponent), Audio(nullptr) {}
+        ME_COMPONENT_CONSTRUCTOR(AudioComponent), Audio(nullptr) {}
         ~AudioComponent() override
         {
             

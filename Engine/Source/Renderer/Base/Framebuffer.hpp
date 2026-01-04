@@ -14,10 +14,13 @@ namespace ME::Render
 		ME::Core::Math::Resolution2D<uint32> Resolution;
 		ME::Core::Array<ME::Core::Memory::Reference<Render::Texture2D>> Attachments;
 		uint32 Layers;
+		ME::Core::String DebugName;
 	};
 
 	class MEAPI Framebuffer : public RenderObject
 	{
+		ME_RENDER_OBJECT_TYPE(Framebuffer);
+
 	public:
 		virtual inline const FramebufferSpecification& GetSpecification() const = 0;
 

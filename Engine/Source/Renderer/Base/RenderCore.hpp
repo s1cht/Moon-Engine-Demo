@@ -4,6 +4,9 @@
 #include <Core/Containers/String.hpp>
 #include <Core/ClassInterface.hpp>
 
+#define ME_RENDER_OBJECT_TYPE(type) public: inline constexpr RenderObjectType GetType() const final { return RenderObjectType::type; }
+#define ME_RENDER_LOG_OUTPUT_FORMAT(api, className, msg) "[" ## api ##"] " ## className ## " \"{0}\": " ## msg
+
 namespace ME::Render
 {
 #pragma region Enums
@@ -273,6 +276,16 @@ namespace ME::Render
 		Task = BIT(6),
 		Mesh = BIT(7),
 	};
+
+	enum class RenderObjectType : uint8
+	{
+		Unknown = 0,
+		RenderAPI, ResourceHandler, SwapChain, Pipeline,
+		RenderPass, Shader, Framebuffer, CommandBuffer,
+		Uniform, StorageBuffer, VertexBuffer, IndexBuffer, IndirectBuffer,
+		Texture1D, Texture2D, Texture3D
+	};
+
 #pragma endregion
 #pragma region Definitions
 	// RenderAPI
@@ -371,6 +384,13 @@ namespace ME::Render
 	public:
 		virtual ~RenderObject() = default;
 		virtual void Shutdown() = 0;
+
+		virtual inline constexpr RenderObjectType GetType() const { return RenderObjectType::Unknown; }
+
+		ME::Core::StringView GetDebugName() const { return m_DebugName; }
+
+	protected:
+		ME::Core::String m_DebugName;
 	};
 
 	class MEAPI RenderBindable : public RenderObject
@@ -386,6 +406,12 @@ namespace ME::Render
 		virtual void Bind(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, ME::Core::Memory::Reference<Pipeline> pipeline) = 0;
 
 		virtual void Write() = 0;
+		
+	    virtual void Write(SIZE_T offset) = 0;
+		virtual void Write(SIZE_T size, SIZE_T offset) = 0;
+		
+	    virtual void Write(SIZE_T offset, uint32 binding) = 0;
+		virtual void Write(SIZE_T size, SIZE_T offset, uint32 binding) = 0;
 
 		virtual void Barrier(ME::Core::Memory::Reference<CommandBuffer> commandBuffer, BarrierInfo src, BarrierInfo dst) = 0;
 	};

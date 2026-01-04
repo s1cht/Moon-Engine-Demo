@@ -178,6 +178,7 @@ namespace ME::Render::Manager
 		specification.CompiledShader = compiledShader;
 		specification.Stage = shaderStage;
 		specification.Layouts = layouts;
+		specification.DebugName = shaderName.ToString();
 
 		return ME::Render::Shader::Create(specification);
 	}
@@ -286,6 +287,7 @@ namespace ME::Render::Manager
 		specification.CompiledShader = result.Shader;
 		specification.Stage = shaderStage;
 		specification.Layouts = layouts;
+		specification.DebugName = shaderName.ToString();
 
 		return ME::Render::Shader::Create(specification);
 	}

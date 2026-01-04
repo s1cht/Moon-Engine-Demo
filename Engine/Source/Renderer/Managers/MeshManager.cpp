@@ -15,6 +15,10 @@ namespace ME::Render::Manager
         if (m_IndexBuffer != nullptr) m_IndexBuffer->Shutdown();
         if (m_DrawBuffer != nullptr) m_DrawBuffer->Shutdown();
         if (m_MeshBoxBuffer != nullptr) m_MeshBoxBuffer->Shutdown();
+        m_Meshes.Clear();
+        m_VertexAllocator->Clear();
+        m_IndexAllocator->Clear();
+        m_MeshletAllocator->Clear();
     }
 
     void MeshManager::Init(const MeshMemoryPoolInfo& info) noexcept

@@ -27,6 +27,8 @@ namespace ME::Core
 		Iterator end() { return End(); }
 		Iterator End() { return m_Layers.End(); }
 
+		void Shutdown();
+
 	private:
 		ME::Core::Array<Layer*> m_Layers;
 		SIZE_T m_LayerInsertIndex;

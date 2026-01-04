@@ -11,7 +11,10 @@
 struct BoundingBox
 {
     float3 Center;
+	uint Padding1;
+
     float3 Extents;
+	uint Padding2;
 };
 
 struct BoundingSphere
@@ -24,9 +27,15 @@ struct BoundingSphere
 struct Vertex
 {
     float3 Position;
+	uint Padding1;
+    
     float3 Normal;
-	float4 Tangent;
+	uint Padding2;
+	
+    float4 Tangent;
+    
     float2 TextureCoordinates;
+    uint Padding3[2];
 };
 
 struct Meshlet
@@ -36,8 +45,8 @@ struct Meshlet
     uint VertexCount;
     uint TriangleCount;
     uint MeshIndex;
-    BoundingSphere Sphere;
     uint Padding[3];
+    BoundingSphere Sphere;
 };
 
 struct MeshMatrix
@@ -67,12 +76,12 @@ struct DrawMeshData
     uint VertexOffset;
     uint MeshletOffset;
     uint IndexOffset;
-
     uint MeshletCount;
+
     uint VertexCount;
     uint IndexCount;
-
     uint MeshID;
+	uint Padding;
 };
 
 struct Frustum
@@ -88,41 +97,35 @@ struct CameraData
 	MATRIX_ORDER float4x4 InvertedProjectionMatrix;
 };
 
-struct LightData
+struct DirectionalLight
 {
-    float4 diffuseColor;
-    float3 lightDirection;
-    float padding;
+	uint ColorAndEnabled;
+	float Brightness;
+	float4 Direction;
+	uint Padding[3];
 };
 
-struct IndirectDrawDataAndMeshData
+struct PointLight
 {
-    DrawIndirectIndexedCommand Command;
-    uint MeshId;
+	uint ColorAndEnabled;
+	float Brightness;
+	float Diameter;
+	uint Padding1;
+	float3 Position;
+	uint Padding2;
 };
 
-struct Line
+struct SpotLight
 {
-    float3 v0;
-    float4 c0;
-    float3 v1;
-    float4 c1;
-};
+	uint ColorAndEnabled;
+	float Brightness;
+	float Angle;
+	float Length;
 
-struct MeshletPayload
-{
-    uint MeshletIndex;
-    uint3 Padding;
-};
-
-struct DebugMessages
-{
-    uint size;
-    uint row;
-    uint pad1;
-    uint pad2;
-    DrawIndirectCommand command;
-    //Line lines[];
+	float3 Position;
+	uint Padding1;
+	float3 Direction;
+	uint Padding2;
 };
 
 template<typename T>

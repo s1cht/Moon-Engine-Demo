@@ -1,6 +1,7 @@
 #pragma once
 #include <Core.hpp>
 
+#include "Core/Math/Math.hpp"
 #include "ECS/Managers/ComponentManager.hpp"
 #include "ECS/Managers/EntityManager.hpp"
 #include "Managers/SystemScheduler.hpp"
@@ -66,6 +67,7 @@ namespace ME::ECS
 
         void DestroyEntity(uint64 entityID) const
         {
+            if (m_WorldDestroyed) return;
             m_EntityManager->DestroyEntity(entityID);
             m_ComponentManager->OnEntityDestroyed(entityID);
             m_SystemScheduler->OnEntityDestroyed(entityID);
@@ -94,15 +96,41 @@ namespace ME::ECS
             m_SystemScheduler->EntitySignatureChanged(entity, signature);
         }
 
+        template<typename T, typename... args>
+        void AddComponent(uint64 entity, args&&... constructorArgs)
+        {
+            m_ComponentManager->AddComponent<T>(entity, std::forward<args>(constructorArgs)...);
+            auto signature = m_EntityManager->GetSignature(entity);
+            signature.set(m_ComponentManager->GetComponentType<T>(), true);
+            m_EntityManager->SetSignature(entity, signature);
+
+            m_SystemScheduler->EntitySignatureChanged(entity, signature);
+        }
+
         template<typename T>
         void RegisterComponent()
         {
-            m_ComponentManager->RegisterComponent<T>();
+            m_ComponentManager->RegisterComponent<T>(ME_MAX_ENTITY_COUNT);
+        }
+
+        template<typename T>
+        void RegisterComponent(uint64 maxCount)
+        {
+            if (maxCount < 1)
+            {
+                ME_ERROR("Can't register component with limit in {}", maxCount); 
+                return;
+            }
+            uint64 count = ME::Core::Math::Clamp<uint64>(1, ME_MAX_ENTITY_COUNT, maxCount);
+            if (count != maxCount)
+                ME_WARN("Requested count is higher than entity max {}, clamping value to entity maximum.", ME_MAX_ENTITY_COUNT);
+            m_ComponentManager->RegisterComponent<T>(count);
         }
 
         template<typename T>
         void RemoveComponent(uint64 entityID)
         {
+            if (m_WorldDestroyed) return;
             m_ComponentManager->RemoveComponent<T>(entityID);
         }
 
@@ -168,12 +196,18 @@ namespace ME::ECS
             return entities;
         }
 
+        void Shutdown();
+
+        bool Destroyed() const { return m_WorldDestroyed; }
+
     private:
         ME::Core::Memory::Scope<ComponentManager> m_ComponentManager;
         ME::Core::Memory::Scope<EntityManager> m_EntityManager;
         ME::Core::Memory::Scope<SystemScheduler> m_SystemScheduler;
-
+    private:
         float32 m_DeltaTime;
+        bool m_WorldDestroyed;
+
     };
 
     // Entity method implementation
@@ -196,6 +230,18 @@ namespace ME::ECS
         if (auto world = m_RelatedWorld.lock())
         {
             world->AddComponent<T>(m_EntityId);
+            return;
+        }
+        ME_CRITICAL("Attempted to attach component in a destroyed world!");
+        throw std::runtime_error("World context unavailable.");
+    }
+
+    template <typename T, typename... args>
+    void Entity::AddComponent(args&&... constructorArgs) const
+    {
+        if (auto world = m_RelatedWorld.lock())
+        {
+            world->AddComponent<T>(m_EntityId, std::forward<args>(constructorArgs)...);
             return;
         }
         ME_CRITICAL("Attempted to attach component in a destroyed world!");
