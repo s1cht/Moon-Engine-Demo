@@ -768,7 +768,7 @@ namespace ME::Render
 
 			RasterizationSpecification rasterSpec = {};
 			rasterSpec.DiscardEnabled = false;
-			rasterSpec.FrontCounterClockwise = false;
+			rasterSpec.FrontCounterClockwise = true;
 			rasterSpec.DepthBiasEnabled = false;
 			rasterSpec.DepthClampEnabled = false;
 			rasterSpec.DepthBiasConstantFactor = 1.0f;

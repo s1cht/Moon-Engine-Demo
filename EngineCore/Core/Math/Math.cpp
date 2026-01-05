@@ -27,8 +27,8 @@ namespace ME::Core::Math
 	///////////////////// ---------------------------------------
 
 	template<> const Vector3<float32> Vector3<float32>::ZeroVector(0.f); 
-	template<> const Vector3<float32> Vector3<float32>::UpVector(0, -1, 0);
-	template<> const Vector3<float32> Vector3<float32>::DownVector(0, 1, 0);
+	template<> const Vector3<float32> Vector3<float32>::UpVector(0, 1, 0);
+	template<> const Vector3<float32> Vector3<float32>::DownVector(0, -1, 0);
 	template<> const Vector3<float32> Vector3<float32>::RightVector(1, 0, 0);
 	template<> const Vector3<float32> Vector3<float32>::LeftVector(-1, 0, 0);
 	template<> const Vector3<float32> Vector3<float32>::ForwardVector(0, 0, -1);
@@ -38,8 +38,8 @@ namespace ME::Core::Math
 	template<> const Vector3<float32> Vector3<float32>::ZAxis(0, 0, 1);
 
 	template<> const Vector3<float64> Vector3<float64>::ZeroVector(0.f);
-	template<> const Vector3<float64> Vector3<float64>::UpVector(0, -1, 0);
-	template<> const Vector3<float64> Vector3<float64>::DownVector(0, 1, 0);
+	template<> const Vector3<float64> Vector3<float64>::UpVector(0, 1, 0);
+	template<> const Vector3<float64> Vector3<float64>::DownVector(0, -1, 0);
 	template<> const Vector3<float64> Vector3<float64>::RightVector(1, 0, 0);
 	template<> const Vector3<float64> Vector3<float64>::LeftVector(-1, 0, 0);
 	template<> const Vector3<float64> Vector3<float64>::ForwardVector(0, 0, -1);
