@@ -522,7 +522,7 @@ namespace ME::Core::Math
 
 		return Matrix4x4(
 			(2 * _near) / (right - left),		0.0f,								0.0f,													0.0f, 
-			0.0f,								(2 * _near) / (top - bottom),		0.0f,													0.0f,
+			0.0f,								-(2 * _near) / (top - bottom),		0.0f,													0.0f,
 			(right + left) / (right - left),	(top + bottom) / (top - bottom),	-zSum / zSubtraction,									-1.0f,
 			0.0f,								0.0f,								-(2.f * _far * _near) / zSubtraction,					0.0f
 		);
